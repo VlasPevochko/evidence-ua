@@ -236,3 +236,31 @@ body[data-platform-area="cell"] #source-list .cell-source-count{padding:4px 8px;
 body[data-platform-area="cell"] #source-list .cell-source-link::after{content:"↗";font-size:17px}
 body[data-platform-area="cell"] #source-list .cell-source-record{padding:10px 0;border-bottom:1px solid #ffffff1c}
 body[data-platform-area="cell"] #source-list .cell-source-locator{color:#aeb2ba;font-size:12px}
+
+/* An organelle opens inside the atlas, with its own illustrative cutaway. */
+body[data-platform-area="cell"] #cell-canvas .cell-atlas-frame[hidden],body[data-platform-area="cell"] #cell-detail[hidden]{display:none}
+body[data-platform-area="cell"] #cell-detail{background:#10151d;color:#f4f2ed;animation:cell-detail-reveal .24s ease-out}
+body[data-platform-area="cell"] .cell-detail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border-bottom:1px solid #ffffff18;background:#141820;flex-wrap:wrap}
+body[data-platform-area="cell"] .cell-detail-toolbar>button{border-color:#6b5f3c;color:#ecd294;background:#28251c;min-height:44px;font-size:12px;padding:8px 12px}
+body[data-platform-area="cell"] .cell-detail-zoom{display:flex;align-items:center;gap:4px}
+body[data-platform-area="cell"] .cell-detail-zoom button{min-width:44px;min-height:44px;padding:6px 10px;font-size:14px}
+body[data-platform-area="cell"] .cell-detail-zoom button:last-child{font-size:11px}
+body[data-platform-area="cell"] .cell-detail-zoom button:disabled{opacity:.4;cursor:default}
+body[data-platform-area="cell"] .cell-detail-zoom span{min-width:32px;text-align:center;color:#e7bd46;font-size:12px;font-variant-numeric:tabular-nums}
+body[data-platform-area="cell"] .cell-detail-heading{padding:20px 22px 10px}
+body[data-platform-area="cell"] .cell-detail-heading>span{font-size:10px;color:#e7bd46;text-transform:uppercase;font-weight:700;letter-spacing:.08em}
+body[data-platform-area="cell"] .cell-detail-heading h3{margin:7px 0 0;font-size:23px;line-height:1.25;letter-spacing:-.02em;color:#f4f2ed}
+body[data-platform-area="cell"] .cell-detail-stage{--detail-stage-height:clamp(260px,30vw,440px);width:100%;height:var(--detail-stage-height);overflow:auto;overscroll-behavior:contain;background:#10151d;scrollbar-color:#4b515c #10151d}
+body[data-platform-area="cell"] .cell-detail-stage img{display:block;width:calc(min(100%,var(--detail-stage-height) * 1.333333) * var(--detail-scale));min-width:0;max-width:none;height:auto;margin:0 auto;user-select:none}
+body[data-platform-area="cell"] .cell-detail-legend{padding:18px 22px 16px;border-top:1px solid #ffffff18}
+body[data-platform-area="cell"] .cell-detail-legend>p:first-child{margin:0 0 12px;color:#b8bdc6;font-size:11px}
+body[data-platform-area="cell"] .cell-detail-legend ul{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;list-style:none}
+body[data-platform-area="cell"] .cell-detail-legend li{padding:7px 10px;border:1px solid #3b424e;border-radius:8px;background:#1a202a;color:#d9dbe1;font-size:12px;line-height:1.5}
+body[data-platform-area="cell"] .cell-detail-special-note{margin:14px 0 0;color:#cebde8;font-size:12px;line-height:1.6}
+body[data-platform-area="cell"] .cell-detail-reference{padding:14px 22px 18px;border-top:1px solid #ffffff14;background:#11151c}
+body[data-platform-area="cell"] .cell-detail-reference p{margin:0 0 7px;color:#aeb4bf;font-size:11px;line-height:1.6}
+body[data-platform-area="cell"] .cell-detail-reference a{display:inline-flex;align-items:center;min-height:44px;color:#e7bd46;font-size:12px}
+body[data-platform-area="cell"] .cell-detail-locator{display:block;color:#8e99aa;font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+@keyframes cell-detail-reveal{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+@media(max-width:700px){body[data-platform-area="cell"] .cell-detail-heading{padding:18px 18px 10px}body[data-platform-area="cell"] .cell-detail-stage{--detail-stage-height:clamp(245px,70vw,370px)}body[data-platform-area="cell"] .cell-detail-legend,body[data-platform-area="cell"] .cell-detail-reference{padding-left:18px;padding-right:18px}body[data-platform-area="cell"] .cell-detail-toolbar{padding:10px}body[data-platform-area="cell"] .cell-detail-zoom button{min-width:44px;padding:6px 8px}body[data-platform-area="cell"] .cell-detail-toolbar>button{font-size:11px;padding:6px 10px}}
+@media(prefers-reduced-motion:reduce){body[data-platform-area="cell"] #cell-detail{animation:none}}

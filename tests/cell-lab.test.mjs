@@ -38,7 +38,7 @@ function fixture(href){
  groups.set('[data-level]',levelButtons);groups.set('[data-tab]',['function','sources'].map(tab=>make(tab,{tab})));
  const windowHandlers=new Map(),location={href},root={defaultView:{location,history:{replaceState(a,b,url){location.href=url;}},addEventListener(k,fn){windowHandlers.set(k,fn);},removeEventListener(){}},querySelector:node,querySelectorAll:s=>groups.get(s)||[],addEventListener(k,fn){if(!listeners.has(k))listeners.set(k,[]);listeners.get(k).push(fn);},removeEventListener(){}};
  const ui=mount(root);
- const click=dataset=>{const b=make('click-'+JSON.stringify(dataset),dataset);for(const fn of listeners.get('click')||[])fn({target:{closest(selector){if(selector.includes('data-organelle')&&Object.keys(dataset).some(k=>['organelle','level','tab','cellAction'].includes(k)))return b;if(selector==='[data-claim-open]'&&dataset.claimOpen)return b;if(selector==='[data-evidence-close]'&&dataset.close)return b;return null;}}});return b;};
+ const click=dataset=>{const b=make('click-'+JSON.stringify(dataset),dataset);for(const fn of listeners.get('click')||[])fn({target:{closest(selector){if(selector.includes('data-organelle')&&Object.keys(dataset).some(k=>['organelle','level','tab','cellAction','cellDetailAction'].includes(k)))return b;if(selector==='[data-claim-open]'&&dataset.claimOpen)return b;if(selector==='[data-evidence-close]'&&dataset.close)return b;return null;}}});return b;};
  const key=(key,id=ui.state().selected)=>node('#cell-canvas').handlers.get('keydown')({key,target:{dataset:{organelle:id},matches:()=>true,closest(){return this;}},preventDefault(){}});
  const preview=(type,id,relatedId)=>node('#cell-canvas').handlers.get(type)?.({target:{closest:()=>id?node(`[data-organelle="${id}"]`):null},relatedTarget:relatedId?node(`[data-organelle="${relatedId}"]`):null});
  const search=value=>node('#organelle-search').handlers.get('input')({target:{value}});
@@ -90,3 +90,32 @@ assert.equal(new URL(sourceJump.location.href).hash,'#cell-canvas');
 assert(sourceJump.node('#cell-canvas').focused);
 assert.deepEqual(sourceJump.node('#cell-canvas').focusOptions,{preventScroll:true});
 assert.deepEqual(sourceJump.node('#cell-canvas').scrollOptions,{behavior:'auto',block:'start'});
+
+// Clicks open the interior in the existing atlas; hover remains only a preview.
+const interior=fixture('https://evidence.invalid/cell-lab.html?organelle=ORG-NUCLEUS&level=advanced&tab=sources#cell-canvas');
+assert.equal(typeof interior.ui.detailState,'function');
+assert.deepEqual(interior.ui.detailState(),{open:false,zoom:4});
+interior.preview('pointerover','ORG-MITOCHONDRION');assert.equal(interior.ui.detailState().open,false);
+interior.click({organelle:'ORG-MITOCHONDRION'});assert.deepEqual(interior.node('#cell-canvas').scrollOptions,{behavior:'auto',block:'start'});assert.deepEqual(interior.ui.detailState(),{open:true,zoom:4});
+assert.equal(interior.node('#cell-detail').hidden,false);assert.equal(interior.node('.cell-atlas-frame').hidden,true);assert(interior.node('#cell-detail').innerHTML.includes('Кристи'));
+assert.deepEqual(interior.ui.state(),{selected:'ORG-MITOCHONDRION',level:'advanced',tab:'sources'});
+assert.equal(new URL(interior.location.href).pathname,'/cell-lab.html');
+interior.click({cellDetailAction:'zoom-in'});assert.equal(interior.ui.detailState().zoom,6);
+interior.click({cellDetailAction:'zoom-in'});interior.click({cellDetailAction:'zoom-in'});assert.equal(interior.ui.detailState().zoom,8);
+interior.click({cellDetailAction:'zoom-out'});assert.equal(interior.ui.detailState().zoom,6);
+interior.click({cellDetailAction:'fit'});assert.equal(interior.ui.detailState().zoom,4);
+interior.click({cellDetailAction:'zoom-out'});interior.click({cellDetailAction:'zoom-out'});assert.equal(interior.ui.detailState().zoom,2);
+const interiorHref=interior.location.href;
+interior.key('Escape');assert.deepEqual(interior.ui.detailState(),{open:false,zoom:2});assert.equal(interior.node('#cell-detail').hidden,true);assert.equal(interior.node('.cell-atlas-frame').hidden,false);assert.equal(interior.location.href,interiorHref);assert(interior.node('[data-organelle="ORG-MITOCHONDRION"]').focused);
+interior.key('Enter','ORG-RIBOSOME');assert.deepEqual(interior.ui.detailState(),{open:true,zoom:4});assert.equal(interior.ui.state().selected,'ORG-RIBOSOME');
+interior.click({cellDetailAction:'close'});assert.equal(interior.ui.detailState().open,false);
+for(const o of organelles){interior.click({organelle:o.id});assert.equal(interior.ui.detailState().open,true);assert(interior.node('#cell-detail').innerHTML.includes(o.label));interior.click({cellDetailAction:'close'});assert.equal(interior.ui.detailState().open,false);}
+
+// Zoom keeps the viewed point instead of jumping back to the corner.
+const panned=fixture('https://evidence.invalid/cell-lab.html#cell-canvas');
+const stage=panned.node('.cell-detail-stage');stage.clientWidth=400;stage.clientHeight=300;stage.scrollLeft=0;stage.scrollTop=0;
+Object.defineProperty(stage,'scrollWidth',{get:()=>Math.max(400,panned.ui.detailState().zoom*100)});
+Object.defineProperty(stage,'scrollHeight',{get:()=>Math.max(300,panned.ui.detailState().zoom*75)});
+panned.click({organelle:'ORG-MITOCHONDRION'});panned.click({cellDetailAction:'zoom-in'});panned.click({cellDetailAction:'zoom-in'});
+stage.scrollLeft=360;stage.scrollTop=150;panned.click({cellDetailAction:'zoom-out'});
+assert.equal(stage.scrollLeft,220);assert.equal(stage.scrollTop,75);

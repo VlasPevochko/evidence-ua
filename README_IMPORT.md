@@ -20,3 +20,13 @@ node scripts/build-knowledge.mjs
 Імпортувати у нову гілку від актуального GitHub main, зберегти чинний README, перевірити staged diff, відкрити draft PR. Не force-push. Повний audit, SHA-256 manifest і логи надані окремо.
 
 Це опублікована v72; нові зміни в паралельному чаті після цього snapshot сюди не включені.
+
+## Оновлення v73 — детальна будова органел
+
+Опублікований snapshot: `4c05550cb20cd3c96e9ffeb1c0a2862fbed2f9db`. Hosting metadata залишені поза GitHub згідно з `.gitignore`; README та налаштування репозиторію збережено.
+
+Натискання відкриває детальну ілюстрацію будь-якої з 11 структур на цій самій сторінці. Початкове умовне наближення — 4×; доступні 2×/4×/6×/8×, «Умістити», повернення кнопкою або Escape.
+
+Ілюстрації: [dist/cell-details](dist/cell-details). Опис: [docs/CELL-DETAIL-VIEW-V73.md](docs/CELL-DETAIL-VIEW-V73.md). Промпти: [A](docs/cell-detail-art-a.md), [B](docs/cell-detail-art-b.md), [C](docs/cell-detail-art-c.md).
+
+Зауваження про два історичні Git baseline-коміти для CI залишається чинним.

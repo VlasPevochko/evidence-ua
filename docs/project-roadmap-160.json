@@ -1,0 +1,1127 @@
+{
+  "version": "0.1",
+  "updatedAt": "2026-10-10",
+  "scope": "Усі 160 пунктів збережені. Статуси — консервативна технічна початкова оцінка, не завершений acceptance-аудит.",
+  "requirements": [
+    {
+      "id": 1,
+      "title": "ЩО ТАКЕ EVIDENCE UA",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 2,
+      "title": "ФІЛОСОФІЯ ПРОЄКТУ",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 3,
+      "title": "ДОВГОСТРОКОВА МЕТА",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 4,
+      "title": "ЕВІ",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 5,
+      "title": "ГОЛОВНА АРХІТЕКТУРНА ІДЕЯ",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 6,
+      "title": "ОСНОВНИЙ DATA PIPELINE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 7,
+      "title": "CLAIM",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 8,
+      "title": "CLAIM ID",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 9,
+      "title": "CLAIM TYPES",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 10,
+      "title": "EVIDENCE LAYERS",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 11,
+      "title": "CLAIM STRUCTURE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 12,
+      "title": "PUBLIC EXPLANATIONS",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 13,
+      "title": "SOURCE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 14,
+      "title": "SOURCE ID",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 15,
+      "title": "SOURCE ≠ EVIDENCE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 16,
+      "title": "EVIDENCE RECORD",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 17,
+      "title": "RESULT",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 18,
+      "title": "DIRECTION",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 19,
+      "title": "ROLE FOR CLAIM",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 20,
+      "title": "RELEVANCE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 21,
+      "title": "STUDY ENTITY",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 22,
+      "title": "SOURCE RELATIONS",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 23,
+      "title": "RETRACTIONS",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 24,
+      "title": "EVIDENCE CONFIDENCE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 25,
+      "title": "НЕ ВИКОРИСТОВУВАТИ",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 26,
+      "title": "EVIDENCE CONFIDENCE ENGINE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 27,
+      "title": "DOWNGRADE",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 28,
+      "title": "UPGRADE CANDIDATES",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 29,
+      "title": "CONFIDENCE TRACKS",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 30,
+      "title": "MECHANISM FRAMEWORK",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 31,
+      "title": "MECHANISTIC CONFIDENCE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 32,
+      "title": "MECHANISM НЕ ПІДВИЩУЄ AUTOMATICALLY OUTCOME",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 33,
+      "title": "ACUTE ≠ CHRONIC",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 34,
+      "title": "ASSOCIATION ≠ CAUSATION",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 35,
+      "title": "STATISTICAL SIGNIFICANCE",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 36,
+      "title": "NO EVIDENCE OF EFFECT ≠ EVIDENCE OF NO EFFECT",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 37,
+      "title": "SUBGROUPS",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 38,
+      "title": "SAFETY ≠ EFFICACY",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 39,
+      "title": "INDUSTRY FUNDING",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 40,
+      "title": "CONFIDENCE ≠ EFFECT SIZE",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 41,
+      "title": "CONFIDENCE ≠ RECOMMENDATION",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 42,
+      "title": "REVIEW WORKFLOW",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 43,
+      "title": "VERSIONING",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 44,
+      "title": "UPDATE ENGINE",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 45,
+      "title": "АВТОМАТИКА НЕ МІНЯЄ PUBLIC CONCLUSION",
+      "group": "Evidence Base",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 46,
+      "title": "PUBLIC UPDATE STATUS",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 47,
+      "title": "PUBLIC VERSION HISTORY",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 48,
+      "title": "EVIDENCE CARD / CLAIM CARD",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 49,
+      "title": "EVIDENCE DRAWER / EVIDENCE PAGE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 50,
+      "title": "PROGRESSIVE DISCLOSURE",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 51,
+      "title": "SOURCE CARD",
+      "group": "Evidence Base",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 52,
+      "title": "EVIDENCE COMPARISON",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 53,
+      "title": "EVIDENCE ≠ RECOMMENDATION TAB",
+      "group": "Evidence Base",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 54,
+      "title": "CURRENT SITE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 55,
+      "title": "CURRENT CATEGORIES / DIRECTIONS",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 56,
+      "title": "FIRST REFERENCE MODULE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 57,
+      "title": "SECOND REFERENCE MODULE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 58,
+      "title": "CREATINE CLAIMS — SEED",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 59,
+      "title": "CREATINE — STRENGTH",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 60,
+      "title": "CREATINE — LEAN MASS",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 61,
+      "title": "DIRECT HYPERTROPHY",
+      "group": "Creatine and scientific UI",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 62,
+      "title": "CREATINE — KIDNEY",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 63,
+      "title": "KIDNEY VISUAL LOGIC",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 64,
+      "title": "CREATINE — LOADING",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 65,
+      "title": "CREATINE — TIMING",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 66,
+      "title": "CREATINE + CAFFEINE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 67,
+      "title": "ALTERNATIVE FORMS",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 68,
+      "title": "COGNITION",
+      "group": "Creatine and scientific UI",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 69,
+      "title": "CREATINE SAFETY",
+      "group": "Creatine and scientific UI",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 70,
+      "title": "SPECIAL POPULATIONS",
+      "group": "Creatine and scientific UI",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 71,
+      "title": "CREATINE PAGE STRUCTURE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 72,
+      "title": "HERO",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 73,
+      "title": "ATP–PCr",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 74,
+      "title": "ATP–PCR INTERACTIVE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 75,
+      "title": "MYTHS — CREATINE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 76,
+      "title": "DESIGN CONTRACT",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 77,
+      "title": "UI GOLDEN RULE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 78,
+      "title": "CONFIDENCE BADGE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 79,
+      "title": "SCIENTIFIC NOTE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 80,
+      "title": "CLINICAL CONTEXT",
+      "group": "Creatine and scientific UI",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 81,
+      "title": "EVIDENCE GAP",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 82,
+      "title": "CONFLICTING EVIDENCE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 83,
+      "title": "VISUALS MUST HAVE PROVENANCE",
+      "group": "Creatine and scientific UI",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 84,
+      "title": "CELL LAB",
+      "group": "Muscle Lab",
+      "status": "partial",
+      "note": "Cell Lab v0.1: 11 спільних структур, пошук, панель та джерела. Claims/EVR і браузерна QA ще не завершені."
+    },
+    {
+      "id": 85,
+      "title": "CELL LAB INTERACTION",
+      "group": "Muscle Lab",
+      "status": "partial",
+      "note": "Вибір структур на SVG й у списку, джерела та три рівні пояснення. Кількісна/3D модель ще не реалізована."
+    },
+    {
+      "id": 86,
+      "title": "CELL TYPES",
+      "group": "Muscle Lab",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 87,
+      "title": "MUSCLE CELL",
+      "group": "Muscle Lab",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 88,
+      "title": "MUSCLE LAB",
+      "group": "Muscle Lab",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 89,
+      "title": "MUSCLE LAB TOPICS",
+      "group": "Muscle Lab",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 90,
+      "title": "MUSCLE GROWTH — SCIENTIFIC RULE",
+      "group": "Muscle Lab",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 91,
+      "title": "ATROPHY",
+      "group": "Muscle Lab",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 92,
+      "title": "FIBER TYPES",
+      "group": "Muscle Lab",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 93,
+      "title": "Na/K ATPase MODULE",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 94,
+      "title": "Na/K ATPase ADVANCED MODE",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 95,
+      "title": "WHAT IF PUMP STOPS?",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 96,
+      "title": "IMPORTANT PHYSIOLOGY NOTE",
+      "group": "Cell Lab and membrane transport",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 97,
+      "title": "ENTEROCYTE",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 98,
+      "title": "GLUCOSE ABSORPTION",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 99,
+      "title": "Na/K ATPase + SGLT1",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 100,
+      "title": "PROTEIN ABSORPTION",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 101,
+      "title": "FAT ABSORPTION",
+      "group": "Cell Lab and membrane transport",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 102,
+      "title": "MICELLE RULE",
+      "group": "Cell Lab and membrane transport",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 103,
+      "title": "NUTRITION LAB",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 104,
+      "title": "NUTRITION FLOW",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 105,
+      "title": "HEPATOCYTE",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 106,
+      "title": "ADIPOCYTE",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 107,
+      "title": "PANCREATIC BETA CELL",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 108,
+      "title": "METABOLISM LAB",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 109,
+      "title": "WHOLE BODY METABOLISM MAP",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 110,
+      "title": "METABOLIC STATES",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 111,
+      "title": "NUTRIENT SELECTOR",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 112,
+      "title": "“Я З’ЇВ…”",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 113,
+      "title": "FOOD ≠ SEPARATE BIOCHEMISTRY",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 114,
+      "title": "METABOLISM MYTHS",
+      "group": "Nutrition and Metabolism Labs",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 115,
+      "title": "SCIENTIFIC ENTITY SYSTEM",
+      "group": "Scientific entity registry",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 116,
+      "title": "MOLECULE IDs",
+      "group": "Scientific entity registry",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 117,
+      "title": "TRANSPORTERS",
+      "group": "Scientific entity registry",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 118,
+      "title": "PROTEINS / PUMPS",
+      "group": "Scientific entity registry",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 119,
+      "title": "PATHWAYS",
+      "group": "Scientific entity registry",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 120,
+      "title": "KNOWLEDGE GRAPH",
+      "group": "Scientific entity registry",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 121,
+      "title": "ZOOM ARCHITECTURE",
+      "group": "Scientific entity registry",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 122,
+      "title": "LEARNING STANDARD",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 123,
+      "title": "TEACHER MODE",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 124,
+      "title": "VISUAL STYLE",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 125,
+      "title": "CELL VISUAL",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Умовна інтерактивна SVG-схема загальної клітини. Детальна 3D модель та браузерна QA залишаються в плані."
+    },
+    {
+      "id": 126,
+      "title": "ENTEROCYTE VISUAL",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 127,
+      "title": "MUSCLE VISUAL",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 128,
+      "title": "SITE DESIGN",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 129,
+      "title": "TECH FOR VISUALS",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 130,
+      "title": "REUSABLE UI COMPONENTS",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 131,
+      "title": "НЕ РОБИТИ УНІКАЛЬНІ COMPONENTS БЕЗ ПОТРЕБИ",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 132,
+      "title": "MOBILE",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 133,
+      "title": "ACCESSIBILITY",
+      "group": "Learning, visuals and Teacher Mode",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 134,
+      "title": "CURRENT MIGRATION — CREATINE",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 135,
+      "title": "OLD “95%”",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 136,
+      "title": "OLD “WHAT IS KNOWN”",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 137,
+      "title": "OLD “PRACTICE”",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 138,
+      "title": "OLD “LIMITATIONS”",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 139,
+      "title": "OLD “OPEN NEW SCIENTIFIC PUBLICATION”",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 140,
+      "title": "SOURCES",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 141,
+      "title": "HEADER/NAVIGATION",
+      "group": "Migration and QA",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 142,
+      "title": "HOME PAGE",
+      "group": "Migration and QA",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 143,
+      "title": "PROTEIN PAGE",
+      "group": "Migration and QA",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 144,
+      "title": "RECOMMENDED CREATINE MIGRATION ORDER",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 145,
+      "title": "HARD STOP CONDITIONS",
+      "group": "Migration and QA",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 146,
+      "title": "QA — ARCHITECTURE",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 147,
+      "title": "QA — SCIENCE",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 148,
+      "title": "QA — UI",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 149,
+      "title": "ARCHITECTURE TEST",
+      "group": "Migration and QA",
+      "status": "verified_technical",
+      "note": "Перевірено автоматизованими тестами; це не наукове схвалення."
+    },
+    {
+      "id": 150,
+      "title": "SINGLE SOURCE TEST",
+      "group": "Migration and QA",
+      "status": "verified_technical",
+      "note": "Перевірено автоматизованими тестами; це не наукове схвалення."
+    },
+    {
+      "id": 151,
+      "title": "ROUTES — FUTURE",
+      "group": "Migration and QA",
+      "status": "planned",
+      "note": "Заплановано; не вважати реалізованим."
+    },
+    {
+      "id": 152,
+      "title": "CURRENT SCOPE",
+      "group": "Migration and QA",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 153,
+      "title": "DEFINITION OF DONE — CREATINE V1",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 154,
+      "title": "AFTER CREATINE",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 155,
+      "title": "NEXT AFTER CREATINE",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 156,
+      "title": "GOLDEN FORMULA",
+      "group": "Migration and QA",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 157,
+      "title": "GOLDEN UX QUESTION",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 158,
+      "title": "ПЕРША ДІЯ В РОБОЧОМУ СЕРЕДОВИЩІ",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    },
+    {
+      "id": 159,
+      "title": "КРИТИЧНА ВКАЗІВКА",
+      "group": "Migration and QA",
+      "status": "ongoing_policy",
+      "note": "Постійне правило, не одноразова feature."
+    },
+    {
+      "id": 160,
+      "title": "КІНЦЕВА ЦІЛЬ",
+      "group": "Migration and QA",
+      "status": "partial",
+      "note": "Є реалізація або основа. Повний acceptance та науковий/браузерний перегляд не завершені."
+    }
+  ]
+}

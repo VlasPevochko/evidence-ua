@@ -1,0 +1,8 @@
+import fs from 'node:fs';
+import {muscleKnowledge,structures,topics} from '../src/muscle-lab/module.mjs';
+if(muscleKnowledge.claims.length!==9||muscleKnowledge.claims.some(c=>c.evidenceConfidence!==null||c.lastReviewed!==null)||muscleKnowledge.records.some(r=>r.roleForClaim!=='context_only'))throw Error('Muscle migration must not invent assessment or verified outcome evidence');
+fs.writeFileSync('dist/muscle-lab-data.js',fs.readFileSync('src/muscle-lab/module.mjs','utf8').replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=58'").replace("'../evidence/core/registry.mjs'","'./evidence/registry.js?v=58'"));
+fs.writeFileSync('dist/muscle-lab.js',fs.readFileSync('src/muscle-lab/controller.mjs','utf8').replace("'./module.mjs'","'./muscle-lab-data.js?v=61'").replace("'./scenes.mjs'","'./muscle-lab-scenes.js?v=58'").replace("'./learning-copy.mjs'","'./muscle-learning-copy.js?v=68'").replace("'../evidence/core/components.mjs'","'./evidence/components.js?v=61'"));
+fs.copyFileSync('src/muscle-lab/scenes.mjs','dist/muscle-lab-scenes.js');
+fs.copyFileSync('src/muscle-lab/learning-copy.mjs','dist/muscle-learning-copy.js');
+console.log('Muscle Lab:',{scales:structures.length,topics:topics.length,claims:muscleKnowledge.claims.length,contextRecords:muscleKnowledge.records.length,confidence:'not assessed'});

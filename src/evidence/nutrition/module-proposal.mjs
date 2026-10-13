@@ -1,0 +1,71 @@
+// Review proposal only. No public renderer/build may import this module.
+// IDs are stable candidates; approval must precede promotion to the Evidence Base.
+import { entityRegistry } from '../core/entities.mjs';
+
+const checkedAt = '2026-10-11';
+export const nutritionSources = [
+  {id:'SRC-000021',title:'Chemical Digestion and Absorption: A Closer Look',authors:['J. Gordon Betts et al.'],year:2022,publicationType:'textbook_chapter',journal:null,book:'Anatomy and Physiology 2e',publisher:'OpenStax',doi:null,pmid:null,pmcid:null,url:'https://openstax.org/books/anatomy-and-physiology-2e/pages/23-7-chemical-digestion-and-absorption-a-closer-look',accessLevel:'publisher_text',metadataStatus:'checked',lastChecked:checkedAt},
+  {id:'SRC-000022',title:'Glucose transporters in the small intestine in health and disease',authors:['Hermann Koepsell'],year:2020,publicationType:'narrative_review',journal:'Pflügers Archiv - European Journal of Physiology',doi:'10.1007/s00424-020-02439-5',pmid:'32829466',pmcid:'PMC7462918',url:'https://link.springer.com/article/10.1007/s00424-020-02439-5',accessLevel:'publisher_text',metadataStatus:'checked',lastChecked:checkedAt},
+  {id:'SRC-000023',title:'Physiology of Intestinal Absorption and Secretion',authors:['Pawel R Kiela','Fayez K Ghishan'],year:2016,publicationType:'narrative_review',journal:'Best Practice & Research Clinical Gastroenterology',doi:'10.1016/j.bpg.2016.02.007',pmid:'27086882',pmcid:'PMC4956471',url:'https://pmc.ncbi.nlm.nih.gov/articles/PMC4956471/',accessLevel:'partial_full_text_and_indexed_excerpt',metadataStatus:'checked',lastChecked:checkedAt,accessNote:'Metadata, abstract and introductory sections opened; later full-text requests met a browser check. PEPT1 section confirmed in indexed excerpt. Full-section extraction remains pending.'},
+  {id:'SRC-000024',title:'Human intestinal H+/peptide cotransporter. Cloning, functional expression, and chromosomal localization',authors:['R Liang','Y J Fei','P D Prasad','S Ramamoorthy','H Han','T L Yang-Feng','M A Hediger','V Ganapathy','F H Leibach'],year:1995,publicationType:'original_research',studyDesign:'cloning_and_heterologous_expression',journal:'Journal of Biological Chemistry',doi:'10.1074/jbc.270.12.6456',pmid:'7896779',pmcid:null,url:'https://pubmed.ncbi.nlm.nih.gov/7896779/',accessLevel:'indexed_abstract',metadataStatus:'checked_from_indexed_pubmed',lastChecked:checkedAt,accessNote:'Metadata and abstract retrieved from PubMed search index. Direct PubMed/publisher opens were blocked; full text not reviewed. Not a human feeding trial.'}
+].map(source=>({...source,funding:null,conflicts:null,publicationStatus:null,publicationStatusCheck:'pending'}));
+
+const claim=(id,statement,shortStatement,entityIds,limitations)=>({id,statement,shortStatement,claimType:'physiology',evidenceLayer:'mechanistic',domain:'nutrition',topics:['digestion','absorption'],population:{description:'Навчальна модель усмоктування в тонкій кишці; конкретна експериментальна система зазначена в записі.'},evidenceConfidence:null,confidenceFramework:'not_assessed',confidenceRationale:{summary:'Чернетка механізму; науковий перегляд і оцінювання Evidence UA не виконані.'},evidenceSummary:null,limitations,entityIds,status:'draft',version:'0.1',lastReviewed:null,nextReview:null,scientificApproval:null,publicationApproved:false});
+export const nutritionClaims = [
+  claim('CLM-000021','Перетравлення розщеплює складники їжі; усмоктування переносить продукти цього процесу через кишковий епітелій.','Перетравити й усмоктати — різні процеси.',['CELL-ENTEROCYTE'],['Оглядова схема не охоплює всі класи нутрієнтів і механізми перенесення.']),
+  claim('CLM-000022','SGLT1 переносить глюкозу разом із Na⁺ з просвіту кишки в ентероцит.','Вхід глюкози: SGLT1 + Na⁺.',['CELL-ENTEROCYTE','MOL-GLUCOSE','MOL-SODIUM','TRN-SGLT1'],['Маршрут першої версії стосується глюкози; він не є універсальним для всіх цукрів.']),
+  claim('CLM-000023','GLUT2 забезпечує вихід глюкози через базолатеральну мембрану ентероцита.','Вихід глюкози: GLUT2.',['CELL-ENTEROCYTE','MOL-GLUCOSE','TRN-GLUT2'],['Показано базову модель. Регуляцію локалізації GLUT2 за різних умов не змодельовано; це не твердження, що він завжди є лише на цій мембрані.']),
+  claim('CLM-000024','Na⁺/K⁺-ATPаза використовує ATP для підтримання натрієвого градієнта; SGLT1 використовує цей градієнт і не гідролізує ATP безпосередньо.','Насос витрачає ATP; SGLT1 використовує градієнт.',['MOL-ATP','MOL-SODIUM','MOL-POTASSIUM','TRN-SGLT1','PRT-NAK-ATPASE'],['Не показано виміряних концентрацій, мембранного потенціалу або швидкості транспорту.']),
+  claim('CLM-000025','PEPT1 переносить ди- й трипептиди в ентероцит разом із H⁺.','Короткі пептиди входять через PEPT1.',['CELL-ENTEROCYTE','TRN-PEPT1'],['PEPT1 не є універсальним переносником цілих білків чи всіх пептидів. Функціональне дослідження людського переносника в клітинах і ооцитах не визначає швидкість усмоктування їжі в людини.']),
+  claim('CLM-000026','Усередині ентероцита ди- й трипептиди розщеплюються до амінокислот, які надходять із клітини до крові.','З ентероцита до крові — амінокислоти.',['CELL-ENTEROCYTE','MOL-AMINO-ACID','PTH-PROTEIN-ABSORPTION'],['Не показано окремо всі амінокислотні переносники й можливі винятки для біоактивних пептидів.']),
+  claim('CLM-000027','Змішані міцели підводять продукти перетравлення ліпідів до поверхні ентероцита; у клітину переходять їхні складники, а не ціла міцела.','Міцела залишається зовні клітини.',['CELL-ENTEROCYTE','MOL-FATTY-ACID','PTH-LIPID-ABSORPTION'],['Схема не зводить всі механізми перенесення ліпідів до одного способу.']),
+  claim('CLM-000028','В ентероциті з продуктів перетравлення довголанцюгових жирів відновлюються триацилгліцероли, які експортуються у складі хіломікронів через лімфу до крові.','Хіломікрон: ентероцит → лімфа → кров.',['CELL-ENTEROCYTE','MOL-TRIGLYCERIDE','PTH-LIPID-ABSORPTION'],['Показано основний маршрут довголанцюгових жирів. Коротколанцюгові жирні кислоти не слід показувати як обов’язковий вантаж хіломікронів.'])
+];
+
+const record=(id,sourceId,claimId,locator,summary,context)=>({id,sourceId,claimId,evidenceLayer:'mechanistic',outcome:{name:'Опис конкретного механізму'},result:{description:summary,metric:null,estimate:null,ci:null},direction:'supports_claim',relevance:'candidate_mechanistic_provenance',roleForClaim:'mechanistic_support',extractionLocator:locator,populationContext:{description:context},riskOfBias:{status:'not_assessed'},reviewStatus:'pending',publicationApproved:false,lastChecked:checkedAt});
+export const nutritionEvidenceRecords = [
+  record('EVR-000030','SRC-000021','CLM-000021','Chemical Digestion; Absorption','Розділ розрізняє розщеплення їжі та перенесення продуктів через епітелій.','Навчальний опис фізіології.'),
+  record('EVR-000031','SRC-000022','CLM-000022','Introduction; Na+-D-glucose cotransporter SGLT1','Описано апікальний Na⁺-залежний перенос глюкози SGLT1.','Огляд людських та експериментальних систем.'),
+  record('EVR-000032','SRC-000022','CLM-000023','Introduction; Glucose facilitator GLUT2; Fig. 1','Описано базолатеральний GLUT2 та залежні від умов зміни локалізації.','Людські й тваринні дані; моделі регуляції не тотожні для всіх систем.'),
+  record('EVR-000033','SRC-000022','CLM-000024','Introduction; Na+-D-glucose cotransporter SGLT1; Fig. 1','SGLT1 — вторинно активний переносник; градієнт підтримує Na⁺/K⁺-ATPаза.','Механізм транспорту, не клінічний ефект.'),
+  {...record('EVR-000034','SRC-000023','CLM-000025','Amino acids and peptide absorption — indexed PEPT1 excerpt','У розділі описано кишковий переносник пептидів PEPT1.','Огляд; повна повторна екстракція секції ще потрібна.'),direction:'unclear',roleForClaim:'context_only'},
+  record('EVR-000035','SRC-000024','CLM-000025','PubMed indexed Abstract — functional expression','Експресія людського кишкового переносника в HeLa та ооцитах Xenopus спричиняла H⁺-залежний перенос пептидів.','Функціональна експресія в моделях; не випробування харчування в людей.'),
+  record('EVR-000036','SRC-000021','CLM-000026','Protein Absorption','Описано внутрішньоклітинний гідроліз коротких пептидів і вихід амінокислот до крові.','Навчальний опис; конкретні базолатеральні переносники потребують деталізації.'),
+  record('EVR-000037','SRC-000021','CLM-000027','Lipid Absorption — paragraph before Fig. 23.33','Текст описує вихід ліпідних складників із міцели перед надходженням у клітину.','Не використовувати суперечливий альтернативний підпис зображення як опис механізму.'),
+  record('EVR-000038','SRC-000021','CLM-000028','Lipid Absorption; Table 23.10','Описано ресинтез триацилгліцеролів, хіломікрони, лімфу та надходження в кров.','Маршрут довголанцюгових ліпідів; окремо зазначено інший маршрут коротколанцюгових.' )
+];
+
+export const nutritionModuleProposal = {
+  id:'MOD-NUTRITION-001',title:'Від їжі до клітини',status:'draft',version:'0.1',scientificApproval:null,publicationApproved:false,
+  claimIds:nutritionClaims.map(c=>c.id),
+  preservePages:['nutrition.html','nutrition-digestion.html'],
+  candidateEntities:[
+    {id:'MOL-PROTON',type:'molecule',label:'H⁺'},
+    {id:'MOL-DI-TRIPEPTIDE',type:'entity_group',label:'Ди- й трипептиди'},
+    {id:'MOL-MONOACYLGLYCEROL',type:'entity_group',label:'Моноацилгліцероли'},
+    {id:'STRUCT-MIXED-MICELLE',type:'structure',label:'Змішана міцела'},
+    {id:'STRUCT-CHYLOMICRON',type:'structure',label:'Хіломікрон'}
+  ].map(e=>({...e,status:'draft',version:'0.1',claimIds:[]})),
+  sections:['Огляд маршруту','Наявна модель травлення','Ентероцит: три маршрути','Чому ми так пояснюємо','Джерела й межі моделі','Наявна графіка харчування'],
+  routes:[
+    {id:'glucose',label:'Вуглеводи · глюкоза',pathwayId:'PTH-GLUCOSE-ABSORPTION',claimIds:['CLM-000022','CLM-000023','CLM-000024'],steps:[{id:'lumen',label:'Глюкоза в просвіті',claimIds:[]},{id:'sglt1',label:'Вхід через SGLT1',claimIds:['CLM-000022','CLM-000024']},{id:'glut2',label:'Вихід через GLUT2',claimIds:['CLM-000023']},{id:'blood',label:'Кров · ворітний маршрут',claimIds:[],contextSourceId:'SRC-000021',contextLocator:'Absorption; Table 23.10'}]},
+    {id:'protein',label:'Білки · амінокислоти й пептиди',pathwayId:'PTH-PROTEIN-ABSORPTION',claimIds:['CLM-000025','CLM-000026'],steps:[{id:'lumen',label:'Продукти перетравлення білка',claimIds:[],contextSourceId:'SRC-000021',contextLocator:'Protein Absorption'},{id:'entry',label:'Окремі переносники амінокислот і PEPT1',claimIds:['CLM-000025'],contextSourceId:'SRC-000021',contextLocator:'Protein Absorption'},{id:'hydrolysis',label:'Гідроліз коротких пептидів',claimIds:['CLM-000026']},{id:'blood',label:'Амінокислоти до крові',claimIds:['CLM-000026']}]},
+    {id:'lipids',label:'Жири · довголанцюговий маршрут',pathwayId:'PTH-LIPID-ABSORPTION',claimIds:['CLM-000027','CLM-000028'],steps:[{id:'micelle',label:'Міцела біля поверхні клітини',claimIds:['CLM-000027']},{id:'entry',label:'Ліпідні складники входять у клітину',claimIds:['CLM-000027']},{id:'assembly',label:'Ресинтез і утворення хіломікрона',claimIds:['CLM-000028']},{id:'lymph',label:'Хіломікрон: лімфа → кров',claimIds:['CLM-000028']}]}
+  ],
+  visualization:{id:'VIS-NUTRITION-ENTEROCYTE-001',title:'Ентероцит: усмоктування нутрієнтів',type:'interactive_svg_stepper',claimIds:nutritionClaims.map(c=>c.id),entityIds:['CELL-ENTEROCYTE','TRN-SGLT1','TRN-GLUT2','TRN-PEPT1','PRT-NAK-ATPASE'],simplified:true,simplificationNote:'Навчальна схема шляхів перенесення. Не відтворює реальні концентрації, швидкості, частки всмоктування чи індивідуальну відповідь.',version:'0.1',lastReviewed:null,status:'draft'},
+  interaction:{controls:['Назад','Відтворити','Пауза','Далі','Спочатку'],autoplay:false,reducedMotion:'manual_steps',mobile:'model_then_adjacent_controls_then_current_step',desktop:'model_with_adjacent_controls_and_explanation',polarityLabels:['Просвіт кишки','Апікальна мембрана','Ентероцит','Базолатеральна мембрана','Кров','Лімфа']},
+  approvalQuestions:['Погодити структуру та вісім конкретних формулювань.','Завершити неповну перевірку джерел перед публікацією.','Рівні впевненості зараз не призначати; вони не виводяться з типу публікації.']
+};
+
+export function validateNutritionProposal({claims=nutritionClaims,sources=nutritionSources,records=nutritionEvidenceRecords,module=nutritionModuleProposal}={}) {
+  const index=list=>{const map=new Map();for(const item of list){if(!item.id||map.has(item.id))throw Error('Duplicate/missing proposal ID');map.set(item.id,item);}return map;};
+  const claimIndex=index(claims),sourceIndex=index(sources);index(records);index(module.candidateEntities);
+  for(const c of claims){if(c.status!=='draft'||c.evidenceConfidence!==null||c.lastReviewed!==null||c.scientificApproval!==null||c.publicationApproved)throw Error('Premature scientific approval');for(const id of c.entityIds)entityRegistry.get(id);if(!records.some(r=>r.claimId===c.id))throw Error('Missing claim provenance');}
+  for(const r of records){if(!claimIndex.has(r.claimId)||!sourceIndex.has(r.sourceId))throw Error('Unresolved evidence link');if(r.reviewStatus!=='pending'||r.publicationApproved)throw Error('Premature record approval');if(!r.extractionLocator||!r.populationContext.description)throw Error('Missing record context');}
+  for(const id of [...module.claimIds,...module.visualization.claimIds])if(!claimIndex.has(id))throw Error('Unresolved module claim');
+  for(const id of module.visualization.entityIds)entityRegistry.get(id);
+  for(const route of module.routes){entityRegistry.get(route.pathwayId);index(route.steps);for(const id of [...route.claimIds,...route.steps.flatMap(s=>s.claimIds)])if(!claimIndex.has(id))throw Error('Unresolved route claim');for(const step of route.steps)if(step.contextSourceId&&!sourceIndex.has(step.contextSourceId))throw Error('Unresolved context source');}
+  if(module.publicationApproved||module.scientificApproval!==null||module.visualization.lastReviewed!==null)throw Error('Premature module approval');
+  return {claims:claims.length,sources:sources.length,records:records.length,routes:module.routes.length,publicationApproved:false};
+}
+export function assertNutritionProposalPublishable(){throw Error('Nutrition proposal is NOT approved for public rendering. Complete source checks and obtain explicit scientific approval first.');}

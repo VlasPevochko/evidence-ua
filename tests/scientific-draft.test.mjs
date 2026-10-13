@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {validateScientificDraft,assertDraftPublishable,draftClaims,draftEvidenceRecords,draftReviewQueue,draftSources} from '../src/evidence/supplements/scientific-draft.mjs';
+assert.deepEqual(validateScientificDraft(),{topics:9,claims:7,records:7});
+assert.throws(assertDraftPublishable,/NOT approved/);
+for(const topic of ['protein','caffeine','omega','vitd','magnesium','collagen','beta-alanine','citrulline','electrolytes'])assert(draftReviewQueue.some(r=>r.topic===topic));
+for(const c of draftClaims)assert.equal(c.evidenceConfidence,null);
+for(const topic of ['caffeine','magnesium','citrulline','electrolytes'])assert(!draftEvidenceRecords.some(r=>draftSources.find(s=>s.id===r.sourceId).topic===topic));
+assert(draftSources.find(s=>s.topic==='protein').notes.some(n=>n.includes('32943392')));
+assert.equal(draftEvidenceRecords.find(r=>r.id==='EVR-000016').context.participants,null);
+assert.equal(draftEvidenceRecords.find(r=>r.id==='EVR-000021').context.participants,null);
+for(const file of ['scripts/build-evidence.mjs','scripts/build-dossiers.mjs','dist/evidence/ui.js','dist/index.html'])assert(!fs.readFileSync(file,'utf8').includes('scientific-draft'),'Draft must remain isolated from public build');
+console.log('Scientific draft: 9 review queues, 7 Claims, 7 EVRs; linkage, CI, unknowns and publication guard passed.');

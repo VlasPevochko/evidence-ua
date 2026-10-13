@@ -1,0 +1,39 @@
+/* First-visit content only. Hero, article routes and scientific UI are untouched. */
+#start-here{position:relative;scroll-margin-top:24px;min-width:0;margin:0 0 28px;padding:clamp(20px,3vw,30px);background:#181c22;border:1px solid #41444b;border-radius:16px;color:#eeeae1;overflow-wrap:anywhere}
+#start-here *{box-sizing:border-box}
+#start-here .start-eyebrow{font-size:11px;letter-spacing:.12em;color:#e7bd46;margin:0 0 12px}
+#start-here h2{font-size:clamp(24px,3vw,36px);line-height:1.2;margin:0 0 14px;letter-spacing:-.025em}
+#start-here>p{max-width:850px;line-height:1.65;font-size:16px;color:#c9cbd0}
+#start-here .start-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}
+#start-here .start-choices>a{display:flex;flex-direction:column;gap:9px;min-width:0;min-height:110px;padding:18px;border:1px solid #4b5964;border-radius:12px;color:#f3f1ea;background:#111820;text-decoration:none}
+#start-here .start-choices strong{font-size:17px;line-height:1.35}
+#start-here .start-choices span{font-size:13px;line-height:1.5;color:#b9d4df}
+#start-here .start-choices a:hover{border-color:#e7bd46}
+#start-here .start-links{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}
+#start-here .start-links a{min-height:44px;display:inline-flex;align-items:center;padding:10px 14px;border:1px solid #59606b;border-radius:9px;color:#e7bd46;text-decoration:none;font-size:13px}
+#start-here details{margin-top:14px;border-top:1px solid #41444b;padding-top:8px}
+#start-here summary{min-height:44px;padding:12px 0;color:#e7bd46;cursor:pointer;font-size:15px;font-weight:600;line-height:1.45}
+#start-here details p,#start-here .start-status{font-size:13px;line-height:1.65;color:#bfc4cd}
+#start-here .start-status{padding-left:12px;border-left:3px solid #7ab8ce}
+#start-here form{display:grid;gap:15px;max-width:820px;margin:18px 0}
+#start-here form label,#start-here #home-feedback-output>label{display:grid;gap:8px;font-size:14px;line-height:1.5;color:#eeeae1}
+#start-here textarea,#start-here select{width:100%;min-width:0;min-height:44px;padding:12px;background:#0f151b;color:#eeeae1;border:1px solid #586675;border-radius:9px;font:inherit;font-size:15px;line-height:1.5}
+#start-here textarea{resize:vertical;min-height:90px}
+#start-here button{min-height:46px;max-width:100%;padding:12px 16px;border:1px solid #e7bd46;background:#e7bd46;color:#17150d;border-radius:9px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;text-align:center}
+#start-here button:disabled{opacity:.6}
+#start-here #home-feedback-text{min-height:260px}
+#start-here #home-feedback-copy{margin:14px 0}
+#start-here [hidden]{display:none!important}
+#start-here .start-paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+#start-here .path-card{min-width:0;padding:18px;border:1px solid #4b5964;border-radius:12px;background:#111820;color:#eeeae1}
+#start-here .path-card h3{margin:0 0 10px;font-size:18px;line-height:1.4}
+#start-here .path-card p{margin:0 0 12px;font-size:14px;line-height:1.6}
+#start-here .path-card ol{padding-left:22px;margin:0 0 14px}
+#start-here .path-card li{padding:2px 0;font-size:14px;line-height:1.5}
+#start-here .path-card a{display:inline-flex;align-items:center;min-height:44px;color:#b9d4df;text-underline-offset:3px;overflow-wrap:anywhere}
+#start-here .path-card .path-start{padding:10px 12px;border:1px solid #e7bd46;border-radius:9px;color:#e7bd46;text-decoration:none;font-weight:600}
+#start-here #feedback-clear{background:transparent;color:#eeeae1;border-color:#66727c}
+@media(max-width:900px){#start-here .start-paths{grid-template-columns:minmax(0,1fr)}}
+#start-here :focus-visible{outline:3px solid #78daee;outline-offset:4px}
+.topic-card[data-area=cell]:before{background-image:radial-gradient(ellipse at 40% 35%,#385865 0%,#142530 42%,#090a0c 85%);background-size:100% 100%}
+@media(max-width:700px){#start-here{padding:20px 16px}#start-here .start-choices{grid-template-columns:minmax(0,1fr);gap:8px;margin:18px 0}#start-here .start-choices>a{min-height:88px;padding:14px 16px;gap:6px}#start-here .start-links a{flex:1 1 130px;justify-content:center}#start-here>p{font-size:15px}#start-here textarea,#start-here select{font-size:16px}}

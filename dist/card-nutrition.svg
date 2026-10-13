@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 176" fill="none">
+<defs><radialGradient id="glow"><stop stop-color="#e7bd46" stop-opacity=".16"/><stop offset="1" stop-color="#e7bd46" stop-opacity="0"/></radialGradient></defs>
+<ellipse cx="180" cy="90" rx="144" ry="92" fill="url(#glow)"/>
+<g stroke="#ffffff" stroke-opacity=".07"><path d="M20 44h320M20 88h320M20 132h320M68 16v144M124 16v144M180 16v144M236 16v144M292 16v144"/></g>
+<circle cx="180" cy="88" r="65" stroke="#e7bd46" stroke-opacity=".3"/>
+<circle cx="180" cy="88" r="52" stroke="#e7bd46" stroke-opacity=".65" stroke-width="1.5"/>
+<path d="M178 123c-30 0-47-43-27-53 10-5 15 2 27 2s19-8 29-1c20 15 2 52-29 52Z" fill="#e7bd46" fill-opacity=".12" stroke="#e7bd46" stroke-width="1.5"/>
+<path d="M179 72c-1-12 3-22 11-28M182 60c18 4 27-6 30-18-18-2-28 5-30 18Z" stroke="#e7bd46" stroke-width="1.5"/>
+<path d="M97 46v27m-8-27v19c0 12 16 12 16 0V46m-8 30v55M267 46c-14 9-14 32 0 38v47m0-85v38" stroke="#939ba7" stroke-width="2" stroke-linecap="round"/>
+<g fill="#e7bd46"><circle cx="142" cy="37" r="3"/><circle cx="221" cy="137" r="3"/></g>
+</svg>

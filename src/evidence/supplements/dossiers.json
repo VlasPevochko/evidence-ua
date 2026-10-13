@@ -1,0 +1,356 @@
+[
+  {
+    "id": "DOS-PROTEIN",
+    "route": "supplement-protein",
+    "title": "ПРОТЕЇН",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Протеїн — це білок, який ми отримуємо з їжі: молочних продуктів, яєць, риби, м’яса, бобових. Організм розщеплює його на амінокислоти й використовує для своїх потреб. Протеїновий порошок — зручне додаткове джерело білка.",
+    "existingConclusion": "Білок допомагає будувати й відновлювати тканини",
+    "practicalGuidance": "Спочатку розберися зі своїм раціоном. Потім вирішуй, чи потрібна добавка.",
+    "limitations": "Це практичні орієнтири редакції. Згаданий метааналіз не порівнював ціни та не визначав бюджет на спортпіт.",
+    "sourceContext": "Білок + силові тренування",
+    "sources": [
+      {
+        "id": "DSRC-PROTEIN-1",
+        "url": "https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/",
+        "label": "Більше про білок і спортивні добавки — NIH ODS ↗",
+        "role": "background_reference",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-PROTEIN-2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/28698222/",
+        "label": "↗ ВІДКРИТИ НАУКОВУ ПУБЛІКАЦІЮ",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-CAFFEINE",
+    "route": "supplement-caffeine",
+    "title": "КОФЕЇН",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Кофеїн — стимулятор, який міститься в каві, чаї та деяких добавках. Він впливає на відчуття бадьорості й навантаження.",
+    "existingConclusion": "Кофеїн може покращувати окремі показники витривалості та спортивної працездатності.",
+    "practicalGuidance": "Враховуй час прийому, кофеїн з інших джерел і вплив на сон.",
+    "limitations": "Можливі тривожність, серцебиття, порушення сну. Позиційний документ — не окреме рандомізоване дослідження.",
+    "sourceContext": "Кофеїн і спортивна продуктивність",
+    "sources": [
+      {
+        "id": "DSRC-CAFFEINE-1",
+        "url": "https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/",
+        "label": "Джерело базових пояснень ↗",
+        "role": "background_reference",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-CAFFEINE-2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/33388079/",
+        "label": "↗ ВІДКРИТИ НАУКОВУ ПУБЛІКАЦІЮ",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-OMEGA",
+    "route": "supplement-omega",
+    "title": "ОМЕГА-3",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Омега-3 — група жирних кислот. EPA і DHA містяться, зокрема, у рибі; ALA — у деяких рослинних продуктах.",
+    "existingConclusion": "Дані для різних серцево-судинних результатів неоднакові; загальні обіцянки «для всього» не підтверджені.",
+    "practicalGuidance": "Починай із оцінки раціону та конкретної мети. Для лікування станів — узгоджуй із лікарем.",
+    "limitations": "Результати залежать від складу, дози, популяції та кінцевої точки; не підміняй лікування добавкою.",
+    "sourceContext": "Омега-3 і серцево-судинні наслідки",
+    "sources": [
+      {
+        "id": "DSRC-OMEGA-1",
+        "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/",
+        "label": "Джерело базових пояснень ↗",
+        "role": "background_reference",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-OMEGA-2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/32114706/",
+        "label": "↗ ВІДКРИТИ НАУКОВУ ПУБЛІКАЦІЮ",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-VITD",
+    "route": "supplement-vitd",
+    "title": "ВІТАМІН D",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Вітамін D допомагає організму засвоювати кальцій і підтримувати здоров’я кісток. Він надходить із певних продуктів і утворюється в шкірі.",
+    "existingConclusion": "Дефіцит і безпідставне застосування високих доз — різні клінічні ситуації.",
+    "practicalGuidance": "Рішення про добавку залежить від факторів ризику, клінічної ситуації та рекомендацій лікаря.",
+    "limitations": "Надлишок може бути шкідливим; не роби висновків про всіх людей з одного дослідження.",
+    "sourceContext": "Вітамін D і профілактика переломів",
+    "sources": [
+      {
+        "id": "DSRC-VITD-1",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminD-Consumer/",
+        "label": "Джерело базових пояснень ↗",
+        "role": "background_reference",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-VITD-2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/35939577/",
+        "label": "↗ ВІДКРИТИ НАУКОВУ ПУБЛІКАЦІЮ",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-MAGNESIUM",
+    "route": "supplement-magnesium",
+    "title": "МАГНІЙ",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Магній — мінерал, потрібний для роботи нервів, м’язів та багатьох ферментів. Його можна отримувати з горіхів, насіння, бобових і цільнозернових.",
+    "existingConclusion": "Необхідний для нервової та м’язової функції; важливе достатнє споживання.",
+    "practicalGuidance": "Спочатку оцінюй раціон: горіхи, насіння, бобові та цільнозернові продукти. Не ототожнюй втому з дефіцитом магнію.",
+    "limitations": "Добавки можуть спричиняти діарею та взаємодіяти з ліками. При захворюваннях нирок потрібне узгодження з лікарем.",
+    "sourceContext": "Магній: функції, дефіцит і безпека",
+    "sources": [
+      {
+        "id": "DSRC-MAGNESIUM-1",
+        "url": "https://ods.od.nih.gov/factsheets/Magnesium-Consumer/",
+        "label": "Джерело базових пояснень ↗",
+        "role": "background_reference",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-MAGNESIUM-2",
+        "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/",
+        "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
+        "role": "background_reference",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-COLLAGEN",
+    "route": "supplement-collagen",
+    "title": "КОЛАГЕН",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Колаген — білок сполучної тканини. Добавки часто містять його фрагменти — колагенові пептиди.",
+    "existingConclusion": "Досліджують як доповнення до тренувань для опорно-рухового апарату.",
+    "practicalGuidance": "Оцінюй результат разом із програмою навантаження. Дослідження поєднання добавки та тренувань не доводить, що добавка замінює реабілітацію.",
+    "limitations": "Висновки про здорових дорослих не є доказом лікування розривів, артрозу чи інших конкретних захворювань. Безжирова маса не дорівнює лише м’язам.",
+    "sourceContext": "Колагенові пептиди разом із фізичними тренуваннями",
+    "sources": [
+      {
+        "id": "DSRC-COLLAGEN-1",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/39060741/",
+        "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-BETA-ALANINE",
+    "route": "supplement-beta-alanine",
+    "title": "БЕТА-АЛАНІН",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Бета-аланін — амінокислота, з якої організм утворює карнозин у м’язах. Карнозин допомагає протидіяти зміні кислотності під час інтенсивної роботи.",
+    "existingConclusion": "Може допомагати в окремих видах інтенсивної роботи після регулярного прийому.",
+    "practicalGuidance": "Дослідження оцінювали регулярний прийом. Не переносимо їх на одноразовий прийом перед тренуванням або на будь-яку силову вправу.",
+    "limitations": "Можливе поколювання шкіри. Воно не показує величину спортивного ефекту. Підгрупи досліджень дали різні результати.",
+    "sourceContext": "Бета-аланін і фізична працездатність",
+    "sources": [
+      {
+        "id": "DSRC-BETA-ALANINE-1",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/26175657/",
+        "label": "↗ ПОЗИЦІЙНИЙ ДОКУМЕНТ ISSN",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-BETA-ALANINE-2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/27797728/",
+        "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-CITRULLINE",
+    "route": "supplement-citrulline",
+    "title": "ЦИТРУЛІН",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Цитрулін — амінокислота, яку організм може перетворювати на аргінін. Аргінін бере участь в утворенні оксиду азоту — сигнальної молекули для судин.",
+    "existingConclusion": "Досліджують вплив на сприйняття навантаження та біль після тренування.",
+    "practicalGuidance": "Відокремлюй суб’єктивні оцінки від сили, витривалості та гіпертрофії. Важливі склад продукту й конкретний протокол дослідження.",
+    "limitations": "Не переносимо результати цього огляду на довготривалий приріст м’язів. L-цитрулін і цитрулін-малат не слід автоматично вважати однаковими продуктами.",
+    "sourceContext": "Цитрулін: сприйняття зусилля і м’язовий біль",
+    "sources": [
+      {
+        "id": "DSRC-CITRULLINE-1",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/33308806/",
+        "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  },
+  {
+    "id": "DOS-ELECTROLYTES",
+    "route": "supplement-electrolytes",
+    "title": "ЕЛЕКТРОЛІТИ",
+    "version": "0.1",
+    "status": "extraction_pending",
+    "migratedAt": "2026-10-11",
+    "lastScientificReview": null,
+    "confidenceAssessment": "not_assessed",
+    "introduction": "Електроліти — мінеральні іони, зокрема натрій і калій. Вони беруть участь у водному балансі та роботі нервів і м’язів.",
+    "existingConclusion": "Відновлення рідини й натрію залежить від тривалості, спеки та втрат із потом.",
+    "practicalGuidance": "Враховуй тривалість тренування, температуру та втрати поту. Вміст натрію в напої має значення; не кожне тренування потребує спеціального продукту.",
+    "limitations": "Надмірне пиття може призвести до гіпонатріємії навіть зі спортивними напоями. Універсальна схема для всіх спортсменів недоречна.",
+    "sourceContext": "Відновлення рідини у фізично активних людей",
+    "sources": [
+      {
+        "id": "DSRC-ELECTROLYTES-1",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/28985128/",
+        "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
+        "role": "selected_publication",
+        "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      }
+    ],
+    "claimIds": [],
+    "evidenceRecordIds": [],
+    "pendingFields": [
+      "Окремі твердження та результати",
+      "Популяція, доза, порівняння й тривалість для кожного результату",
+      "Величина ефекту та довірчий інтервал",
+      "Ризик упередженості й інші домени GRADE-informed",
+      "Суперечливі результати та повнота пошуку"
+    ]
+  }
+]

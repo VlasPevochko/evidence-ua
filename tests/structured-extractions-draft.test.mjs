@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { extractionSources, extractionQuestions, extractionRecords, validateExtractions, assertExtractionsPublishable } from '../src/evidence/supplements/structured-extractions-draft.mjs';
+assert.deepEqual(validateExtractions(), { sources: 4, questions: 4, records: 5 });
+assert.throws(assertExtractionsPublishable, /NOT approved/);
+const broken = structuredClone(extractionRecords);
+broken[0].sourceId = 'missing';
+assert.throws(() => validateExtractions(extractionSources, extractionQuestions, broken), /Broken provenance/);
+const invalid = structuredClone(extractionRecords);
+invalid[0].result.ci95.lower = 5;
+assert.throws(() => validateExtractions(extractionSources, extractionQuestions, invalid), /Invalid interval/);
+assert.equal(extractionRecords[0].context.participants, null);
+assert.equal(extractionRecords[3].result.unit, 'percentage_points');
+assert.equal(extractionRecords[4].context.studyCount, 30);
+assert.equal(extractionRecords[4].context.effectEstimateCount, 138);
+for (const file of ['scripts/build-evidence.mjs', 'scripts/build-dossiers.mjs', 'dist/evidence/ui.js', 'dist/index.html']) assert(!fs.readFileSync(file, 'utf8').includes('structured-extractions-draft'), 'Draft must remain isolated');
+console.log('Structured extractions: provenance, intervals, missing values and publication isolation passed.');

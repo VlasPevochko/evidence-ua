@@ -1,0 +1,15 @@
+// Presentation-only localization. Scientific values, identifiers and source titles stay in data.
+export function publicText(value){let text=String(value??'');
+ const exact={Hedges_g:"Hedges' g (стандартизована різниця)",mean_difference:'різниця середніх',kg:'кг','mg/dL':'мг/дл','mL/min':'мл/хв','mL/min/1.73m²':'мл/хв/1,73 м²','Lean body mass / lean mass':'Безжирова маса'};
+ Object.assign(exact,{'Lean body mass':'Безжирова маса','Lean mass':'Безжирова маса',imprecision:'неточність',indirectness:'непрямість',inconsistency:'неузгодженість',long_term_safety:'довгострокова безпека',supports_claim:'підтримує твердження',neutral:'нейтральний результат',conflicts_with_claim:'суперечить твердженню',mixed:'змішані результати',unclear:'неясно',primary_support:'основна підтримка',supporting:'додаткова підтримка',conflicting:'суперечливі дані',mechanistic_support:'підтримка механізму',safety_signal:'сигнал безпеки',context_only:'лише контекст',high:'висока',moderate:'помірна',low:'низька',direct:'пряма',indirect:'непряма'});
+ delete exact.high;delete exact.moderate;delete exact.low;
+ if(exact[text])return exact[text];
+ if(!/[А-Яа-яІіЇїЄєҐґ]/.test(text))return text;
+ text=text.replace(/Безжирова маса \(lean (?:body )?mass\)/g,'Безжирова маса');
+ if(text.startsWith('Безжирова маса — показник складу тіла'))text=text.replace('Безжирова маса','Безжирова маса (__LBM__)');
+ text=text.replace(/Кілька synthesis-level джерел/g,'Кілька джерел узагальнених даних').replace(/окремий efficacy Claim/g,'окреме твердження про ефект').replace(/практичного guidance/g,'практичних орієнтирів');
+ const terms=[[/\bheterogeneity\b/gi,'неоднорідність'],[/head-to-head comparisons/gi,'прямі порівняння'],[/serum creatinine/gi,'креатинін крові'],[/\bguidance\b/gi,'практичні орієнтири'],[/meta-analysis/gi,'метааналіз'],[/lean body mass|lean mass|\bLBM\b/gi,'безжирова маса'],[/\bCI\b/g,'ДІ'],[/mg\/dL/g,'мг/дл'],[/mL\/min/g,'мл/хв'],[/\bkg\b/g,'кг'],[/synthesis-level/gi,'узагальнювальні'],[/efficacy Claim/g,'твердження про ефект'],[/human outcomes/gi,'результати у людей'],[/outcome-level/gi,'для конкретного результату'],[/\boutcomes\b/gi,'результати'],[/\boutcome\b/gi,'результат'],[/\bClaims\b/g,'твердження'],[/\bClaim\b/g,'твердження'],[/Evidence Records/g,'записи доказів'],[/GRADE assessment/g,'оцінювання за GRADE'],[/pre\/post timing/g,'час прийому до чи після тренування'],[/\bseed\b/g,'база даних'],[/Risk of Bias/gi,'ризик упередженості'],[/\binconsistency\b/gi,'неузгодженість'],[/\bindirectness\b/gi,'непрямість'],[/\bimprecision\b/gi,'неточність'],[/publication bias/gi,'публікаційне упередження'],[/\bdowngrade\b/gi,'зниження впевненості']];
+ for(const [pattern,replacement] of terms)text=text.replace(pattern,replacement);
+ text=text.replace(/одна ключова метааналіза/g,'один ключовий метааналіз').replace(/([Уу]) метааналіз /g,'$1 метааналізі ').replace(/(?<![\d.])(\d+)\.(\d+)(?![\d.])/g,'$1,$2');
+ return text.replace(/__LBM__/g,'lean body mass');
+}

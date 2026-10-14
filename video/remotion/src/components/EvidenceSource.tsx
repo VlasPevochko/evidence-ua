@@ -11,7 +11,7 @@ export const EvidenceSource: React.FC<{label: string}> = ({label}) => {
         opacity: interpolate(frame, [0, 0.35 * fps], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}),
         color: evidenceTheme.muted,
         fontFamily: evidenceTheme.fontFamily,
-        fontSize: 22,
+        fontSize: 30,
         lineHeight: 1.25,
         letterSpacing: '0.01em',
       }}

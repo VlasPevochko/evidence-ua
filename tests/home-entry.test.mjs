@@ -9,7 +9,7 @@ const sandbox={window:{}};vm.runInNewContext(fs.readFileSync('dist/home-catalog.
 const topics=JSON.parse(JSON.stringify(sandbox.window.EvidenceUAHomeTopics));
 assert.deepEqual(topics.map(t=>t.id),catalog.areas.filter(a=>a.available).map(a=>a.id));assert.equal(topics.length,5);
 for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,area.state);assert.equal(t.href,t.id==='supplements'?'#supplement-library':area.href);}
-assert(index.includes('<a class="cta" href="#start-here">'));assert(nav.includes("document.querySelector('.copy .cta').href = '#start-here'"));assert(index.indexOf('home-catalog.js?v=57')<index.indexOf('navigation-v17.js?v=66'));
+assert(index.includes('<a class="cta" href="#start-here">'));assert(nav.includes("document.querySelector('.copy .cta').href = '#start-here'"));assert(index.indexOf('home-catalog.js?v=57')<index.indexOf('navigation-v17.js?v=74'));
 for(const id of ['start-here','start-here-title','home-feedback','home-feedback-form','feedback-useful','feedback-stuck','feedback-change','home-feedback-output','home-feedback-status'])assert(index.includes(`id="${id}"`));
 assert(index.includes('id="feedback-generate" disabled'));assert(index.includes('не вказуйте персональних'.replace(/^н/,'Н')));assert(index.includes('Форма нічого не надсилає'));
 assert(css.includes('min-height:44px'));assert(css.includes('grid-template-columns:minmax(0,1fr)'));assert(css.includes('font-size:16px'));
@@ -56,5 +56,10 @@ assert expected==actual, 'Scientific article HTML changed'
 ids=[n.get('id') for n in root.xpath('//*[@id]')]
 assert len(ids)==len(set(ids)), 'Duplicate HTML IDs'
 assert root.xpath('//*[@id="evidence-card"]'), 'Starter link target absent'
+directions=root.xpath('//*[@id="start-here"]/*[@id="cards"]')
+assert len(directions)==1 and len(directions[0].xpath('./a'))==5, 'Five direct directions must work without JavaScript'
+assert directions[0].xpath('./a/@data-area')==['muscle','cell','nutrition','supplements','movement']
+start=root.xpath('//*[@id="start-here"]')[0]
+assert list(start).index(directions[0]) < list(start).index(start.xpath('./div[@class="start-choices"]')[0]), 'Directions must precede example questions'
 `]);
 console.log('Home entry: five actual catalog pages, CTA flow, real cards, feedback handlers, no sending/storage/tracking, copy success/fallback, sanitized URLs and ten unchanged article subtrees passed. Browser layout QA pending.');

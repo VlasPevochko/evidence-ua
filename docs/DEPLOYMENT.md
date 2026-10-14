@@ -15,11 +15,13 @@ Keep the **entire tracked `dist/` directory**. It contains authored HTML, CSS, J
 - GitHub Pages is not enabled; GitHub deployment history is empty. No provider deploy configuration or Sites hosting metadata was imported.
 - The root Deno template did not run the documented website build/tests and has been replaced by `site-publish.yml`. The video and voice workflows are independent and remain intact.
 
-The v73/v76 gap is a real publication blocker. Before replacing production, review the changes after the imported v73 and reconcile any wanted changes in a GitHub PR. Do not silently copy live source over GitHub or deploy the older snapshot as though it were current.
+The v73/v76 gap was reconciled in the separate `chore/reconcile-live-v76` branch, based on the CI branch from PR #6. Seven reviewed website/build/test files were carried across from the exact v73-to-v76 delta; all scientific source and ten article-subtree digests remain unchanged. The complete built `dist` matches the 78-file live v76 snapshot. Three documentation screenshots were excluded from the runtime change; GitHub's video subsystem, workflows and documents were retained.
+
+Both PRs still require the owner's explicit merge approval. Until the reconciliation reaches `main`, the version gap remains a live-publication blocker. See [the reconciliation audit](RECONCILIATION_V76.md) for exact provenance and checks.
 
 ## What this CI publishes
 
-`.github/workflows/site-publish.yml` runs on PRs to `main`, pushes to `main`, and manual dispatch. It uses Node 24, Python 3.12, Git and pinned lxml 6.1.1. Actions are pinned to verified commit SHAs; checkout credentials are not persisted. The workflow has only `contents: read`, uses no production secrets and executes no deployment code on PRs.
+`.github/workflows/site-publish.yml` runs on PRs (including the dependent reconciliation PR), pushes to `main`, and manual dispatch. It uses Node 24, Python 3.12, Git and pinned lxml 6.1.1. Actions are pinned to verified commit SHAs; checkout credentials are not persisted. The workflow has only `contents: read`, uses no production secrets and executes no deployment code on PRs. Publication remains limited to this repository's `main`.
 
 1. `node scripts/build-site.mjs` starts with the complete retained `dist`, runs `build-evidence.mjs` and `build-knowledge.mjs`, and rejects removed files or changed authored files outside the explicit generated-output list.
 2. `node scripts/test-site.mjs` runs every `tests/*.test.mjs` sequentially against the built site. Every file receives a fresh temporary copy and its own Git index. Test mutations never reach the publish directory.

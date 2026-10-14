@@ -138,7 +138,7 @@ check('production module order and configured Claim lists actually drive renderi
  }finally{creatineModule.sections=original;}
 });
 check('movement has one header entry and retains its page link',()=>{
- const nav=fs.readFileSync('dist/navigation-v17.js','utf8');assert(nav.includes("movement.href = './movement.html'"));assert(!nav.includes("['Рух', './movement.html']"));assert(nav.includes("['Харчування', './nutrition.html']"));assert(html.includes('navigation-v17.js?v=66'));
+ const nav=fs.readFileSync('dist/navigation-v17.js','utf8');assert(nav.includes("movement.href = './movement.html'"));assert(!nav.includes("['Рух', './movement.html']"));assert(nav.includes("['Харчування', './nutrition.html']"));assert(html.includes('navigation-v17.js?v=74'));
 });
 check('mobile structure explanation shares a compact frame with its controls',()=>{
  const css=fs.readFileSync('src/evidence/evidence.css','utf8');const mobile=css.slice(css.lastIndexOf('@media(max-width:760px)'));

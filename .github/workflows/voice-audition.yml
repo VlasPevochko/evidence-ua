@@ -41,13 +41,10 @@ jobs:
           for voice in uk_UA-mykyta-high uk_UA-oleksa-high uk_UA-tetiana-high; do
             python -m piper.download_voices "$voice" --data-dir .piper-voices
             python -m piper --model "$voice" --data-dir .piper-voices --input-file voice-sample.txt -f "voice-audition/${voice}.wav"
-            ffmpeg -hide_banner -loglevel error -y -i "voice-audition/${voice}.wav" \
-              -af "loudnorm=I=-16:TP=-1.5:LRA=11" -codec:a libmp3lame -b:a 192k \
-              "voice-audition/${voice}.mp3"
           done
       - name: Upload voice audition
         uses: actions/upload-artifact@v4
         with:
           name: ukrainian-voice-audition
-          path: video/remotion/voice-audition/*.mp3
+          path: video/remotion/voice-audition/*.wav
           if-no-files-found: error

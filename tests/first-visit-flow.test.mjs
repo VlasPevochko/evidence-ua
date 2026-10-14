@@ -76,13 +76,17 @@ feedback.submit();assert(feedback.node('#home-feedback-output').hidden);feedback
 // Independent v59 baseline: preserve all scientific article subtrees exactly.
 execFileSync('python',['-c',`from pathlib import Path
 from lxml import html
-import subprocess
-before=html.fromstring(subprocess.check_output(['git','show','9d174ef146c09936be2c615e1a663b7e4f7dbd29:dist/index.html']))
+import json,hashlib
+baseline=json.loads(Path('tests/fixtures/first-visit-v59-science-digests.json').read_text(encoding='utf-8'))
+assert baseline['sourceCommit']=='9d174ef146c09936be2c615e1a663b7e4f7dbd29'
+expected=baseline['sections']
+assert len(expected)==10
 after=html.fromstring(Path('dist/index.html').read_text())
 for expression in ['//body/section[@id="creatine" or starts-with(@id,"supplement-")]']:
-    a=before.xpath(expression); b=after.xpath(expression)
-    assert len(a)==len(b)
-    for old,new in zip(a,b): assert html.tostring(old)==html.tostring(new), old.get('id')
+    sections=after.xpath(expression)
+    assert list(expected)==[n.get('id') for n in sections], 'Scientific article order changed'
+    actual={n.get('id'):hashlib.sha256(html.tostring(n,encoding='utf-8')).hexdigest() for n in sections}
+    assert expected==actual, 'Scientific article HTML changed from the independent v59 baseline'
 routes=after.xpath('//*[@id="home-learning-paths"]')
 assert len(routes)==1 and len(routes[0].xpath('.//article'))==3
 assert after.xpath('//label[@for="feedback-material"]')

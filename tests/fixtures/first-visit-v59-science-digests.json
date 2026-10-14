@@ -1,0 +1,18 @@
+{
+  "sourceCommit": "9d174ef146c09936be2c615e1a663b7e4f7dbd29",
+  "sourcePath": "dist/index.html",
+  "sourceBlobSha256": "6c3c2821ab78583e79b92fed898c4d85cffc6daba6c0c2842ad315d88f25a959",
+  "serialization": "lxml.html.tostring(section, encoding='utf-8')",
+  "sections": {
+    "creatine": "0070002b8b22b8d899c1a70bc37d3e24601b21fb7bc236c2c179de2461b38b86",
+    "supplement-protein": "5de84b0657820bbee63f6de656f89f47d79663590e7b745d70fd41b3412d0504",
+    "supplement-caffeine": "f9937622474dc89fa43e29f0ffcb1a2ba1b5abcd6f2a280bf4f331b6e502952a",
+    "supplement-omega": "5f106ed9f06621074881dfec1c83bc2c2747421adb93559f990166c049b1ebd7",
+    "supplement-vitd": "afd760c2a4081f9523d3be1670bca4cc44e87dc10130f965a54280365c2eb765",
+    "supplement-magnesium": "01e7f3a2c18c7607ed6fd4109755347ee85c5111ec6a3855c96fe84081d842b4",
+    "supplement-collagen": "f158c90245753dd04801dd0fc3e1053860fc285a41bbdb5b24ea80cefc3a0f2b",
+    "supplement-beta-alanine": "a8db5a16916383e7b0d68deb63ebca8057b6c2905a6d8bd7f97459c4814a4c80",
+    "supplement-citrulline": "0cf966227265a2173c224b25546029f267dee93e361f4d072a8974df09522128",
+    "supplement-electrolytes": "128fceec15585e413456f1e9c1ad9f9110d7ec8a77d05ed47b621fcf6280df48"
+  }
+}

@@ -30,3 +30,13 @@ node scripts/build-knowledge.mjs
 Ілюстрації: [dist/cell-details](dist/cell-details). Опис: [docs/CELL-DETAIL-VIEW-V73.md](docs/CELL-DETAIL-VIEW-V73.md). Промпти: [A](docs/cell-detail-art-a.md), [B](docs/cell-detail-art-b.md), [C](docs/cell-detail-art-c.md).
 
 Зауваження про два історичні Git baseline-коміти для CI залишається чинним.
+
+## GitHub як source of truth — 14.10.2026
+
+Поточне правило: усі зміни робимо в GitHub-гілці від `main` через PR. Merge — лише після явного дозволу власника. Старий Sites більше не є джерелом для редагування; він залишається хостингом.
+
+Весь `dist/` зберігається і публікується як єдиний статичний артефакт. CI накладає два наявні build-скрипти на повний snapshot та запускає кожен тест в окремій копії.
+
+Описана вище проблема відсутніх історичних комітів усунена автентичними SHA-256 fixtures з оригінальних baseline-комітів; поточним source їх не підмінено. [Походження fixtures](tests/fixtures/README_BASELINES.md).
+
+Live Sites зараз має v76, а GitHub містить імпорт до v73. Автоматична публікація build-артефакту з `main` підготовлена; live deploy потребує узгодження цієї різниці та підтримуваного підключення GitHub → Sites. [Стан і налаштування](docs/DEPLOYMENT.md).

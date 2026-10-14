@@ -1,8 +1,6 @@
 name: Evidence UA Video Factory
 
 on:
-  push:
-    branches: ["feat/video-factory"]
   pull_request:
     branches: ["main"]
     paths:
@@ -10,7 +8,7 @@ on:
       - ".github/workflows/video-remotion.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -19,14 +17,25 @@ jobs:
       run:
         working-directory: video/remotion
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout head branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
       - name: Setup Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
       - name: Install dependencies and generate lockfile
         run: npm install
+      - name: Commit generated lockfile
+        run: |
+          if [ -n "$(git status --porcelain -- package-lock.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore(video): add Remotion lockfile"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
       - name: Unit tests
         run: npm test
       - name: Typecheck
@@ -35,9 +44,3 @@ jobs:
         run: npm run lint
       - name: Remotion composition smoke check
         run: npm run compositions
-      - name: Upload generated lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: remotion-package-lock
-          path: video/remotion/package-lock.json
-          if-no-files-found: error

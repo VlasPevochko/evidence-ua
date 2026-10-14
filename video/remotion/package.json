@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio src/index.ts --no-open",
-    "test": "node --experimental-strip-types --test src/config/composition.test.ts",
+    "test": "node --experimental-strip-types --test src/config/composition.test.ts src/evidence/validateEvidence.test.ts src/brand/theme.test.ts src/science/model.test.ts src/compositions/creatine-journey/scene-plan.test.ts src/compositions/creatine-journey/scenes/scenes-1-4.test.ts src/compositions/creatine-journey/assembly.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "compositions": "remotion compositions src/index.ts"

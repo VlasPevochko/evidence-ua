@@ -8,7 +8,7 @@ on:
       - ".github/workflows/video-remotion.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
@@ -17,25 +17,16 @@ jobs:
       run:
         working-directory: video/remotion
     steps:
-      - name: Checkout head branch
+      - name: Checkout
         uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref }}
       - name: Setup Node 24
         uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Install dependencies and generate lockfile
-        run: npm install
-      - name: Commit generated lockfile
-        run: |
-          if [ -n "$(git status --porcelain -- package-lock.json)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add package-lock.json
-            git commit -m "chore(video): add Remotion lockfile"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
+          cache: npm
+          cache-dependency-path: video/remotion/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci
       - name: Unit tests
         run: npm test
       - name: Typecheck
@@ -44,3 +35,15 @@ jobs:
         run: npm run lint
       - name: Remotion composition smoke check
         run: npm run compositions
+      - name: Preview representative frames
+        run: |
+          mkdir -p .preview-smoke
+          for frame in 60 240 480 750 1050 1350 1650 1769; do
+            npx remotion still src/index.ts CreatineJourney ".preview-smoke/frame-${frame}.png" --frame="${frame}"
+          done
+      - name: Upload preview frames
+        uses: actions/upload-artifact@v4
+        with:
+          name: creatine-journey-preview
+          path: video/remotion/.preview-smoke/*.png
+          if-no-files-found: error

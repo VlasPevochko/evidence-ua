@@ -1,0 +1,50 @@
+name: Evidence UA Ukrainian Voice Audition
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/voice-audition.yml"
+      - "video/remotion/src/audio/**"
+      - "video/remotion/src/compositions/creatine-journey/voiceover.ts"
+      - "video/remotion/src/tools/export-voiceover.ts"
+      - "video/remotion/tools/generate_piper_voiceover.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audition:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: video/remotion
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install Piper
+        run: python -m pip install --upgrade pip piper-tts
+      - name: Export audition text
+        run: node --experimental-strip-types src/tools/export-voiceover.ts --sample > voice-sample.txt
+      - name: Generate Ukrainian voice samples
+        run: |
+          mkdir -p .piper-voices voice-audition
+          for voice in uk_UA-mykyta-high uk_UA-oleksa-high uk_UA-tetiana-high; do
+            python -m piper.download_voices "$voice" --data-dir .piper-voices
+            python -m piper --model "$voice" --data-dir .piper-voices --input-file voice-sample.txt -f "voice-audition/${voice}.wav"
+          done
+      - name: Upload voice audition
+        uses: actions/upload-artifact@v4
+        with:
+          name: ukrainian-voice-audition
+          path: video/remotion/voice-audition/*.wav
+          if-no-files-found: error

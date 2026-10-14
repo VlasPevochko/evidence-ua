@@ -1,0 +1,70 @@
+name: Website build and publish artifact
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Website build and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - name: Checkout GitHub source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Setup Node 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+      - name: Setup Python for HTML regression checks
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install HTML test dependency
+        run: python -m pip install lxml==6.1.1
+      - name: Build over the complete retained dist snapshot
+        run: node scripts/build-site.mjs
+      - name: Test built site in a fresh copy per test file
+        run: node scripts/test-site.mjs
+      - name: Publish full static artifact from main
+        if: github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: evidence-ua-dist-${{ github.sha }}
+          path: dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish file hashes and GitHub commit provenance
+        if: github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: evidence-ua-provenance-${{ github.sha }}
+          path: .site-publish/manifest.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Report publication status
+        if: success()
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const manifest = JSON.parse(fs.readFileSync('.site-publish/manifest.json', 'utf8'));
+          const published = process.env.GITHUB_REPOSITORY === 'VlasPevochko/evidence-ua' && process.env.GITHUB_REF === 'refs/heads/main' && process.env.GITHUB_EVENT_NAME !== 'pull_request';
+          const text = `Website build and tests passed. Complete dist: ${manifest.fileCount} files.\n\nGitHub commit: ${manifest.commit}.\n\n${published ? 'Full dist and provenance artifacts published.' : 'PR/branch verification only; no production artifact published.'}\n\nSites live deployment is not connected. See docs/DEPLOYMENT.md for the verified hosting and remaining setup.\n`;
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);
+          NODE

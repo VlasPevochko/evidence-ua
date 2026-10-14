@@ -37,13 +37,13 @@ jobs:
         run: npm run compositions
       - name: Preview representative frames
         run: |
-          mkdir -p .preview-smoke
+          mkdir -p preview-smoke
           for frame in 60 240 480 750 1050 1350 1650 1769; do
-            npx remotion still src/index.ts CreatineJourney ".preview-smoke/frame-${frame}.png" --frame="${frame}"
+            npx remotion still src/index.ts CreatineJourney "preview-smoke/frame-${frame}.png" --frame="${frame}"
           done
       - name: Upload preview frames
         uses: actions/upload-artifact@v4
         with:
           name: creatine-journey-preview
-          path: video/remotion/.preview-smoke/*.png
+          path: video/remotion/preview-smoke/*.png
           if-no-files-found: error

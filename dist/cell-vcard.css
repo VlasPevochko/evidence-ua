@@ -1,0 +1,54 @@
+/* vCard visual direction shared with the home page, scoped to Cell Lab. */
+body[data-platform-area="cell"]{--ink:#fafafa;--muted:#b9b9c0;--blue:#ffdb70;--gold:#ffdb70;--line:#383838;--paper:#1e1e1f;background:#121212;color:#fafafa}
+body[data-platform-area="cell"] .study-header{max-width:1360px;width:calc(100% - 48px);margin:24px auto 0;padding:22px 28px;border:1px solid #383838;border-radius:20px;background:#1e1e1f;box-shadow:0 12px 32px #0002}
+body[data-platform-area="cell"] .brand span,body[data-platform-area="cell"] .eyebrow,body[data-platform-area="cell"] a{color:#ffdb70}
+body[data-platform-area="cell"] .study-header nav{gap:10px}
+body[data-platform-area="cell"] .study-header nav a{padding:10px 18px;border:1px solid #383838;border-radius:12px;background:#252526;color:#dedee2;font-size:13px}
+body[data-platform-area="cell"] .study-header nav a:hover{color:#ffdb70;border-color:#74633c}
+body[data-platform-area="cell"] main{max-width:1408px;padding:28px 24px 56px}
+body[data-platform-area="cell"] .intro{max-width:none;padding:30px 32px;background:#101115;border:1px solid #383838;border-radius:20px;box-shadow:0 12px 32px #0002}
+body[data-platform-area="cell"] h1{font-size:clamp(34px,4vw,52px);font-weight:650;letter-spacing:-.035em}
+body[data-platform-area="cell"] h1:after{content:'';display:block;width:44px;height:5px;margin:22px 0 20px;border-radius:4px;background:#ffdb70}
+body[data-platform-area="cell"] .intro>p:not(.eyebrow){max-width:780px;font-size:16px;color:#d6d6dc}
+body[data-platform-area="cell"] .cell-route{gap:12px;margin-top:24px}
+body[data-platform-area="cell"] .cell-route a{background:#252526;border-color:#383838;border-radius:12px;color:#dedee2}
+body[data-platform-area="cell"] .cell-route a span{color:#ffdb70}
+body[data-platform-area="cell"] button{background:#252526;color:#dedee2;border-color:#383838;border-radius:12px;transition:border-color .15s,background .15s}
+body[data-platform-area="cell"] button:hover:not(:disabled){border-color:#74633c;background:#2b2924}
+body[data-platform-area="cell"] button[aria-pressed=true],body[data-platform-area="cell"] button[aria-pressed=true]:hover,body[data-platform-area="cell"] .levels button[aria-pressed=true]{background:#ffdb70;border-color:#ffdb70;color:#202020}
+body[data-platform-area="cell"] .levels{background:#252526;border-color:#383838;border-radius:12px}
+body[data-platform-area="cell"] .review-note{margin:18px 0 24px;padding:14px 20px;background:#1e1e1f;border-color:#383838;border-radius:14px;color:#b9b9c0}
+body[data-platform-area="cell"] .structure-list,body[data-platform-area="cell"] .panel{background:#1e1e1f;border-color:#383838;border-radius:20px;box-shadow:0 12px 32px #0002}
+body[data-platform-area="cell"] .structure-list{padding:20px}
+body[data-platform-area="cell"] .structure-list input{background:#121212;border-color:#48484c;color:#fafafa}
+body[data-platform-area="cell"] .panel{padding:24px}
+body[data-platform-area="cell"] .reading-level{background:#252526;border-color:#383838;border-radius:14px}
+body[data-platform-area="cell"] .panel p{color:#d6d6dc}
+body[data-platform-area="cell"] .panel .eyebrow{color:#ffdb70}
+body[data-platform-area="cell"] .panel .answer{color:#fafafa}
+body[data-platform-area="cell"] .model-jumps a,body[data-platform-area="cell"] .panel .eua-evidence-button,body[data-platform-area="cell"] .cell-shared .eua-evidence-button{background:#2b2924;border-color:#66583b;color:#ffdb70}
+body[data-platform-area="cell"] #cell-canvas{border-color:#383838;border-radius:20px;background:#101115}
+body[data-platform-area="cell"] .cell-atlas-toolbar,body[data-platform-area="cell"] .cell-detail-toolbar,body[data-platform-area="cell"] .cell-detail-heading,body[data-platform-area="cell"] .cell-detail-legend,body[data-platform-area="cell"] .cell-detail-reference{background:#1e1e1f;border-color:#383838}
+body[data-platform-area="cell"] .cell-atlas-toolbar strong,body[data-platform-area="cell"] #selected-label{color:#ffdb70}
+body[data-platform-area="cell"] .cell-detail-legend li{background:#252526;border-color:#383838;color:#dedee2}
+body[data-platform-area="cell"] .model-controls,body[data-platform-area="cell"] .quick-structures,body[data-platform-area="cell"] .all-claims{background:#1e1e1f;border-color:#383838;border-radius:14px}
+body[data-platform-area="cell"] .context>div,body[data-platform-area="cell"] .cell-source-overview,body[data-platform-area="cell"] .cell-source-boundaries>div{background:#1e1e1f;border-color:#383838;border-radius:20px;box-shadow:0 8px 24px #0002}
+body[data-platform-area="cell"] #source-list>.cell-source-card{background:linear-gradient(135deg,#29292b,#222223);border-color:#383838;border-top-color:var(--source-accent);border-radius:20px}
+body[data-platform-area="cell"] #source-list>.cell-source-card:first-child{--source-accent:#ffdb70}
+body[data-platform-area="cell"] #source-list .cell-source-structures button{background:#1e1e1f;border-color:#444448}
+body[data-platform-area="cell"] #source-list .cell-source-structures button[aria-pressed=true]{background:#ffdb70;color:#202020;border-color:#ffdb70}
+body[data-platform-area="cell"] .cell-source-counts strong,body[data-platform-area="cell"] .cell-source-boundaries span{color:#ffdb70}
+body[data-platform-area="cell"] .cell-shared{--eua-blue:#ffdb70;--eua-border:#383838;--eua-text:#fafafa;--eua-muted:#b9b9c0}
+body[data-platform-area="cell"] .cell-shared .eua-claim,body[data-platform-area="cell"] .cell-shared .eua-source,body[data-platform-area="cell"] #eua-evidence-dialog.cell-shared{background:#1e1e1f;border-color:#383838}
+body[data-platform-area="cell"] #eua-evidence-dialog.cell-shared .eua-drawer-head{background:#1e1e1f}
+body[data-platform-area="cell"] #eua-evidence-dialog.cell-shared .eua-record{background:#252526;border-color:#383838}
+body[data-platform-area="cell"] footer{background:#121212;border-color:#383838}
+body[data-platform-area="cell"] :focus-visible{outline:2px solid #ffdb70;outline-offset:4px}
+@media(max-width:700px){
+ body[data-platform-area="cell"] .study-header{width:calc(100% - 24px);margin-top:12px;padding:18px;border-radius:16px;gap:16px}
+ body[data-platform-area="cell"] main{padding:18px 12px 36px}
+ body[data-platform-area="cell"] .intro{padding:22px 20px;border-radius:16px}
+ body[data-platform-area="cell"] .study-header nav a{padding:9px 12px}
+ body[data-platform-area="cell"] .structure-list,body[data-platform-area="cell"] .panel,body[data-platform-area="cell"] .context>div{border-radius:16px;padding:20px}
+}
+@media(prefers-reduced-motion:reduce){body[data-platform-area="cell"] button{transition:none}}

@@ -24,11 +24,23 @@ body[data-platform-area="home"] #home-overview .home-overview-grid{display:grid;
 body[data-platform-area="home"] #home-overview .home-overview-grid>article{min-width:0;margin:0;padding:0;border:0}
 body[data-platform-area="home"] #home-overview h3{font-size:16px;line-height:1.4;margin:0 0 8px;color:#f2e6c3}
 body[data-platform-area="home"] #home-overview p{font-size:14px;line-height:1.65;color:#bfd0cb;margin:0}
+body[data-platform-area="home"] #home-overview .start-links{display:flex;flex-wrap:wrap;gap:8px 22px;margin:0;padding:16px 18px;border-top:1px solid #d5e0d81c}
+body[data-platform-area="home"] #home-overview .start-links a{display:inline-flex;align-items:center;min-height:44px;font-size:13px;line-height:1.5;color:#e8d39f;text-decoration:none}
+body[data-platform-area="home"] #start-here #home-feedback{margin:0;padding:0;border:1px solid #d5e0d826;border-radius:14px;background:#0e252e}
+body[data-platform-area="home"] #home-feedback>summary{min-height:52px;padding:15px 18px;color:#c8d9d2;font-size:14px;line-height:1.5;cursor:pointer}
+body[data-platform-area="home"] #home-feedback[open]{padding:0 18px 16px}
+body[data-platform-area="home"] #home-feedback[open]>summary{margin:0 -18px 12px;border-bottom:1px solid #d5e0d81c}
+body[data-platform-area="home"] #start-here>.eua-home-tools{margin-top:12px;padding-top:0;border:0}
+body[data-platform-area="home"] .eua-home-tools .eua-tools{display:flex;flex-wrap:wrap;gap:10px}
+body[data-platform-area="home"] #start-here .eua-home-tools .eua-tools button{flex:0 1 auto;min-height:44px;padding:10px 14px;border-color:#d5e0d826;border-radius:10px;background:transparent;color:#c8d9d2;font-size:13px;transition:border-color .2s,background .2s}
+body[data-platform-area="home"] #start-here .eua-home-tools .eua-tools button:hover{border-color:#ffdc7e88;background:#193635}
+body[data-platform-area="home"] .eua-home-tools .eua-tool-status:empty{display:none}
 /* Progressive animation: unsupported browsers retain native disclosure behavior. */
 @supports(interpolate-size:allow-keywords){
   #home-learning-paths::details-content,#home-overview::details-content{block-size:0;overflow:hidden;transition:block-size .28s ease,content-visibility .28s allow-discrete}
   #home-learning-paths[open]::details-content,#home-overview[open]::details-content{block-size:auto}
 }
 @media(max-width:1024px){body[data-platform-area="home"] #start-here .start-choices{grid-template-columns:minmax(0,1fr)}body[data-platform-area="home"] #start-here .start-choices>a{min-height:112px;padding:16px}body[data-platform-area="home"] #home-overview .home-overview-grid{grid-template-columns:minmax(0,1fr);gap:18px}}
+@media(max-width:600px){body[data-platform-area="home"] .eua-home-tools .eua-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}body[data-platform-area="home"] #start-here .eua-home-tools .eua-tools button{min-width:0;min-height:48px;padding:10px 8px;font-size:12px;line-height:1.4}}
 @media(max-width:480px){body[data-platform-area="home"] #start-here .start-choices>a{grid-template-columns:56px minmax(0,1fr);column-gap:12px;min-height:122px;padding:14px}body[data-platform-area="home"] #start-here .start-choices .choice-art{width:56px;height:64px}body[data-platform-area="home"] #start-here .start-choices strong{font-size:16px}body[data-platform-area="home"] #start-here .start-choices .choice-question{font-size:13px}body[data-platform-area="home"] #home-learning-paths>summary,body[data-platform-area="home"] #home-overview>summary{padding:14px;font-size:14px}}
-@media(prefers-reduced-motion:reduce){body[data-platform-area="home"] #start-here .start-choices>a,#home-learning-paths>summary::after,#home-overview>summary::after,#home-learning-paths::details-content,#home-overview::details-content{transition:none!important}}
+@media(prefers-reduced-motion:reduce){body[data-platform-area="home"] #start-here .start-choices>a,body[data-platform-area="home"] #start-here .eua-home-tools .eua-tools button,#home-learning-paths>summary::after,#home-overview>summary::after,#home-learning-paths::details-content,#home-overview::details-content{transition:none!important}}

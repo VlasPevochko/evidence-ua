@@ -29,6 +29,10 @@ assert.equal(materialContext('https://evidence.invalid/muscle-lab.html?structure
 assert(feedbackReport({stuck:'Не зручно'},'https://evidence.invalid/?feedbackFor=supplements-protein&token=secret#private').includes('Матеріал: Протеїн'));
 assert(!feedbackReport({stuck:'Так'},'https://evidence.invalid/?feedbackFor=secret&token=secret').includes('secret'));
 assert(!toolsHTML('home').includes('data-eua-tool="focus"'));assert(toolsHTML('cell').includes('data-eua-tool="focus"'));
+// Home already has a native feedback disclosure; content pages still need its link.
+assert(!toolsHTML('home').includes('#home-feedback'));
+for(const area of ['cell','nutrition','muscle','supplements'])assert(toolsHTML(area).includes('./index.html#home-feedback'));
+for(const action of ['search','share'])assert(toolsHTML('home').includes(`data-eua-tool="${action}"`));
 assert(!materialCard({...materials[0],title:'<script>'}).includes('<script>'));
 
 // Minimal DOM adapter for real quick-search, focus-mode and clipboard handlers.

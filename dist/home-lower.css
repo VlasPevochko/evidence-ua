@@ -35,6 +35,39 @@ body[data-platform-area="home"] .eua-home-tools .eua-tools{display:flex;flex-wra
 body[data-platform-area="home"] #start-here .eua-home-tools .eua-tools button{flex:0 1 auto;min-height:44px;padding:10px 14px;border-color:#d5e0d826;border-radius:10px;background:transparent;color:#c8d9d2;font-size:13px;transition:border-color .2s,background .2s}
 body[data-platform-area="home"] #start-here .eua-home-tools .eua-tools button:hover{border-color:#ffdc7e88;background:#193635}
 body[data-platform-area="home"] .eua-home-tools .eua-tool-status:empty{display:none}
+/* Readable dossier previews reuse the existing ten-image atlas. */
+body[data-platform-area="home"] .page .supplement-heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,330px) auto;gap:16px 24px;align-items:center;margin:0 0 18px;padding-top:30px}
+body[data-platform-area="home"] .supplement-intro{min-width:0}
+body[data-platform-area="home"] .supplement-eyebrow{margin:0 0 10px;font-size:10px;line-height:1.4;letter-spacing:.14em;color:#e3c784}
+body[data-platform-area="home"] #supplement-library-title{margin:0;font-size:clamp(23px,2.3vw,30px);line-height:1.2;letter-spacing:-.03em;color:#f5f4e9}
+body[data-platform-area="home"] .page .supplement-search-box{width:100%;min-width:0;max-width:none;margin:0;min-height:48px;padding:10px 14px;border-color:#d5e0d82b;border-radius:12px;background:#102a33;color:#ffdc7e}
+body[data-platform-area="home"] .page .supplement-search-box input{font-size:13px;color:#e6efea}
+body[data-platform-area="home"] .page .supplement-search-box:focus-within{border-color:#ffdc7e;box-shadow:0 0 0 3px #ffdc7e18}
+body[data-platform-area="home"] .page .supplement-controls{gap:7px;margin:0}
+body[data-platform-area="home"] .page .supplement-controls button{border-color:#d5e0d82b;border-radius:12px;background:#102a33;color:#ffdc7e}
+body[data-platform-area="home"] .page .supplement-controls button:hover:not(:disabled){border-color:#ffdc7e99;background:#193635}
+body[data-platform-area="home"] .page .supplement-position{min-width:40px;font-size:11px;letter-spacing:.02em;color:#c8d9d2}
+body[data-platform-area="home"] .page .supplement-carousel-shell{margin:0}
+body[data-platform-area="home"] .page .supplement-rail{gap:12px;padding:4px 0 14px;scrollbar-color:#657d73 #10252d;scroll-padding-inline:0}
+body[data-platform-area="home"] .page .supplement-rail .preview-tile{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto auto auto 1fr auto auto;gap:9px 14px;flex:0 0 calc((100% - 24px)/3);width:calc((100% - 24px)/3)!important;min-height:324px;padding:18px;border:1px solid #d5e0d82b;border-radius:15px;background:linear-gradient(145deg,#15313a,#0c232d);box-shadow:none;transition:border-color .2s,background .2s,box-shadow .2s}
+body[data-platform-area="home"] .page .preview-tile::before{position:static;inset:auto;grid-column:1;grid-row:2/4;align-self:center;width:64px;height:64px;z-index:0;border:1px solid #e4d2a22b;border-radius:12px;filter:none;opacity:1}
+body[data-platform-area="home"] .page .preview-tile::after{content:none}
+body[data-platform-area="home"] .page .preview-tile>span{grid-column:1/-1;grid-row:1;font-size:9px;line-height:1.4;letter-spacing:.12em;color:#b7c9c2}
+body[data-platform-area="home"] .page .preview-tile strong{grid-column:2;grid-row:2;align-self:end;margin:0;font-size:21px!important;line-height:1.2;letter-spacing:-.03em;color:#f5f4e9;text-shadow:none;overflow-wrap:anywhere}
+body[data-platform-area="home"] .page .preview-tile em{grid-column:2;grid-row:3;align-self:start;font-size:12px;line-height:1.5;color:#bfd0cb}
+body[data-platform-area="home"] .page .preview-tile .preview-summary{grid-column:1/-1;grid-row:4;align-self:start;margin:6px 0 0;font-size:14px;line-height:1.6;color:#e0e9e3}
+body[data-platform-area="home"] .page .preview-tile .preview-limit{grid-column:1/-1;grid-row:5;margin:3px 0 0;padding:12px 0 0;border-color:#d5e0d826;font-size:13px;line-height:1.6;color:#becfc7}
+body[data-platform-area="home"] .page .preview-limit span{font-size:9px;line-height:1.4;letter-spacing:.1em;color:#e7d09c;margin-bottom:5px}
+body[data-platform-area="home"] .page .preview-tile>b{grid-column:1/-1;grid-row:6;margin:6px 0 0;font-size:10px;line-height:1.5;letter-spacing:.04em;color:#ffdc7e}
+body[data-platform-area="home"] .page .preview-tile:hover{outline:none;border-color:#ffdc7e99;background:#173735;box-shadow:0 0 22px #ffe29912}
+body[data-platform-area="home"] .page .preview-tile:focus-visible{outline:2px solid #ffdc7e;outline-offset:-4px;border-color:#ffdc7e99}
+body[data-platform-area="home"] .page .supplement-edge-arrow{display:none!important}
+body[data-platform-area="home"] .page .supplement-feature-link{display:inline-flex;align-items:center;min-height:44px;margin:12px 0 0;color:#e7d09c;font-size:13px;line-height:1.5;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:1200px){body[data-platform-area="home"] .page .supplement-heading{grid-template-columns:minmax(0,1fr) auto;gap:16px}body[data-platform-area="home"] .supplement-intro{grid-column:1/-1}}
+@media(max-width:1024px){body[data-platform-area="home"] .page .supplement-rail .preview-tile{flex:0 0 min(340px,calc(100% - 20px));width:min(340px,calc(100% - 20px))!important;min-height:316px}}
+@media(max-width:480px){body[data-platform-area="home"] .page .supplement-heading{gap:14px 10px;padding-top:26px}body[data-platform-area="home"] .page .supplement-controls{gap:4px}body[data-platform-area="home"] .page .supplement-position{min-width:34px}body[data-platform-area="home"] .page .supplement-search-box{padding:10px}body[data-platform-area="home"] .page .supplement-rail .preview-tile{grid-template-columns:48px minmax(0,1fr);gap:9px 12px;padding:16px}body[data-platform-area="home"] .page .preview-tile::before{width:48px;height:54px}body[data-platform-area="home"] .page .preview-tile strong{font-size:19px!important}}
+@media(max-width:380px){body[data-platform-area="home"] .page .supplement-search-box{grid-column:1/-1}body[data-platform-area="home"] .page .supplement-controls{grid-column:1/-1;justify-self:end}body[data-platform-area="home"] .page .preview-tile strong{font-size:18px!important}}
+@media(prefers-reduced-motion:reduce){body[data-platform-area="home"] .page .preview-tile,body[data-platform-area="home"] .page .supplement-search-box,body[data-platform-area="home"] .page .supplement-controls button{transition:none!important}}
 /* Progressive animation: unsupported browsers retain native disclosure behavior. */
 @supports(interpolate-size:allow-keywords){
   #home-learning-paths::details-content,#home-overview::details-content{block-size:0;overflow:hidden;transition:block-size .28s ease,content-visibility .28s allow-discrete}

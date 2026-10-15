@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 480" fill="none">
+  <defs>
+    <linearGradient id="tissue" x1="122" y1="70" x2="248" y2="416" gradientUnits="userSpaceOnUse"><stop stop-color="#74694d"/><stop offset=".48" stop-color="#3f3a30"/><stop offset="1" stop-color="#22262a"/></linearGradient>
+    <linearGradient id="gold" x1="84" y1="76" x2="423" y2="350" gradientUnits="userSpaceOnUse"><stop stop-color="#ffe8a5"/><stop offset=".5" stop-color="#dfb75b"/><stop offset="1" stop-color="#8d7649"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#d9b15a" stop-opacity=".16"/><stop offset="1" stop-color="#d9b15a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="cell"><stop stop-color="#393e41"/><stop offset="1" stop-color="#181e25"/></radialGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" stroke="#bba57a" stroke-opacity=".055"/></pattern>
+  </defs>
+  <style>
+    .trace{stroke-dasharray:7 17;animation:travel 4s linear 1}
+    .pulse{opacity:.65;animation:glimmer 3.6s ease-in-out 1}
+    .cell-dot{opacity:.65;animation:glimmer 3s ease-in-out 1;animation-delay:1.3s}
+    @keyframes travel{to{stroke-dashoffset:-192}}
+    @keyframes glimmer{0%,100%{opacity:.65}50%{opacity:1}}
+    @media(prefers-reduced-motion:reduce){.trace,.pulse,.cell-dot{animation:none}}
+  </style>
+  <rect width="520" height="480" fill="url(#grid)"/>
+  <ellipse cx="203" cy="248" rx="194" ry="229" fill="url(#halo)"/>
+  <ellipse cx="194" cy="249" rx="145" ry="192" stroke="#b6a177" stroke-opacity=".12" transform="rotate(12 194 249)"/>
+  <ellipse cx="194" cy="249" rx="154" ry="78" stroke="#b6a177" stroke-opacity=".12" transform="rotate(-20 194 249)"/>
+  <path class="trace" d="M63 305C7 170 145 28 280 90" stroke="#c8a65b" stroke-opacity=".65"/>
+  <path d="M161 120L158 138C141 143 117 140 104 158C92 176 87 204 81 230L66 287C64 298 69 307 76 308C85 310 92 303 95 295L114 247L127 204L132 242L120 293C117 314 122 333 134 348L139 410C140 421 147 426 156 424C166 423 171 416 172 406L180 354L190 350L200 354L208 406C209 417 216 424 225 424C235 424 240 417 241 408L245 348C257 333 263 315 260 293L248 242L253 204L266 247L285 295C289 303 296 310 304 308C312 307 317 298 314 287L300 230C294 203 288 175 276 158C263 140 240 143 222 138L220 120Z" fill="url(#tissue)" stroke="#b09c70" stroke-opacity=".6"/>
+  <path d="M156 69C156 42 169 26 190 26C212 26 225 42 225 69C225 87 220 106 209 118C204 124 197 127 190 127C182 127 175 123 170 117C160 104 156 87 156 69Z" fill="url(#tissue)" stroke="#d6bd83" stroke-opacity=".65"/>
+  <path d="M160 73C172 69 181 71 189 77C198 71 208 70 220 73M190 79V96M180 105C187 108 194 108 201 105M164 52C178 58 199 58 216 52" stroke="#cfb578" stroke-opacity=".26"/>
+  <path d="M158 142C159 157 172 166 190 168C211 165 221 155 222 142M190 130V283" stroke="#dfc285" stroke-opacity=".5"/>
+  <g stroke="url(#gold)" stroke-opacity=".72" fill="#d5aa55" fill-opacity=".075">
+    <path d="M135 167C153 156 177 165 184 183L182 211C163 217 143 204 135 185Z"/>
+    <path d="M245 167C227 156 203 165 196 183L198 211C217 217 237 204 245 185Z"/>
+    <path d="M123 159C111 162 102 173 99 190L114 207L127 192Z"/>
+    <path d="M257 159C269 162 278 173 281 190L266 207L253 192Z"/>
+    <path d="M99 197L86 244C91 249 99 246 106 235L118 208Z"/>
+    <path d="M281 197L294 244C289 249 281 246 274 235L262 208Z"/>
+    <path d="M145 214L160 230L166 270L141 257Z"/>
+    <path d="M235 214L220 230L214 270L239 257Z"/>
+    <path d="M171 220L184 217L184 234L169 235ZM196 217L209 220L211 235L196 234Z"/>
+    <path d="M169 242L184 241L184 257L167 257ZM196 241L211 242L213 257L196 257Z"/>
+    <path d="M167 264L184 264L183 280L168 282ZM196 264L213 264L212 282L197 280Z"/>
+    <path d="M132 296C147 299 162 311 179 330M248 296C233 299 218 311 201 330"/>
+    <path d="M140 339C144 334 156 333 169 344L161 403L146 406Z"/>
+    <path d="M240 339C236 334 224 333 211 344L219 403L234 406Z"/>
+  </g>
+  <g stroke="#ddc18a" stroke-opacity=".28">
+    <path d="M145 173L174 199M149 168L178 193M207 199L236 173M202 193L232 168M107 176L120 190M273 176L260 190M94 210L101 223M286 210L279 223M143 347L155 396M151 343L161 380M237 347L225 396M229 343L219 380"/>
+    <path d="M137 274L160 296M243 274L220 296M180 287L171 310M200 287L209 310"/>
+  </g>
+  <circle class="pulse" cx="214" cy="200" r="5" fill="#ffdb70"/>
+  <circle cx="214" cy="200" r="13" stroke="#ffdb70" stroke-opacity=".45"/>
+  <path d="M227 200H267L306 232" stroke="#e3bd65" stroke-opacity=".8"/>
+  <circle cx="389" cy="250" r="88" fill="#12171c" stroke="#b7a16c" stroke-opacity=".38"/>
+  <circle cx="389" cy="250" r="78" fill="url(#cell)" stroke="#dfc284" stroke-opacity=".75"/>
+  <circle cx="389" cy="250" r="72" stroke="#a0aaae" stroke-opacity=".3"/>
+  <ellipse cx="394" cy="250" rx="29" ry="24" fill="#8c6e34" fill-opacity=".4" stroke="#efd38d" stroke-opacity=".8"/>
+  <circle cx="402" cy="251" r="9" fill="#deb45a" fill-opacity=".6"/>
+  <g stroke="#aabdc6" stroke-opacity=".65">
+    <path d="M358 212C342 208 333 215 338 225C343 237 360 232 364 220C365 217 362 213 358 212Z"/><path d="M344 218L350 226L354 216L360 223"/>
+    <path d="M431 275C418 269 408 276 412 285C417 294 432 292 440 284C444 281 436 276 431 275Z"/><path d="M417 279L422 287L426 277L432 284"/>
+    <path d="M359 273C350 277 350 285 364 286M357 264C343 270 339 286 352 294M424 224C434 221 437 215 426 211M420 230C439 234 449 224 444 210"/>
+  </g>
+  <g fill="#c5b384"><circle cx="378" cy="209" r="2"/><circle class="cell-dot" cx="431" cy="249" r="3"/><circle cx="369" cy="298" r="2"/><circle class="cell-dot" cx="350" cy="254" r="3"/><circle cx="406" cy="296" r="2"/></g>
+  <g transform="translate(349 86)">
+    <rect width="108" height="58" rx="12" fill="#1d2023" stroke="#86734c" stroke-opacity=".5"/>
+    <path d="M17 18H47M17 29H77M17 40H60" stroke="#d8c397" stroke-opacity=".7" stroke-width="2" stroke-linecap="round"/>
+    <circle class="pulse" cx="89" cy="18" r="4" fill="#ffdb70"/>
+  </g>
+  <path d="M397 163V145M389 339V371H319" stroke="#bcab81" stroke-opacity=".3" stroke-dasharray="3 5"/>
+  <g transform="translate(40 358)"><circle cx="0" cy="0" r="5" fill="#e1ba65"/><path d="M0 0L24-23L49-7L71-37" stroke="#c9b17b" stroke-opacity=".6"/><circle cx="24" cy="-23" r="3" fill="#acb7bd"/><circle cx="49" cy="-7" r="3" fill="#acb7bd"/><circle cx="71" cy="-37" r="3" fill="#e1ba65"/></g>
+  <path d="M129 445H252" stroke="#c4ab76" stroke-opacity=".25"/>
+</svg>

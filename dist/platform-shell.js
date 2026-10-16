@@ -1,4 +1,4 @@
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=63';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=81';
 import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=59';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();

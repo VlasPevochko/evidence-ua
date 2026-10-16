@@ -1,4 +1,4 @@
-import {materials,findMaterials,materialKinds,contextLink,materialContext} from './platform-materials.js?v=63';
+import {materials,findMaterials,materialKinds,contextLink,materialContext} from './platform-materials.js?v=82';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function materialCard(m){return `<a class="eua-material" href="${esc(m.href)}"><span>${esc(m.areaTitle)} · ${esc(materialKinds[m.kind])}</span><strong>${esc(m.title)} →</strong><small>${esc(m.review)}</small></a>`;}
 export function toolsHTML(area){return `<div class="eua-tools"><button type="button" data-eua-tool="search">Знайти матеріал</button>${['cell','nutrition'].includes(area)?'<button type="button" data-eua-tool="focus" aria-pressed="false">Режим заняття</button>':''}<button type="button" data-eua-tool="share">Скопіювати посилання</button>${area==='home'?'':'<a href="./index.html#home-feedback">Поділитися враженням</a>'}</div><p class="eua-tool-status" role="status" aria-live="polite"></p>`;}

@@ -1,5 +1,5 @@
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=81';
-import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=59';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=82';
+import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=82';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
 export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a><details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}
@@ -16,7 +16,7 @@ export function mountPlatformNavigation(root=document){
   const headers=[...root.querySelectorAll('header')].filter(h=>selected!=='home'&&!h.closest('dialog'));
   const targets=[...headers.map(header=>({element:header,current:selected})),...catalog.getArea('supplements').units.filter(u=>u.id!=='atp-pcr').map(u=>({element:root.getElementById(u.id==='creatine'?'creatine':'supplement-'+u.id),current:'supplements',prepend:true})).filter(t=>t.element)];
   for(const target of targets){if(target.prepend&&target.element.querySelector(':scope > .eua-platform-nav'))continue;if(!target.prepend&&target.element.nextElementSibling?.classList.contains('eua-platform-nav'))continue;
-    const nav=root.createElement('nav');nav.className='eua-platform-nav';nav.setAttribute('aria-label','Напрями платформи');nav.innerHTML=navigationHTML(target.current)+toolsHTML(target.current);
+    const nav=root.createElement('nav');nav.className='eua-platform-nav';nav.setAttribute('aria-label','Напрями платформи');const contents=navigationHTML(target.current)+toolsHTML(target.current);nav.innerHTML=['movement','sleep'].includes(target.current)?'<details class="eua-module-menu"><summary>Навігація й інструменти</summary><div class="eua-module-menu-content">'+contents+'</div></details>':contents;
     if(target.prepend)target.element.prepend(nav);else target.element.after(nav);
   }
   if(selected==='home'){

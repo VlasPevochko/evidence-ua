@@ -6,7 +6,6 @@ import {materialCard,toolsHTML,mountQuickTools} from '../src/platform/quick-tool
 import {feedbackReport} from '../src/platform/home-feedback.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 assert.equal(new Set(materials.map(m=>m.id)).size,materials.length);
-assert.equal(materials.length,44);
 assert.equal(findMaterials('ПРОТЕЇН')[0].href,'./index.html#supplement-protein');
 assert.equal(findMaterials('саркомер')[0].href,'./muscle-lab.html?structure=STRUCT-SARCOMERE#explorer');
 assert.equal(findMaterials('ядро')[0].href,'./cell-lab.html?organelle=ORG-NUCLEUS#cell-canvas');

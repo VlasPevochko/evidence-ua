@@ -41,7 +41,7 @@ body[data-platform-area="home"] .page .home-directions-picker:popover-open{opaci
 .home-picker-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
 .home-picker-kicker{margin:0 0 5px;font-size:10px;letter-spacing:.14em;color:#e3c784}.home-picker-heading h2{font-size:23px;letter-spacing:-.03em;margin:0;line-height:1.2}
 .home-picker-close{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid #b8c8bd30;border-radius:12px;color:#e8d99e;background:#ffffff05;font-size:24px}.home-picker-close:hover{background:#ffffff10}
-body[data-platform-area="home"] .home-picker-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+body[data-platform-area="home"] .home-picker-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 body[data-platform-area="home"] .home-picker-cards>.topic-card{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;padding:8px;border:1px solid #f7ecd42b;border-radius:14px;background:#061d2675;box-shadow:none;transition:border-color .2s,background .2s,box-shadow .2s,transform .2s}
 .home-picker-cards>.topic-card::before,.home-picker-cards>.topic-card::after{display:none!important}
 body[data-platform-area="home"] .home-picker-cards>.topic-card:hover,body[data-platform-area="home"] .home-picker-cards>.topic-card:focus-visible{border-color:#ffdc7ebf;background:#193735;box-shadow:0 0 22px #ffe29926,inset 0 0 16px #ffe2990a;transform:translateY(-2px)}
@@ -79,9 +79,10 @@ body[data-platform-area="home"] .hero .copy .cta,body[data-platform-area="home"]
 body[data-platform-area="home"] .page>.bottom{width:calc(100% - 24px);padding:24px 20px}body[data-platform-area="home"] .page>.mission{padding:24px}
 body[data-platform-area="home"] .page .home-directions-picker{padding:14px;border-radius:21px}.home-picker-heading{margin-bottom:14px}.home-picker-heading h2{font-size:21px}.home-picker-kicker{font-size:9px}
 body[data-platform-area="home"] .home-picker-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}body[data-platform-area="home"] .home-picker-cards>.topic-card{padding:7px}body[data-platform-area="home"] .home-picker-cards .topic-card strong{margin-top:7px;min-height:0}.home-picker-visual{height:60px}
-body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child{grid-column:1/-1;display:grid;grid-template-columns:62px 1fr;column-gap:12px;align-items:center}
-body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child .home-picker-visual{grid-column:1;grid-row:1/4;height:60px}
-body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child strong,body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child small,body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child .topic-state{grid-column:2;margin:0}
-body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child .topic-state{margin-top:3px}.home-picker-note{margin-top:13px;font-size:10px}
+body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd){grid-column:1/-1;display:grid;grid-template-columns:62px 1fr;column-gap:12px;align-items:center}
+body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) .home-picker-visual{grid-column:1;grid-row:1/4;height:60px}
+body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) strong,body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) small,body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) .topic-state{grid-column:2;margin:0}
+body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) .topic-state{margin-top:3px}.home-picker-note{margin-top:13px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.home-directions-picker,.home-directions-picker::backdrop,.home-direction-chevron,body[data-platform-area="home"] .home-picker-cards>.topic-card{transition:none!important}body[data-platform-area="home"] .home-picker-cards>.topic-card:hover,body[data-platform-area="home"] .home-picker-cards>.topic-card:focus-visible{transform:none}}
+[data-area="sleep"]>.home-picker-visual{background-image:url('./home-sleep.svg');background-size:cover;background-color:#10252c}

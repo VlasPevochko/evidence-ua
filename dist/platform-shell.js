@@ -1,5 +1,5 @@
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=82';
-import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=82';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=83';
+import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=83';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
 export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a><details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}

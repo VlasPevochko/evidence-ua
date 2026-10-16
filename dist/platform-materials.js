@@ -1,4 +1,4 @@
-import {catalog,learningLocation} from './platform-catalog.js?v=82';
+import {catalog,learningLocation} from './platform-catalog.js?v=83';
 import {entityRegistry} from './evidence/entities.js?v=59';
 
 // Navigation metadata only. No new scientific statements, assessments or sources.
@@ -34,6 +34,9 @@ const searchTerms={
  'movement-elbow':'лікоть ліктя біцепс згинання розгинання',
  'movement-shoulder':'плече плеча рука відведення приведення',
  'movement-walk':'крок крокування ходьба суглоби коліно',
+ 'movement-lever':'важіль важелі плече момент сили вантаж відстань маса',
+ 'movement-team':'агоніст синергіст антагоніст стабілізатор біцепс трицепс команда м’язів',
+ 'movement-questions':'запитання завдання перевір себе біомеханіка рух',
  'sleep-stages':'фази стадії сну nrem rem циркадний ритм',
  'sleep-performance':'недосипання недосип сонливість втома працездатність',
  'sleep-habits':'звички режим кофеїн світло відпочинок'

@@ -14,3 +14,9 @@ test('movement search takes a reader directly to the chosen lesson',()=>{
  assert(findMaterials('крокування','movement').some(m=>m.href==='./movement.html#lesson-walk'));
  assert(!findMaterials('сон','recovery').some(m=>m.areaId==='movement'));
 });
+
+test('a torque question opens the lever experiment directly and keeps its share target',()=>{
+ assert(findMaterials('момент сили','movement').some(m=>m.href==='./movement.html#lever-lab'));
+ assert(findMaterials('антагоніст','movement').some(m=>m.href==='./movement.html#muscle-team'));
+ assert.equal(contextLink('https://evidence.invalid/movement.html?utm_source=test#lever-lab'),'https://evidence.invalid/movement.html#lever-lab');
+});

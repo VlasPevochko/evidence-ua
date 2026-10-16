@@ -12,12 +12,12 @@ const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.t
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const homeDirectionsHTML='<div class="label"><span>'+homeTopics.length+' напрямів Evidence UA</span><span>Обери тему · статус указано на картці</span></div><div class="cards" id="cards" aria-label="Тематичні напрями Evidence UA">'+homeTopics.map(topic=>`<a class="topic-card" data-area="${escapeHTML(topic.id)}" href="${escapeHTML(topic.href)}" style="--topic-x:${escapeHTML(topic.position)}"><strong>${escapeHTML(topic.title)}</strong><small>${escapeHTML(topic.subtitle)}</small><span class="topic-state">${escapeHTML(topic.state)} · Відкрити →</span></a>`).join('')+'</div>';
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
-fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=82'"));
-fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=82'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
-fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=82'"));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=82'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=82'"));
-fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=82'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=82'").replace("'./materials.mjs'","'./platform-materials.js?v=82'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=82'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=82'"));
+fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=83'"));
+fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
+fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=83'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'"));
+fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./materials.mjs'","'./platform-materials.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=83'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -43,11 +43,12 @@ for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
 }
 // The two learning pages use the existing static delivery and shared catalog.
 fs.writeFileSync('dist/movement-model.js',fs.readFileSync('src/movement/model.mjs','utf8'));
-fs.writeFileSync('dist/movement.js',fs.readFileSync('src/movement/page.mjs','utf8').replace("'./model.mjs'","'./movement-model.js?v=82'"));
+fs.writeFileSync('dist/movement.js',fs.readFileSync('src/movement/page.mjs','utf8').replace("'./model.mjs'","'./movement-model.js?v=83'").replace("'./learning.mjs'","'./movement-learning.js?v=83'"));
+fs.writeFileSync('dist/movement-learning.js',fs.readFileSync('src/movement/learning.mjs','utf8'));
 fs.writeFileSync('dist/sleep.js',fs.readFileSync('src/sleep/page.mjs','utf8'));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
- let next=old.replace(/platform-shell\.js\?v=(?:63|81)/g,'platform-shell.js?v=82').replace(/directions\.js\?v=(?:63|70)/g,'directions.js?v=82').replaceAll('home-catalog.js?v=57','home-catalog.js?v=82').replaceAll('home-feedback.js?v=63','home-feedback.js?v=82').replaceAll('home-coast.css?v=80','home-coast.css?v=82');
+ let next=old.replace(/platform-shell\.js\?v=(?:63|81|82)/g,'platform-shell.js?v=83').replace(/directions\.js\?v=(?:63|70|82)/g,'directions.js?v=83') .replaceAll('home-catalog.js?v=82','home-catalog.js?v=83').replaceAll('home-feedback.js?v=82','home-feedback.js?v=83').replaceAll('home-coast.css?v=82','home-coast.css?v=83').replaceAll('home-catalog.js?v=57','home-catalog.js?v=83').replaceAll('home-feedback.js?v=63','home-feedback.js?v=83').replaceAll('home-coast.css?v=80','home-coast.css?v=83');
  if(file==='index.html')next=next.replace(/EVIDENCE UA \/ \d+ НАПРЯМІВ/g,'EVIDENCE UA / '+homeTopics.length+' НАПРЯМІВ').replace(/(class="home-direction-count" aria-hidden="true">)\d+</g,'$1'+homeTopics.length+'<').replace(/aria-label="(?:П’ять|Шість|\d+) напрямів Evidence UA"/g,'aria-label="'+homeTopics.length+' напрямів Evidence UA"');
  if(next!==old)fs.writeFileSync(path,next);
 }

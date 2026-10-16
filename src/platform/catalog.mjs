@@ -30,10 +30,13 @@ export const areas = [
     {id:'atp-pcr',title:'Механізм ATP–PCr',href:'./index.html#creatine-mechanism',entityIds:['PTH-ATP-PCR','MOL-ATP','MOL-PHOSPHOCREATINE']},
     ...[['protein','Протеїн'],['caffeine','Кофеїн'],['omega','Омега-3'],['vitd','Вітамін D'],['magnesium','Магній'],['collagen','Колаген'],['beta-alanine','Бета-аланін'],['citrulline','Цитрулін'],['electrolytes','Електроліти']].map(([id,title])=>({id,title,href:`./index.html#supplement-${id}`,entityIds:[]}))
   ]},
-  {id:'movement',title:'Рух і біомеханіка',lab:'Movement Lab',href:'./movement.html',group:'movement',available:true,state:'Вступний навчальний модуль',review:'Підручникові пояснення; науковий перегляд не завершено',description:'Три приклади руху: суглоби, м’язи, площини та осі.',units:[
+  {id:'movement',title:'Рух і біомеханіка',lab:'Movement Lab',href:'./movement.html',group:'movement',available:true,state:'Вступний навчальний модуль',review:'Підручникові пояснення; науковий перегляд не завершено',description:'Модель руху, зупинки кроку, важелі та спільна робота м’язів.',units:[
     {id:'elbow',title:'Лікоть: згинання й розгинання',href:'./movement.html#lesson-elbow',entityIds:[]},
     {id:'shoulder',title:'Підйом руки вбік',href:'./movement.html#lesson-shoulder',entityIds:[]},
     {id:'walk',title:'Крокування: рух кількох суглобів',href:'./movement.html#lesson-walk',entityIds:[]},
+    {id:'lever',title:'Важелі тіла: момент сили',href:'./movement.html#lever-lab',entityIds:[]},
+    {id:'team',title:'Ролі м’язів: агоністи, синергісти, антагоністи',href:'./movement.html#muscle-team',entityIds:[]},
+    {id:'questions',title:'Запитання до моделі руху',href:'./movement.html#movement-questions',kind:'guide',entityIds:[]},
     {id:'sources',title:'Джерела та межі моделі',href:'./movement.html#sources',entityIds:[]}
   ]},
   {id:'sleep',title:'Сон і відновлення',lab:'Sleep & Recovery',href:'./sleep.html',group:'recovery',available:true,state:'Перша навчальна версія',review:'Рівні впевненості не оцінено; науковий перегляд не завершено',description:'Фази сну, недосипання й працездатність, умови для якісного відпочинку.',units:[

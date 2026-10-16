@@ -26,7 +26,7 @@ function fixture(supported = true, hash = '') {
   const list = new Element('list'), close = new Element('.home-picker-close'), cards = new Element('cards');
   picker.hidden = true; picker.children = [close, list];
   if (!supported) picker.showPopover = undefined;
-  for (const [id, href] of [['muscle','./muscle-lab.html'], ['cell','./cell-lab.html'], ['nutrition','./nutrition.html'], ['supplements','#supplement-library'], ['movement','./movement.html']]) {
+  for (const [id, href] of [['muscle','./muscle-lab.html'], ['cell','./cell-lab.html'], ['nutrition','./nutrition.html'], ['supplements','#supplement-library'], ['movement','./movement.html'], ['sleep','./sleep.html']]) {
     const card = new Element('a'); card.href = href; card.dataset.area = id;
     card.children = [{textContent:id}, {textContent:'module'}, {textContent:'original readiness'}]; cards.append(card);
   }
@@ -44,7 +44,7 @@ assert.equal(fallback.picker.hidden, true);
 assert.equal(fallback.click(fallback.trigger).defaultPrevented, false, 'The native #start-here link must remain usable');
 
 const f = fixture();
-assert.equal(f.list.children.length, 5);
+assert.equal(f.list.children.length, f.cards.children.length);
 assert.equal(f.cards.hidden, true, 'Only the compact picker is visible after enhancement');
 assert.equal(f.picker.open, false);
 for (const [i, card] of f.list.children.entries()) {
@@ -70,7 +70,7 @@ f.trigger.dispatchEvent(space);
 assert.equal(space.defaultPrevented, true);
 assert.equal(f.picker.open, true, 'The enhanced button supports Space as well as Enter/click');
 const linked = fixture(true, '#cards');
-assert.equal(linked.picker.open, true, 'Existing #cards links must open the five directions on initial load');
+assert.equal(linked.picker.open, true, 'Existing #cards links must open the directions on initial load');
 linked.window.location.hash = '#supplement-library';
 linked.window.dispatchEvent(new Event('hashchange'));
 assert.equal(linked.picker.open, false);

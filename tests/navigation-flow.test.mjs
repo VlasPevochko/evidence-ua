@@ -39,7 +39,7 @@ for name,tree in documents.items():
         count+=1
 print(json.dumps({'internalLinkOccurrences':count,'htmlPages':len(documents),'missingTargets':0}))
 `],{input:JSON.stringify(generated),encoding:'utf8'}));
-assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,8);
+assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,9);
 for(const area of catalog.areas.filter(a=>a.available)){
  const url=new URL(area.href,'https://evidence.invalid/');assert(fs.existsSync(path.join('dist',url.pathname)));
 }

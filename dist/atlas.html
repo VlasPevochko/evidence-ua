@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="./platform.css?v=83" data-platform-style>
   <link rel="stylesheet" href="./atlas.css?v=3">
   <link rel="stylesheet" href="./knee-pain-map.css?v=2">
+  <link rel="stylesheet" href="./shoulder-pain-map.css?v=1">
   <link rel="stylesheet" href="./atlas-coordinate-map.css?v=2">
 </head>
 <body data-platform-area="atlas">
@@ -29,7 +30,7 @@
 
   <main class="atlas-page">
     <section class="atlas-intro" aria-labelledby="atlas-title">
-      <p class="atlas-eyebrow">АТЛАС EVIDENCE · v0.3.2</p>
+      <p class="atlas-eyebrow">АТЛАС EVIDENCE · v0.4</p>
       <h1 id="atlas-title">Досліджуйте людське тіло</h1>
       <p>Від анатомії — до доказів. Оберіть область тіла, щоб перейти від структури до симптомів, навантаження, реабілітації та наукових даних.</p>
     </section>
@@ -47,6 +48,7 @@
             <button class="atlas-zone atlas-zone--knee" type="button" data-zone="knee" aria-pressed="false"><span>Коліно</span></button>
           </div>
           <section class="knee-pain-map" id="knee-pain-map" hidden aria-label="Точна карта болю коліна"></section>
+          <section class="shoulder-pain-map" id="shoulder-pain-map" hidden aria-label="Точна карта болю плеча"></section>
         </div>
         <div class="atlas-legend" aria-label="Позначення атласу">
           <span><i class="atlas-dot atlas-dot--active"></i> Обрана область</span>
@@ -91,6 +93,7 @@
 
   <script type="module" src="./atlas.js?v=2"></script>
   <script type="module" src="./knee-pain-map.js?v=1"></script>
+  <script type="module" src="./shoulder-pain-map.js?v=1"></script>
   <script type="module" src="./platform-shell.js?v=83"></script>
 </body>
 </html>

@@ -13,12 +13,34 @@ const lib = await import(pathToFileURL(path.join(temp, 'exercises.js')).href);
 const {exercises, contentTypes, movementPatterns, bodyRegions, equipmentLabels, claimsPendingNote} = data;
 
 // --- Data model -----------------------------------------------------------------
-assert.equal(exercises.length, 3, 'The first slice has exactly three entries');
+assert.equal(exercises.length, 12, 'The seed map defines twelve owner-recorded entries');
 const unique = key => assert.equal(new Set(exercises.map(e => e[key])).size, exercises.length, `${key} must be unique`);
 ['id', 'slug', 'titleUk'].forEach(unique);
 assert.equal(new Set(exercises.map(e => e.media.videoId)).size, exercises.length, 'Video ids must be unique');
-assert.deepEqual(exercises.map(e => e.media.videoId), ['qrL6N-35QrE', 'NDSyt1Ib89E', 'MTdKHhtTRZQ']);
-assert.deepEqual(exercises.map(e => e.contentType), ['strength', 'movement_control', 'rehab_practice']);
+// Canonical ids, slugs and videos from docs/EXERCISE_LIBRARY_SEED_MAP.md.
+assert.deepEqual(exercises.map(e => [e.id, e.slug, e.media.videoId]), [
+  ['exercise_dumbbell_row_bent_over', 'tyaha-hanteli-v-nahili', 'qrL6N-35QrE'],
+  ['practice_scapular_activation_control', 'kontrol-lopatky', 'NDSyt1Ib89E'],
+  ['practice_rotator_cuff_complex', 'rotatorna-manzheta-kompleks', 'MTdKHhtTRZQ'],
+  ['practice_shoulder_scapula_mobility_complex', 'mobilnist-plecha-lopatky', 'HXc_N5WXAfw'],
+  ['practice_chest_shoulder_girdle_context', 'hrudy-plechovyi-poyas', 'w2XC6Igeyyo'],
+  ['practice_scapular_control_progression', 'progresiya-kontrolyu-lopatky', 'P6t_LAZCdqw'],
+  ['practice_back_mobility_complex', 'spyna-mobilnist-kompleks', 'fg9Wpawsi9c'],
+  ['exercise_back_strength_cobra_set', 'sylovyi-kompleks-spyna', '6Mxz9Raufy8'],
+  ['practice_animal_flow_mobility', 'animal-flow-mobilnist', 'ZAt8wfSPpb4'],
+  ['practice_animal_flow_integrated', 'animal-flow-intehrovanyi-rukh', 'dAOMp3ITOkw'],
+  ['practice_general_movement_skills', 'rukhovyi-kompleks-navychky', 'EtyFaqzJ7_o'],
+  ['screen_coordination_challenge', 'test-koordinatsiyi', 'hVHK4ncfr6A']
+], 'ids, slugs and videos must match the seed map in order');
+const typeCount = Object.fromEntries(Object.keys(contentTypes).map(t => [t, exercises.filter(e => e.contentType === t).length]));
+assert.deepEqual(typeCount, {strength: 3, mobility: 3, movement_control: 3, coordination: 1, rehab_practice: 1, screen_or_test: 1});
+// Old addresses from the first slice keep working.
+assert.equal(lib.findExercise(exercises, 'tyaha-hanteli-v-nahyli').slug, 'tyaha-hanteli-v-nahili');
+assert.equal(lib.findExercise(exercises, 'kompleks-rotatornoyi-manzhety').slug, 'rotatorna-manzheta-kompleks');
+// The coordination entry is a challenge, never a diagnostic test (seed map §2.12).
+const challenge = exercises.find(e => e.slug === 'test-koordinatsiyi');
+assert(/не діагностичний/.test(challenge.shortDescriptionUk) && /не валідований клінічний скринінг/.test(challenge.movementNoteUk));
+assert(challenge.limitationsUk.join(' ').includes('Не є медичним тестом'));
 
 const atlasZones = ['brain', 'shoulder', 'spine', 'muscles', 'gut', 'knee'];
 for (const e of exercises) {
@@ -49,20 +71,25 @@ for (const phrase of forbidden) assert(!everyText.includes(phrase), `Forbidden c
 assert(!/@[a-z0-9.-]+\.[a-z]{2,}/i.test(JSON.stringify(data)), 'No e-mail addresses in the data');
 
 // --- Pure helpers ---------------------------------------------------------------
-assert.equal(lib.filterExercises(exercises, {}).length, 3);
+assert.equal(lib.filterExercises(exercises, {}).length, 12);
 assert.deepEqual(lib.filterExercises(exercises, {q: 'ТЯГА'}).map(e => e.id), ['exercise_dumbbell_row_bent_over']);
-assert.deepEqual(lib.filterExercises(exercises, {q: 'манжета'}).map(e => e.slug), ['kompleks-rotatornoyi-manzhety']);
+assert.deepEqual(lib.filterExercises(exercises, {q: 'манжета'}).map(e => e.slug), ['rotatorna-manzheta-kompleks']);
 assert.deepEqual(lib.filterExercises(exercises, {q: 'скапулярна активація'}).map(e => e.slug), ['kontrol-lopatky']);
-assert.equal(lib.filterExercises(exercises, {region: 'shoulder'}).length, 3);
-assert.deepEqual(lib.filterExercises(exercises, {type: 'rehab_practice'}).map(e => e.slug), ['kompleks-rotatornoyi-manzhety']);
+assert.equal(lib.filterExercises(exercises, {region: 'shoulder'}).length, exercises.filter(e => e.bodyRegions.includes('shoulder')).length);
+assert(lib.filterExercises(exercises, {region: 'shoulder'}).length >= 8);
+assert.deepEqual(lib.filterExercises(exercises, {type: 'rehab_practice'}).map(e => e.slug), ['rotatorna-manzheta-kompleks']);
 assert.equal(lib.filterExercises(exercises, {region: 'elbow'}).length, 1);
+assert.equal(lib.filterExercises(exercises, {type: 'strength'}).length, 3);
+assert.equal(lib.filterExercises(exercises, {q: 'animal flow'}).length, 2);
+assert.equal(lib.filterExercises(exercises, {q: 'координац'}).length, 2);
 assert.equal(lib.filterExercises(exercises, {q: 'zzzz'}).length, 0);
-assert.equal(lib.findExercise(exercises, 'kontrol-lopatky').id, 'exercise_scapular_control');
+assert.equal(lib.findExercise(exercises, 'kontrol-lopatky').id, 'practice_scapular_activation_control');
 assert.equal(lib.findExercise(exercises, 'nope'), null);
 assert.deepEqual(lib.readState('?e=a&region=shoulder&q=x'), {slug: 'a', q: 'x', region: 'shoulder', type: '', pattern: '', equipment: ''});
 assert.equal(lib.writeState({q: 'тяга', region: 'shoulder'}), '?q=%D1%82%D1%8F%D0%B3%D0%B0&region=shoulder');
 assert.equal(lib.writeState({}), '');
 assert.equal(lib.facetOptions(exercises, 'equipment', equipmentLabels).length, 1, 'Single-value facets are not worth a filter');
+for (const e of exercises) for (const field of ['bodyRegions', 'movementPatterns']) assert(lib.facetOptions([e], field, {...bodyRegions, ...movementPatterns}).every(o => o.label !== o.value), 'Every facet value has a Ukrainian label');
 assert.equal(lib.youtubeEmbedUrl('qrL6N-35QrE'), 'https://www.youtube-nocookie.com/embed/qrL6N-35QrE?autoplay=1&rel=0');
 assert.equal(lib.youtubeWatchUrl('qrL6N-35QrE'), 'https://www.youtube.com/watch?v=qrL6N-35QrE');
 for (const bad of ['', 'short', 'has space!!', 'a"><script>', null]) {
@@ -118,8 +145,8 @@ let changed = null;
 const state = {q: '', region: '', type: '', pattern: '', equipment: ''};
 const index = lib.renderIndex(doc, exercises, state, s => { changed = {...s}; });
 const results = () => index.querySelector('#ex-results').children;
-assert.equal(results().length, 3);
-assert(index.querySelector('#ex-count').textContent.includes('3'));
+assert.equal(results().length, 12);
+assert(index.querySelector('#ex-count').textContent.includes('12'));
 assert(index.querySelector('#ex-filter-region') && index.querySelector('#ex-filter-type') && index.querySelector('#ex-filter-pattern'));
 assert.equal(index.querySelector('#ex-filter-equipment'), null, 'Equipment filter hidden while it has a single value');
 const form = index.children[0];
@@ -134,14 +161,14 @@ assert(index.querySelector('#ex-count').textContent.includes('не знайде�
 index.querySelector('#ex-search').value = '';
 index.querySelector('#ex-filter-type').value = 'strength';
 form.fire('change');
-assert.equal(results().length, 1);
+assert.equal(results().length, 3);
 const cardLinks = index.find(n => n.tagName === 'a' && String(n.attrs.href).startsWith('./exercises.html?e='));
 assert(cardLinks.length >= 1 && cardLinks.every(a => a.textContent.length));
 
 // --- Page and Atlas wiring ------------------------------------------------------
 const html = fs.readFileSync('dist/exercises.html', 'utf8');
 assert(html.includes('<html lang="uk">') && html.includes('<title>') && html.includes('id="exercise-app"'));
-assert(html.includes('src="./exercises.js?v=2"') && html.includes('href="./exercises.css?v=1"'));
+assert(html.includes('src="./exercises.js?v=3"') && html.includes('href="./exercises.css?v=1"'));
 assert(!/<iframe/i.test(html) && !/youtube/i.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '')), 'No YouTube resource in the static page');
 for (const file of ['dist/exercises.css', 'dist/exercises.js', 'dist/exercises-data.js']) assert(fs.existsSync(file));
 const atlasJs = fs.readFileSync('dist/atlas.js', 'utf8');
@@ -166,4 +193,4 @@ const catalogSource = fs.readFileSync('src/platform/catalog.mjs', 'utf8');
 assert(!catalogSource.includes('exercises.html'), 'The library is a practice entry, not a new top-level catalog direction');
 
 fs.rmSync(temp, {recursive: true, force: true});
-console.log('Exercise library: 3 draft entries, data model, safe wording, filters, detail layers, click-to-load video and Atlas link passed.');
+console.log('Exercise library: 12 draft entries, data model, safe wording, filters, detail layers, click-to-load video and Atlas link passed.');

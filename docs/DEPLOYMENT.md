@@ -78,6 +78,6 @@ Owner setup, once:
 
 1. Settings → Pages → Build and deployment → Source: **GitHub Actions**.
 2. Settings → Secrets and variables → Actions → Variables → add `PAGES_ENABLED` = `true`.
-3. Merge to `main` or re-run the workflow. The address appears in the `github-pages` environment and the job summary; it will be under `https://<owner>.github.io/evidence-ua/`.
+3. Merge to `main` or run the workflow manually (Actions → Run workflow on `main`). The address appears in the `github-pages` environment and the job summary; it will be under `https://<owner>.github.io/evidence-ua/`.
 
 All links in `dist/` are relative, so the site works under the `/evidence-ua/` sub-path. A custom domain can be added later in the Pages settings. To turn it off, delete the variable or set it to anything but `true`. Rollback: revert on `main` through a PR; the next successful run republishes that state.

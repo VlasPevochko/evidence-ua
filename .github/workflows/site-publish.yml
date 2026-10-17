@@ -62,7 +62,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Package verified dist for GitHub Pages
-        if: vars.PAGES_ENABLED == 'true' && github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: vars.PAGES_ENABLED == 'true' && github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:
           path: dist/
@@ -80,7 +80,7 @@ jobs:
   deploy-pages:
     name: Deploy to GitHub Pages
     needs: verify
-    if: vars.PAGES_ENABLED == 'true' && github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: vars.PAGES_ENABLED == 'true' && github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

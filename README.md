@@ -1,7 +1,39 @@
-# Evidence-UA
-Base about body and all science politic inside one. Evidence from sport and nutrition
-# Website source and publication
+# Evidence UA
 
-GitHub `main` is Evidence UA's source of truth. Make changes through a branch and reviewed PR; merge requires the owner's explicit approval. Keep **all of `dist/`**, including authored HTML/CSS/assets. Sites remains the current host.
+Український освітній сайт про тіло, спорт і харчування, у якому твердження спираються на наукові джерела. Мета проєкту: зібрати доказові матеріали в одному місці й чесно показувати, що відомо, наскільки це надійно і де докази закінчуються.
 
-Website CI builds and tests the complete snapshot, then automatically publishes full `dist` and provenance artifacts for successful `main` runs. The reviewed v73-to-v76 reconciliation is included in this branch; live Sites deployment still needs a supported GitHub-to-Sites connection after the approved PRs are merged. See [deployment and setup status](docs/DEPLOYMENT.md).
+Сайт не ставить діагнозів і не дає персональних лікувальних рекомендацій.
+
+## Що всередині
+
+- **Клітина** (`src/cell-lab`): будова клітини, 11 органел, детальні ілюстрації.
+- **М'язи** (`src/muscle-lab`): будова м'яза і механізм скорочення.
+- **Рух** (`src/movement`): біомеханіка, важелі, хода.
+- **Сон** (`src/sleep`): стадії та напрямки сну.
+- **Харчування** (`src/nutrition-diets`): ілюстровані картки дієт із джерелами.
+- **Добавки** (`src/evidence`): досьє на кофеїн, креатин, вітамін D, цитрулін, електроліти.
+- **Оболонка сайту** (`src/platform`): навігація, головна сторінка, каталог матеріалів.
+- **Відео** (`video/remotion`): виробництво коротких відео за тими самими джерелами.
+
+## Як влаштований репозиторій
+
+- `dist/` — статичний сайт, який публікується. Тут є авторські HTML, CSS та ресурси, які **не відтворюються зі `src/`**, тому зберігається весь `dist/`.
+- `src/` — джерела модулів, з яких скрипти оновлюють частину `dist/`.
+- `scripts/` — збірка (`build-site.mjs`) і запуск тестів (`test-site.mjs`).
+- `tests/` — тести, кожен запускається в ізольованій копії.
+- `docs/` — звіти, наукові рецензії, плани й рішення.
+
+## Збірка і тести
+
+Потрібні Node 24, Python 3 з `lxml` та Git. Під Windows задайте `PYTHONUTF8=1`.
+
+```text
+node scripts/build-site.mjs
+node scripts/test-site.mjs
+```
+
+Запускати з клону Git-репозиторію: частина перевірок використовує перелік відстежуваних файлів.
+
+## Правила роботи
+
+`main` — джерело істини. Зміни йдуть через гілку від актуального `main` і PR; зливати можна лише з явного дозволу власника. Деталі публікації: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Історія імпорту з Sites: [README_IMPORT.md](README_IMPORT.md).

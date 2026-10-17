@@ -65,3 +65,17 @@ node scripts/test-site.mjs
 Python must be available as `python`; the test runner sets `PYTHONUTF8=1` for its children on all platforms. The root website has no npm dependencies. Remotion is a separate subproject and is not installed or rendered by website CI.
 
 The two former historical-Git dependencies now use authentic independent fixtures, recovered read-only from the exact original Sites commits. See [fixture provenance](../tests/fixtures/README_BASELINES.md). CI needs neither Sites credentials nor the old Git history.
+
+## GitHub Pages (optional, owner-enabled)
+
+`site-publish.yml` can also publish the verified `dist/` to GitHub Pages, so the live site does not depend on any outside account. It is **off by default**: both the packaging step and the `deploy-pages` job are skipped unless the repository variable `PAGES_ENABLED` is `true`. Nothing changes on Sites.
+
+What runs when enabled: only for a push to this repository's `main`, after the `verify` job (build plus every test) has passed, the exact tested `dist/` is uploaded with `actions/upload-pages-artifact` and deployed with `actions/deploy-pages` (both pinned to commit SHAs). Pull requests and forks never deploy. The job has only `pages: write` and `id-token: write`; no secrets are used.
+
+Owner setup, once:
+
+1. Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+2. Settings → Secrets and variables → Actions → Variables → add `PAGES_ENABLED` = `true`.
+3. Merge to `main` or re-run the workflow. The address appears in the `github-pages` environment and the job summary; it will be under `https://<owner>.github.io/evidence-ua/`.
+
+All links in `dist/` are relative, so the site works under the `/evidence-ua/` sub-path. A custom domain can be added later in the Pages settings. To turn it off, delete the variable or set it to anything but `true`. Rollback: revert on `main` through a PR; the next successful run republishes that state.

@@ -2,6 +2,8 @@
 
 Static knowledge and evidence site for the current project snapshot.
 
+**Live site:** <https://vlaspevochko.github.io/evidence-ua/> (GitHub Pages, published automatically from `main` after the build and tests pass).
+
 ## Local setup
 
 Requirements:

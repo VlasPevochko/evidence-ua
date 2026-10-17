@@ -38,6 +38,14 @@ assert.match(css,/atlas-content\.is-changing/);
 assert.match(css,/prefers-reduced-motion/);
 assert.match(css,/:focus-visible/);
 
+// Shared body canvas: hotspot coordinates must scale with the 520x480 SVG on desktop and mobile.
+assert(html.includes('class="atlas-body-canvas"'),'Global body and Atlas zone points must share a coordinate canvas');
+assert.match(css,/\.atlas-body-canvas\{[^}]*aspect-ratio:520\s*\/\s*480/,'Atlas body canvas must preserve the source SVG 520/480 ratio');
+assert.match(css,/\.atlas-figure\{[^}]*inset:0/,'Body SVG must fill its coordinate canvas');
+for(const coordinate of ['.atlas-zone--brain{--x:36.5%;--y:15.5%}', '.atlas-zone--spine{--x:36.5%;--y:48%}', '.atlas-zone--knee{--x:43.5%;--y:78%}']){
+  assert(css.includes(coordinate),`Missing corrected body coordinate: ${coordinate}`);
+}
+
 // Knee Pain Map v1: exact pain location guides anatomy, not diagnosis.
 assert(html.includes('id="knee-pain-map"'),'Knee pain map mount is required in the figure panel');
 assert(html.includes('./knee-pain-map.css'),'Knee pain map stylesheet must be loaded');
@@ -52,17 +60,12 @@ for(const anatomy of ['pes anserinus','sartorius','gracilis','semitendinosus','g
 }
 assert(kneeJS.includes('Точка болю ≠ джерело болю'),'Pain map must state the core interpretation rule');
 assert(kneeJS.includes('не встановлює діагноз'),'Pain map must explicitly avoid auto-diagnosis');
-assert.match(kneeCSS,/knee-pain-map/);
+assert.match(kneeCSS,/\.knee-stage\{[^}]*aspect-ratio:320\s*\/\s*420/,'Knee stage must preserve the SVG 320/420 coordinate system');
+assert.match(kneeCSS,/\.knee-diagram\{[^}]*inset:0/,'Knee SVG must fill the same coordinate canvas as its hotspots');
+assert(kneeCSS.includes('.knee-hotspot[data-knee-hotspot="pes-anserinus"]{--x:38%!important;--y:77%!important}'),'Pes anserinus hotspot must sit on the medial proximal tibia insertion');
+assert(kneeCSS.includes('.knee-hotspot[data-knee-hotspot="fibular-head"]{--x:69%!important;--y:63%!important}'),'Fibular head hotspot must sit on the lateral fibular head');
 assert.match(kneeCSS,/:focus-visible/);
 assert.match(kneeCSS,/prefers-reduced-motion/);
-
-// Mobile geometry regression: diagram and hotspots must share one aspect-ratio canvas.
-assert(kneeJS.includes('class="knee-anatomy-canvas"'),'Pain map must render a shared anatomy canvas');
-assert.match(kneeCSS,/\.knee-anatomy-canvas\{[^}]*aspect-ratio:320\s*\/\s*420/,'Knee anatomy canvas must preserve the SVG 320/420 coordinate system');
-assert.match(kneeCSS,/\.knee-anatomy-canvas[^}]*position:relative/,'Knee hotspot coordinate parent must be positioned');
-assert.match(kneeCSS,/\.knee-diagram\{[^}]*inset:0/,'SVG must fill the same anatomy canvas as hotspots');
-assert(kneeJS.includes("id:'pes-anserinus',view:'medial',x:42,y:72"),'Pes anserinus hotspot must sit on the medial proximal tibia/tendon insertion zone');
-assert(kneeJS.includes("id:'fibular-head',view:'lateral',x:69,y:63"),'Fibular-head hotspot must be anchored to the lateral fibular head');
 
 for(const shell of [shellSource,shellBuilt]){
   assert(shell.includes('./atlas.html'),'Shared shell must link to Atlas');
@@ -73,4 +76,4 @@ for(const shell of [shellSource,shellBuilt]){
 }
 
 assert.equal(catalog.areas.filter(area=>area.available).length,6,'Atlas must not become a seventh catalog direction');
-console.log('Evidence Atlas v0.3 contract verified: knee pain map, exact hotspots, mobile coordinate lock and catalog count unchanged.');
+console.log('Evidence Atlas v0.3 contract verified: body and knee coordinate canvases stay anatomically aligned across responsive layouts.');

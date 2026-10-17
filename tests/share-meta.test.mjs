@@ -36,6 +36,9 @@ for (const page of pages) {
     return tag ? unescape(attr(tag, 'content') ?? '') : undefined;
   };
 
+  // The shared block must sit before the builder-injected block at the end of <head> (index.html), so the committed file equals the build output.
+  if (page === 'index.html') assert(head.indexOf('rel="canonical"') < head.indexOf('data-evidence-style'), 'index.html: share metadata must precede the generated evidence styles');
+
   // Icons: every referenced file exists.
   for (const [rel, target] of [['icon', './favicon.svg'], ['icon', './favicon.ico'], ['apple-touch-icon', './apple-touch-icon.png']]) {
     const link = links.find(l => attr(l, 'rel') === rel && attr(l, 'href') === target);

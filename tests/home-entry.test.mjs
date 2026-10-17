@@ -11,7 +11,7 @@ assert.deepEqual(topics.map(t=>t.id),catalog.areas.filter(a=>a.available).map(a=
 for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,area.state);assert.equal(t.href,t.id==='supplements'?'#supplement-library':area.href);}
 assert(index.includes('<a class="cta" href="#start-here">'));assert(nav.includes("document.querySelector('.copy .cta').href = '#start-here'"));assert(index.indexOf('home-catalog.js?v=57')<index.indexOf('navigation-v17.js?v=74'));
 for(const id of ['start-here','start-here-title','home-feedback','home-feedback-form','feedback-useful','feedback-stuck','feedback-change','home-feedback-output','home-feedback-status'])assert(index.includes(`id="${id}"`));
-assert(index.includes('id="feedback-generate" disabled'));assert(index.includes('не вказуйте персональних'.replace(/^н/,'Н')));assert(index.includes('Форма нічого не надсилає'));
+assert(index.includes('id="feedback-generate" disabled'));assert(index.includes('не вказуйте персональних'.replace(/^н/,'Н')));assert(index.includes('Текст нікуди не надсилається автоматично'));
 assert(css.includes('min-height:44px'));assert(css.includes('grid-template-columns:minmax(0,1fr)'));assert(css.includes('font-size:16px'));
 
 // Run the actual catalog-card creation block, without a browser-layout claim.

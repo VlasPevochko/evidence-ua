@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {sendFeedback,FEEDBACK_ENDPOINT} from '../src/platform/feedback-send.mjs';
+let call=null;
+const ok=async(url,init)=>{call={url,init};return {ok:true,json:async()=>({success:'true'})};};
+await sendFeedback('Текст відгуку',ok);
+assert.equal(call.url,FEEDBACK_ENDPOINT);assert.equal(call.init.method,'POST');
+const body=JSON.parse(call.init.body);assert.equal(body.message,'Текст відгуку');assert(body._subject.includes('Evidence UA'));
+await assert.rejects(()=>sendFeedback('   ',ok),/Empty/);
+await assert.rejects(()=>sendFeedback('x',async()=>({ok:false,json:async()=>({})})),/Send failed/);
+await assert.rejects(()=>sendFeedback('x',async()=>({ok:true,json:async()=>({success:'false'})})),/Send failed/);
+assert((await sendFeedback('x'.repeat(9000),ok),JSON.parse(call.init.body).message.length)===8000);
+console.log('feedback send: payload, empty text and failure handling passed.');

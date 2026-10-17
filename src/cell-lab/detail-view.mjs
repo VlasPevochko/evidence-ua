@@ -16,7 +16,7 @@ const detailDefinitions={
 };
 export function getCellDetail(id){
  const o=getOrganelle(id),definition=detailDefinitions[id];
- return {...definition,organelleId:id,image:`./cell-details/${definition.file}.png`,sourceId:o.sourceIds[0],scientificApproval:null};
+ return {...definition,organelleId:id,image:`./cell-details/${definition.file}.webp`,sourceId:o.sourceIds[0],scientificApproval:null};
 }
 export function renderCellDetail(id,zoom=4){
  if(![2,4,6,8].includes(zoom))throw Error('Invalid zoom');

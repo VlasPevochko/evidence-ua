@@ -10,6 +10,8 @@ The purpose is not to build a generic exercise catalog. The purpose is to connec
 
 The same exercise object should be reusable from Anatomy, Atlas, Biomechanics, Practice, future training plans, and future Personal Evidence.
 
+Detailed mapping of the first 12 owner-recorded entries now lives in `docs/EXERCISE_LIBRARY_SEED_MAP.md`.
+
 ## 1. MVP goal
 
 Build a small, high-quality library from the owner's existing YouTube videos.
@@ -199,6 +201,8 @@ For MVP, this is a strength rather than a problem. The first library can launch 
     - YouTube ID: `hVHK4ncfr6A`
     - type: `screen_or_test`
     - core links: coordination, balance, motor control
+
+The canonical ids/slugs, movement actions, anatomy entities, Atlas-zone links, physiology links and evidence-priority notes for these 12 entries are defined in `docs/EXERCISE_LIBRARY_SEED_MAP.md`.
 
 ### 5.3 Therapeutic-claim videos: reuse carefully
 
@@ -390,14 +394,16 @@ Exercise Library MVP is ready when:
 1. Inventory existing owner videos                 ✅ complete
 2. Select 10–20 seed entries                       ✅ first 12 selected
 3. Define stable exercise data schema              ✅ MVP schema defined
-4. Map seed entries to Anatomy + Atlas nodes       ← NEXT
-5. Build library index
+4. Map seed entries to Anatomy + Atlas nodes       ✅ seed map defined
+5. Build library index                             ← NEXT
 6. Build exercise detail template
 7. Add Evidence links where justified
 8. Mobile/browser QA
 9. Film missing fundamental movement patterns
 10. Only then design creator submissions
 ```
+
+Before populating all 12 objects, validate the index/detail architecture with three representative entries: Dumbbell Row, Scapular Activation and Rotator Cuff Complex.
 
 ## 16. Working rule
 

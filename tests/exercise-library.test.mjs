@@ -148,5 +148,22 @@ const atlasJs = fs.readFileSync('dist/atlas.js', 'utf8');
 assert(atlasJs.includes('./exercises.html?region=shoulder'), 'Atlas shoulder training links to the library');
 assert(fs.readFileSync('dist/atlas.html', 'utf8').includes('atlas.js?v=3'));
 
+// --- Site-wide discovery: shared navigation and the home header (same pattern as the Atlas) -----
+const shellSource = fs.readFileSync('src/platform/shell.mjs', 'utf8');
+const shellBuilt = fs.readFileSync('dist/platform-shell.js', 'utf8');
+for (const shell of [shellSource, shellBuilt]) {
+  assert(shell.includes('./exercises.html'), 'Shared shell links to the Exercise Library');
+  assert(shell.includes('eua-exercises-link') && shell.includes('${exercisesLink(current)}'), 'Library link is part of the shared navigation');
+  assert(shell.includes('eua-home-exercises-entry'), 'Home header has a library entry');
+}
+assert.equal(
+  shellBuilt,
+  shellSource.replace("'./catalog.mjs'", "'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=83'"),
+  'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
+);
+assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');
+const catalogSource = fs.readFileSync('src/platform/catalog.mjs', 'utf8');
+assert(!catalogSource.includes('exercises.html'), 'The library is a practice entry, not a new top-level catalog direction');
+
 fs.rmSync(temp, {recursive: true, force: true});
 console.log('Exercise library: 3 draft entries, data model, safe wording, filters, detail layers, click-to-load video and Atlas link passed.');

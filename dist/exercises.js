@@ -3,7 +3,7 @@
 import {
   exercises, contentTypes, movementPatterns, bodyRegions, equipmentLabels,
   reviewStatusLabels, claimsPendingNote
-} from './exercises-data.js';
+} from './exercises-data.js?v=3';
 
 const norm = value => String(value ?? '').toLocaleLowerCase('uk').replace(/ё/g, 'е').trim();
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
@@ -19,7 +19,7 @@ export const youtubeWatchUrl = id => {
 };
 
 export function findExercise(list, slug) {
-  return list.find(item => item.slug === slug) || null;
+  return list.find(item => item.slug === slug || (item.legacySlugs || []).includes(slug)) || null;
 }
 
 export function facetOptions(list, key, labels) {
@@ -263,6 +263,8 @@ export function mountExerciseLibrary(doc = document, win = window) {
     return;
   }
   if (item) {
+    // Old shared links keep working and are rewritten to the canonical address.
+    if (item.slug !== state.slug) win.history?.replaceState?.(null, '', `./exercises.html?e=${encodeURIComponent(item.slug)}`);
     intro?.setAttribute('hidden', '');
     root.replaceChildren(renderDetail(doc, item));
     doc.title = `${item.titleUk} — Бібліотека вправ — Evidence UA`;

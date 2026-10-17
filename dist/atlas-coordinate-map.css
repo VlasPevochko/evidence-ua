@@ -26,3 +26,9 @@
  .knee-stage{width:min(100%,320px)}
  .atlas-zone{transform:translate(-7px,-50%)}
 }
+
+/* Keep hidden body controls out of keyboard navigation while a map is open. */
+.atlas-body-canvas>[hidden]{display:none!important}
+/* Let either map's diagram and safety explanation determine the panel height. */
+.atlas-figure-wrap.is-knee-map,.atlas-figure-wrap.is-shoulder-map{min-height:0}
+.atlas-figure-wrap>.knee-pain-map,.atlas-figure-wrap>.shoulder-pain-map{position:relative;inset:auto;min-height:0}

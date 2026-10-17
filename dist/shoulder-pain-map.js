@@ -15,6 +15,7 @@ const hotspots=[
 ];
 
 const mount=document.getElementById('shoulder-pain-map');
+const kneeMount=document.getElementById('knee-pain-map');
 const wrap=mount?.closest('.atlas-figure-wrap');
 const globalFigure=wrap?.querySelector('.atlas-figure');
 const zoneButtons=wrap?[...wrap.querySelectorAll('[data-zone]')]:[];
@@ -30,6 +31,7 @@ let suppressed=false;
 
 function shoulderSelected(){return document.querySelector('[data-zone="shoulder"]')?.getAttribute('aria-pressed')==='true';}
 function overviewSelected(){return document.querySelector('[data-atlas-tab="overview"]')?.getAttribute('aria-selected')==='true';}
+function kneeMapVisible(){return Boolean(kneeMount&&!kneeMount.hidden);}
 function currentView(){return views.find(view=>view.id===activeView)||views[0];}
 function currentSpots(){return hotspots.filter(spot=>spot.view===activeView);}
 function restoreLegend(){if(legend)legend.innerHTML=originalLegend;}
@@ -58,6 +60,7 @@ function showMap(){
 function hideMap(){
  if(!mount||!wrap)return;
  mount.hidden=true;wrap.classList.remove('is-shoulder-map');
+ if(kneeMapVisible())return;
  if(globalFigure)globalFigure.hidden=false;zoneButtons.forEach(button=>button.hidden=false);restoreLegend();
 }
 function sync(){if(shoulderSelected()&&overviewSelected()&&activated&&!suppressed)showMap();else hideMap();}

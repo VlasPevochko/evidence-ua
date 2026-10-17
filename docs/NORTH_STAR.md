@@ -17,6 +17,32 @@ The core promise is:
 > Show why.  
 > Show where knowledge ends.
 
+### Content foundation
+
+The educational foundation of Evidence UA is **anatomy + physiology first**.
+
+The site should not behave like a static anatomy textbook. It should help users explore what structures are, what they do, what changes during movement/exercise/recovery, and how those explanations connect to evidence.
+
+Preferred learning path:
+
+```text
+STRUCTURE
+↓
+FUNCTION
+↓
+PHYSIOLOGY
+↓
+MOVEMENT / LOAD
+↓
+ADAPTATION / RESPONSE
+↓
+EVIDENCE
+↓
+PRACTICE
+```
+
+Whenever possible, anatomy and physiology should be explorable, visual and connected to real actions such as exercises, symptoms, training decisions and rehabilitation contexts.
+
 ## 2. Architectural North Star
 
 Content does not belong to pages. Pages are assembled from knowledge.
@@ -36,7 +62,7 @@ CONFIDENCE
 ↓
 MODULE
 ↓
-VISUAL / PAGE / QUIZ / COMPARISON / VIDEO
+VISUAL / PAGE / QUIZ / COMPARISON / VIDEO / EXERCISE
 ↓
 FUTURE PERSONAL LAYERS / EVI
 ```
@@ -55,12 +81,14 @@ Evidence UA should grow in this order:
 - Scientific review workflow and provenance.
 
 ### Layer B — Interactive Evidence
+- Anatomy and physiology as the core educational map.
 - Evidence Atlas.
 - Cell Lab.
 - Nutrition and metabolism modules.
 - Biomechanics / movement modules.
 - Sleep / recovery.
 - Muscle / hypertrophy.
+- Exercise Library / Practice layer.
 - Visual explanations that connect back to Claims and Sources.
 
 ### Layer C — Personal Evidence
@@ -90,11 +118,100 @@ The immediate goal is not to build every future feature. It is to make the curre
 2. Keep the Evidence Base architecture coherent.
 3. Finish scientific review of the first production evidence modules before scaling them blindly.
 4. Finish/validate Evidence Atlas as the first major interactive body-navigation layer.
-5. Maintain mobile, accessibility and browser QA.
-6. Keep one reliable production/deployment path.
-7. Preserve the video factory as a reusable output layer over verified evidence.
+5. Define the first reusable **Exercise Library / Practice** architecture using existing owner-recorded YouTube videos before building a broad creator ecosystem.
+6. Make Exercise items link back to anatomy, physiology, biomechanics, Atlas regions and evidence rather than existing as isolated video cards.
+7. Maintain mobile, accessibility and browser QA.
+8. Keep one reliable production/deployment path.
+9. Preserve the video factory as a reusable output layer over verified evidence.
 
-## 5. Explicitly NOT NOW
+## 5. Exercise Library / Practice
+
+The Exercise Library is part of **Interactive Evidence**, not a separate disconnected media section.
+
+MVP principle:
+
+```text
+EXERCISE
+↓
+VIDEO
++
+PRIMARY / SECONDARY STRUCTURES
++
+JOINT ACTIONS / MOVEMENT
++
+BIOMECHANICS NOTES
++
+PURPOSE / USE CASE
++
+TECHNIQUE CUES
++
+REGRESSION / PROGRESSION
++
+LIMITATIONS / CAUTIONS
++
+RELATED CLAIMS / SOURCES
+```
+
+Initial library should preferentially use existing Evidence UA / owner-recorded exercise videos and YouTube embeds so that video hosting infrastructure is not required for the MVP.
+
+Exercise pages/cards should be reusable from multiple entry points:
+
+- Anatomy → muscle/structure → related exercises.
+- Atlas → body region → training / rehabilitation → related exercises.
+- Biomechanics → movement pattern → examples.
+- Practice → exercise catalog.
+- Future personal tools → selected exercise plan.
+
+The goal is a knowledge graph, not a playlist.
+
+## 6. Creator submissions — future extension of Practice
+
+Evidence UA may allow external coaches, clinicians, educators and creators to submit videos for inclusion.
+
+This is a **curated submission system**, not open publishing.
+
+Canonical flow:
+
+```text
+SUBMIT LINK
+↓
+EDITORIAL / TECHNICAL REVIEW
+↓
+CLAIM REVIEW WHEN NEEDED
+↓
+APPROVE / REQUEST CHANGES / REJECT
+↓
+PUBLISH AS CURATED MATERIAL
+```
+
+Important distinction:
+
+- Evidence UA may approve a specific material.
+- Evidence UA does **not** automatically certify the creator as a whole.
+- Scientific claims inside a video are reviewed as Claims, not accepted because of the creator's reputation.
+
+Potential future creator profile fields:
+
+- name / channel;
+- expertise / role;
+- approved materials;
+- topics;
+- outbound YouTube / social links;
+- clear editorial status.
+
+This can later create a creator traffic loop, but traffic growth must not weaken scientific review or turn the site into an uncurated video aggregator.
+
+### Creator submissions are not MVP blockers
+
+Do not build accounts, open uploads, creator rankings or creator monetisation until:
+
+- the internal Exercise Library structure is stable;
+- moderation states are defined;
+- content ownership / embedding rules are clear;
+- scientific/editorial review responsibilities are explicit;
+- abuse/spam handling exists.
+
+## 7. Explicitly NOT NOW
 
 Do not start large implementation of these until the current phase is stable:
 
@@ -106,13 +223,16 @@ Do not start large implementation of these until the current phase is stable:
 - Evidence Verified commercial certification;
 - full Bodybuilding platform;
 - broad specialist network;
+- open creator self-publishing;
+- native user video hosting/uploads;
+- creator rankings or creator monetisation;
 - dozens of new Labs at once;
 - large monetisation systems;
 - unrelated design rewrites.
 
 Ideas are welcome, but they go to backlog unless they unblock the current phase.
 
-## 6. Scientific guardrails
+## 8. Scientific guardrails
 
 Non-negotiable:
 
@@ -126,7 +246,7 @@ Non-negotiable:
 - no sponsor can purchase a scientific conclusion;
 - AI may assist the workflow but may not silently become the source of scientific truth.
 
-## 7. Product safety guardrails
+## 9. Product safety guardrails
 
 Interactive health tools must not imply diagnosis from a single symptom, hotspot, image or movement.
 
@@ -139,7 +259,15 @@ For rehabilitation and symptom tools:
 - no unsupported personalised treatment recommendation;
 - user-visible distinction between education, screening and medical diagnosis.
 
-## 8. Scope gate for every new feature
+For Exercise Library / creator materials:
+
+- distinguish demonstration from evidence claim;
+- do not present one exercise as universally best without evidence;
+- technical cues must not be framed as universal injury-prevention rules without support;
+- author popularity is not evidence quality;
+- approval of one material is not endorsement of all creator content.
+
+## 10. Scope gate for every new feature
 
 Before implementation, a feature must answer YES to at least one:
 
@@ -158,7 +286,7 @@ And it must answer NO to all:
 
 If the answer is unclear, park it in backlog.
 
-## 9. Change gate
+## 11. Change gate
 
 Do not merge a major feature only because it works visually.
 
@@ -172,7 +300,7 @@ A major change should pass the relevant gates:
 - preservation of existing scientific content;
 - explicit owner approval when the PR says approval is required.
 
-## 10. Current PR policy
+## 12. Current PR policy
 
 Open work should be treated as one of:
 
@@ -190,12 +318,18 @@ As of 2026-10-17:
 - PR #5 CreatineJourney caption polish — **DEFERRED / narrow polish**, not a platform blocker.
 - PR #8 unpublished Cell Lab layout preservation — **REVIEW / RECONCILE** against current `main` before any merge.
 
-## 11. Roadmap sequence
+## 13. Roadmap sequence
 
 ```text
 FOUNDATION
 ↓
-INTERACTIVE EVIDENCE
+ANATOMY + PHYSIOLOGY CORE
+↓
+INTERACTIVE EVIDENCE / ATLAS / LABS
+↓
+EXERCISE LIBRARY / PRACTICE
+↓
+CURATED CREATOR SUBMISSIONS
 ↓
 PERSONAL EVIDENCE
 ↓
@@ -208,13 +342,15 @@ LARGER PLATFORM / API
 
 This sequence is directional, not a promise that every item must be built.
 
-## 12. One knowledge base, many outputs
+## 14. One knowledge base, many outputs
 
 A verified Claim should eventually be reusable across:
 
 - evidence dossier;
+- anatomy / physiology explanation;
 - interactive visual;
 - Evidence Atlas;
+- Exercise Library / Practice;
 - quiz / teacher material;
 - short-form video;
 - long-form YouTube;
@@ -224,7 +360,7 @@ A verified Claim should eventually be reusable across:
 
 Do not create separate scientific truths for each medium.
 
-## 13. Anti-drift rule
+## 15. Anti-drift rule
 
 When a new exciting idea appears:
 
@@ -235,17 +371,19 @@ When a new exciting idea appears:
 
 The project may expand for years. The current sprint must stay narrow.
 
-## 14. Definition of success for the present phase
+## 16. Definition of success for the present phase
 
 We are ready to move decisively toward Personal Evidence when:
 
 - GitHub and production flow are dependable;
 - the Evidence Base model is actually used by production modules;
 - scientific review status is explicit and trustworthy;
+- anatomy + physiology act as a coherent educational backbone rather than disconnected pages;
 - at least several interactive modules prove the shared architecture;
 - Atlas is stable enough to act as the body-navigation layer;
+- the Exercise Library proves that video/practice content can reuse the same anatomy, physiology and evidence architecture;
 - mobile/accessibility QA is repeatable;
 - video/content outputs can reuse the same verified evidence;
 - adding a new topic does not require inventing a new architecture.
 
-Until then: **build the foundation, prove the interactive system, resist scope drift.**
+Until then: **build the foundation, prove the interactive system, connect knowledge to practice, resist scope drift.**

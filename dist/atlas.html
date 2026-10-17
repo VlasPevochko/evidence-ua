@@ -6,7 +6,7 @@
   <meta name="description" content="Атлас Evidence UA — досліджуйте людське тіло від анатомії до доказів.">
   <title>Атлас Evidence — Evidence UA</title>
   <link rel="stylesheet" href="./platform.css?v=83" data-platform-style>
-  <link rel="stylesheet" href="./atlas.css?v=1">
+  <link rel="stylesheet" href="./atlas.css?v=2">
 </head>
 <body data-platform-area="atlas">
   <header class="atlas-topbar">
@@ -27,7 +27,7 @@
 
   <main class="atlas-page">
     <section class="atlas-intro" aria-labelledby="atlas-title">
-      <p class="atlas-eyebrow">АТЛАС EVIDENCE · v0.1</p>
+      <p class="atlas-eyebrow">АТЛАС EVIDENCE · v0.2</p>
       <h1 id="atlas-title">Досліджуйте людське тіло</h1>
       <p>Від анатомії — до доказів. Оберіть область тіла, щоб перейти від структури до симптомів, навантаження, реабілітації та наукових даних.</p>
     </section>
@@ -50,16 +50,19 @@
       </div>
 
       <article class="atlas-detail" aria-live="polite" aria-labelledby="atlas-zone-title">
+        <nav class="atlas-breadcrumb" id="atlas-breadcrumb" aria-label="Шлях в Атласі">
+          <span>Атлас</span><i aria-hidden="true">→</i><strong id="atlas-breadcrumb-zone">Плечовий комплекс</strong><i aria-hidden="true">→</i><span id="atlas-breadcrumb-tab">Огляд</span>
+        </nav>
         <div class="atlas-detail-head">
           <div>
             <p class="atlas-kicker" id="atlas-zone-kicker">ОБРАНА ОБЛАСТЬ</p>
             <h2 id="atlas-zone-title">Плечовий комплекс</h2>
             <p id="atlas-zone-summary">Анатомія, найпоширеніші стани, навантаження, реабілітація та спосіб читати наукові дані без спрощення до «працює / не працює».</p>
           </div>
-          <span class="atlas-status" id="atlas-zone-status">Перший повний модуль</span>
+          <span class="atlas-status" id="atlas-zone-status" data-state="full">Повний модуль</span>
         </div>
 
-        <div class="atlas-tabs" role="tablist" aria-label="Розділи плечового модуля">
+        <div class="atlas-tabs" role="tablist" aria-label="Розділи обраного модуля">
           <button type="button" role="tab" data-atlas-tab="overview" aria-selected="true">Огляд</button>
           <button type="button" role="tab" data-atlas-tab="anatomy" aria-selected="false">Анатомія</button>
           <button type="button" role="tab" data-atlas-tab="symptoms" aria-selected="false">Симптоми</button>
@@ -81,7 +84,7 @@
     <aside class="atlas-disclaimer">Матеріал освітній і не є персональною медичною рекомендацією. Симптоми та діагноз не визначаються лише за вибором області на схемі.</aside>
   </main>
 
-  <script type="module" src="./atlas.js?v=1"></script>
+  <script type="module" src="./atlas.js?v=2"></script>
   <script type="module" src="./platform-shell.js?v=83"></script>
 </body>
 </html>

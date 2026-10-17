@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
-import {execFileSync} from 'node:child_process';
 import {materials,findMaterials,contextLink,materialContext} from '../src/platform/materials.mjs';
 import {materialCard,toolsHTML,mountQuickTools} from '../src/platform/quick-tools.mjs';
 import {feedbackReport} from '../src/platform/home-feedback.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
+const retainedContent=JSON.parse(fs.readFileSync('tests/fixtures/retained-content-sha256.json','utf8'));
 assert.equal(new Set(materials.map(m=>m.id)).size,materials.length);
 assert.equal(materials.length,44);
 assert.equal(findMaterials('ПРОТЕЇН')[0].href,'./index.html#supplement-protein');
@@ -56,7 +57,6 @@ const other=fixture(undefined);other.root.createElement=()=>{throw Error('Must n
 f.ui.destroy();
 for(const file of ['src/platform/materials.mjs','src/platform/quick-tools.mjs']){const text=fs.readFileSync(file,'utf8');for(const api of ['fetch(','localStorage','sendBeacon','XMLHttpRequest','new WebSocket'])assert(!text.includes(api),file);}
 const css=fs.readFileSync('dist/platform.css','utf8');for(const key of ['min-height:44px','height:100dvh','grid-template-columns:minmax(0,1fr)','dialog::backdrop','prefers-reduced-motion'])assert(css.includes(key));
-// Other scientific registries, artwork and original scenes remain byte-identical to v58.
 // Muscle Lab allows only the explicit R1–R4 changes checked against v57 in muscle-flow.test.mjs.
-for(const file of ['src/evidence/creatine/claims.ts','src/evidence/creatine/sources.ts','src/evidence/creatine/evidenceRecords.ts','src/evidence/supplements/dossiers.json','src/evidence/nutrition/module.mjs','src/cell-lab/module.mjs','dist/muscle-lab-scenes.js','dist/muscle-lab-art-v1.webp'])assert(fs.readFileSync(file).equals(execFileSync('git',['show','b48b9d0f5858673f8c6f9985c1984c198847031d:'+file])),file);
-console.log('Visitor tools: real search/open/close/focus handlers, direct materials, copy/fallback, safe URLs, feedback context, duplicate mount, no transport/storage and unchanged other scientific registries passed. No browser layout QA.');
+for(const [file,digest] of Object.entries(retainedContent.retainedFiles))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),digest,file);
+console.log('Visitor tools: real search/open/close/focus handlers, direct materials, copy/fallback, safe URLs, feedback context, duplicate mount, no transport/storage and frozen scientific baselines passed. No browser layout QA.');

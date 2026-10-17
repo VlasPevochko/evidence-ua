@@ -1,0 +1,17 @@
+{
+  "name": "evidence-ua",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build-evidence.mjs && node scripts/build-knowledge.mjs",
+    "start": "python3 -m http.server 8000 --directory dist",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "smoke": "node scripts/smoke-check.mjs",
+    "validate": "node scripts/validate-content.mjs",
+    "check": "npm run build && npm run validate && npm test && npm run smoke"
+  }
+}

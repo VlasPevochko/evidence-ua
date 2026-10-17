@@ -1,0 +1,24 @@
+{
+  "homeScientificSections": {
+    "creatine": "7122f939c4f22583cec472c97e45f6ee424065ac1ff89d4c9f393962e89268ee",
+    "supplement-protein": "5de84b0657820bbee63f6de656f89f47d79663590e7b745d70fd41b3412d0504",
+    "supplement-caffeine": "f9937622474dc89fa43e29f0ffcb1a2ba1b5abcd6f2a280bf4f331b6e502952a",
+    "supplement-omega": "5f106ed9f06621074881dfec1c83bc2c2747421adb93559f990166c049b1ebd7",
+    "supplement-vitd": "afd760c2a4081f9523d3be1670bca4cc44e87dc10130f965a54280365c2eb765",
+    "supplement-magnesium": "01e7f3a2c18c7607ed6fd4109755347ee85c5111ec6a3855c96fe84081d842b4",
+    "supplement-collagen": "f158c90245753dd04801dd0fc3e1053860fc285a41bbdb5b24ea80cefc3a0f2b",
+    "supplement-beta-alanine": "a8db5a16916383e7b0d68deb63ebca8057b6c2905a6d8bd7f97459c4814a4c80",
+    "supplement-citrulline": "0cf966227265a2173c224b25546029f267dee93e361f4d072a8974df09522128",
+    "supplement-electrolytes": "128fceec15585e413456f1e9c1ad9f9110d7ec8a77d05ed47b621fcf6280df48"
+  },
+  "retainedFiles": {
+    "src/evidence/creatine/claims.ts": "169303bfb0067193dd5d71cf0db8f4403afc8f48a2112aec1411fa7a2dee6dec",
+    "src/evidence/creatine/sources.ts": "77e77ec7411e44d1ac28968ee813843994c9effe39916665acce751a4a259200",
+    "src/evidence/creatine/evidenceRecords.ts": "6f2e3e50e62880e5914390ec3442f5e0f50fa646be646932989930d58f6fcaf7",
+    "src/evidence/supplements/dossiers.json": "29b5d186de18b8535e9a3ba11a83cccaa6144e82561efc7f036c7f25ab36d574",
+    "src/evidence/nutrition/module.mjs": "923e2788d9fa5f56fab903f65e02d2877cacb0de7b8c59580826d683e2b44a85",
+    "src/cell-lab/module.mjs": "76f13701255ee2dadbf50ba8c2a22958695f5ee481a5a453365bb30e91257857",
+    "dist/muscle-lab-scenes.js": "b8c1b611f8e91f8aa7f5ec38c71bc136b1eb3c0083e210438d599fe036e8c58d",
+    "dist/muscle-lab-art-v1.webp": "5deafa298bdf3fc75f96035cb9afc49ffc71dcfff1d68faa40b5fa14d464e96e"
+  }
+}

@@ -10,11 +10,15 @@
 
 .knee-stage{position:relative;flex:0 0 auto;width:min(100%,380px);min-height:0;aspect-ratio:320 / 420;margin:2px auto 10px}
 .knee-stage>.knee-diagram{position:absolute;inset:0;width:100%;height:100%}
-.knee-hotspot[data-knee-hotspot="medial-joint-line"]{--x:55%!important;--y:52%!important}
-.knee-hotspot[data-knee-hotspot="pes-anserinus"]{--x:38%!important;--y:77%!important}
-.knee-hotspot[data-knee-hotspot="lateral-joint-line"]{--x:56%!important;--y:52%!important}
-.knee-hotspot[data-knee-hotspot="fibular-head"]{--x:69%!important;--y:63%!important}
-.knee-hotspot[data-knee-hotspot="posterior-knee"]{--x:50%!important;--y:52%!important}
+/* Anatomical calibration uses the same 320x420 coordinate space as the SVG. */
+.knee-hotspot[data-knee-hotspot="superior-patella"]{--x:50%!important;--y:38%!important}
+.knee-hotspot[data-knee-hotspot="anterior-patella"]{--x:50%!important;--y:47.5%!important}
+.knee-hotspot[data-knee-hotspot="inferior-patella"]{--x:50%!important;--y:57.5%!important}
+.knee-hotspot[data-knee-hotspot="medial-joint-line"]{--x:59.5%!important;--y:54.5%!important}
+.knee-hotspot[data-knee-hotspot="pes-anserinus"]{--x:39%!important;--y:79%!important}
+.knee-hotspot[data-knee-hotspot="lateral-joint-line"]{--x:64%!important;--y:54.5%!important}
+.knee-hotspot[data-knee-hotspot="fibular-head"]{--x:69%!important;--y:62.5%!important}
+.knee-hotspot[data-knee-hotspot="posterior-knee"]{--x:50%!important;--y:52.5%!important}
 
 @media(max-width:680px){
  .atlas-body-canvas{width:100%}

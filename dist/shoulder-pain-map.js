@@ -48,8 +48,17 @@ function hotspotButtons(){return currentSpots().map(spot=>`<button type="button"
 
 function renderMap(){
  if(!mount)return;
+ const focused=document.activeElement;
+ const focusAttribute=mount.contains(focused)?['data-shoulder-view','data-shoulder-hotspot','data-shoulder-return'].find(name=>focused.hasAttribute(name)):null;
+ const focusValue=focusAttribute?focused.getAttribute(focusAttribute):null;
  const view=currentView();
  mount.innerHTML=`<header class="shoulder-map-head"><button type="button" data-shoulder-return>← Усе тіло</button><div><strong>Плече · Pain Map</strong><small>${view.title} · натисніть на точну зону болю</small></div><span class="shoulder-map-badge">v1</span></header><div class="shoulder-view-switch" role="tablist" aria-label="Ракурс плеча">${views.map(item=>`<button type="button" role="tab" data-shoulder-view="${item.id}" aria-pressed="${String(item.id===activeView)}">${item.label}</button>`).join('')}</div><div class="shoulder-stage">${diagramFor(activeView)}${hotspotButtons()}</div><div class="shoulder-map-rule"><strong>Точка болю ≠ джерело болю</strong><span>Локалізація допомагає побудувати диференціальну карту, але сама по собі не встановлює діагноз. Для плеча особливо важливо відрізняти локальні структури від реферованого болю з шийного відділу.</span></div>`;
+ mount.querySelectorAll('[data-shoulder-view]').forEach(button=>{
+  const selected=button.dataset.shoulderView===activeView;
+  button.setAttribute('aria-selected',String(selected));
+  button.tabIndex=selected?0:-1;
+ });
+ if(focusAttribute)mount.querySelector(`[${focusAttribute}="${focusValue}"]`)?.focus();
 }
 
 function showMap(){
@@ -88,7 +97,7 @@ function selectView(id){
 }
 
 mount?.addEventListener('click',event=>{
- const returnButton=event.target.closest('[data-shoulder-return]');if(returnButton){suppressed=true;activated=false;hideMap();return;}
+ const returnButton=event.target.closest('[data-shoulder-return]');if(returnButton){suppressed=true;activated=false;hideMap();zoneButtons.find(button=>button.dataset.zone==='shoulder')?.focus();return;}
  const viewButton=event.target.closest('[data-shoulder-view]');if(viewButton){selectView(viewButton.dataset.shoulderView);return;}
  const hotspot=event.target.closest('[data-shoulder-hotspot]');if(hotspot)selectHotspot(hotspot.dataset.shoulderHotspot);
 });

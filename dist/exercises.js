@@ -5,6 +5,7 @@ import {
   reviewStatusLabels, claimsPendingNote
 } from './exercises-data.js?v=3';
 
+const atlasZoneLabels = {shoulder: 'Плече', spine: 'Хребет', muscles: 'М’язова система', knee: 'Коліно', brain: 'Мозок', gut: 'ШКТ'};
 const norm = value => String(value ?? '').toLocaleLowerCase('uk').replace(/ё/g, 'е').trim();
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 
@@ -173,9 +174,13 @@ export function renderDetail(doc, item) {
     listSection(doc, 'ex-care', 'Коли бути обережним', 'safety', item.limitationsUk, 'Не додано.'),
     section(doc, 'ex-evidence', 'Докази', 'evidence', [claims]),
     section(doc, 'ex-explore', 'Дослідити тіло', 'facts', [
-      el(doc, 'p', {}, [
-        el(doc, 'a', {class: 'ex-link', href: './atlas.html', text: 'Відкрити Атлас Evidence →'})
-      ]),
+      el(doc, 'ul', {class: 'ex-chips'}, (item.atlasZones.length ? item.atlasZones : [null]).map(zone => el(doc, 'li', {class: 'ex-chip'}, [
+        el(doc, 'a', {
+          class: 'ex-link',
+          href: zone ? `./atlas.html?zone=${encodeURIComponent(zone)}` : './atlas.html',
+          text: zone ? `Атлас: ${atlasZoneLabels[zone] || zone} →` : 'Відкрити Атлас Evidence →'
+        })
+      ]))),
       el(doc, 'p', {class: 'ex-muted', text: 'Атлас показує області тіла, анатомію й навантаження. Він не ставить діагнозів.'})
     ]),
   ].filter(Boolean));

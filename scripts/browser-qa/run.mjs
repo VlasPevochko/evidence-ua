@@ -131,6 +131,42 @@ async function atlasFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function musclesFlow(browser, origin, viewport) {
+  const where = `atlas muscles zone @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
+  await page.click('[data-zone="muscles"]');
+  check(where, (await page.locator('#atlas-zone-status').innerText()).trim() === 'Бета', 'muscles zone is not marked Beta');
+  check(where, (await page.locator('#atlas-zone-title').innerText()).includes('М’язова'), 'zone title not shown');
+  await page.click('[data-atlas-tab="training"]');
+  await page.waitForSelector('[data-related-practice] .atlas-practice-list');
+  const hrefs = await page.locator('.atlas-practice-list a').evaluateAll(links => links.map(a => a.getAttribute('href')));
+  check(where, hrefs.length >= 3 && hrefs.every(h => h.startsWith('./exercises.html?e=')), `related exercises look wrong: ${hrefs.length}`);
+  await page.click('[data-atlas-tab="symptoms"]');
+  check(where, /Готується/.test(await page.locator('#atlas-content').innerText()), 'symptoms tab should stay "Готується"');
+  await page.click('[data-atlas-tab="training"]');
+  await page.waitForSelector('.atlas-practice-list a');
+  await page.locator('.atlas-practice-list a').first().click();
+  await page.waitForSelector('.ex-detail');
+  check(where, (await page.locator('h1:visible').count()) === 1, 'exercise page after the Atlas link has no single h1');
+  // Exercise → Atlas zone, and the ?zone= deep link.
+  await page.locator('.ex-detail a', {hasText: 'Атлас: М’язова система'}).click();
+  await page.waitForSelector('#atlas-zone-title');
+  await page.waitForTimeout(250);
+  check(where, (await page.locator('#atlas-zone-title').innerText()).includes('М’язова'), 'zone link from the exercise did not select the zone');
+  await page.goto(origin + '/atlas.html?zone=not-a-zone');
+  await page.waitForTimeout(250);
+  check(where, (await page.locator('#atlas-zone-title').innerText()).includes('Плечовий'), 'unknown ?zone= should fall back to the default zone');
+  // Anchors that the pages create at runtime must exist for the links the zone offers.
+  for (const [file, id] of [['muscle-lab.html', 'explorer'], ['muscle-lab.html', 'contraction'], ['muscle-lab.html', 'growth'], ['muscle-lab.html', 'sources'], ['movement.html', 'muscle-team'], ['movement.html', 'sources']]) {
+    await page.goto(`${origin}/${file}`);
+    await page.waitForTimeout(300);
+    check(where, (await page.locator(`#${id}`).count()) === 1, `${file}#${id} does not exist at runtime`);
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party requests: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
 async function homeMenuFlow(browser, origin) {
   const viewport = viewports[0];
   const where = `home menu @${viewport.name}`;
@@ -157,6 +193,7 @@ try {
   for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
   for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
+  for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
   await homeMenuFlow(browser, origin);
 } finally {
   await browser.close();
@@ -167,4 +204,4 @@ if (failures.length) {
   console.error(`Browser QA failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
   process.exit(1);
 }
-console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, atlas and home-menu flows.`);
+console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, atlas, muscles-zone and home-menu flows.`);

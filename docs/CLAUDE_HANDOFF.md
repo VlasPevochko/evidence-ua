@@ -1,5 +1,13 @@
 # Evidence UA — continuation handoff, 2026-10-17
 
+## LATEST UPDATE — read before anything below
+
+Final GitHub verification found concurrent work had already merged PRs #5, #13, #15, #16, #19 and #20 into main. Current observed main is `221259006962daf81314c3d62ddcf7607a78a424`. The four originally requested features are therefore already integrated upstream. Their final PR heads differ from the historical source heads below.
+
+Our work is preserved in draft [PR #21](https://github.com/VlasPevochko/evidence-ua/pull/21), branch `codex/consolidate-site-updates`. GitHub reports merge conflicts against the new main. **Do not blindly merge this older consolidation snapshot or choose all of its files during conflict resolution.** First fetch current main and compare the additional Atlas fixes described below against the newer Atlas implementation. Retain only still-needed fixes, regression verification and this handoff on a clean branch from current main, or carefully reconcile #21. The original feature PRs do not need to be merged again. PR #19 is now also merged; its earlier separate/open status below is historical.
+
+The source PRs were observed merged at 14:29–14:37 UTC on 2026-10-17 (#20 at 14:28 UTC). This chat did not perform those main merges and has not verified their production deployment. All local integration work and additional fixes have been pushed; no need to recover them from chat text. The previous build/test and browser results describe our branch, not a new guarantee for current main.
+
 ## Start here
 
 Continue the existing project. GitHub `VlasPevochko/evidence-ua` is the source of truth. Fetch current GitHub state before editing. Continue branch `codex/consolidate-site-updates` and its consolidation PR; do not restart from the old Sites checkout. The owner asked to preserve this work in GitHub so Claude can continue after the Codex usage limit.

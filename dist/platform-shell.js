@@ -3,8 +3,9 @@ import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=83'
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
 const atlasLink=current=>`<a class="eua-atlas-link" href="./atlas.html"${current==='atlas'?' aria-current="page"':''}>Атлас</a>`;
+const exercisesLink=current=>`<a class="eua-exercises-link" href="./exercises.html"${current==='practice'?' aria-current="page"':''}>Вправи</a>`;
 const atlasTeaserHTML=()=>`<aside class="eua-atlas-teaser" aria-labelledby="eua-atlas-teaser-title"><div><span>АТЛАС EVIDENCE</span><h2 id="eua-atlas-teaser-title">Досліджуйте людське тіло</h2><p>Від анатомії — до доказів.</p></div><a href="./atlas.html">Відкрити Атлас →</a></aside>`;
-export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a>${atlasLink(current)}<details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}
+export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a>${atlasLink(current)}${exercisesLink(current)}<details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}
 export function learningNavigationHTML(location){const {path,index}=location;return `<p><strong>${esc(path.title)}</strong><span>Крок ${index+1} із ${path.steps.length}</span></p><div>${index>0?`<a href="${esc(learningHref(path.id,index-1))}">← Попередній матеріал</a>`:''}${index<path.steps.length-1?`<a href="${esc(learningHref(path.id,index+1))}">Наступний матеріал →</a>`:'<a href="./directions.html#learning-paths">До маршрутів →</a>'}<a href="./index.html#home-learning-paths">Обрати інший маршрут</a></div>`;}
 export function mountPlatformNavigation(root=document){
   if(root.defaultView&&root.defaultView.self!==root.defaultView.top)return;
@@ -16,6 +17,7 @@ export function mountPlatformNavigation(root=document){
     const homeNav=root.querySelector('.page > header nav');
     if(homeNav&&!homeNav.querySelector('.eua-home-catalog-entry')){const link=root.createElement('a');link.href='./directions.html';link.className='eua-home-catalog-entry';link.textContent='Каталог';link.setAttribute('aria-label','Усі матеріали Evidence UA');homeNav.append(link);}
     if(homeNav&&!homeNav.querySelector('.eua-home-atlas-entry')){const link=root.createElement('a');link.href='./atlas.html';link.className='eua-home-atlas-entry';link.textContent='Атлас';link.setAttribute('aria-label','Інтерактивний Атлас Evidence');homeNav.append(link);}
+    if(homeNav&&!homeNav.querySelector('.eua-home-exercises-entry')){const link=root.createElement('a');link.href='./exercises.html';link.className='eua-home-exercises-entry';link.textContent='Вправи';link.setAttribute('aria-label','Бібліотека вправ Evidence UA');homeNav.append(link);}
   }
   const headers=[...root.querySelectorAll('header')].filter(h=>selected!=='home'&&!h.closest('dialog'));
   const targets=[...headers.map(header=>({element:header,current:selected})),...catalog.getArea('supplements').units.filter(u=>u.id!=='atp-pcr').map(u=>({element:root.getElementById(u.id==='creatine'?'creatine':'supplement-'+u.id),current:'supplements',prepend:true})).filter(t=>t.element)];

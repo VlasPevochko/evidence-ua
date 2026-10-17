@@ -68,6 +68,8 @@ The two former historical-Git dependencies now use authentic independent fixture
 
 ## GitHub Pages (optional, owner-enabled)
 
+> The stock GitHub "Deploy Jekyll with GitHub Pages" template (`jekyll-gh-pages.yml`) was removed: it published the repository root through Jekyll instead of the verified `dist/`, and shared the `github-pages` environment and `pages` concurrency group with the job above. Use only the `deploy-pages` job in `site-publish.yml`.
+
 `site-publish.yml` can also publish the verified `dist/` to GitHub Pages, so the live site does not depend on any outside account. It is **off by default**: both the packaging step and the `deploy-pages` job are skipped unless the repository variable `PAGES_ENABLED` is `true`. Nothing changes on Sites.
 
 What runs when enabled: only for a push to this repository's `main`, after the `verify` job (build plus every test) has passed, the exact tested `dist/` is uploaded with `actions/upload-pages-artifact` and deployed with `actions/deploy-pages` (both pinned to commit SHAs). Pull requests and forks never deploy. The job has only `pages: write` and `id-token: write`; no secrets are used.

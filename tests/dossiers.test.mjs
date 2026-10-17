@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {DossierPanel,validateDossiers} from '../src/evidence/core/dossier.mjs';
+import {publishedStudyNotes} from '../src/evidence/supplements/published-study-notes.mjs';
 const ds=validateDossiers(JSON.parse(fs.readFileSync('src/evidence/supplements/dossiers.json','utf8')));
 assert.equal(ds.length,9);
 const before=fs.readFileSync('dist/index.html','utf8');
@@ -20,6 +21,7 @@ for(const d of ds){
  for(const s of d.sources)assert(panel.includes(s.url.replace(/&/g,'&amp;')));
  for(const m of panel.matchAll(/href="#([^"]+)"/g))assert(panel.includes('id="'+m[1]+'"'));
 }
-assert(DossierPanel(ds.find(d=>d.route==='supplement-magnesium')).includes('довідник NIH, а не систематичний огляд'));
+assert(DossierPanel(ds.find(d=>d.route==='supplement-magnesium')).includes('Старий текст спирався на довідник NIH'));
 assert(DossierPanel(ds.find(d=>d.route==='supplement-vitd')).includes('одне рандомізоване дослідження'));
+for(const [id,note] of Object.entries(publishedStudyNotes)){const d=ds.find(x=>x.id===id);assert(d,'Unknown dossier '+id);for(const pmid of new Set(JSON.stringify(note.source).match(/\b\d{8}\b/g)||[]))assert(d.sources.some(s=>s.url.includes('/'+pmid+'/')),id+': study note cites PMID '+pmid+' that is missing from the source list');}
 console.log('9 structured dossiers + existing creatine; statuses, provenance, links, unique IDs and idempotence passed.');

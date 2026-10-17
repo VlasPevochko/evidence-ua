@@ -4,15 +4,16 @@
   "sourceBlobSha256": "6c3c2821ab78583e79b92fed898c4d85cffc6daba6c0c2842ad315d88f25a959",
   "serialization": "lxml.html.tostring(section, encoding='utf-8')",
   "sections": {
-    "creatine": "0070002b8b22b8d899c1a70bc37d3e24601b21fb7bc236c2c179de2461b38b86",
+    "creatine": "911256cec07abc3024abcf651c368b9c4a8c5d2ba69837288740458d800875cb",
     "supplement-protein": "5de84b0657820bbee63f6de656f89f47d79663590e7b745d70fd41b3412d0504",
-    "supplement-caffeine": "f9937622474dc89fa43e29f0ffcb1a2ba1b5abcd6f2a280bf4f331b6e502952a",
+    "supplement-caffeine": "22900e9c0c80bf90dfd7d941027472c9f5837c1fa90c204222ea209296525d5e",
     "supplement-omega": "5f106ed9f06621074881dfec1c83bc2c2747421adb93559f990166c049b1ebd7",
-    "supplement-vitd": "afd760c2a4081f9523d3be1670bca4cc44e87dc10130f965a54280365c2eb765",
-    "supplement-magnesium": "01e7f3a2c18c7607ed6fd4109755347ee85c5111ec6a3855c96fe84081d842b4",
+    "supplement-vitd": "88b6fc181a571b021e90c65b9349a48649531c0421b5a762cf20f96c0dde5df5",
+    "supplement-magnesium": "b5d26a1137a3f584237f354ab3e405def41d1f8165765de4efdccf95052e2f98",
     "supplement-collagen": "f158c90245753dd04801dd0fc3e1053860fc285a41bbdb5b24ea80cefc3a0f2b",
-    "supplement-beta-alanine": "a8db5a16916383e7b0d68deb63ebca8057b6c2905a6d8bd7f97459c4814a4c80",
-    "supplement-citrulline": "0cf966227265a2173c224b25546029f267dee93e361f4d072a8974df09522128",
-    "supplement-electrolytes": "128fceec15585e413456f1e9c1ad9f9110d7ec8a77d05ed47b621fcf6280df48"
-  }
+    "supplement-beta-alanine": "654fd109efffc3c9bb9576d8f4bf42296f4f71a96b4288fa731c5f8dfc828599",
+    "supplement-citrulline": "105ed9ee0e7372bc5d3123b8e30bcbdbf1ab531da50072d5036fd91c343efdf8",
+    "supplement-electrolytes": "a664829fe8f51781b22a7b6ab7550ef1a2a63bfb24b92fead14e21469e11ad61"
+  },
+  "revision": "Deliberately revised 2026-10-18 with owner approval: dossier sources/PubMed studies, Ukrainian case fixes, creatine confidence re-ratings. Original provenance fields retained."
 }

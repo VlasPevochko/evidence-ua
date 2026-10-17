@@ -13,3 +13,9 @@ By explicit approval of the site owner, three baselines were refreshed after rev
 
 - `home-v56-science-digests.json`, `first-visit-v59-science-digests.json`: article sections `creatine` and `supplement-{caffeine,vitd,magnesium,beta-alanine,citrulline,electrolytes}`. Reviewed diff: added PubMed study sources (with title, citation, DOI) so the source list matches the result blocks; replaced outdated "Основне джерело — …" sentences for vitamin D and magnesium; fixed Ukrainian grammatical cases; creatine claims CLM-000002/4/5/6/7 re-rated downward with stated reasons (risk of bias, inconsistency, imprecision, indirectness). `supplement-protein`, `-omega`, `-collagen` are unchanged.
 - `visitor-v58-file-hashes.json`: only `src/evidence/creatine/claims.ts` and `src/evidence/supplements/dossiers.json` changed; other entries are untouched.
+
+## PR #26 quality-gate integration
+
+The retention tests continue to use these reviewed fixtures, including the revision above. The duplicate `retained-content-sha256.json` proposed in #26 used older content and a different raw-HTML serialization; it is removed rather than refreshed from current output.
+
+The source-card accessibility change in #26 uses `h3` instead of `h4` under the creatine sources section. Both homepage retention tests normalize only those source-card headings to their historical tag before comparing the full article digest. All wording and article order remain protected; no digest is changed by this integration.

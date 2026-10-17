@@ -1,39 +1,11 @@
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
+import {execFileSync} from 'node:child_process';
 import {catalog,learningHref,learningLocation} from '../src/platform/catalog.mjs';
 import {homeLearningHTML,pathCard} from '../src/platform/learning-ui.mjs';
 import {mountPlatformNavigation,learningNavigationHTML} from '../src/platform/shell.mjs';
 import {feedbackMaterial,feedbackMaterialOptions,feedbackReport,mountHomeFeedback} from '../src/platform/home-feedback.mjs';
 import {contextLink,materials} from '../src/platform/materials.mjs';
-
-const retainedContent=JSON.parse(fs.readFileSync('tests/fixtures/retained-content-sha256.json','utf8'));
-
-function scientificSectionDigests(source){
- const expectedIds=new Set(Object.keys(retainedContent.homeScientificSections));
- const digests={};const tags=/<!--[\s\S]*?-->|<(script|style)\b[\s\S]*?<\/\1\s*>|<\/?section\b[^>]*>/gi;
- let depth=0,start=-1,id='';
- for(const match of source.matchAll(tags)){
-  const tag=match[0];if(tag.startsWith('<!--')||/^<(script|style)\b/i.test(tag))continue;
-  if(tag.startsWith('</')){
-   depth--;
-   if(depth===0&&start>=0){digests[id]=crypto.createHash('sha256').update(source.slice(start,match.index+tag.length)).digest('hex');start=-1;id='';}
-  }else{
-   if(depth===0){const found=tag.match(/\bid=["']([^"']+)["']/i);if(found&&expectedIds.has(found[1])){start=match.index;id=found[1];}}
-   depth++;
-  }
- }
- return digests;
-}
-
-function htmlIds(source){
- const ids=[];const tags=/<!--[\s\S]*?-->|<(script|style)\b[\s\S]*?<\/\1\s*>|<([a-z][\w:-]*)\b([^>]*)>/gi;
- for(const match of source.matchAll(tags)){
-  if(match[0].startsWith('<!--')||match[1])continue;
-  const id=match[3].match(/\bid=["']([^"']+)["']/i);if(id)ids.push(id[1]);
- }
- return ids;
-}
 
 const home=homeLearningHTML();
 assert(fs.readFileSync('dist/index.html','utf8').includes('<!-- EUA_HOME_LEARNING_START -->'+home+'<!-- EUA_HOME_LEARNING_END -->'));
@@ -101,12 +73,27 @@ feedback.node('#feedback-material').value='';feedback.submit();assert(!feedback.
 feedback.node('#feedback-clear').events.get('click')();assert.equal(feedback.node('#feedback-useful').value,'');assert.equal(feedback.node('#home-feedback-text').value,'');assert(feedback.node('#home-feedback-output').hidden);assert(feedback.node('#feedback-useful').focused);
 feedback.submit();assert(feedback.node('#home-feedback-output').hidden);feedback.destroy();assert(!feedback.node('#feedback-clear').events.has('click'));
 
-const page=fs.readFileSync('dist/index.html','utf8');
-assert.deepEqual(scientificSectionDigests(page),retainedContent.homeScientificSections,'Scientific homepage sections changed from the checked-in baseline');
-assert.equal((page.match(/id="home-learning-paths"/g)||[]).length,1);
-const renderedPaths=page.match(/<details\b[^>]*\bid="home-learning-paths"[^>]*>([\s\S]*?)<\/details>/);
-assert(renderedPaths);assert.equal((renderedPaths[1].match(/<article\b/g)||[]).length,catalog.paths.length);
-assert(page.includes('<label for="feedback-material">'));
-assert(page.includes('id="feedback-clear"')&&page.includes('type="button"'));
-const ids=htmlIds(page);assert.equal(ids.length,new Set(ids).size,'Duplicate HTML IDs');
-console.log('First visit: shared route cards, valid curriculum links, popstate/reset, unique header entry, explicit feedback context/clearing and frozen science baselines passed. Browser layout QA pending.');
+// Independent v59 baseline: preserve all scientific article subtrees exactly.
+execFileSync('python',['-c',`from pathlib import Path
+from lxml import html
+import json,hashlib
+baseline=json.loads(Path('tests/fixtures/first-visit-v59-science-digests.json').read_text(encoding='utf-8'))
+assert baseline['sourceCommit']=='9d174ef146c09936be2c615e1a663b7e4f7dbd29'
+expected=baseline['sections']
+assert len(expected)==10
+after=html.fromstring(Path('dist/index.html').read_text())
+# PR #26 fixes source-card heading hierarchy; compare the unchanged content at its historical heading level.
+for heading in after.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
+    heading.tag='h4'
+for expression in ['//body/section[@id="creatine" or starts-with(@id,"supplement-")]']:
+    sections=after.xpath(expression)
+    assert list(expected)==[n.get('id') for n in sections], 'Scientific article order changed'
+    actual={n.get('id'):hashlib.sha256(html.tostring(n,encoding='utf-8')).hexdigest() for n in sections}
+    assert expected==actual, 'Scientific article HTML changed from the independent v59 baseline'
+routes=after.xpath('//*[@id="home-learning-paths"]')
+assert len(routes)==1 and len(routes[0].xpath('.//article'))==3
+assert after.xpath('//label[@for="feedback-material"]')
+assert after.xpath('//*[@id="feedback-clear" and @type="button"]')
+ids=after.xpath('//@id'); assert len(ids)==len(set(ids)), 'Duplicate HTML IDs'
+`]);
+console.log('First visit: shared route cards, valid curriculum links, popstate/reset, unique header entry, explicit feedback context/clearing and unchanged v59 scientific articles passed. Browser layout QA pending.');

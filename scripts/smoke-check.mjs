@@ -127,7 +127,9 @@ function accessibilityIssues(html, pagePath) {
       issues.push('img has no alt attribute');
     }
 
-    if (/^<a\b/i.test(tag) && !attributeValue(tag, 'aria-label') && !attributeValue(tag, 'aria-labelledby')) {
+    // An anchor without href is a placeholder, unless explicitly exposed as a link.
+    const isLink = /^<a\b/i.test(tag) && (/(?:^|\s)href(?=\s|=|\/?>)/i.test(tag) || attributeValue(tag, 'role').toLowerCase() === 'link');
+    if (isLink && !attributeValue(tag, 'aria-label') && !attributeValue(tag, 'aria-labelledby')) {
       const linkEnd = html.indexOf('</a', match.index + tag.length);
       const content = linkEnd < 0 ? '' : html.slice(match.index + tag.length, linkEnd);
       const visibleText = content
@@ -309,7 +311,7 @@ async function stopServer(server) {
 }
 
 const server = spawn(
-  'python3',
+  process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),
   ['-u', '-m', 'http.server', '0', '--bind', '127.0.0.1', '--directory', distDirectory],
   { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] }
 );

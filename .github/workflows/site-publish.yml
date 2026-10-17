@@ -39,6 +39,10 @@ jobs:
         run: node scripts/build-site.mjs
       - name: Test built site in a fresh copy per test file
         run: node scripts/test-site.mjs
+      - name: Validate the content catalog
+        run: node scripts/validate-content.mjs
+      - name: Smoke check the complete built site
+        run: node scripts/smoke-check.mjs
       - name: Publish full static artifact from main
         if: github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

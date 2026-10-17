@@ -71,6 +71,30 @@ const unnamedLink = runSmokeCheck({
 assert.notEqual(unnamedLink.status, 0);
 assert.match(unnamedLink.stderr, /link has no accessible name/);
 
+// Glossary dialogs populate this source placeholder before making it a link.
+const linkPlaceholder = runSmokeCheck({
+  'index.html': validPage('<dialog><a id="term-dialog-source" target="_blank" rel="noopener noreferrer"></a></dialog>'),
+});
+assert.equal(linkPlaceholder.status, 0, linkPlaceholder.stderr);
+
+const emptyHrefLink = runSmokeCheck({
+  'index.html': validPage('<a href=""></a>'),
+});
+assert.notEqual(emptyHrefLink.status, 0);
+assert.match(emptyHrefLink.stderr, /link has no accessible name/);
+
+const valuelessHrefLink = runSmokeCheck({
+  'index.html': validPage('<a href></a>'),
+});
+assert.notEqual(valuelessHrefLink.status, 0);
+assert.match(valuelessHrefLink.stderr, /link has no accessible name/);
+
+const explicitRoleLink = runSmokeCheck({
+  'index.html': validPage('<a role="link" tabindex="0"></a>'),
+});
+assert.notEqual(explicitRoleLink.status, 0);
+assert.match(explicitRoleLink.stderr, /link has no accessible name/);
+
 const missingAriaTarget = runSmokeCheck({
   'index.html': validPage('<button aria-labelledby="missing-label">Open</button>'),
 });

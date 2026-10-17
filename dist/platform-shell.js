@@ -8,7 +8,8 @@ export function navigationHTML(current){return `<a class="eua-catalog-link" href
 export function learningNavigationHTML(location){const {path,index}=location;return `<p><strong>${esc(path.title)}</strong><span>Крок ${index+1} із ${path.steps.length}</span></p><div>${index>0?`<a href="${esc(learningHref(path.id,index-1))}">← Попередній матеріал</a>`:''}${index<path.steps.length-1?`<a href="${esc(learningHref(path.id,index+1))}">Наступний матеріал →</a>`:'<a href="./directions.html#learning-paths">До маршрутів →</a>'}<a href="./index.html#home-learning-paths">Обрати інший маршрут</a></div>`;}
 export function mountPlatformNavigation(root=document){
   if(root.defaultView&&root.defaultView.self!==root.defaultView.top)return;
-  if(!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=84';css.dataset.platformStyle='';root.head.append(css);}
+  const head=root.head??root.document?.head;
+  if(head&&typeof head.append==='function'&&!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=84';css.dataset.platformStyle='';head.append(css);}
   const selected=root.body.dataset.platformArea||null;
   // Keep the existing home hero height: compact header entries only.
   if(selected==='home'){

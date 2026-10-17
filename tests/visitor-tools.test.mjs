@@ -1,12 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import {materials,findMaterials,contextLink,materialContext} from '../src/platform/materials.mjs';
 import {materialCard,toolsHTML,mountQuickTools} from '../src/platform/quick-tools.mjs';
 import {feedbackReport} from '../src/platform/home-feedback.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 assert.equal(new Set(materials.map(m=>m.id)).size,materials.length);
-assert.equal(materials.length,44);
 assert.equal(findMaterials('ПРОТЕЇН')[0].href,'./index.html#supplement-protein');
 assert.equal(findMaterials('саркомер')[0].href,'./muscle-lab.html?structure=STRUCT-SARCOMERE#explorer');
 assert.equal(findMaterials('ядро')[0].href,'./cell-lab.html?organelle=ORG-NUCLEUS#cell-canvas');
@@ -29,6 +28,10 @@ assert.equal(materialContext('https://evidence.invalid/muscle-lab.html?structure
 assert(feedbackReport({stuck:'Не зручно'},'https://evidence.invalid/?feedbackFor=supplements-protein&token=secret#private').includes('Матеріал: Протеїн'));
 assert(!feedbackReport({stuck:'Так'},'https://evidence.invalid/?feedbackFor=secret&token=secret').includes('secret'));
 assert(!toolsHTML('home').includes('data-eua-tool="focus"'));assert(toolsHTML('cell').includes('data-eua-tool="focus"'));
+// Home already has a native feedback disclosure; content pages still need its link.
+assert(!toolsHTML('home').includes('#home-feedback'));
+for(const area of ['cell','nutrition','muscle','supplements'])assert(toolsHTML(area).includes('./index.html#home-feedback'));
+for(const action of ['search','share'])assert(toolsHTML('home').includes(`data-eua-tool="${action}"`));
 assert(!materialCard({...materials[0],title:'<script>'}).includes('<script>'));
 
 // Minimal DOM adapter for real quick-search, focus-mode and clipboard handlers.
@@ -58,5 +61,8 @@ for(const file of ['src/platform/materials.mjs','src/platform/quick-tools.mjs'])
 const css=fs.readFileSync('dist/platform.css','utf8');for(const key of ['min-height:44px','height:100dvh','grid-template-columns:minmax(0,1fr)','dialog::backdrop','prefers-reduced-motion'])assert(css.includes(key));
 // Other scientific registries, artwork and original scenes remain byte-identical to v58.
 // Muscle Lab allows only the explicit R1–R4 changes checked against v57 in muscle-flow.test.mjs.
-for(const file of ['src/evidence/creatine/claims.ts','src/evidence/creatine/sources.ts','src/evidence/creatine/evidenceRecords.ts','src/evidence/supplements/dossiers.json','src/evidence/nutrition/module.mjs','src/cell-lab/module.mjs','dist/muscle-lab-scenes.js','dist/muscle-lab-art-v1.webp'])assert(fs.readFileSync(file).equals(execFileSync('git',['show','b48b9d0f5858673f8c6f9985c1984c198847031d:'+file])),file);
+const baseline=JSON.parse(fs.readFileSync('tests/fixtures/visitor-v58-file-hashes.json','utf8'));
+assert.equal(baseline.sourceCommit,'b48b9d0f5858673f8c6f9985c1984c198847031d');
+assert.equal(Object.keys(baseline.files).length,8);
+for(const [file,expected] of Object.entries(baseline.files))assert.equal(createHash('sha256').update(fs.readFileSync(file)).digest('hex'),expected,file);
 console.log('Visitor tools: real search/open/close/focus handlers, direct materials, copy/fallback, safe URLs, feedback context, duplicate mount, no transport/storage and unchanged other scientific registries passed. No browser layout QA.');

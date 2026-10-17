@@ -1,0 +1,71 @@
+/* The homepage visual layer keeps existing content and destination semantics. */
+body[data-platform-area="home"] .page > .hero {
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);
+  align-items:center;gap:28px;padding:32px;min-height:500px;
+  background:radial-gradient(ellipse at 83% 35%,#4d402d24,transparent 58%),#101115!important;
+}
+body[data-platform-area="home"] .hero .copy {min-width:0;}
+body[data-platform-area="home"] .hero .copy h1 {font-size:clamp(32px,3vw,44px);}
+body[data-platform-area="home"] .hero .copy .desc {font-size:15px;line-height:1.75;}
+body[data-platform-area="home"] .hero .copy .three {font-size:13px;line-height:1.7;}
+body[data-platform-area="home"] .hero .copy .cta,
+body[data-platform-area="home"] .hero .copy .hero-search {gap:12px;font-size:13px;padding-left:16px;}
+body[data-platform-area="home"] .hero .copy .hero-search {margin:12px 0 0 10px;}
+.home-scene {position:relative;min-width:0;margin:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center;}
+.home-scene-label {position:relative;padding-left:14px;color:#dcc28d;font-size:10px;letter-spacing:.14em;line-height:1.6;}
+.home-scene-label::before {content:'';position:absolute;left:0;top:5px;width:5px;height:5px;background:#ffdb70;border-radius:50%;box-shadow:0 0 10px #ffdb7080;}
+.home-scene img {display:block;width:100%;height:auto;max-height:420px;object-fit:contain;}
+.home-scene figcaption {display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid #b3996026;padding-top:12px;color:#d6ccb9;font-size:12px;line-height:1.6;}
+.home-scene figcaption small {color:#aaa9a3;font-size:10px;}
+body[data-platform-area="home"] #cards > .topic-card {
+  min-height:288px;padding:176px 22px 22px;border-color:#4e4637;border-radius:18px;
+  background:linear-gradient(155deg,#2a2927,#1d1e21)!important;
+  transition:border-color .2s,box-shadow .2s,transform .2s;
+}
+body[data-platform-area="home"] #cards > .topic-card::before {
+  content:'';display:block;position:absolute;inset:6px auto auto 50%;width:164px;height:164px;margin-left:-82px;z-index:-1;
+  background-image:url('./home-topic-atlas.svg');background-size:500% 100%;
+  background-position:var(--art-position) center;background-repeat:no-repeat;
+  opacity:.95;transition:transform .25s;
+}
+body[data-platform-area="home"] #cards > .topic-card[data-area="muscle"] {--art-position:0%;}
+body[data-platform-area="home"] #cards > .topic-card[data-area="cell"] {--art-position:25%;}
+body[data-platform-area="home"] #cards > .topic-card[data-area="nutrition"] {--art-position:50%;}
+body[data-platform-area="home"] #cards > .topic-card[data-area="supplements"] {--art-position:75%;}
+body[data-platform-area="home"] #cards > .topic-card[data-area="movement"] {--art-position:100%;}
+body[data-platform-area="home"] #cards > .topic-card strong {text-transform:none;font-size:20px;letter-spacing:-.02em;}
+body[data-platform-area="home"] #cards > .topic-card small {font-size:12px;letter-spacing:.03em;}
+body[data-platform-area="home"] #cards > .topic-card .topic-state {font-size:11px;letter-spacing:0;margin-top:15px;}
+body[data-platform-area="home"] #cards > .topic-card:hover {border-color:#b19559;box-shadow:0 14px 32px #0004;transform:translateY(-3px);}
+body[data-platform-area="home"] #cards > .topic-card:hover::before {transform:translateY(-3px);}
+@media(min-width:1025px) and (max-width:1280px) {
+  body[data-platform-area="home"] .page > .hero {grid-template-columns:minmax(0,1fr);}
+  .home-scene img {max-height:280px;}
+}
+@media(max-width:1024px) {
+  body[data-platform-area="home"] .hero .copy .hero-search {margin-left:0;}
+}
+@media(max-width:760px) {
+  body[data-platform-area="home"] .page > .hero {grid-template-columns:minmax(0,1fr);min-height:0;gap:24px;padding:24px;}
+  body[data-platform-area="home"] .hero .copy h1 {font-size:32px;}
+  body[data-platform-area="home"] .hero .copy .desc {font-size:16px;}
+  body[data-platform-area="home"] .hero .copy .three {font-size:14px;}
+  body[data-platform-area="home"] .hero .copy .cta,
+  body[data-platform-area="home"] .hero .copy .hero-search {font-size:14px;}
+  .home-scene {padding-top:18px;border-top:1px solid #b3996026;}
+  .home-scene img {height:250px;}
+  body[data-platform-area="home"] #cards > .topic-card {min-height:146px;padding:22px 18px 22px 110px;justify-content:center;}
+  body[data-platform-area="home"] #cards > .topic-card::before {inset:50% auto auto 10px;width:88px;height:88px;margin-left:0;margin-top:-44px;}
+  body[data-platform-area="home"] #cards > .topic-card strong {font-size:17px;}
+  body[data-platform-area="home"] #cards > .topic-card .topic-state {margin-top:10px;}
+}
+@media(max-width:380px) {
+  body[data-platform-area="home"] .page > .hero {padding:20px;}
+  .home-scene img {height:220px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  body[data-platform-area="home"] #cards > .topic-card,
+  body[data-platform-area="home"] #cards > .topic-card::before {transition:none;}
+  body[data-platform-area="home"] #cards > .topic-card:hover,
+  body[data-platform-area="home"] #cards > .topic-card:hover::before {transform:none;}
+}

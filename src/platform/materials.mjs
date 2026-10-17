@@ -9,7 +9,7 @@ const guides=[
 export const materialKinds={interactive:'Інтерактив',dossier:'Досьє',guide:'Розбір',section:'Матеріал'};
 const listedMaterials=catalog.areas.filter(a=>a.available).flatMap(area=>{
  const units=area.units.length?area.units:[{id:area.id,title:area.title,href:area.href,entityIds:[]}];
- return units.map(unit=>({id:area.id+'-'+unit.id,title:unit.title,href:unit.href,areaId:area.id,areaTitle:area.title,review:area.review,group:area.group,kind:area.id==='supplements'?(unit.id==='atp-pcr'?'interactive':'dossier'):unit.id==='sources'?'section':'interactive'}));
+ return units.map(unit=>({id:area.id+'-'+unit.id,title:unit.title,href:unit.href,areaId:area.id,areaTitle:area.title,review:area.review,group:area.group,kind:unit.kind||(area.id==='supplements'?(unit.id==='atp-pcr'?'interactive':'dossier'):unit.id==='sources'?'section':'interactive')}));
 });
 const structureMaterials=[
  {areaId:'muscle',file:'muscle-lab',param:'structure',hash:'explorer',ids:['TISSUE-SKELETAL-MUSCLE','STRUCT-FASCICLE','CELL-MUSCLE','STRUCT-MYOFIBRIL','STRUCT-SARCOMERE','PRT-ACTIN-MYOSIN']},
@@ -30,7 +30,16 @@ const searchTerms={
  'muscle-atrophy':'втрата м’язів зменшення м’язів',
  'supplements-omega':'омега 3 omega-3',
  'supplements-vitd':'вітамін д vitamin d',
- 'nutrition-digestion':'травлення їжі перетравлення засвоєння'
+ 'nutrition-digestion':'травлення їжі перетравлення засвоєння',
+ 'movement-elbow':'лікоть ліктя біцепс згинання розгинання',
+ 'movement-shoulder':'плече плеча рука відведення приведення',
+ 'movement-walk':'крок крокування ходьба суглоби коліно',
+ 'movement-lever':'важіль важелі плече момент сили вантаж відстань маса',
+ 'movement-team':'агоніст синергіст антагоніст стабілізатор біцепс трицепс команда м’язів',
+ 'movement-questions':'запитання завдання перевір себе біомеханіка рух',
+ 'sleep-stages':'фази стадії сну nrem rem циркадний ритм',
+ 'sleep-performance':'недосипання недосип сонливість втома працездатність',
+ 'sleep-habits':'звички режим кофеїн світло відпочинок'
 };
 export function findMaterials(query='',group='all'){
  const words=normalizeSearch(query).split(' ').filter(Boolean);

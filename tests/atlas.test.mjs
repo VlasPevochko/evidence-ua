@@ -44,9 +44,14 @@ assert(html.includes('class="atlas-body-canvas"'),'Global body and Atlas zone po
 assert(html.includes('./atlas-coordinate-map.css'),'Responsive coordinate layer must load after Atlas styles');
 assert.match(coordinateCSS,/\.atlas-body-canvas\{[^}]*aspect-ratio:520\s*\/\s*480/,'Atlas body canvas must preserve the source SVG 520/480 ratio');
 assert.match(coordinateCSS,/\.atlas-body-canvas>\.atlas-figure\{[^}]*inset:0/,'Body SVG must fill its coordinate canvas');
-for(const coordinate of ['.atlas-zone--brain{--x:36.5%;--y:15.5%}', '.atlas-zone--spine{--x:36.5%;--y:46%}', '.atlas-zone--knee{--x:43.5%;--y:78%}']){
-  assert(coordinateCSS.includes(coordinate),`Missing corrected body coordinate: ${coordinate}`);
-}
+for(const coordinate of [
+  '.atlas-zone--brain{--x:36.5%;--y:15.5%}',
+  '.atlas-zone--shoulder{--x:49.5%;--y:36.5%}',
+  '.atlas-zone--spine{--x:36.5%;--y:46%}',
+  '.atlas-zone--gut{--x:36.5%;--y:54.5%}',
+  '.atlas-zone--muscles{--x:29%;--y:74%}',
+  '.atlas-zone--knee{--x:43.5%;--y:78%}'
+])assert(coordinateCSS.includes(coordinate),`Missing corrected body coordinate: ${coordinate}`);
 
 // Knee Pain Map v1: exact pain location guides anatomy, not diagnosis.
 assert(html.includes('id="knee-pain-map"'),'Knee pain map mount is required in the figure panel');
@@ -64,8 +69,19 @@ assert(kneeJS.includes('Точка болю ≠ джерело болю'),'Pain 
 assert(kneeJS.includes('не встановлює діагноз'),'Pain map must explicitly avoid auto-diagnosis');
 assert.match(coordinateCSS,/\.knee-stage\{[^}]*aspect-ratio:320\s*\/\s*420/,'Knee stage must preserve the SVG 320/420 coordinate system');
 assert.match(coordinateCSS,/\.knee-stage>\.knee-diagram\{[^}]*inset:0/,'Knee SVG must fill the same coordinate canvas as its hotspots');
-assert(coordinateCSS.includes('.knee-hotspot[data-knee-hotspot="pes-anserinus"]{--x:38%!important;--y:77%!important}'),'Pes anserinus hotspot must sit on the medial proximal tibia insertion');
-assert(coordinateCSS.includes('.knee-hotspot[data-knee-hotspot="fibular-head"]{--x:69%!important;--y:63%!important}'),'Fibular head hotspot must sit on the lateral fibular head');
+const calibratedKneePoints=[
+  ['superior-patella','50%','38%'],
+  ['anterior-patella','50%','47.5%'],
+  ['inferior-patella','50%','57.5%'],
+  ['medial-joint-line','59.5%','54.5%'],
+  ['pes-anserinus','39%','79%'],
+  ['lateral-joint-line','64%','54.5%'],
+  ['fibular-head','69%','62.5%'],
+  ['posterior-knee','50%','52.5%']
+];
+for(const [id,x,y] of calibratedKneePoints){
+  assert(coordinateCSS.includes(`.knee-hotspot[data-knee-hotspot="${id}"]{--x:${x}!important;--y:${y}!important}`),`Missing calibrated knee hotspot ${id}`);
+}
 assert.match(kneeCSS,/:focus-visible/);
 assert.match(kneeCSS,/prefers-reduced-motion/);
 
@@ -78,4 +94,4 @@ for(const shell of [shellSource,shellBuilt]){
 }
 
 assert.equal(catalog.areas.filter(area=>area.available).length,6,'Atlas must not become a seventh catalog direction');
-console.log('Evidence Atlas v0.3.1 contract verified: body and knee coordinate canvases stay anatomically aligned across responsive layouts.');
+console.log('Evidence Atlas v0.3.2 contract verified: responsive coordinate canvases plus anatomically calibrated knee hotspots.');

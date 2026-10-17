@@ -2,12 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {catalog} from '../src/platform/catalog.mjs';
 
-const requiredFiles=['dist/atlas.html','dist/atlas.css','dist/atlas.js'];
+const requiredFiles=['dist/atlas.html','dist/atlas.css','dist/atlas.js','dist/knee-pain-map.css','dist/knee-pain-map.js'];
 for(const file of requiredFiles)assert(fs.existsSync(file),`Missing Atlas asset: ${file}`);
 
 const html=fs.readFileSync('dist/atlas.html','utf8');
 const css=fs.readFileSync('dist/atlas.css','utf8');
 const js=fs.readFileSync('dist/atlas.js','utf8');
+const kneeCSS=fs.readFileSync('dist/knee-pain-map.css','utf8');
+const kneeJS=fs.readFileSync('dist/knee-pain-map.js','utf8');
 const shellSource=fs.readFileSync('src/platform/shell.mjs','utf8');
 const shellBuilt=fs.readFileSync('dist/platform-shell.js','utf8');
 
@@ -36,6 +38,24 @@ assert.match(css,/atlas-content\.is-changing/);
 assert.match(css,/prefers-reduced-motion/);
 assert.match(css,/:focus-visible/);
 
+// Knee Pain Map v1: exact pain location guides anatomy, not diagnosis.
+assert(html.includes('id="knee-pain-map"'),'Knee pain map mount is required in the figure panel');
+assert(html.includes('./knee-pain-map.css'),'Knee pain map stylesheet must be loaded');
+assert(html.includes('./knee-pain-map.js'),'Knee pain map controller must be loaded');
+for(const view of ['front','medial','lateral','posterior'])assert(kneeJS.includes(`id:'${view}'`),`Missing knee view: ${view}`);
+for(const label of ['Спереду','Зсередини','Ззовні','Ззаду'])assert(kneeJS.includes(label),`Missing knee view label: ${label}`);
+for(const hotspot of ['anterior-patella','inferior-patella','superior-patella','medial-joint-line','pes-anserinus','lateral-joint-line','fibular-head','posterior-knee']){
+  assert(kneeJS.includes(`id:'${hotspot}'`),`Missing knee pain hotspot: ${hotspot}`);
+}
+for(const anatomy of ['pes anserinus','sartorius','gracilis','semitendinosus','gastrocnemius','biceps femoris']){
+  assert(kneeJS.toLowerCase().includes(anatomy.toLowerCase()),`Missing pain-map anatomy: ${anatomy}`);
+}
+assert(kneeJS.includes('Точка болю ≠ джерело болю'),'Pain map must state the core interpretation rule');
+assert(kneeJS.includes('не встановлює діагноз'),'Pain map must explicitly avoid auto-diagnosis');
+assert.match(kneeCSS,/knee-pain-map/);
+assert.match(kneeCSS,/:focus-visible/);
+assert.match(kneeCSS,/prefers-reduced-motion/);
+
 for(const shell of [shellSource,shellBuilt]){
   assert(shell.includes('./atlas.html'),'Shared shell must link to Atlas');
   assert(shell.includes('Атлас'),'Shared shell must name Atlas');
@@ -45,4 +65,4 @@ for(const shell of [shellSource,shellBuilt]){
 }
 
 assert.equal(catalog.areas.filter(area=>area.available).length,6,'Atlas must not become a seventh catalog direction');
-console.log('Evidence Atlas expansion contract verified: shoulder + knee modules, preview maps, breadcrumb, persistent tabs and catalog count unchanged.');
+console.log('Evidence Atlas v0.3 contract verified: knee pain map, exact hotspots, source-vs-location framing and catalog count unchanged.');

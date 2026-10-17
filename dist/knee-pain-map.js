@@ -47,8 +47,17 @@ function diagramFor(view){
 function hotspotButtons(){return currentSpots().map(spot=>`<button type="button" class="knee-hotspot" data-knee-hotspot="${spot.id}" aria-pressed="${String(activeHotspot===spot.id)}" style="--x:${spot.x}%;--y:${spot.y}%"><span>${spot.title}</span></button>`).join('');}
 function renderMap(){
  if(!mount)return;
+ const focused=document.activeElement;
+ const focusAttribute=mount.contains(focused)?['data-knee-view','data-knee-hotspot','data-knee-return'].find(name=>focused.hasAttribute(name)):null;
+ const focusValue=focusAttribute?focused.getAttribute(focusAttribute):null;
  const view=currentView();
  mount.innerHTML=`<header class="knee-map-head"><button type="button" data-knee-return>← Усе тіло</button><div><strong>Коліно · Pain Map</strong><small>${view.title} · натисніть на точну точку болю</small></div><span class="knee-map-badge">v1</span></header><div class="knee-view-switch" role="tablist" aria-label="Ракурс коліна">${views.map(item=>`<button type="button" role="tab" data-knee-view="${item.id}" aria-pressed="${String(item.id===activeView)}">${item.label}</button>`).join('')}</div><div class="knee-stage">${diagramFor(activeView)}${hotspotButtons()}</div><div class="knee-map-rule"><strong>Точка болю ≠ джерело болю</strong><span>Локалізація допомагає звузити анатомічні варіанти, але сама по собі не встановлює діагноз.</span></div>`;
+ mount.querySelectorAll('[data-knee-view]').forEach(button=>{
+  const selected=button.dataset.kneeView===activeView;
+  button.setAttribute('aria-selected',String(selected));
+  button.tabIndex=selected?0:-1;
+ });
+ if(focusAttribute)mount.querySelector(`[${focusAttribute}="${focusValue}"]`)?.focus();
 }
 
 function showMap(){
@@ -89,7 +98,7 @@ function selectView(id){
 }
 
 mount?.addEventListener('click',event=>{
- const returnButton=event.target.closest('[data-knee-return]');if(returnButton){suppressed=true;hideMap();return;}
+ const returnButton=event.target.closest('[data-knee-return]');if(returnButton){suppressed=true;hideMap();zoneButtons.find(button=>button.dataset.zone==='knee')?.focus();return;}
  const viewButton=event.target.closest('[data-knee-view]');if(viewButton){selectView(viewButton.dataset.kneeView);return;}
  const hotspot=event.target.closest('[data-knee-hotspot]');if(hotspot)selectHotspot(hotspot.dataset.kneeHotspot);
 });

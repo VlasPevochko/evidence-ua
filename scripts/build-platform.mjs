@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {learningNotesHTML} from '../src/platform/learning-notes.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 import {homeLearningHTML} from '../src/platform/learning-ui.mjs';
 import {materials} from '../src/platform/materials.mjs';
@@ -51,4 +52,15 @@ for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  let next=old.replace(/platform-shell\.js\?v=(?:63|81|82)/g,'platform-shell.js?v=83').replace(/directions\.js\?v=(?:63|70|82)/g,'directions.js?v=83') .replaceAll('home-catalog.js?v=82','home-catalog.js?v=83').replaceAll('home-feedback.js?v=82','home-feedback.js?v=83').replaceAll('home-coast.css?v=82','home-coast.css?v=83').replaceAll('home-catalog.js?v=57','home-catalog.js?v=83').replaceAll('home-feedback.js?v=63','home-feedback.js?v=83').replaceAll('home-coast.css?v=80','home-coast.css?v=83');
  if(file==='index.html')next=next.replace(/EVIDENCE UA \/ \d+ НАПРЯМІВ/g,'EVIDENCE UA / '+homeTopics.length+' НАПРЯМІВ').replace(/(class="home-direction-count" aria-hidden="true">)\d+</g,'$1'+homeTopics.length+'<').replace(/aria-label="(?:П’ять|Шість|\d+) напрямів Evidence UA"/g,'aria-label="'+homeTopics.length+' напрямів Evidence UA"');
  if(next!==old)fs.writeFileSync(path,next);
+}
+
+// Static explanatory notes remain readable without JavaScript. Only these marked fragments are regenerated.
+fs.writeFileSync('dist/platform-glossary-data.js',fs.readFileSync('src/platform/glossary-data.mjs','utf8'));
+fs.writeFileSync('dist/platform-glossary.js',fs.readFileSync('src/platform/glossary.mjs','utf8').replace("'./glossary-data.mjs'","'./platform-glossary-data.js?v=84'"));
+for(const area of ['movement','sleep']){
+ const file='dist/'+area+'.html',old=fs.readFileSync(file,'utf8');
+ const marker=/<!-- EUA_LEARNING_NOTES_START -->[\s\S]*?<!-- EUA_LEARNING_NOTES_END -->/;
+ if(!marker.test(old))throw Error('Learning notes marker missing: '+file);
+ const next=old.replace(marker,'<!-- EUA_LEARNING_NOTES_START -->'+learningNotesHTML(area)+'<!-- EUA_LEARNING_NOTES_END -->');
+ if(next!==old)fs.writeFileSync(file,next);
 }

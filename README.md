@@ -1,4 +1,6 @@
-# Evidence UA
+# Evidence-UA
+Base about body and all science inside one. Evidence from sport and nutrition
+# Website source and publication
 
 Український освітній сайт про тіло, спорт і харчування, у якому твердження спираються на наукові джерела. Мета проєкту: зібрати доказові матеріали в одному місці й чесно показувати, що відомо, наскільки це надійно і де докази закінчуються.
 

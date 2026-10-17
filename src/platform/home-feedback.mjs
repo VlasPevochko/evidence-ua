@@ -1,4 +1,4 @@
-// User-generated text only: no network, persistence, tracking or automatic sending here. Optional manual sending lives in feedback-send.mjs.
+// User-generated text only: no network, persistence, tracking or automatic sending. (feedback-send.mjs is inactive until an endpoint is configured.)
 import {materials} from './materials.mjs';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function feedbackMaterial(href,selection){
@@ -28,13 +28,13 @@ export function mountHomeFeedback(root=document){
  const generate=e=>{
   e.preventDefault();const report=feedbackReport({materialId:material?.value,useful:root.querySelector('#feedback-useful').value,stuck:root.querySelector('#feedback-stuck').value,change:root.querySelector('#feedback-change').value},root.defaultView?.location?.href,root.querySelector('#feedback-device').value);
   if(!report){output.hidden=true;status.textContent='Додайте відповідь хоча б на одне запитання.';return;}
-  text.value=report;output.hidden=false;status.textContent='Текст готовий і ще не надісланий. Натисніть «Надіслати» або скопіюйте його.';text.focus();
+  text.value=report;output.hidden=false;status.textContent='Текст готовий. Він не надісланий: скопіюйте й передайте людині, яка поділилася сайтом.';text.focus();
  };
  const invalidate=()=>{output.hidden=true;status.textContent='Відповіді змінено. Зберіть текст ще раз.';};
  const clearAnswers=()=>{for(const id of ['#feedback-useful','#feedback-stuck','#feedback-change'])root.querySelector(id).value='';text.value='';output.hidden=true;status.textContent='Відповіді очищено.';root.querySelector('#feedback-useful').focus();};
  const copyText=async()=>{
   copy.disabled=true;
-  try{const clipboard=root.defaultView?.navigator?.clipboard;if(!clipboard?.writeText)throw Error('Clipboard unavailable');await clipboard.writeText(text.value);status.textContent='Скопійовано. Текст можна вставити в повідомлення вручну.';}
+  try{const clipboard=root.defaultView?.navigator?.clipboard;if(!clipboard?.writeText)throw Error('Clipboard unavailable');await clipboard.writeText(text.value);status.textContent='Скопійовано. Передайте цей текст людині, яка поділилася сайтом.';}
   catch{status.textContent='Автоматичне копіювання недоступне. Текст виділено — скопіюйте його вручну.';text.focus();text.select();}
   finally{copy.disabled=false;}
  };

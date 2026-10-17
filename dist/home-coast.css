@@ -50,9 +50,9 @@ body[data-platform-area="home"] .home-picker-cards .topic-card small{display:blo
 body[data-platform-area="home"] .home-picker-cards .topic-card .topic-state{font-size:10px;line-height:1.5;letter-spacing:0;color:#bdd0c7;margin:8px 1px 0}
 .home-picker-visual{display:block;flex:none;order:-1;width:100%;height:84px;border-radius:9px;background:#03151f center/cover no-repeat}
 [data-area="muscle"]>.home-picker-visual{background-image:url('./muscle-lab-art-v1.webp');background-position:36% 50%}
-[data-area="cell"]>.home-picker-visual{background-image:url('./cell-atlas-v2.png')}
+[data-area="cell"]>.home-picker-visual{background-image:url('./cell-atlas-v2.webp')}
 [data-area="nutrition"]>.home-picker-visual{background-image:url('./card-nutrition.svg');background-size:contain;background-color:#173137}
-[data-area="supplements"]>.home-picker-visual{background-image:url('./supplement-backgrounds-v10.png');background-size:500% 200%;background-position:50% 0}
+[data-area="supplements"]>.home-picker-visual{background-image:url('./supplement-backgrounds-v10.webp');background-size:500% 200%;background-position:50% 0}
 [data-area="movement"]>.home-picker-visual{background-image:url('./home-movement.svg');background-size:contain;background-color:#10252c}
 .home-picker-note{margin:16px 0 0;font-size:11px;line-height:1.5;color:#bfd0c8}.home-picker-note span{color:#e4c77e}
 @media(max-width:1100px){body[data-platform-area="home"] .page>header.home-header{padding-left:32px;padding-right:32px;gap:20px}body[data-platform-area="home"] .page>header.home-header nav{gap:20px!important}body[data-platform-area="home"] .page>.hero{padding-left:32px;padding-right:32px}}

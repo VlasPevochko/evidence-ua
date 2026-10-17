@@ -1,7 +1,7 @@
 import {getOrganelle} from './cell-lab-data.js?v=56';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const atlasSize=Object.freeze({width:1448,height:1086});
-const image='./cell-atlas-v2.png';
+const image='./cell-atlas-v2.webp';
 // Presentation geometry traced on the artistic plate, not measured anatomy.
 // Vesicle identities are assigned illustrative labels. Fibers and ER targets
 // indicate representative visible regions of the distributed structures.

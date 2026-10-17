@@ -39,7 +39,7 @@ for name,tree in documents.items():
         count+=1
 print(json.dumps({'internalLinkOccurrences':count,'htmlPages':len(documents),'missingTargets':0}))
 `],{input:JSON.stringify(generated),encoding:'utf8'}));
-assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,8);
+assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,10);
 for(const area of catalog.areas.filter(a=>a.available)){
  const url=new URL(area.href,'https://evidence.invalid/');assert(fs.existsSync(path.join('dist',url.pathname)));
 }
@@ -48,7 +48,12 @@ for(const route of catalog.paths)for(let i=0;i<route.steps.length;i++){
 }
 const muscle=fs.readFileSync('dist/muscle-lab.html','utf8'),home=fs.readFileSync('dist/index.html','utf8'),protein=fs.readFileSync('dist/protein-meta.html','utf8');
 assert(muscle.includes('href="./index.html#top"'));assert(muscle.includes('href="./directions.html"'));assert(home.includes('href="#start-here"'));assert(protein.includes('#supplement-protein'));assert(protein.includes('#top'));
-// Execute the unchanged production hash router, not a reimplementation of it.
+// Execute the production hash router, not a reimplementation of it.
+// The VM records declarations; v76 resolves the home layout through CSS so
+// desktop grid and mobile flex survive a round trip through an article.
+const layoutCSS=fs.readFileSync('dist/home-vcard.css','utf8');
+assert(home.includes('./home-vcard.css?v=76'));
+assert(layoutCSS.includes('--home-layout:grid'));assert(layoutCSS.includes('--home-layout:flex'));
 const start=home.indexOf('(()=>{\n const page='),end=home.indexOf('</script>',start);assert(start>=0&&end>start);
 const nodes=new Map(),callbacks=new Map(),articles=[];
 const make=(id,tagName='DIV')=>{const n={id,tagName,style:{setProperty(k,v){this[k]=v;}},classList:{toggle(){}},contains(child){return child?.article===this;},querySelector(){return {textContent:id};},scrollIntoView(){this.scrolled=true;}};nodes.set(id,n);return n;};
@@ -58,5 +63,5 @@ make('evidence-card').article=articles[0];
 const doc={body:{dataset:{}},querySelector(){return page;},getElementById:id=>nodes.get(id)||null,querySelectorAll(selector){return selector.startsWith('body>section')?articles.slice(1):[];}};
 const location={hash:'#top'},sandbox={document:doc,location,window:{addEventListener(k,fn){callbacks.set(k,fn);}},requestAnimationFrame(fn){fn();}};vm.runInNewContext(home.slice(start,end),sandbox);
 for(const id of ['creatine','evidence-card','supplement-protein','supplement-magnesium']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'none');assert.equal(doc.body.dataset.routeView,'article');assert(nodes.get(id).scrolled);}
-for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback','missing-target']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'block');assert.equal(doc.body.dataset.routeView,'home');assert(articles.every(a=>a.style.display==='none'));}
-console.log('Navigation target audit:',result,'All available catalog and teaching routes resolve. This validates code/targets, not live clicks or layout.');
+for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback','missing-target']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'var(--home-layout, block)');assert.equal(doc.body.dataset.routeView,'home');assert(articles.every(a=>a.style.display==='none'));}
+console.log('Navigation target audit:',result,'All available catalog, Atlas and teaching routes resolve. This validates code/targets, not live clicks or layout.');

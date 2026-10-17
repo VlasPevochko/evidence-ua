@@ -1,7 +1,7 @@
 import {getOrganelle} from './module.mjs';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const atlasSize=Object.freeze({width:1448,height:1086});
-const image='./cell-atlas-v2.png';
+const image='./cell-atlas-v2.webp';
 // Presentation geometry traced on the artistic plate, not measured anatomy.
 // Vesicle identities are assigned illustrative labels. Fibers and ER targets
 // indicate representative visible regions of the distributed structures.
@@ -34,5 +34,5 @@ export function renderCellAtlas(selectedId='ORG-MITOCHONDRION'){
   const crop=r.boundary||r.fibers?`mask="url(#cell-mask-${r.id})"`:`clip-path="url(#cell-clip-${r.id})"`;
   return `<g class="organelle${active?' selected':''}" data-organelle="${r.id}" role="button" tabindex="0" aria-pressed="${active}" aria-label="Обрати: ${esc(o.label)}" aria-controls="organelle-panel"><title>${esc(o.label)}</title><g class="organelle-motion" style="transform-origin:${r.x}px ${r.y}px"><image class="organelle-fragment" href="${image}" width="1448" height="1086" ${crop} pointer-events="none"/><g class="organelle-contour${r.boundary?' boundary-contour':r.fibers?' fiber-contour':''}" pointer-events="none">${outline(r)}</g></g>${hit}</g>`;
  }).join('');
- return `<div class="cell-atlas-frame"><div class="cell-atlas-toolbar" aria-hidden="true"><span id="cell-preview-caption">Обрана структура</span><strong id="cell-preview-name">${esc(selected.label)}</strong><span class="cell-atlas-hint">Наведи або натисни</span></div><svg class="cell-atlas" viewBox="0 0 1448 1086" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Інтерактивна художня ілюстрація клітини"><defs>${clips}</defs><image class="cell-atlas-base" href="${image}" width="1448" height="1086" pointer-events="none"/>${controls}</svg></div>`;
+ return `<div class="cell-atlas-frame"><div class="cell-atlas-toolbar" aria-hidden="true"><span id="cell-preview-caption">Обрана структура</span><strong id="cell-preview-name">${esc(selected.label)}</strong><span class="cell-atlas-hint">Натисни для детальної будови</span></div><svg class="cell-atlas" viewBox="0 0 1448 1086" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Інтерактивна художня ілюстрація клітини"><defs>${clips}</defs><image class="cell-atlas-base" href="${image}" width="1448" height="1086" pointer-events="none"/>${controls}</svg></div>`;
 }

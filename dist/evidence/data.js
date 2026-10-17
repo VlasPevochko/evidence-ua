@@ -85,13 +85,15 @@ export const creatineClaims          = [
       measurementNotes:
         "Lean mass is not equivalent to direct measurement of skeletal-muscle hypertrophy."
     },
-    evidenceConfidence: "high",
+    evidenceConfidence: "moderate",
     confidenceFramework: "evidenceua_grade_informed_v1",
     provisional: true,
     confidenceRationale: {
       summary:
         "Кілька synthesis-level джерел показують позитивний напрям; 2024 meta-analysis оцінив +1.14 кг LBM.",
+      downgradeDomains: ["risk_of_bias"],
       uncertaintyNotes: [
+        "Частина досліджень мала some concerns або високий ризик упередженості, тому попередню оцінку знижено до MODERATE.",
         "Lean body mass включає водний компонент і не є прямою мірою контрактильної м'язової тканини."
       ]
     },
@@ -188,13 +190,15 @@ export const creatineClaims          = [
       name: "Serum creatinine and creatinine-based eGFR",
       timeframe: "medium_term"
     },
-    evidenceConfidence: "high",
+    evidenceConfidence: "moderate",
     confidenceFramework: "evidenceua_grade_informed_v1",
     provisional: true,
     confidenceRationale: {
       summary:
         "Два сучасні метааналізи показують невелике підвищення serum creatinine без відповідного переконливого сигналу погіршення GFR.",
+      downgradeDomains: ["inconsistency"],
       uncertaintyNotes: [
+        "Напрям зміни креатиніну узгоджений, а величина — ні (I² ≈ 94%), тому попередню оцінку знижено через неузгодженість.",
         "Точна величина зміни залежить від досліджень, тривалості, дози та лабораторного методу."
       ]
     },
@@ -203,7 +207,7 @@ export const creatineClaims          = [
     practicalMeaning:
       "Creatinine-based eGFR може виглядати нижчим після початку креатину через зміну метаболізму креатину/креатиніну.",
     limitations: [
-      "Serum creatinine у meta-analysis 2026 мав високу heterogeneity.",
+      "Serum creatinine у meta-analysis 2026 мав дуже високу heterogeneity (I² ≈ 94%).",
       "Лабораторні зміни завжди потрібно інтерпретувати разом із клінічним контекстом."
     ],
     lastReviewed: "2026-10-10",
@@ -227,7 +231,7 @@ export const creatineClaims          = [
     intervention: { name: "Альтернативні форми креатину" },
     comparator: { description: "Креатин моногідрат та/або плацебо" },
     outcome: { name: "Performance and body composition", timeframe: "medium_term" },
-    evidenceConfidence: "moderate",
+    evidenceConfidence: "low",
     confidenceFramework: "evidenceua_grade_informed_v1",
     provisional: true,
     confidenceRationale: {
@@ -235,6 +239,7 @@ export const creatineClaims          = [
         "Систематичний огляд виявив мало прямих порівнянь із моногідратом і не встановив послідовної переваги альтернативних форм.",
       downgradeDomains: ["imprecision", "indirectness"],
       uncertaintyNotes: [
+        "Прямих порівнянь із моногідратом мало, тому попередню оцінку знижено до LOW.",
         "Лише невелика частина досліджень прямо порівнювала альтернативні форми з креатином моногідратом."
       ]
     },
@@ -258,7 +263,7 @@ export const creatineClaims          = [
     statement:
       "Фаза завантаження прискорює підвищення м’язових запасів креатину, але не є необхідною для їх підвищення при регулярному прийомі.",
     shortStatement:
-      "Завантаження прискорює насичення креатином, але не є обов’язковим.",
+      "Завантаження прискорює насичення м’язів креатином, але не є обов’язковим для його підвищення.",
     claimType: "physiology",
     evidenceLayer: "human_outcome",
     domain: "supplements",
@@ -269,20 +274,22 @@ export const creatineClaims          = [
       dose: "20 г/добу протягом 6 днів проти 3 г/добу протягом 28 днів"
     },
     outcome: { name: "Концентрація загального креатину в м’язах", timeframe: "medium_term" },
-    evidenceConfidence: "high",
+    evidenceConfidence: "moderate",
     confidenceFramework: "evidenceua_grade_informed_v1",
     provisional: true,
     confidenceRationale: {
       summary:
         "Прямі вимірювання в м’язах людини показали швидке насичення при вищій дозі та подібне поступове підвищення при нижчій щоденній дозі.",
+      downgradeDomains: ["imprecision"],
       uncertaintyNotes: [
+        "Оцінка спирається на одне давнє дослідження 31 чоловіка без незалежного підтвердження в цьому наборі джерел, тому попередню оцінку знижено до MODERATE.",
         "Базове дослідження давнє й має невелику чоловічу вибірку; висновок стосується безпосереднього фізіологічного вимірювання."
       ]
     },
     evidenceSummary:
       "20 г/добу протягом 6 днів підвищували загальний креатин у м’язах приблизно на 20%; 3 г/добу протягом 28 днів давали подібне, але поступове підвищення.",
     practicalMeaning:
-      "Завантаження — спосіб швидше наситити запаси, а не обов’язкова умова дії креатину.",
+      "Завантаження — спосіб швидше наситити м’язові запаси. Чи впливає воно на результати тренувань, цей Claim не оцінює.",
     limitations: [
       "Базове дослідження включало 31 чоловіка.",
       "Цей Claim стосується насичення м’язів креатином, а не всіх подальших результатів продуктивності."
@@ -308,7 +315,7 @@ export const creatineClaims          = [
     intervention: { name: "Креатин безпосередньо до тренування" },
     comparator: { description: "Креатин безпосередньо після тренування" },
     outcome: { name: "Сила й товщина м’язів", timeframe: "long_term" },
-    evidenceConfidence: "low",
+    evidenceConfidence: "very_low",
     confidenceFramework: "evidenceua_grade_informed_v1",
     provisional: true,
     confidenceRationale: {
@@ -316,6 +323,7 @@ export const creatineClaims          = [
         "Пряме дослідження отримало подібні результати, але вибірка надто мала для впевненого висновку про відсутність різниці.",
       downgradeDomains: ["imprecision"],
       uncertaintyNotes: [
+        "Відсутність виявленої різниці в одному дослідженні на 10 осіб не доводить відсутності різниці.",
         "Ключове дослідження з порівнянням умов у тих самих учасників включало лише 10 людей."
       ]
     },

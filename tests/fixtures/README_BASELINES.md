@@ -1,0 +1,15 @@
+# Historical baseline provenance
+
+The import omitted original Sites history. Two tests previously used `git show` against missing commits. These fixtures were derived from those **actual historical Git objects**, retrieved read-only from the original Sites source repository on 2026-10-14. They were not generated from current GitHub source or current production files.
+
+- `first-visit-v59-science-digests.json`: source commit `9d174ef146c09936be2c615e1a663b7e4f7dbd29`, `dist/index.html`, original whole-file SHA-256 `6c3c2821ab78583e79b92fed898c4d85cffc6daba6c0c2842ad315d88f25a959`. The ten direct-body article sections are serialized with `lxml.html.tostring(section, encoding='utf-8')` and hashed with SHA-256. The test retains both article order and byte-content equality checks through their digests. These historical digests independently match the already-imported v56 article fixture.
+- `visitor-v58-file-hashes.json`: source commit `b48b9d0f5858673f8c6f9985c1984c198847031d`. SHA-256 of the original eight raw blobs preserves the former byte-equality check, including the binary muscle artwork, without duplicating large files.
+
+Recovered old objects are only local verification material. This PR adds the digest fixtures, not the old history or later Sites source. Never refresh these baselines from current output merely to make a failing test pass; any scientific-content change needs a reviewed, explicitly justified new baseline.
+
+## Deliberate revision — 2026-10-18 (owner-approved)
+
+By explicit approval of the site owner, three baselines were refreshed after reviewed content changes (not to silence a failing test):
+
+- `home-v56-science-digests.json`, `first-visit-v59-science-digests.json`: article sections `creatine` and `supplement-{caffeine,vitd,magnesium,beta-alanine,citrulline,electrolytes}`. Reviewed diff: added PubMed study sources (with title, citation, DOI) so the source list matches the result blocks; replaced outdated "Основне джерело — …" sentences for vitamin D and magnesium; fixed Ukrainian grammatical cases; creatine claims CLM-000002/4/5/6/7 re-rated downward with stated reasons (risk of bias, inconsistency, imprecision, indirectness). `supplement-protein`, `-omega`, `-collagen` are unchanged.
+- `visitor-v58-file-hashes.json`: only `src/evidence/creatine/claims.ts` and `src/evidence/supplements/dossiers.json` changed; other entries are untouched.

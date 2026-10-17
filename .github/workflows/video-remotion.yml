@@ -1,0 +1,59 @@
+name: Evidence UA Video Factory
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "video/remotion/**"
+      - ".github/workflows/video-remotion.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: video/remotion
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: video/remotion/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Remotion composition smoke check
+        run: npm run compositions
+      - name: Preview representative frames
+        run: |
+          mkdir -p preview-smoke
+          for frame in 60 240 480 750 1050 1350 1650 1769; do
+            npx remotion still src/index.ts CreatineJourney "preview-smoke/frame-${frame}.png" --frame="${frame}"
+          done
+      - name: Render silent review video
+        run: |
+          mkdir -p out
+          npx remotion render src/index.ts CreatineJourney out/creatine-journey-silent.mp4 --codec=h264 --crf=18
+      - name: Upload preview frames
+        uses: actions/upload-artifact@v4
+        with:
+          name: creatine-journey-preview
+          path: video/remotion/preview-smoke/*.png
+          if-no-files-found: error
+      - name: Upload silent review video
+        uses: actions/upload-artifact@v4
+        with:
+          name: creatine-journey-silent-video
+          path: video/remotion/out/creatine-journey-silent.mp4
+          if-no-files-found: error

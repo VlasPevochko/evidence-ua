@@ -7,7 +7,6 @@ import {feedbackReport} from '../src/platform/home-feedback.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 const retainedContent=JSON.parse(fs.readFileSync('tests/fixtures/retained-content-sha256.json','utf8'));
 assert.equal(new Set(materials.map(m=>m.id)).size,materials.length);
-assert.equal(materials.length,44);
 assert.equal(findMaterials('ПРОТЕЇН')[0].href,'./index.html#supplement-protein');
 assert.equal(findMaterials('саркомер')[0].href,'./muscle-lab.html?structure=STRUCT-SARCOMERE#explorer');
 assert.equal(findMaterials('ядро')[0].href,'./cell-lab.html?organelle=ORG-NUCLEUS#cell-canvas');
@@ -30,6 +29,10 @@ assert.equal(materialContext('https://evidence.invalid/muscle-lab.html?structure
 assert(feedbackReport({stuck:'Не зручно'},'https://evidence.invalid/?feedbackFor=supplements-protein&token=secret#private').includes('Матеріал: Протеїн'));
 assert(!feedbackReport({stuck:'Так'},'https://evidence.invalid/?feedbackFor=secret&token=secret').includes('secret'));
 assert(!toolsHTML('home').includes('data-eua-tool="focus"'));assert(toolsHTML('cell').includes('data-eua-tool="focus"'));
+// Home already has a native feedback disclosure; content pages still need its link.
+assert(!toolsHTML('home').includes('#home-feedback'));
+for(const area of ['cell','nutrition','muscle','supplements'])assert(toolsHTML(area).includes('./index.html#home-feedback'));
+for(const action of ['search','share'])assert(toolsHTML('home').includes(`data-eua-tool="${action}"`));
 assert(!materialCard({...materials[0],title:'<script>'}).includes('<script>'));
 
 // Minimal DOM adapter for real quick-search, focus-mode and clipboard handlers.

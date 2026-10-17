@@ -18,8 +18,10 @@ test('the atlas maps every existing structure to one accessible, separately high
 
 test('raster and contour geometry share the uncropped image coordinate system',()=>{
  assert.equal(typeof api.renderCellAtlas,'function');
- const image=fs.readFileSync('dist/cell-atlas-v2.png');
- assert.deepEqual(api.atlasSize,{width:image.readUInt32BE(16),height:image.readUInt32BE(20)});
+ const image=fs.readFileSync('dist/cell-atlas-v2.webp');
+ const kind=image.toString('ascii',12,16);
+ const size=kind==='VP8X'?{width:1+image.readUIntLE(24,3),height:1+image.readUIntLE(27,3)}:kind==='VP8 '?{width:image.readUInt16LE(26)&0x3fff,height:image.readUInt16LE(28)&0x3fff}:{width:1+(image.readUInt32LE(21)&0x3fff),height:1+((image.readUInt32LE(21)>>14)&0x3fff)};
+ assert.deepEqual(api.atlasSize,size);
  const html=api.renderCellAtlas('ORG-NUCLEUS');
  assert(html.includes(`viewBox="0 0 ${api.atlasSize.width} ${api.atlasSize.height}"`));
  assert(html.includes('preserveAspectRatio="xMidYMid meet"'));

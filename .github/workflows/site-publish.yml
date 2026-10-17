@@ -77,6 +77,26 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);
           NODE
 
+  browser-qa:
+    name: Browser QA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout GitHub source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Setup Node 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+      - name: Build over the complete retained dist snapshot
+        run: node scripts/build-site.mjs
+      - name: Install the pinned browser driver (no browser download; uses the runner's Chrome)
+        run: npm ci --prefix scripts/browser-qa --ignore-scripts --no-audit --no-fund
+      - name: Check pages and key flows in a real browser
+        run: node scripts/browser-qa/run.mjs
+
   deploy-pages:
     name: Deploy to GitHub Pages
     needs: verify

@@ -1,0 +1,11 @@
+{
+  "name": "evidence-ua-browser-qa",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser checks for the static site. Kept out of the root package so the site build stays dependency-free.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  }
+}

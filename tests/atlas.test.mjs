@@ -102,6 +102,7 @@ for(const anatomy of ['AC-суглоб','довга голівка біцепс�
 assert(shoulderJS.includes('Точка болю ≠ джерело болю'),'Shoulder map must preserve the core interpretation rule');
 assert(shoulderJS.includes('не встановлює діагноз'),'Shoulder map must explicitly avoid auto-diagnosis');
 assert(shoulderJS.includes('реферований біль'),'Shoulder map must distinguish referred pain');
+assert(shoulderJS.includes('kneeMapVisible'),'Shoulder controller must not restore the body/legend over an active knee pain map');
 assert.match(shoulderCSS,/shoulder-pain-map/);
 assert.match(shoulderCSS,/:focus-visible/);
 assert.match(shoulderCSS,/prefers-reduced-motion/);
@@ -115,4 +116,4 @@ for(const shell of [shellSource,shellBuilt]){
 }
 
 assert.equal(catalog.areas.filter(area=>area.available).length,6,'Atlas must not become a seventh catalog direction');
-console.log('Evidence Atlas v0.4 contract verified: calibrated knee map plus shoulder pain map with referred-pain framing.');
+console.log('Evidence Atlas v0.4 contract verified: calibrated knee map plus shoulder pain map with referred-pain framing and safe cross-map state.');

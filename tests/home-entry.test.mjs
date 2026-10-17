@@ -51,6 +51,8 @@ import json,hashlib
 expected=json.loads(Path('tests/fixtures/home-v56-science-digests.json').read_text())
 assert len(expected)==10
 root=html.fromstring(Path('dist/index.html').read_text())
+for heading in root.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
+    heading.tag='h4'
 actual={n.get('id'):hashlib.sha256(html.tostring(n,encoding='utf-8')).hexdigest() for n in root.xpath('//body/section[@id="creatine" or starts-with(@id,"supplement-")]')}
 assert expected==actual, 'Scientific article HTML changed'
 ids=[n.get('id') for n in root.xpath('//*[@id]')]

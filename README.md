@@ -1,5 +1,5 @@
-# evidence-ua
-Base of knowlege
+# Evidence-UA
+Base about body and all science politic inside one. Evidence from sport and nutrition
 # Website source and publication
 
 GitHub `main` is Evidence UA's source of truth. Make changes through a branch and reviewed PR; merge requires the owner's explicit approval. Keep **all of `dist/`**, including authored HTML/CSS/assets. Sites remains the current host.

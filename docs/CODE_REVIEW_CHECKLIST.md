@@ -35,4 +35,3 @@ Record the reviewed base/head, confirmed findings, separate scientific/safety co
 The website verification commands are `node scripts/build-site.mjs` and `node scripts/test-site.mjs`; use the current repository prerequisites. A passing website check for the reviewed head establishes that check's result, not live deployment or scientific approval. Follow the owner-approval and merge/deployment gates in the deployment contract. A review recommendation does not perform those actions.
 
 This is a project-specific adaptation informed by ECC's [reviewer checklist](https://github.com/affaan-m/ECC/blob/76aaa77df6adc5b889e689007bf99b9a4f74af34/agents/code-reviewer.md) and [security review](https://github.com/affaan-m/ECC/blob/76aaa77df6adc5b889e689007bf99b9a4f74af34/skills/security-review/SKILL.md), not an ECC installation. [Evaluation and attribution](evaluations/2026-10-17-ecc-minimal.md).
-

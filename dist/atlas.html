@@ -6,8 +6,8 @@
   <meta name="description" content="Атлас Evidence UA — досліджуйте людське тіло від анатомії до доказів.">
   <title>Атлас Evidence — Evidence UA</title>
   <link rel="stylesheet" href="./platform.css?v=83" data-platform-style>
-  <link rel="stylesheet" href="./atlas.css?v=2">
-  <link rel="stylesheet" href="./knee-pain-map.css?v=1">
+  <link rel="stylesheet" href="./atlas.css?v=3">
+  <link rel="stylesheet" href="./knee-pain-map.css?v=2">
 </head>
 <body data-platform-area="atlas">
   <header class="atlas-topbar">
@@ -28,7 +28,7 @@
 
   <main class="atlas-page">
     <section class="atlas-intro" aria-labelledby="atlas-title">
-      <p class="atlas-eyebrow">АТЛАС EVIDENCE · v0.3</p>
+      <p class="atlas-eyebrow">АТЛАС EVIDENCE · v0.3.1</p>
       <h1 id="atlas-title">Досліджуйте людське тіло</h1>
       <p>Від анатомії — до доказів. Оберіть область тіла, щоб перейти від структури до симптомів, навантаження, реабілітації та наукових даних.</p>
     </section>
@@ -36,13 +36,15 @@
     <section class="atlas-workspace" aria-label="Інтерактивний атлас людини">
       <div class="atlas-figure-panel">
         <div class="atlas-figure-wrap">
-          <img src="./home-anatomy.svg" alt="Схематична анатомічна фігура людини" class="atlas-figure">
-          <button class="atlas-zone atlas-zone--brain" type="button" data-zone="brain" aria-pressed="false"><span>Мозок</span></button>
-          <button class="atlas-zone atlas-zone--shoulder is-selected" type="button" data-zone="shoulder" aria-pressed="true"><span>Плече</span></button>
-          <button class="atlas-zone atlas-zone--spine" type="button" data-zone="spine" aria-pressed="false"><span>Хребет</span></button>
-          <button class="atlas-zone atlas-zone--muscles" type="button" data-zone="muscles" aria-pressed="false"><span>М’язи</span></button>
-          <button class="atlas-zone atlas-zone--gut" type="button" data-zone="gut" aria-pressed="false"><span>ШКТ</span></button>
-          <button class="atlas-zone atlas-zone--knee" type="button" data-zone="knee" aria-pressed="false"><span>Коліно</span></button>
+          <div class="atlas-body-canvas">
+            <img src="./home-anatomy.svg" alt="Схематична анатомічна фігура людини" class="atlas-figure">
+            <button class="atlas-zone atlas-zone--brain" type="button" data-zone="brain" aria-pressed="false"><span>Мозок</span></button>
+            <button class="atlas-zone atlas-zone--shoulder is-selected" type="button" data-zone="shoulder" aria-pressed="true"><span>Плече</span></button>
+            <button class="atlas-zone atlas-zone--spine" type="button" data-zone="spine" aria-pressed="false"><span>Хребет</span></button>
+            <button class="atlas-zone atlas-zone--muscles" type="button" data-zone="muscles" aria-pressed="false"><span>М’язи</span></button>
+            <button class="atlas-zone atlas-zone--gut" type="button" data-zone="gut" aria-pressed="false"><span>ШКТ</span></button>
+            <button class="atlas-zone atlas-zone--knee" type="button" data-zone="knee" aria-pressed="false"><span>Коліно</span></button>
+          </div>
           <section class="knee-pain-map" id="knee-pain-map" hidden aria-label="Точна карта болю коліна"></section>
         </div>
         <div class="atlas-legend" aria-label="Позначення атласу">

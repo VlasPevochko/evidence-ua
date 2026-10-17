@@ -56,6 +56,14 @@ assert.match(kneeCSS,/knee-pain-map/);
 assert.match(kneeCSS,/:focus-visible/);
 assert.match(kneeCSS,/prefers-reduced-motion/);
 
+// Mobile geometry regression: diagram and hotspots must share one aspect-ratio canvas.
+assert(kneeJS.includes('class="knee-anatomy-canvas"'),'Pain map must render a shared anatomy canvas');
+assert.match(kneeCSS,/\.knee-anatomy-canvas\{[^}]*aspect-ratio:320\s*\/\s*420/,'Knee anatomy canvas must preserve the SVG 320/420 coordinate system');
+assert.match(kneeCSS,/\.knee-anatomy-canvas[^}]*position:relative/,'Knee hotspot coordinate parent must be positioned');
+assert.match(kneeCSS,/\.knee-diagram\{[^}]*inset:0/,'SVG must fill the same anatomy canvas as hotspots');
+assert(kneeJS.includes("id:'pes-anserinus',view:'medial',x:42,y:72"),'Pes anserinus hotspot must sit on the medial proximal tibia/tendon insertion zone');
+assert(kneeJS.includes("id:'fibular-head',view:'lateral',x:69,y:63"),'Fibular-head hotspot must be anchored to the lateral fibular head');
+
 for(const shell of [shellSource,shellBuilt]){
   assert(shell.includes('./atlas.html'),'Shared shell must link to Atlas');
   assert(shell.includes('Атлас'),'Shared shell must name Atlas');
@@ -65,4 +73,4 @@ for(const shell of [shellSource,shellBuilt]){
 }
 
 assert.equal(catalog.areas.filter(area=>area.available).length,6,'Atlas must not become a seventh catalog direction');
-console.log('Evidence Atlas v0.3 contract verified: knee pain map, exact hotspots, source-vs-location framing and catalog count unchanged.');
+console.log('Evidence Atlas v0.3 contract verified: knee pain map, exact hotspots, mobile coordinate lock and catalog count unchanged.');

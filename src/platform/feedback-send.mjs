@@ -1,18 +1,19 @@
 // Sends an already generated feedback text, only after the visitor presses the send button.
-// Delivery goes through FormSubmit to the project mailbox. After the first activation
-// FormSubmit issues a random alias: replace the address below with it to hide the mailbox.
-export const FEEDBACK_ENDPOINT='https://formsubmit.co/ajax/wseska1@gmail.com';
-export async function sendFeedback(text,fetchImpl=globalThis.fetch){
+// Disabled until an endpoint is configured: do not commit a personal mailbox address here.
+// To enable, set the FormSubmit alias URL (https://formsubmit.co/ajax/<random-alias>) below.
+export const FEEDBACK_ENDPOINT='';
+export async function sendFeedback(text,fetchImpl=globalThis.fetch,endpoint=FEEDBACK_ENDPOINT){
+ if(!endpoint)throw Error('Feedback sending is not configured');
  const message=String(text||'').trim().slice(0,8000);
  if(!message)throw Error('Empty feedback');
- const response=await fetchImpl(FEEDBACK_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({_subject:'Evidence UA · відгук із сайту',message})});
+ const response=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({_subject:'Evidence UA · відгук із сайту',message})});
  const data=await response.json().catch(()=>({}));
  if(!response.ok||data.success===false||data.success==='false')throw Error('Send failed');
  return data;
 }
 export function mountFeedbackSend(root=document){
  const output=root.querySelector('#home-feedback-output'),copy=root.querySelector('#home-feedback-copy'),text=root.querySelector('#home-feedback-text'),status=root.querySelector('#home-feedback-status'),form=root.querySelector('#home-feedback-form');
- if(!output||!copy||!text||!status)return;
+ if(!FEEDBACK_ENDPOINT||!output||!copy||!text||!status)return;
  const button=root.createElement?root.createElement('button'):null;if(!button)return;
  button.type='button';button.id='home-feedback-send';button.textContent='Надіслати на пошту проєкту';
  output.insertBefore(button,copy);

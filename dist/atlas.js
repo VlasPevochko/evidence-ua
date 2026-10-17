@@ -2,7 +2,7 @@ const zoneMeta={
  brain:{title:'Мозок',summary:'Сон, стрес, когнітивні функції, фізична активність і фактори, що впливають на роботу нервової системи.',state:'Готується',stateKey:'planned'},
  shoulder:{title:'Плечовий комплекс',summary:'Анатомія, найпоширеніші стани, навантаження, реабілітація та спосіб читати наукові дані без спрощення до «працює / не працює».',state:'Повний модуль',stateKey:'full'},
  spine:{title:'Хребет',summary:'Біль, навантаження, рух, адаптація та сучасний погляд на структурні знахідки.',state:'Готується',stateKey:'planned'},
- muscles:{title:'М’язова система',summary:'Сила, гіпертрофія, відновлення, адаптація до навантаження та тренувальні змінні.',state:'Готується',stateKey:'planned'},
+ muscles:{title:'М’язова система',summary:'Сила, гіпертрофія, відновлення, адаптація до навантаження та тренувальні змінні.',state:'Бета',stateKey:'beta'},
  gut:{title:'ШКТ',summary:'Травлення, мікробіом, харчування та взаємодія способу життя з шлунково-кишковою системою.',state:'Готується',stateKey:'planned'},
  knee:{title:'Колінний комплекс',summary:'Навантаження, біль, травми, повернення до активності та силове тренування — з розділенням різних клінічних сценаріїв.',state:'Бета',stateKey:'beta'}
 };
@@ -72,6 +72,25 @@ const kneeContent={
  research:()=>`<div class="atlas-copy-card"><h3>Докази для коліна</h3><p>Бета-модуль уже розділяє клінічні сценарії, але кожна тема отримає власний набір джерел, рівень впевненості й окремі практичні висновки.</p><ul><li>Для пателофеморального болю окремо розглядаємо активну реабілітацію та освіту.</li><li>Для менісків і ACL розділяємо травматичні сценарії, хірургічні та нехірургічні шляхи.</li><li>Для остеоартрозу оцінюємо функцію, фізичну активність, симптоми й довгострокове ведення.</li></ul></div>`
 };
 
+function topicLinks(items){return items.map((item,index)=>`<article class="atlas-topic"><div class="atlas-topic-icon" aria-hidden="true">${String(index+1).padStart(2,'0')}</div><div><h3><a href="${item.href}">${item.title}</a></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span></article>`).join('');}
+
+// «М’язи» is a navigation beta: it links existing Evidence UA materials and the exercise library and adds no new scientific claims.
+const musclesContent={
+ overview:()=>`<div class="atlas-copy-card"><h3>Як читати цей модуль</h3><p>«М’язова система» — навігаційна зона Атласу. Вона не ставить діагнозів і не дає персональних порад: збирає в одному місці навчальні матеріали Evidence UA про будову м’яза, його роботу в русі та практику. Науковий перегляд цих матеріалів ще не завершено.</p></div>${topicLinks([
+  {title:'Muscle Lab: від м’яза до молекул',copy:'Будова м’яза, скорочення, ріст і атрофія.',href:'./muscle-lab.html#explorer',tag:'Будова'},
+  {title:'Ролі м’язів у русі',copy:'Як м’язи працюють разом: агоністи, синергісти й антагоністи.',href:'./movement.html#muscle-team',tag:'Рух'},
+  {title:'Бібліотека вправ',copy:'Практика, пов’язана з анатомією та Атласом. Поради поки що редакційна чернетка.',href:'./exercises.html',tag:'Практика'}
+ ])}`,
+ anatomy:()=>`<div class="atlas-copy-card"><h3>Від м’яза до молекул</h3><p>Muscle Lab показує рівні організації: від тканини й пучка до волокна, міофібрили та саркомера. Оберіть рівень:</p></div>${topicLinks([
+  {title:'Від м’яза до молекул',copy:'Інтерактивна будова скелетного м’яза.',href:'./muscle-lab.html#explorer',tag:'Будова'},
+  {title:'М’язове волокно',copy:'Клітина м’яза та її складові.',href:'./muscle-lab.html?structure=CELL-MUSCLE#explorer',tag:'Волокно'},
+  {title:'Скорочення м’яза',copy:'Як працює скорочення на рівні білків.',href:'./muscle-lab.html#contraction',tag:'Скорочення'},
+  {title:'Ролі м’язів: агоністи, синергісти, антагоністи',copy:'Спільна робота м’язів у русі.',href:'./movement.html#muscle-team',tag:'Рух'}
+ ])}`,
+ training:()=>`<div class="atlas-copy-card"><h3>Тренування та практика</h3><p>Evidence UA розділяє три шари: опис руху й анатомію, редакційні поради та наукові твердження про результат. Вправи нижче — редакційна чернетка: вони не обіцяють результату й не замінюють оцінку фахівця.</p><ul><li>Ріст м’яза як процес: <a href="./muscle-lab.html#growth">Muscle Lab · Ріст м’яза</a>.</li></ul></div><div class="atlas-practice" data-related-practice="muscles"><p class="atlas-practice-status">Завантаження списку вправ…</p></div>`,
+ research:()=>`<div class="atlas-copy-card"><h3>Джерела й межі</h3><p>Для цієї зони рівні впевненості ще не оцінено: науковий перегляд матеріалів Muscle Lab і Movement Lab не завершено. Джерела та межі пояснень — у самих модулях:</p><ul><li><a href="./muscle-lab.html#sources">Muscle Lab · Джерела та межі пояснень</a></li><li><a href="./movement.html#sources">Movement Lab · Джерела та межі моделі</a></li></ul></div>`
+};
+
 function previewContent(zone,tab){
  const meta=zoneMeta[zone],topics=previewTopics[zone]||[];
  if(tab==='overview')return `<div class="atlas-copy-card"><h3>${meta.title}: карта майбутнього модуля</h3><p>Ми вже показуємо структуру тем, але не підміняємо відсутній доказовий розбір короткими універсальними порадами. Кожна картка стане окремим матеріалом із джерелами та рівнем впевненості.</p></div>${topicCards(topics)}`;
@@ -88,11 +107,37 @@ const breadcrumbZone=document.getElementById('atlas-breadcrumb-zone');
 const breadcrumbTab=document.getElementById('atlas-breadcrumb-tab');
 let selectedZone='shoulder';
 let selectedTab='overview';
+const requestedZone=new URLSearchParams(location.search).get('zone');
+if(requestedZone&&Object.prototype.hasOwnProperty.call(zoneMeta,requestedZone))selectedZone=requestedZone;
 
 function markupFor(zone,tab){
  if(zone==='shoulder')return shoulderContent[tab]();
  if(zone==='knee')return kneeContent[tab]();
+ if(zone==='muscles'&&musclesContent[tab])return musclesContent[tab]();
  return previewContent(zone,tab);
+}
+
+async function hydrateRelatedPractice(){
+ const box=content.querySelector('[data-related-practice]');
+ if(!box)return;
+ const zone=box.dataset.relatedPractice;
+ const library=()=>{const p=document.createElement('p');p.className='atlas-practice-more';const a=document.createElement('a');a.href='./exercises.html';a.textContent='Відкрити всю бібліотеку вправ →';p.append(a);return p;};
+ try{
+  const {exercises,contentTypes}=await import('./exercises-data.js?v=3');
+  if(!box.isConnected||selectedZone!==zone)return;
+  const related=exercises.filter(item=>item.atlasZones.includes(zone));
+  const heading=document.createElement('h3');heading.textContent='Пов’язані вправи';
+  const list=document.createElement('ul');list.className='atlas-practice-list';
+  for(const item of related){
+   const li=document.createElement('li');
+   const link=document.createElement('a');link.href=`./exercises.html?e=${encodeURIComponent(item.slug)}`;link.textContent=item.titleUk;
+   const kind=document.createElement('span');kind.textContent=` · ${contentTypes[item.contentType]||item.contentType}`;
+   li.append(link,kind);list.append(li);
+  }
+  box.replaceChildren(heading,list,library());
+ }catch{
+  if(box.isConnected)box.replaceChildren(library());
+ }
 }
 
 function render(){
@@ -104,6 +149,7 @@ function render(){
  content.classList.add('is-changing');
  content.innerHTML=markupFor(selectedZone,selectedTab);
  requestAnimationFrame(()=>content.classList.remove('is-changing'));
+ hydrateRelatedPractice();
 }
 
 zoneButtons.forEach(button=>button.addEventListener('click',()=>{selectedZone=button.dataset.zone;selectedTab='overview';render();}));

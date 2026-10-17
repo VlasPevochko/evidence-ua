@@ -139,7 +139,9 @@ assert(frame[0].attrs.title.includes(row.titleUk));
 const ext = detail.find(n => n.tagName === 'a' && n.attrs.href === 'https://www.youtube.com/watch?v=qrL6N-35QrE')[0];
 assert.equal(ext.attrs.rel, 'noopener noreferrer');
 assert.equal(ext.attrs.target, '_blank');
-assert(detail.find(n => n.tagName === 'a' && n.attrs.href === './atlas.html').length, 'Links back to the Atlas');
+const zoneLinks = detail.find(n => n.tagName === 'a' && String(n.attrs.href).startsWith('./atlas.html?zone='));
+assert.deepEqual(zoneLinks.map(n => n.attrs.href), row.atlasZones.map(z => `./atlas.html?zone=${z}`), 'Links to every Atlas zone the exercise belongs to');
+assert(zoneLinks[0].textContent.startsWith('Атлас:'));
 
 let changed = null;
 const state = {q: '', region: '', type: '', pattern: '', equipment: ''};
@@ -168,12 +170,12 @@ assert(cardLinks.length >= 1 && cardLinks.every(a => a.textContent.length));
 // --- Page and Atlas wiring ------------------------------------------------------
 const html = fs.readFileSync('dist/exercises.html', 'utf8');
 assert(html.includes('<html lang="uk">') && html.includes('<title>') && html.includes('id="exercise-app"'));
-assert(html.includes('src="./exercises.js?v=3"') && html.includes('href="./exercises.css?v=1"'));
+assert(html.includes('src="./exercises.js?v=4"') && html.includes('href="./exercises.css?v=1"'));
 assert(!/<iframe/i.test(html) && !/youtube/i.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '')), 'No YouTube resource in the static page');
 for (const file of ['dist/exercises.css', 'dist/exercises.js', 'dist/exercises-data.js']) assert(fs.existsSync(file));
 const atlasJs = fs.readFileSync('dist/atlas.js', 'utf8');
 assert(atlasJs.includes('./exercises.html?region=shoulder'), 'Atlas shoulder training links to the library');
-assert(fs.readFileSync('dist/atlas.html', 'utf8').includes('atlas.js?v=3'));
+assert(/atlas\.js\?v=\d+/.test(fs.readFileSync('dist/atlas.html', 'utf8')), 'Atlas script is versioned so cached copies refresh');
 
 // --- Site-wide discovery: shared navigation and the home header (same pattern as the Atlas) -----
 const shellSource = fs.readFileSync('src/platform/shell.mjs', 'utf8');

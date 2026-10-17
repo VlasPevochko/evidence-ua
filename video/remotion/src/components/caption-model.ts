@@ -1,10 +1,21 @@
 export const splitCaptionIntoChunks = (text: string, maxWords = 6): string[] => {
   const words = text.trim().split(/\s+/u).filter(Boolean);
+  if (words.length === 0) return [''];
+  if (words.length <= maxWords) return [words.join(' ')];
+
+  const chunkCount = Math.ceil(words.length / maxWords);
+  const baseSize = Math.floor(words.length / chunkCount);
+  const largerChunkCount = words.length % chunkCount;
   const chunks: string[] = [];
-  for (let index = 0; index < words.length; index += maxWords) {
-    chunks.push(words.slice(index, index + maxWords).join(' '));
+  let offset = 0;
+
+  for (let index = 0; index < chunkCount; index += 1) {
+    const size = baseSize + (index < largerChunkCount ? 1 : 0);
+    chunks.push(words.slice(offset, offset + size).join(' '));
+    offset += size;
   }
-  return chunks.length > 0 ? chunks : [''];
+
+  return chunks;
 };
 
 export const captionChunkIndex = (

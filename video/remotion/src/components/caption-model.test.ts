@@ -10,6 +10,14 @@ test('silent caption chunks keep the complete text and stay readable', () => {
   assert.equal(chunks.join(' '), text);
 });
 
+test('silent captions rebalance instead of leaving one-word orphan fragments', () => {
+  const text = 'Фосфокреатин підтримує швидкий ресинтез АТФ з АДФ без створення додаткової енергії для клітини.';
+  const chunks = splitCaptionIntoChunks(text, 6);
+  assert.ok(chunks.length >= 2);
+  assert.ok(chunks.every((chunk) => chunk.split(/\s+/u).length >= 3));
+  assert.equal(chunks.join(' '), text);
+});
+
 test('caption chunk index advances and clamps on the final chunk', () => {
   assert.equal(captionChunkIndex(0, 30, 4), 0);
   assert.equal(captionChunkIndex(46, 30, 4), 1);

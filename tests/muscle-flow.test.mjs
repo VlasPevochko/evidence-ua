@@ -150,6 +150,8 @@ for name,expected in baseline['pages'].items():
         assert not missing, f'{name}: retained {category} changed or removed: {dict(missing)}'
     assert actual['inlineSvgHashes']==collections.Counter(expected['inlineSvgHashes']), f'{name}: inline scientific SVG bytes changed'
 `]);
+// Share metadata (icons, canonical, Open Graph) is the only head addition allowed on retained pages; it is covered by share-meta.test.mjs.
+const shareMetaBlock=/<link rel="icon" href="\.\/favicon\.svg"[\s\S]*?<meta name="twitter:card" content="summary_large_image">\n/;
 for(const [file,hash] of Object.entries(pageHashes)){
  // Directory navigation is intentionally extended in v59 and tested separately.
  if(file==='directions.html'||file==='index.html')continue; // Home presentation updated; article integrity is checked in home-entry and first-visit-flow.
@@ -164,6 +166,7 @@ for(const [file,hash] of Object.entries(pageHashes)){
    .replace('\n<button type="button" id="feedback-clear">Очистити відповіді</button>','')
    .replaceAll('home-entry.css?v=60','home-entry.css?v=57');
  }
+ html=html.replace(shareMetaBlock,'');
  assert.equal(createHash('sha256').update(html).digest('hex'),hash,'Unrelated page content changed: '+file);
 }
 console.log('Muscle flow: frozen science, source disclosures, drawers, players, deep links and keyboard passed. Cell/Nutrition retain all v69 paragraphs, external links and exact inline SVG bytes; unrelated pages retain frozen hashes. Browser layout remains unverified.');

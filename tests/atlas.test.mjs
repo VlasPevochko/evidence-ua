@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {catalog} from '../src/platform/catalog.mjs';
 
-const requiredFiles=['dist/atlas.html','dist/atlas.css','dist/atlas.js','dist/knee-pain-map.css','dist/knee-pain-map.js','dist/atlas-coordinate-map.css'];
+const requiredFiles=['dist/atlas.html','dist/atlas.css','dist/atlas.js','dist/knee-pain-map.css','dist/knee-pain-map.js','dist/shoulder-pain-map.css','dist/shoulder-pain-map.js','dist/atlas-coordinate-map.css'];
 for(const file of requiredFiles)assert(fs.existsSync(file),`Missing Atlas asset: ${file}`);
 
 const html=fs.readFileSync('dist/atlas.html','utf8');
@@ -10,6 +10,8 @@ const css=fs.readFileSync('dist/atlas.css','utf8');
 const js=fs.readFileSync('dist/atlas.js','utf8');
 const kneeCSS=fs.readFileSync('dist/knee-pain-map.css','utf8');
 const kneeJS=fs.readFileSync('dist/knee-pain-map.js','utf8');
+const shoulderCSS=fs.readFileSync('dist/shoulder-pain-map.css','utf8');
+const shoulderJS=fs.readFileSync('dist/shoulder-pain-map.js','utf8');
 const coordinateCSS=fs.readFileSync('dist/atlas-coordinate-map.css','utf8');
 const shellSource=fs.readFileSync('src/platform/shell.mjs','utf8');
 const shellBuilt=fs.readFileSync('dist/platform-shell.js','utf8');
@@ -85,6 +87,25 @@ for(const [id,x,y] of calibratedKneePoints){
 assert.match(kneeCSS,/:focus-visible/);
 assert.match(kneeCSS,/prefers-reduced-motion/);
 
+// Shoulder Pain Map v1: local pain patterns plus neck-referred pain without auto-diagnosis.
+assert(html.includes('id="shoulder-pain-map"'),'Shoulder pain map mount is required in the figure panel');
+assert(html.includes('./shoulder-pain-map.css'),'Shoulder pain map stylesheet must be loaded');
+assert(html.includes('./shoulder-pain-map.js'),'Shoulder pain map controller must be loaded');
+for(const view of ['front','lateral','posterior'])assert(shoulderJS.includes(`id:'${view}'`),`Missing shoulder view: ${view}`);
+for(const label of ['Спереду','Збоку','Ззаду'])assert(shoulderJS.includes(label),`Missing shoulder view label: ${label}`);
+for(const hotspot of ['ac-joint','bicipital-groove','anterior-gh','lateral-deltoid','posterior-cuff','scapular-region','cervical-referred']){
+  assert(shoulderJS.includes(`id:'${hotspot}'`),`Missing shoulder pain hotspot: ${hotspot}`);
+}
+for(const anatomy of ['AC-суглоб','довга голівка біцепса','rotator cuff','subacromial','шийного відділу']){
+  assert(shoulderJS.toLowerCase().includes(anatomy.toLowerCase()),`Missing shoulder-map anatomy or differential: ${anatomy}`);
+}
+assert(shoulderJS.includes('Точка болю ≠ джерело болю'),'Shoulder map must preserve the core interpretation rule');
+assert(shoulderJS.includes('не встановлює діагноз'),'Shoulder map must explicitly avoid auto-diagnosis');
+assert(shoulderJS.includes('реферований біль'),'Shoulder map must distinguish referred pain');
+assert.match(shoulderCSS,/shoulder-pain-map/);
+assert.match(shoulderCSS,/:focus-visible/);
+assert.match(shoulderCSS,/prefers-reduced-motion/);
+
 for(const shell of [shellSource,shellBuilt]){
   assert(shell.includes('./atlas.html'),'Shared shell must link to Atlas');
   assert(shell.includes('Атлас'),'Shared shell must name Atlas');
@@ -94,4 +115,4 @@ for(const shell of [shellSource,shellBuilt]){
 }
 
 assert.equal(catalog.areas.filter(area=>area.available).length,6,'Atlas must not become a seventh catalog direction');
-console.log('Evidence Atlas v0.3.2 contract verified: responsive coordinate canvases plus anatomically calibrated knee hotspots.');
+console.log('Evidence Atlas v0.4 contract verified: calibrated knee map plus shoulder pain map with referred-pain framing.');

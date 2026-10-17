@@ -82,6 +82,9 @@ assert baseline['sourceCommit']=='9d174ef146c09936be2c615e1a663b7e4f7dbd29'
 expected=baseline['sections']
 assert len(expected)==10
 after=html.fromstring(Path('dist/index.html').read_text())
+# PR #26 fixes source-card heading hierarchy; compare the unchanged content at its historical heading level.
+for heading in after.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
+    heading.tag='h4'
 for expression in ['//body/section[@id="creatine" or starts-with(@id,"supplement-")]']:
     sections=after.xpath(expression)
     assert list(expected)==[n.get('id') for n in sections], 'Scientific article order changed'

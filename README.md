@@ -38,6 +38,16 @@ npm run check
 
 This runs the retained-dist build with provenance, content validation, the regression suite in a fresh copy per test file, and a smoke check of generated HTML pages, JavaScript syntax and module imports, local resources, CSS imports/assets (including inline styles), executable URL schemes, duplicate IDs, local HTML anchors, safe new-tab link relations, document language/title/main landmark, heading order, ARIA ID references, image alt attributes, form labels, and link/button names. GitHub CI runs these same gates before publishing artifacts. These basic markup checks do not replace a full accessibility audit or visual browser testing.
 
+## Browser QA
+
+Static tests cannot see layout, keyboard focus or runtime errors, so a separate check drives a real Chrome:
+
+```bash
+npm run qa:browser
+```
+
+It serves `dist/` locally, blocks third-party requests, and checks every page at 390 and 1440 px (no console or network errors, no horizontal overflow, one visible `h1`, no broken images, nothing loaded from third parties), plus the exercise library, the Atlas shoulder map (keyboard focus) and the mobile home menu. It needs Chrome on the machine; set `BROWSER_EXECUTABLE` to use a specific binary. The only dependency, `playwright-core`, is pinned in `scripts/browser-qa/package-lock.json` and kept out of the root package. In CI it is the separate `Browser QA` job.
+
 The smoke check uses `python` on Windows and `python3` elsewhere; set `PYTHON` to select another Python 3 executable. Scientific retention tests use the reviewed fixtures documented in [baseline provenance](tests/fixtures/README_BASELINES.md); do not refresh hashes merely to silence a failure.
 
 The generated site is served from the [dist](dist) folder, while source files live under [src](src).

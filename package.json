@@ -12,6 +12,7 @@
     "test": "node scripts/test-site.mjs",
     "smoke": "node scripts/smoke-check.mjs",
     "validate": "node scripts/validate-content.mjs",
-    "check": "npm run build && npm run validate && npm test && npm run smoke"
+    "check": "npm run build && npm run validate && npm test && npm run smoke",
+    "qa:browser": "npm ci --prefix scripts/browser-qa --ignore-scripts --no-audit --no-fund && node scripts/browser-qa/run.mjs"
   }
 }

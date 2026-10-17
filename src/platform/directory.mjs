@@ -5,12 +5,12 @@ import {pathCard} from './learning-ui.mjs';
 export {pathCard};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function areaCard(area){
- const artwork={muscle:'muscle-lab-art-v1.webp',cell:'card-organism.svg',nutrition:'card-nutrition.svg',supplements:'card-evidence.svg',movement:'card-organism.svg'}[area.id];
+ const artwork={muscle:'muscle-lab-art-v1.webp',cell:'card-organism.svg',nutrition:'card-nutrition.svg',supplements:'card-evidence.svg',movement:'home-movement.svg',sleep:'home-sleep.svg'}[area.id];
  return `<article class="area-card">${artwork?`<div class="area-visual" aria-hidden="true"><img src="./${artwork}" alt="" loading="lazy" width="480" height="180"></div>`:''}<p class="area-kind">${esc(area.lab)}</p><h3>${esc(area.title)}</h3><p>${esc(area.description)}</p><p class="area-status"><strong>${esc(area.state)}</strong><br>${esc(area.review)}</p><a class="area-open" href="${esc(area.href)}">Відкрити напрям <span aria-hidden="true">→</span></a>${area.units.length?`<details><summary>Матеріали напряму</summary><div class="unit-links">${area.units.map(u=>`<a href="${esc(u.href)}">${esc(u.title)} →</a>`).join('')}</div></details>`:''}</article>`;
 }
 export function mountDirectory(root=document){
  let group='all',kind='all';const search=root.querySelector('#area-search'),view=root.defaultView;
- const groups=new Set(['all','atlas','nutrition','evidence','movement']);
+ const groups=new Set(['all','atlas','nutrition','evidence','movement','recovery']);
  const kinds=new Set(['all','interactive','dossier','guide']);
  const restore=()=>{
   const url=view?.location?.href?new URL(view.location.href):null,fromURL=url&&['q','group','kind'].some(key=>url.searchParams.has(key));

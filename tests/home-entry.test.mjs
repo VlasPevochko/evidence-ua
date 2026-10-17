@@ -7,7 +7,7 @@ import {feedbackReport,mountHomeFeedback} from '../src/platform/home-feedback.mj
 const index=fs.readFileSync('dist/index.html','utf8'),nav=fs.readFileSync('dist/navigation-v17.js','utf8'),css=fs.readFileSync('dist/home-entry.css','utf8');
 const sandbox={window:{}};vm.runInNewContext(fs.readFileSync('dist/home-catalog.js','utf8'),sandbox);
 const topics=JSON.parse(JSON.stringify(sandbox.window.EvidenceUAHomeTopics));
-assert.deepEqual(topics.map(t=>t.id),catalog.areas.filter(a=>a.available).map(a=>a.id));assert.equal(topics.length,5);
+assert.deepEqual(topics.map(t=>t.id),catalog.areas.filter(a=>a.available).map(a=>a.id));
 for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,area.state);assert.equal(t.href,t.id==='supplements'?'#supplement-library':area.href);}
 assert(index.includes('<a class="cta" href="#start-here">'));assert(nav.includes("document.querySelector('.copy .cta').href = '#start-here'"));assert(index.indexOf('home-catalog.js?v=57')<index.indexOf('navigation-v17.js?v=74'));
 for(const id of ['start-here','start-here-title','home-feedback','home-feedback-form','feedback-useful','feedback-stuck','feedback-change','home-feedback-output','home-feedback-status'])assert(index.includes(`id="${id}"`));
@@ -17,7 +17,7 @@ assert(css.includes('min-height:44px'));assert(css.includes('grid-template-colum
 // Run the actual catalog-card creation block, without a browser-layout claim.
 const element=tag=>({tagName:tag,children:[],dataset:{},style:{setProperty(k,v){this[k]=v;}},setAttribute(k,v){this[k]=v;},append(...items){this.children.push(...items);},replaceChildren(){this.children=[];}});
 const cards=element('div');vm.runInNewContext(nav.slice(nav.indexOf("  const cards ="),nav.indexOf("  document.querySelector('.supplement-heading').id")),{window:sandbox.window,document:{getElementById:()=>cards,createElement:element}});
-assert.equal(cards.children.length,5);for(const [i,card] of cards.children.entries()){assert.equal(card.tagName,'a');assert.equal(card.href,topics[i].href);assert.equal(card.dataset.area,topics[i].id);assert(card.children[2].textContent.includes(topics[i].state));}
+assert.equal(cards.children.length,topics.length);for(const [i,card] of cards.children.entries()){assert.equal(card.tagName,'a');assert.equal(card.href,topics[i].href);assert.equal(card.dataset.area,topics[i].id);assert(card.children[2].textContent.includes(topics[i].state));}
 
 // The generated footer must retain a real catalog destination.
 const footer=element('footer');
@@ -57,9 +57,9 @@ ids=[n.get('id') for n in root.xpath('//*[@id]')]
 assert len(ids)==len(set(ids)), 'Duplicate HTML IDs'
 assert root.xpath('//*[@id="evidence-card"]'), 'Starter link target absent'
 directions=root.xpath('//*[@id="start-here"]/*[@id="cards"]')
-assert len(directions)==1 and len(directions[0].xpath('./a'))==5, 'Five direct directions must work without JavaScript'
-assert directions[0].xpath('./a/@data-area')==['muscle','cell','nutrition','supplements','movement']
+assert len(directions)==1 and len(directions[0].xpath('./a'))==6, 'Six direct directions must work without JavaScript'
+assert directions[0].xpath('./a/@data-area')==['muscle','cell','nutrition','supplements','movement','sleep']
 start=root.xpath('//*[@id="start-here"]')[0]
 assert list(start).index(directions[0]) < list(start).index(start.xpath('./div[@class="start-choices"]')[0]), 'Directions must precede example questions'
 `]);
-console.log('Home entry: five actual catalog pages, CTA flow, real cards, feedback handlers, no sending/storage/tracking, copy success/fallback, sanitized URLs and ten unchanged article subtrees passed. Browser layout QA pending.');
+console.log('Home entry: six actual catalog pages, CTA flow, real cards, feedback handlers, no sending/storage/tracking, copy success/fallback, sanitized URLs and ten unchanged article subtrees passed.');

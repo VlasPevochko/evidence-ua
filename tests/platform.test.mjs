@@ -6,7 +6,7 @@ import {navigationHTML,learningNavigationHTML,mountPlatformNavigation} from '../
 import {initialStructure,renderTopics,mount as mountMuscle} from '../dist/muscle-lab.js';
 import {initialOrganelle,mount as mountCell} from '../dist/cell-lab.js';
 
-assert.equal(catalog.areas.filter(a=>a.available).length,5);
+assert.equal(catalog.areas.filter(a=>a.available).length,6);
 assert.equal(catalog.paths.length,3);
 assert.equal(findAreas('протеїн')[0].id,'supplements');
 assert.equal(findAreas('саркомер')[0].id,'muscle');
@@ -15,7 +15,7 @@ assert.equal(findAreas('невідомий матеріал').length,0);
 assert(!findAreas('').some(a=>a.group==='planned'));
 assert.throws(()=>createCatalog([catalog.areas[0],catalog.areas[0]],[]),/Duplicate area/);
 assert.throws(()=>createCatalog([{...catalog.areas[0],href:'https://example.com'}],[]),/Invalid/);
-assert.throws(()=>createCatalog([{...catalog.areas[5],href:'./missing.html'}],[]),/Planned/);
+assert.throws(()=>createCatalog([{...catalog.areas.find(a=>!a.available),href:'./missing.html'}],[]),/Planned/);
 assert.throws(()=>createCatalog(catalog.areas,[{id:'bad',steps:[{areaId:'muscle',unitId:'missing'}]}]),/Unresolved/);
 assert.throws(()=>createCatalog([{...catalog.areas[0],units:[{id:'bad',href:'./muscle-lab.html',entityIds:['UNKNOWN']}]}],[]),/Unknown scientific entity/);
 for(const area of catalog.areas){
@@ -58,7 +58,7 @@ assert.equal(directory.querySelector('#search-empty').hidden,true);
 assert(!/<a[\s>]/.test(directory.querySelector('#planned-list').innerHTML));
 const muscle=root('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE');mountMuscle(muscle);assert.equal(muscle.querySelector('#structure-title').textContent,'М’язове волокно');
 const cell=root('https://evidence.invalid/cell-lab.html?organelle=ORG-RIBOSOME');mountCell(cell);assert.equal(cell.querySelector('#organelle-title').textContent,'Рибосома');assert(cell.querySelector('#cell-canvas').innerHTML.includes('data-organelle="ORG-RIBOSOME" role="button" tabindex="0" aria-pressed="true"'));
-for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=63'));
+for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=83'));
 console.log('Platform: registry, links/anchors, planned states, search/reset, learning routes and actual selected-entity initialization passed. Browser visual QA not performed.');
 
 const created=[],header={nextElementSibling:null,closest(){return null;},after(element){this.nextElementSibling=element;}};

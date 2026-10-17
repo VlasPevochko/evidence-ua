@@ -39,7 +39,7 @@ for name,tree in documents.items():
         count+=1
 print(json.dumps({'internalLinkOccurrences':count,'htmlPages':len(documents),'missingTargets':0}))
 `],{input:JSON.stringify(generated),encoding:'utf8'}));
-assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,9);
+assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,10);
 for(const area of catalog.areas.filter(a=>a.available)){
  const url=new URL(area.href,'https://evidence.invalid/');assert(fs.existsSync(path.join('dist',url.pathname)));
 }
@@ -64,4 +64,4 @@ const doc={body:{dataset:{}},querySelector(){return page;},getElementById:id=>no
 const location={hash:'#top'},sandbox={document:doc,location,window:{addEventListener(k,fn){callbacks.set(k,fn);}},requestAnimationFrame(fn){fn();}};vm.runInNewContext(home.slice(start,end),sandbox);
 for(const id of ['creatine','evidence-card','supplement-protein','supplement-magnesium']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'none');assert.equal(doc.body.dataset.routeView,'article');assert(nodes.get(id).scrolled);}
 for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback','missing-target']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'var(--home-layout, block)');assert.equal(doc.body.dataset.routeView,'home');assert(articles.every(a=>a.style.display==='none'));}
-console.log('Navigation target audit:',result,'All available catalog and teaching routes resolve. This validates code/targets, not live clicks or layout.');
+console.log('Navigation target audit:',result,'All available catalog, Atlas and teaching routes resolve. This validates code/targets, not live clicks or layout.');

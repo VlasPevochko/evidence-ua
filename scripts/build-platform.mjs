@@ -72,3 +72,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 
 // Geometry fix must reach returning visitors as well as fresh loads.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=84','platform-shell.js?v=85').replaceAll('./directions.js?v=84','./directions.js?v=85');if(next!==old)fs.writeFileSync(file,next);}
+
+// The tools block folds into the one-line disclosure on the Atlas and Exercises pages too (pine theme rollout).
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=85','platform-shell.js?v=86');if(next!==old)fs.writeFileSync(file,next);}

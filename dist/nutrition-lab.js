@@ -98,6 +98,8 @@ export function mountNutritionLab(root=document,{base=nutritionBase,module=nutri
   scene();explanation();if(!running)stopTimer();
   if(win.location?.href&&win.history){const link=new URL(win.location.href);link.searchParams.set('nutrient',route.id);link.searchParams.set('step',String(index));link.searchParams.set('scale',view);link.searchParams.delete('depth');if(selectedStructure)link.searchParams.set('structure',selectedStructure);else link.searchParams.delete('structure');win.history.replaceState(null,'',link.toString());}
  }
+ const trimEmbed=()=>{try{const f=one('digestion-frame'),doc=f.contentDocument;if(!doc||doc.getElementById('nl-embed-trim'))return;const st=doc.createElement('style');st.id='nl-embed-trim';st.textContent='header,.fp-eyebrow,main>h1,.fp-intro,.fp-reading{display:none!important}main{padding-top:0!important}html,body{background:#0f1217!important;min-height:0!important;height:auto!important}';doc.head.appendChild(st);f.style.height='480px';}catch{}};
+ try{one('digestion-frame').addEventListener('load',trimEmbed);trimEmbed();}catch{}
  function setView(value){
   view=value;player.pause();stopTimer();
   one('nl-body').hidden=view!=='body';one('nl-enterocyte').hidden=view!=='cell';

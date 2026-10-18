@@ -452,6 +452,11 @@ async function spineFlow(browser, origin, viewport) {
   return hasCanvas;
 }
 
+async function visibleAfterDisclosureTransition(locator){
+  try{await locator.waitFor({state:'visible',timeout:1500});return true;}
+  catch{return false;}
+}
+
 // Home restyle keeps the working library and disclosures; decorations never
 // receive pointer input and the palette is shared with the Supplements page.
 async function homeLowerFlow(browser, origin, viewport) {
@@ -480,9 +485,12 @@ async function homeLowerFlow(browser, origin, viewport) {
   await page.locator('#supplement-search').fill('');
   check(where,await page.locator('#supplement-carousel .preview-tile:visible').count()===10,'clearing search must restore all ten previews');
   await page.locator('#home-overview>summary').click();
-  check(where,await page.locator('#home-overview .home-overview-grid').isVisible(),'overview must still expand');
+  // Details content expands over 280 ms; wait for actual visibility instead of
+  // sampling during the first, clipped animation frame.
+  const overviewContent=page.locator('#home-overview .home-overview-grid');
+  check(where,await visibleAfterDisclosureTransition(overviewContent),'overview must still expand');
   await page.locator('.evidence-guide>details').nth(1).locator('summary').first().click();
-  check(where,await page.locator('.guide-example').isVisible(),'evidence example must open');
+  check(where,await visibleAfterDisclosureTransition(page.locator('.guide-example')),'evidence example must open');
   check(where,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'opened home content must not overflow horizontally');
   await page.emulateMedia({reducedMotion:'reduce'});
   check(where,await page.locator('#categories').evaluate(e=>getComputedStyle(e,'::before').animationName)==='none','reduced motion must disable shippo movement');

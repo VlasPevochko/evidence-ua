@@ -41,9 +41,10 @@ const check = (where, ok, message) => { checks++; if (!ok) fail(where, message);
 async function open(browser, origin, viewport, route) {
   const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
   const page = await context.newPage();
-  const seen = {console: [], pageErrors: [], badResponses: [], external: []};
+  const seen = {console: [], pageErrors: [], badResponses: [], external: [], requested: []};
   page.on('console', m => { if (m.type() === 'error') seen.console.push(m.text()); });
   page.on('pageerror', e => seen.pageErrors.push(String(e)));
+  page.on('request', r => { if (r.url().startsWith(origin)) seen.requested.push(r.url().slice(origin.length)); });
   page.on('response', r => { if (r.url().startsWith(origin) && r.status() >= 400) seen.badResponses.push(`${r.status()} ${r.url().slice(origin.length)}`); });
   await page.route('**/*', r => {
     const url = r.request().url();
@@ -167,6 +168,67 @@ async function musclesFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function spineFlow(browser, origin, viewport) {
+  const where = `atlas spine zone @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html?zone=spine');
+  check(where, (await page.locator('#atlas-zone-title').innerText()).includes('Хребет'), '?zone=spine did not select the zone');
+  check(where, (await page.locator('#atlas-zone-status').innerText()).trim() === 'Бета', 'spine zone is not Beta');
+  // Safety first: the overview points to red flags, and the red-flag tab is static.
+  await page.locator('#atlas-content [data-goto-tab="symptoms"]').first().click();
+  check(where, (await page.locator('[data-atlas-tab="symptoms"]').getAttribute('aria-selected')) === 'true', 'safety link did not open the symptoms tab');
+  check(where, (await page.locator('.atlas-alert li').count()) >= 7, 'red-flag list is incomplete');
+  check(where, /Точка болю не дорівнює джерелу болю/.test(await page.locator('#atlas-content').innerText()), 'pain-location caveat is missing');
+  // Practice is after the safety link and is generic (not tied to a pointed spot).
+  await page.click('[data-atlas-tab="training"]');
+  await page.waitForSelector('.atlas-practice-list a');
+  const order = await page.evaluate(() => {
+    const content = document.getElementById('atlas-content');
+    const safety = content.querySelector('[data-goto-tab="symptoms"]');
+    const list = content.querySelector('.atlas-practice-list');
+    return !!safety && !!list && !!(safety.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  check(where, order, 'the safety link must come before the exercise list');
+  // Anatomy hub: regions work without 3D, and 3D is only requested after a click.
+  await page.click('[data-atlas-tab="anatomy"]');
+  await page.waitForSelector('.spine-region-btn');
+  check(where, (await page.locator('.spine-region-btn').count()) === 4, 'expected four regions');
+  check(where, !seen.requested.some(u => u.startsWith('/spine-viewer.js')), 'the 3D bundle was requested before the click');
+  await page.locator('.spine-region-btn', {hasText: 'Поперековий'}).click();
+  check(where, /L1–L5/.test(await page.locator('.spine-region-info').innerText()), 'region info did not update');
+  check(where, (await page.locator('.spine-region-btn[aria-pressed="true"]').count()) === 1, 'one region should be pressed');
+  await page.locator('.spine-region-btn', {hasText: 'Поперековий'}).click();
+  check(where, (await page.locator('.spine-region-btn[aria-pressed="true"]').count()) === 0, 'second click should clear the region');
+  await page.click('.spine-launch');
+  await page.waitForFunction(() => document.querySelector('.spine-canvas') || /недоступна|Не вдалося/.test(document.querySelector('.spine-viewer-note')?.textContent || ''), null, {timeout: 15000});
+  const hasCanvas = (await page.locator('.spine-canvas').count()) === 1;
+  if (hasCanvas) {
+    check(where, seen.requested.some(u => u.startsWith('/spine-viewer.js')), 'canvas shown without loading the bundle');
+    const canvas = page.locator('.spine-canvas');
+    check(where, (await canvas.getAttribute('role')) === 'img' && /3D-модель хребта/.test(await canvas.getAttribute('aria-label')), 'canvas has no accessible name');
+    const box = await canvas.boundingBox();
+    check(where, box.width > 200 && box.height > 200, 'canvas is too small');
+    await canvas.focus();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('+');
+    check(where, await page.evaluate(() => document.activeElement?.classList.contains('spine-canvas')), 'keyboard focus left the canvas');
+    // A press on the model selects a region (drawn at the centre of the column).
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.45);
+    await page.waitForTimeout(250);
+    check(where, (await page.locator('.spine-region-btn[aria-pressed="true"]').count()) <= 1, 'pressing the model must select at most one region');
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the 3D model open');
+    await page.click('text=Сховати 3D');
+    check(where, (await page.locator('.spine-canvas').count()) === 0, 'the canvas stays after "Сховати 3D"');
+  } else {
+    check(where, /WebGL|недоступна|Не вдалося/.test(await page.locator('.spine-viewer-note').innerText()), 'no 3D and no fallback message');
+  }
+  await page.locator('.spine-region-btn', {hasText: 'Шийний'}).click();
+  check(where, /C1–C7/.test(await page.locator('.spine-region-info').innerText()), 'regions stop working after the 3D step');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party requests: ${seen.external.join(', ')}`);
+  await context.close();
+  return hasCanvas;
+}
+
 async function homeMenuFlow(browser, origin) {
   const viewport = viewports[0];
   const where = `home menu @${viewport.name}`;
@@ -183,6 +245,7 @@ async function homeMenuFlow(browser, origin) {
   await context.close();
 }
 
+const webgl = [];
 const server = await serve();
 const origin = `http://127.0.0.1:${server.address().port}`;
 const files = fs.readdirSync(dist).filter(f => f.endsWith('.html')).sort();
@@ -194,6 +257,7 @@ try {
   for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
+  for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
   await homeMenuFlow(browser, origin);
 } finally {
   await browser.close();
@@ -204,4 +268,4 @@ if (failures.length) {
   console.error(`Browser QA failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
   process.exit(1);
 }
-console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, atlas, muscles-zone and home-menu flows.`);
+console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, atlas, muscles-zone, spine-zone and home-menu flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);

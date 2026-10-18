@@ -1,7 +1,7 @@
 const zoneMeta={
  brain:{title:'Мозок',summary:'Сон, стрес, когнітивні функції, фізична активність і фактори, що впливають на роботу нервової системи.',state:'Готується',stateKey:'planned'},
  shoulder:{title:'Плечовий комплекс',summary:'Анатомія, найпоширеніші стани, навантаження, реабілітація та спосіб читати наукові дані без спрощення до «працює / не працює».',state:'Повний модуль',stateKey:'full'},
- spine:{title:'Хребет',summary:'Біль, навантаження, рух, адаптація та сучасний погляд на структурні знахідки.',state:'Готується',stateKey:'planned'},
+ spine:{title:'Хребет',summary:'Будова хребта за відділами, довідка про те, коли звернутися по медичну допомогу, та пов’язана практика. Без діагнозів і без висновків за точкою болю.',state:'Бета',stateKey:'beta'},
  muscles:{title:'М’язова система',summary:'Сила, гіпертрофія, відновлення, адаптація до навантаження та тренувальні змінні.',state:'Бета',stateKey:'beta'},
  gut:{title:'ШКТ',summary:'Травлення, мікробіом, харчування та взаємодія способу життя з шлунково-кишковою системою.',state:'Готується',stateKey:'planned'},
  knee:{title:'Колінний комплекс',summary:'Навантаження, біль, травми, повернення до активності та силове тренування — з розділенням різних клінічних сценаріїв.',state:'Бета',stateKey:'beta'}
@@ -91,6 +91,21 @@ const musclesContent={
  research:()=>`<div class="atlas-copy-card"><h3>Джерела й межі</h3><p>Для цієї зони рівні впевненості ще не оцінено: науковий перегляд матеріалів Muscle Lab і Movement Lab не завершено. Джерела та межі пояснень — у самих модулях:</p><ul><li><a href="./muscle-lab.html#sources">Muscle Lab · Джерела та межі пояснень</a></li><li><a href="./movement.html#sources">Movement Lab · Джерела та межі моделі</a></li></ul></div>`
 };
 
+function topicTabs(items){return items.map((item,index)=>`<article class="atlas-topic"><div class="atlas-topic-icon" aria-hidden="true">${String(index+1).padStart(2,'0')}</div><div><h3><button type="button" class="atlas-link-button" data-goto-tab="${item.tab}">${item.title}</button></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span></article>`).join('');}
+
+// «Хребет» is a Beta navigation zone (Stage 0 in docs/SPINE_AND_PERSONAL_GUIDANCE_BACKLOG.md). Safety text is static on purpose:
+// it must never depend on a lazy module. No pain map, no causes by location, no exercises chosen from a pointed spot.
+const spineContent={
+ overview:()=>`<div class="atlas-copy-card"><h3>Як читати цей модуль</h3><p>«Хребет» — навігаційна зона Атласу. Вона пояснює будову за відділами й підказує, коли слід звернутися по медичну допомогу. Вона не ставить діагнозів і не пов’язує біль у певній точці з конкретною причиною: місце болю не завжди збігається з його джерелом.</p><p class="atlas-muted">Тексти — редакційна чернетка: їх ще не переглянув лікар чи фізіотерапевт.</p></div><div class="atlas-alert"><strong>Спершу про безпеку.</strong><p>Є ознаки, за яких не слід чекати чи займатися самостійно. Перегляньте розділ <button type="button" class="atlas-link-button" data-goto-tab="symptoms">«Коли звернутися по медичну допомогу»</button>.</p></div>${topicTabs([
+  {title:'Будова за відділами',copy:'Шийний, грудний, поперековий відділи, крижі та куприк: коротка довідка й схематична 3D-модель.',tab:'anatomy',tag:'Анатомія'},
+  {title:'Коли звернутися по медичну допомогу',copy:'Ознаки, за яких потрібна оцінка лікаря, і як обрати фахівця.',tab:'symptoms',tag:'Безпека'},
+  {title:'Пов’язана практика',copy:'Вправи з Бібліотеки вправ як освітні приклади, не як призначення.',tab:'training',tag:'Практика'}
+ ])}`,
+ anatomy:()=>`<div data-spine-hub class="atlas-practice"><p class="atlas-practice-status">Завантаження розділу…</p></div>`,
+ symptoms:()=>`<div class="atlas-alert"><h3>Коли звернутися по медичну допомогу</h3><p>Більшість епізодів болю в спині не пов’язані з небезпечними станами, але є ознаки, за яких не слід чекати чи займатися самостійно. Зверніться до лікаря, а за вираженого погіршення викличте швидку допомогу:</p><ul><li>нове оніміння або слабкість у ногах чи руках, що наростає;</li><li>оніміння в ділянці промежини, нетримання або утруднення сечовипускання чи дефекації;</li><li>сильний біль після травми (падіння, удару, аварії);</li><li>біль разом із підвищеною температурою або іншими ознаками інфекції;</li><li>незрозуміла втрата ваги або онкологічне захворювання в минулому;</li><li>сильний біль, який не вщухає в спокої, посилюється вночі або швидко наростає;</li><li>біль у грудях чи утруднене дихання разом із болем у спині.</li></ul><p class="atlas-muted">Це не повний перелік і не діагностика. Матеріал — редакційна чернетка для перегляду фахівцем.</p></div><div class="atlas-copy-card"><h3>Точка болю не дорівнює джерелу болю</h3><p>Біль у спині може відчуватися не там, де його причина, а схожий біль можуть давати різні стани. Тому ця зона не пропонує вибрати точку болю й не підказує діагноз.</p></div><div class="atlas-copy-card"><h3>Як обрати фахівця</h3><p>За потреби зверніться до лікаря (сімейного, невролога, ортопеда) або до ліцензованого фізіотерапевта. Перевірте ліцензію та досвід у вашій ситуації.</p></div>`,
+ training:()=>`<div class="atlas-alert"><strong>Спершу про безпеку.</strong><p>Перед будь-якими вправами перегляньте <button type="button" class="atlas-link-button" data-goto-tab="symptoms">«Коли звернутися по медичну допомогу»</button>.</p></div><div class="atlas-copy-card"><h3>Практика</h3><p>Нижче — вправи з Бібліотеки вправ як освітні приклади для цієї зони. Це не персональні призначення: вони не підбираються за місцем болю, не обіцяють результату й не замінюють оцінку фахівця. Поради до вправ — редакційна чернетка.</p></div><div class="atlas-practice" data-related-practice="spine"><p class="atlas-practice-status">Завантаження списку вправ…</p></div>`
+};
+
 function previewContent(zone,tab){
  const meta=zoneMeta[zone],topics=previewTopics[zone]||[];
  if(tab==='overview')return `<div class="atlas-copy-card"><h3>${meta.title}: карта майбутнього модуля</h3><p>Ми вже показуємо структуру тем, але не підміняємо відсутній доказовий розбір короткими універсальними порадами. Кожна картка стане окремим матеріалом із джерелами та рівнем впевненості.</p></div>${topicCards(topics)}`;
@@ -114,7 +129,24 @@ function markupFor(zone,tab){
  if(zone==='shoulder')return shoulderContent[tab]();
  if(zone==='knee')return kneeContent[tab]();
  if(zone==='muscles'&&musclesContent[tab])return musclesContent[tab]();
+ if(zone==='spine'&&spineContent[tab])return spineContent[tab]();
  return previewContent(zone,tab);
+}
+
+let spineHub=null;
+async function hydrateSpineHub(){
+ const box=content.querySelector('[data-spine-hub]');
+ if(!box)return;
+ try{
+  const module=await import('./atlas-spine.js?v=2');
+  if(!box.isConnected||selectedZone!=='spine')return;
+  spineHub=module.mountSpineHub(box);
+ }catch{
+  if(!box.isConnected)return;
+  const note=document.createElement('p');
+  note.textContent='Не вдалося завантажити інтерактивний розділ. Відділи хребта: шийний (C1–C7), грудний (T1–T12), поперековий (L1–L5), крижі та куприк.';
+  box.replaceChildren(note);
+ }
 }
 
 async function hydrateRelatedPractice(){
@@ -147,11 +179,14 @@ function render(){
  zoneButtons.forEach(button=>{const active=button.dataset.zone===selectedZone;button.classList.toggle('is-selected',active);button.setAttribute('aria-pressed',String(active));});
  tabs.forEach(button=>{button.disabled=false;button.hidden=false;button.setAttribute('aria-selected',String(button.dataset.atlasTab===selectedTab));});
  content.classList.add('is-changing');
+ spineHub?.dispose();spineHub=null;
  content.innerHTML=markupFor(selectedZone,selectedTab);
  requestAnimationFrame(()=>content.classList.remove('is-changing'));
  hydrateRelatedPractice();
+ hydrateSpineHub();
 }
 
+content.addEventListener('click',event=>{const jump=event.target.closest('[data-goto-tab]');if(!jump)return;const target=tabs.find(button=>button.dataset.atlasTab===jump.dataset.gotoTab);if(target){target.click();target.focus();}});
 zoneButtons.forEach(button=>button.addEventListener('click',()=>{selectedZone=button.dataset.zone;selectedTab='overview';render();}));
 tabs.forEach((button,index)=>{
  button.addEventListener('click',()=>{selectedTab=button.dataset.atlasTab;render();});

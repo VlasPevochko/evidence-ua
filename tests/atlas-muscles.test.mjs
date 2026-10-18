@@ -11,11 +11,11 @@ const css = fs.readFileSync('dist/atlas.css', 'utf8');
 const html = fs.readFileSync('dist/atlas.html', 'utf8');
 
 assert(/muscles:\{title:'М’язова система'[^}]*state:'Бета',stateKey:'beta'\}/.test(js), 'The muscles zone is a Beta module');
-for (const zone of ['brain', 'spine', 'gut']) assert(new RegExp(`${zone}:\\{[^}]*state:'Готується',stateKey:'planned'`).test(js), `${zone} stays planned`);
+for (const zone of ['brain', 'gut']) assert(new RegExp(`${zone}:\\{[^}]*state:'Готується',stateKey:'planned'`).test(js), `${zone} stays planned`);
 
 // The block under test: musclesContent.
 const start = js.indexOf('const musclesContent={');
-const end = js.indexOf('function previewContent');
+const end = js.indexOf('function topicTabs');
 assert(start > 0 && end > start, 'musclesContent block exists');
 const block = js.slice(start, end);
 for (const tab of ['overview', 'anatomy', 'training', 'research']) assert(new RegExp(`\\n ${tab}:\\(\\)=>`).test(block), `muscles has a ${tab} tab`);

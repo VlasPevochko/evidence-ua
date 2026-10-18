@@ -63,6 +63,7 @@ const css=fs.readFileSync('dist/platform.css','utf8');for(const key of ['min-hei
 // Muscle Lab allows only the explicit R1–R4 changes checked against v57 in muscle-flow.test.mjs.
 const baseline=JSON.parse(fs.readFileSync('tests/fixtures/visitor-v58-file-hashes.json','utf8'));
 assert.equal(baseline.sourceCommit,'b48b9d0f5858673f8c6f9985c1984c198847031d');
-assert.equal(Object.keys(baseline.files).length,8);
+// dist/muscle-lab-scenes.js left this baseline when the Muscle Lab scenes were redrawn (owner-approved redesign); see muscle-lab.test.mjs.
+assert.equal(Object.keys(baseline.files).length,7);
 for(const [file,expected] of Object.entries(baseline.files))assert.equal(createHash('sha256').update(fs.readFileSync(file)).digest('hex'),expected,file);
 console.log('Visitor tools: real search/open/close/focus handlers, direct materials, copy/fallback, safe URLs, feedback context, duplicate mount, no transport/storage and unchanged other scientific registries passed. No browser layout QA.');

@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {structures,topics,sources,muscleKnowledge,moduleMeta,topicClaimIds,legacyMuscleRecords,muscleRecordHistory} from '../src/muscle-lab/module.mjs';
-import {mount,initialPreferences,structureURL,renderTopics,structureContent,adjacentStructure} from '../dist/muscle-lab.js';
+import {mount,initialPreferences,structureURL,renderTopics,structureContent,adjacentStructure,renderLegend} from '../dist/muscle-lab.js';
+import {scaleArt} from '../dist/muscle-scale-art.js';
 import {ClaimCard,EvidenceDrawer,SourceCard} from '../src/evidence/core/components.mjs';
 const original=JSON.parse(fs.readFileSync('tests/fixtures/muscle-v57-wording.json','utf8'));
 // Preserve the frozen v57 science; allow only the reviewed R1–R4 package.
@@ -56,78 +57,121 @@ assert(renderTopics('school').includes(approvedContraction));assert(renderTopics
 const testClaim={...muscleKnowledge.claims[0],id:'CLM-TEST-001',outcome:{name:'Тестова структура'}};
 assert(ClaimCard(testClaim.id,{...muscleKnowledge,claims:[...muscleKnowledge.claims,testClaim]}).includes('Тестова структура'));
 assert.deepEqual(initialPreferences('https://evidence.invalid/muscle-lab.html?level=bad&tab=bad'),{level:'university',tab:'description'});
+assert.deepEqual(initialPreferences('https://evidence.invalid/muscle-lab.html?level=advanced&tab=function'),{level:'university',tab:'function'},'The reading-level switcher is retired: old level links open the full wording');
 assert.throws(()=>structureURL('https://evidence.invalid/','bad'),/Unknown/);assert.throws(()=>adjacentStructure(structures[0].id,2),/Invalid/);
+assert(!structureURL('https://evidence.invalid/muscle-lab.html?level=advanced&path=energy',structures[0].id).searchParams.has('level'),'Retired level parameter is dropped');
+assert.equal(structureURL('https://evidence.invalid/muscle-lab.html?path=energy',structures[1].id,'function').searchParams.get('path'),'energy','Unrelated teaching-route parameters survive');
 
+// In-memory DOM adapter: real controller, real handlers, controllable timers and animation frames.
 function fixture(href='https://evidence.invalid/muscle-lab.html?v=58&path=energy&lesson=1#explorer',reduced=false){
- const nodes=new Map(),listeners=new Map(),groups=new Map(),windowHandlers=new Map(),timers=new Map();let nextTimer=0;
- const node=key=>{if(!nodes.has(key))nodes.set(key,{innerHTML:'',textContent:'',hidden:false,disabled:false,value:0,dataset:{},attributes:{},handlers:new Map(),style:{setProperty(k,v){this[k]=v;}},classList:{toggle(){}},setAttribute(k,v){this.attributes[k]=v;},addEventListener(k,fn){this.handlers.set(k,fn);},removeEventListener(){},querySelector:node,contains(){return false;},focus(){this.focused=true;},showModal(){this.open=true;},close(){this.open=false;this.handlers.get('close')?.();},scrollIntoView(){this.scrolled=true;}});return nodes.get(key);};
+ const nodes=new Map(),listeners=new Map(),groups=new Map(),windowHandlers=new Map(),timers=new Map(),frames=new Map();let nextTimer=0,nextFrame=0;
+ const node=key=>{if(!nodes.has(key))nodes.set(key,{innerHTML:'',textContent:'',hidden:false,disabled:false,value:0,dataset:{},attributes:{},handlers:new Map(),style:{setProperty(k,v){this[k]=v;}},classList:{toggle(){}},setAttribute(k,v){this.attributes[k]=v;},addEventListener(k,fn){this.handlers.set(k,fn);},removeEventListener(){},querySelector:selector=>selector==='svg'?node(key+' > svg'):node(selector),contains(){return false;},focus(){this.focused=true;},showModal(){this.open=true;},close(){this.open=false;this.handlers.get('close')?.();},scrollIntoView(){this.scrolled=true;}});return nodes.get(key);};
  const make=(key,dataset)=>{const b=node(key);b.dataset=dataset;return b;};
  groups.set('[data-structure]',structures.map(s=>make(`structure-${s.id}`,{structure:s.id})));
- groups.set('[data-level]',['header','reading'].flatMap(place=>['school','university','advanced'].map(level=>make(place+'-'+level,{level}))));
  groups.set('[data-tab]',['description','function','sources'].map(tab=>make(tab,{tab})));
- for(const t of topics)groups.set(`[data-step-topic="${t.id}"]`,t.steps.map((_,i)=>make(`step-${t.id}-${i}`,{stepTopic:t.id,stepIndex:String(i)})));
+ groups.set('[data-step-topic="contraction"]',[0,1,2,3].map(i=>make(`step-contraction-${i}`,{stepTopic:'contraction',stepIndex:String(i)})));
+ groups.set('[data-mirror-step]',[0,1,2,3].map(i=>make(`mirror-step-${i}`,{mirrorStep:String(i)})));
+ groups.set('[data-mirror-show]',['growth','atrophy'].map(name=>make(`mirror-show-${name}`,{mirrorShow:name})));
  const motion={matches:reduced,addEventListener(k,f){this.onChange=f;},removeEventListener(){}};
- const location={href,hash:new URL(href).hash};const view={location,history:{replaceState(a,b,url){location.href=url;location.hash=new URL(url).hash;}},matchMedia:()=>motion,setInterval(fn){const id=++nextTimer;timers.set(id,fn);return id;},clearInterval(id){timers.delete(id);},addEventListener(k,f){windowHandlers.set(k,f);},removeEventListener(){},requestAnimationFrame(fn){fn();}};
+ const location={href,hash:new URL(href).hash};
+ const view={location,history:{replaceState(a,b,url){location.href=url;location.hash=new URL(url).hash;}},matchMedia:()=>motion,
+  setInterval(fn){const id=++nextTimer;timers.set(id,fn);return id;},clearInterval(id){timers.delete(id);},
+  requestAnimationFrame(fn){const id=++nextFrame;frames.set(id,fn);return id;},cancelAnimationFrame(id){frames.delete(id);},
+  addEventListener(k,f){windowHandlers.set(k,f);},removeEventListener(){}};
  const root={defaultView:view,hidden:false,querySelector:node,querySelectorAll:s=>groups.get(s)||[],addEventListener(k,f){if(!listeners.has(k))listeners.set(k,[]);listeners.get(k).push(f);},removeEventListener(){}};
  const ui=mount(root);
+ const frameAt=now=>{const pending=[...frames.entries()];frames.clear();for(const [,fn] of pending)fn(now);};
+ frameAt(0); // runs the one-off deep-link scroll callback, if any
  const click=dataset=>{const b=make('click-'+JSON.stringify(dataset),dataset);for(const fn of listeners.get('click')||[])fn({target:{closest(selector){if(selector==='[data-learning-tab]'&&dataset.learningTab)return b;if(selector==='button'&&!dataset.claimOpen&&!dataset.close)return b;if(selector==='[data-claim-open]'&&dataset.claimOpen)return b;if(selector==='[data-evidence-close]'&&dataset.close)return b;return null;}}});return b;};
  const key=k=>{for(const fn of listeners.get('keydown')||[])fn({key:k,preventDefault(){},target:{closest:()=>make('key',{structure:ui.state().selected})}});};
  const tick=()=>[...timers.values()].forEach(fn=>fn());
- return {node,ui,click,key,tick,timers,view,location,motion,root,windowHandlers,listeners};
+ const slideInput=value=>node('#shortening').handlers.get('input')({target:{value:String(value)}});
+ return {node,ui,click,key,tick,timers,frames,frameAt,slideInput,view,location,motion,root,windowHandlers,listeners};
 }
 const f=fixture();
+// Structure selection: one control, URL keeps unrelated parameters, no level in the address.
 for(const s of structures){
  f.click({structure:s.id});assert.equal(f.ui.state().selected,s.id);assert.equal(f.node('#structure-title').textContent,s.label);assert(f.node('#structure-copy').innerHTML.includes(s.description));
- const url=new URL(f.location.href);assert.equal(url.searchParams.get('structure'),s.id);assert.equal(url.searchParams.get('path'),'energy');assert.equal(url.hash,'#explorer');
- assert(f.node('#structure-link').href.includes('structure='+s.id));assert(!f.node('#structure-link').href.includes('path='));
+ const url=new URL(f.location.href);assert.equal(url.searchParams.get('structure'),s.id);assert.equal(url.searchParams.get('path'),'energy');assert.equal(url.hash,'#explorer');assert(!url.searchParams.has('level'));
+ assert.equal(f.node('#scale-art').innerHTML,scaleArt(s.id));assert.equal(f.node('#scale-legend').innerHTML,renderLegend(s.id));
+ assert(f.node('#art-selection').textContent.includes(s.label));
 }
 f.key('ArrowLeft');assert.equal(f.ui.state().selected,structures[4].id);assert(f.node(`#scales [data-structure="${structures[4].id}"]`).focused);
 f.click({structure:'invalid'});assert.equal(f.ui.state().selected,structures[4].id);
-for(const t of topics){
- for(let i=0;i<t.steps.length;i++){f.click({stepTopic:t.id,stepIndex:String(i)});assert.equal(f.ui.state().steps[t.id],i);assert(f.node(`[data-progress="${t.id}"]`).textContent.startsWith(`Крок ${i+1}`));}
- assert(f.node(`[data-next="${t.id}"]`).disabled);f.click({stepTopic:t.id,stepIndex:'99'});assert.equal(f.ui.state().steps[t.id],3);
- f.click({previous:t.id});assert.equal(f.ui.state().steps[t.id],2);f.click({reset:t.id});assert.equal(f.ui.state().steps[t.id],-1);assert(f.node(`[data-previous="${t.id}"]`).disabled);
+
+// Contraction cycle: the scene is not redrawn, its step attribute changes.
+const cycleSvg=f.node('[data-topic-scene="contraction"] > svg');
+for(let i=0;i<4;i++){
+ f.click({stepTopic:'contraction',stepIndex:String(i)});assert.equal(f.ui.state().steps.contraction,i);
+ assert.equal(cycleSvg.attributes['data-step'],String(i));assert(f.node('[data-progress="contraction"]').textContent.startsWith(`Крок ${i+1} із 4`));
+ for(let k=0;k<4;k++)assert.equal(f.node(`step-contraction-${k}`).attributes['aria-pressed'],String(k===i));
 }
-f.click({play:'contraction'});assert.equal(f.timers.size,1);f.tick();assert.equal(f.ui.state().steps.contraction,1);
-f.click({play:'growth'});assert.equal(f.timers.size,1);assert.deepEqual(f.ui.state().playing,['growth']);
-f.click({play:'growth'});assert.equal(f.timers.size,0);
-f.click({stepTopic:'contraction',stepIndex:'2'});f.click({level:'school'});assert.equal(f.ui.state().steps.contraction,2);assert.equal(f.ui.state().level,'school');
+f.click({stepTopic:'contraction',stepIndex:'99'});assert.equal(f.ui.state().steps.contraction,3,'Out-of-range step is ignored');
+f.click({reset:'contraction'});assert.equal(f.ui.state().steps.contraction,-1);assert.equal(cycleSvg.attributes['data-step'],'-1');
+f.click({play:'contraction'});assert.equal(f.timers.size,1);assert.equal(f.ui.state().steps.contraction,0);f.tick();assert.equal(f.ui.state().steps.contraction,1);
+f.click({play:'contraction'});assert.equal(f.timers.size,0,'Second press pauses');
+f.click({play:'contraction'});f.tick();f.tick();f.tick();assert.equal(f.ui.state().steps.contraction,3);f.tick();assert.equal(f.timers.size,0,'Playback stops after the last step');
+
+// Growth and atrophy share one stepper (mirror) and one play button.
+for(let i=0;i<4;i++){
+ f.click({mirrorStep:String(i)});assert.equal(f.ui.state().steps.growth,i);assert.equal(f.ui.state().steps.atrophy,i);
+ assert.equal(f.node('[data-topic-scene="growth"] > svg').attributes['data-step'],String(i));assert.equal(f.node('[data-topic-scene="atrophy"] > svg').attributes['data-step'],String(i));
+ for(let k=0;k<4;k++)assert.equal(f.node(`mirror-step-${k}`).attributes['aria-pressed'],String(k===i));
+}
+f.click({mirrorStep:'9'});assert.equal(f.ui.state().steps.growth,3);
+f.click({mirrorPlay:''});assert.equal(f.timers.size,1);assert.deepEqual(f.ui.state().playing,['mirror']);assert.equal(f.ui.state().steps.growth,0);
+f.tick();assert.equal(f.ui.state().steps.atrophy,1,'Both panels advance together');
+f.click({mirrorPlay:''});assert.equal(f.timers.size,0);
+f.click({mirrorShow:'atrophy'});assert.equal(f.ui.state().mirrorView,'atrophy');assert.equal(f.node('#adaptation').attributes['data-mirror-view'],'atrophy');assert.equal(f.node('mirror-show-atrophy').attributes['aria-pressed'],'true');
+f.click({mirrorShow:'bogus'});assert.equal(f.ui.state().mirrorView,'atrophy');
+
+// Sarcomere sliding: one gentle pass (relaxed, contracted, relaxed), stoppable, slider independent.
+f.click({sarcomerePlay:''});assert.equal(f.frames.size,1);assert.deepEqual(f.ui.state().playing,['sarcomere']);
+f.frameAt(1000);f.frameAt(2600);assert(f.ui.state().slide>0.3&&f.ui.state().slide<0.7,'Halfway through the first pass');
+f.frameAt(4200);assert.equal(f.ui.state().slide,1);assert(f.node('[data-sarcomere-stage]').innerHTML.includes('data-sarcomere-t="1"'));
+assert.equal(f.node('[data-readout-state="distance"]').textContent,'зменшується');assert.equal(f.node('[data-readout-state="overlap"]').textContent,'збільшується');assert.equal(f.node('[data-readout-state="length"]').textContent,'не змінюється');
+f.frameAt(1000+3200+500+1600);assert(f.ui.state().slide>0.3&&f.ui.state().slide<0.7,'Halfway back');
+f.frameAt(1000+7100+10);assert.equal(f.ui.state().slide,0);assert.equal(f.frames.size,0,'The pass ends and stops by itself');assert.deepEqual(f.ui.state().playing,[]);
+assert.equal(f.node('[data-readout-state="distance"]').textContent,'у спокої');
+f.click({sarcomerePlay:''});f.frameAt(5000);f.click({sarcomerePlay:''});assert.equal(f.frames.size,0,'Second press pauses');
+f.slideInput(60);assert.equal(f.ui.state().slide,.6);assert(f.node('[data-sarcomere-stage]').innerHTML.includes('data-sarcomere-t="0.6"'));assert.equal(f.node('#shortening').value,60);
+f.click({sarcomerePlay:''});f.slideInput(20);assert.equal(f.frames.size,0,'Moving the slider takes over from the animation');
+f.slideInput(0);
+
+// Evidence drawer and tabs.
 f.click({tab:'sources'});assert(f.node('#structure-copy').innerHTML.includes('data-claim-open'));assert.equal(new URL(f.location.href).searchParams.get('tab'),'sources');
 for(const c of muscleKnowledge.claims){const opener=f.click({claimOpen:c.id});assert(f.node('#eua-evidence-dialog').open);assert(f.node('[data-evidence-content]').innerHTML.includes(c.statement));f.click({close:true});assert(!f.node('#eua-evidence-dialog').open);assert(opener.focused);}
-f.click({play:'atrophy'});f.windowHandlers.get('pagehide')();assert.equal(f.timers.size,0);
-f.click({play:'contraction'});f.root.hidden=true;for(const fn of f.listeners.get('visibilitychange'))fn();assert.equal(f.timers.size,0);f.root.hidden=false;
+
+// Everything stops when the page is hidden, left, or the user prefers reduced motion.
+f.click({play:'contraction'});f.click({sarcomerePlay:''});f.windowHandlers.get('pagehide')();assert.equal(f.timers.size,0);assert.equal(f.frames.size,0);
+f.click({mirrorPlay:''});f.root.hidden=true;for(const fn of f.listeners.get('visibilitychange'))fn();assert.equal(f.timers.size,0);f.root.hidden=false;
 f.click({play:'contraction'});f.motion.matches=true;f.motion.onChange();assert.equal(f.timers.size,0);
-const reduced=fixture(undefined,true);reduced.click({play:'growth'});assert.equal(reduced.timers.size,0);assert.equal(reduced.ui.state().steps.growth,0);assert(reduced.node('[data-progress="growth"]').textContent.includes('вручну'));
-const deep=fixture('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE&level=advanced&tab=function#contraction');assert.equal(deep.ui.state().selected,'CELL-MUSCLE');assert.equal(deep.ui.state().level,'advanced');assert.equal(deep.ui.state().tab,'function');assert(deep.node('#contraction').scrolled);
-deep.location.href='https://evidence.invalid/muscle-lab.html?structure=STRUCT-SARCOMERE&level=school&tab=sources#explorer';deep.windowHandlers.get('popstate')();assert.equal(deep.ui.state().selected,'STRUCT-SARCOMERE');assert.equal(deep.ui.state().level,'school');
-f.ui.destroy();reduced.ui.destroy();deep.ui.destroy();assert.equal(f.timers.size,0);
-const route=fixture('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE&level=school&tab=description');
-route.click({learningTab:'function'});assert.equal(route.ui.state().tab,'function');assert.equal(route.ui.state().selected,'CELL-MUSCLE');assert.equal(route.ui.state().level,'school');
+const reduced=fixture(undefined,true);
+reduced.click({play:'contraction'});assert.equal(reduced.timers.size,0);assert.equal(reduced.ui.state().steps.contraction,0);assert(reduced.node('[data-progress="contraction"]').textContent.includes('вручну'));
+reduced.click({mirrorPlay:''});assert.equal(reduced.timers.size,0);assert(reduced.node('[data-progress="growth"]').textContent.includes('вручну'));
+reduced.click({sarcomerePlay:''});assert.equal(reduced.frames.size,0,'No timed animation under reduced motion');assert.equal(reduced.ui.state().slide,1);assert(reduced.node('#slide-note').textContent.includes('Зменшений рух'));
+
+// Deep links and history.
+const deep=fixture('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE&level=advanced&tab=function#contraction');
+assert.equal(deep.ui.state().selected,'CELL-MUSCLE');assert.equal(deep.ui.state().tab,'function');assert(deep.node('#contraction').scrolled);
+const toGrowth=fixture('https://evidence.invalid/muscle-lab.html#atrophy');assert.equal(toGrowth.ui.state().mirrorView,'atrophy');assert(toGrowth.node('#atrophy').scrolled);
+deep.location.href='https://evidence.invalid/muscle-lab.html?structure=STRUCT-SARCOMERE&level=school&tab=sources#explorer';deep.windowHandlers.get('popstate')();assert.equal(deep.ui.state().selected,'STRUCT-SARCOMERE');assert.equal(deep.ui.state().tab,'sources');
+f.ui.destroy();reduced.ui.destroy();deep.ui.destroy();toGrowth.ui.destroy();assert.equal(f.timers.size,0);
+const route=fixture('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE&tab=description');
+route.click({learningTab:'function'});assert.equal(route.ui.state().tab,'function');assert.equal(route.ui.state().selected,'CELL-MUSCLE');
 route.click({learningTab:'invalid'});assert.equal(route.ui.state().tab,'function');
-for(const level of ['school','university','advanced']){
- route.click({level});
- assert.equal(route.ui.state().level,level);
- for(const place of ['header','reading'])for(const candidate of ['school','university','advanced'])assert.equal(route.node(place+'-'+candidate).attributes['aria-pressed'],String(candidate===level));
- assert(route.node('#reading-level-hint').textContent.startsWith({school:'Школа',university:'Університет',advanced:'Поглиблено'}[level]),'The inline hint identifies the selected reading level');
- assert(route.node('#reading-level-hint').textContent.includes('всього модуля'));
- assert.equal(route.ui.state().selected,'CELL-MUSCLE');
- assert.equal(route.ui.state().tab,'function');
- assert.equal(route.node('#structure-copy').innerHTML,structureContent(structures.find(s=>s.id==='CELL-MUSCLE'),'function',level));
-}
-route.location.href='https://evidence.invalid/muscle-lab.html?structure=STRUCT-SARCOMERE&level=school&tab=sources#structure-explanation';
+assert.equal(route.node('#structure-copy').innerHTML,structureContent(structures.find(s=>s.id==='CELL-MUSCLE'),'function','university'));
+route.location.href='https://evidence.invalid/muscle-lab.html?structure=STRUCT-SARCOMERE&tab=sources#structure-explanation';
 route.windowHandlers.get('popstate')();
-assert.equal(route.node('reading-school').attributes['aria-pressed'],'true');
-assert.equal(route.node('header-school').attributes['aria-pressed'],'true');
-assert(route.node('#reading-level-hint').textContent.startsWith('Школа'));
 assert.equal(route.ui.state().selected,'STRUCT-SARCOMERE');
 assert.equal(route.ui.state().tab,'sources');
 route.ui.destroy();
 const sourceBaseline=structureContent(structures[0],'sources','university');
 for(const level of ['school','advanced'])assert.equal(structureContent(structures[0],'sources',level),sourceBaseline);
 const html=fs.readFileSync('dist/muscle-lab.html','utf8'),css=fs.readFileSync('dist/muscle-lab.css','utf8');
-for(const id of ['muscle-evidence','claim-list','eua-evidence-dialog','structure-link'])assert(html.includes(`id="${id}"`));
+for(const id of ['muscle-evidence','claim-list','eua-evidence-dialog'])assert(html.includes(`id="${id}"`));
 assert(html.includes('href="./directions.html"'));assert(html.includes('href="./index.html#home-feedback"'));assert(css.includes('height:100dvh'));assert(css.includes('.muscle-claims,.related-grid{grid-template-columns:minmax(0,1fr)}'));
-for(const t of topics){const article=renderTopics('university').slice(renderTopics('university').indexOf(`id="${t.id}"`));assert(article.includes(`data-claim-open="${topicClaimIds[t.id]}"`));assert(article.includes(`aria-controls="scene-${t.id}"`));}
+for(const t of topics){const article=renderTopics('university').slice(renderTopics('university').indexOf(`id="${t.id}"`));assert(article.includes(`data-claim-open="${topicClaimIds[t.id]}"`));assert(article.includes(`data-topic-scene="${t.id}"`));}
 const pageHashes=JSON.parse(fs.readFileSync('tests/fixtures/v57-retained-page-hashes.json','utf8'));
 // Only Cell and Nutrition may change presentation in v70. This independent
 // v69 fixture retains every paragraph/source link and every inline SVG byte,
@@ -157,6 +201,7 @@ for(const [file,hash] of Object.entries(pageHashes)){
  if(file==='directions.html'||file==='index.html')continue; // Home presentation updated; article integrity is checked in home-entry and first-visit-flow.
  if(file==='movement.html')continue; // Replaced by the approved introductory movement module; geometry and navigation are tested separately. Historical fixture is retained unchanged.
  if(file==='nutrition-digestion.html')continue; // Replaced 2026-10-18 by the owner-approved 3D «Шлях їжі» module; content and evidence links are tested in food-path.test.mjs. Historical fixture is retained unchanged.
+ if(file==='muscle-lab.html')continue; // Replaced by the owner-approved redesign (one scale control, own drawings, animated contraction, mirrored growth/atrophy). Frozen science (structures, topics, sources) is still checked above; see muscle-lab.test.mjs for the page.
  if(file==='cell-lab.html'||file==='nutrition.html')continue; // Exact retained semantics checked against the independent v69 fixture above.
  let html=fs.readFileSync('dist/'+file,'utf8') .replaceAll('platform-shell.js?v=83','platform-shell.js?v=54').replaceAll('platform-shell.js?v=82','platform-shell.js?v=54').replaceAll('platform-shell.js?v=63','platform-shell.js?v=54').replaceAll('platform-shell.js?v=60','platform-shell.js?v=54').replaceAll('nutrition-lab.js?v=59','nutrition-lab.js?v=55').replaceAll('cell-lab.js?v=59','cell-lab.js?v=56').replaceAll('home-feedback.js?v=60','home-feedback.js?v=57').replaceAll('supplement-backgrounds-v10.webp','supplement-backgrounds-v10.png'); // PNG->WebP asset format change only; pixels/layout reference unchanged
  if(file==='index.html'){

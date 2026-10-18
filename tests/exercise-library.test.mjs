@@ -171,7 +171,7 @@ assert(cardLinks.length >= 1 && cardLinks.every(a => a.textContent.length));
 // --- Page and Atlas wiring ------------------------------------------------------
 const html = fs.readFileSync('dist/exercises.html', 'utf8');
 assert(html.includes('<html lang="uk">') && html.includes('<title>') && html.includes('id="exercise-app"'));
-assert(html.includes('src="./exercises.js?v=5"') && html.includes('href="./exercises.css?v=1"'));
+assert(html.includes('src="./exercises.js?v=6"') && html.includes('href="./exercises.css?v=1"'));
 assert(!/<iframe/i.test(html) && !/youtube/i.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '')), 'No YouTube resource in the static page');
 for (const file of ['dist/exercises.css', 'dist/exercises.js', 'dist/exercises-data.js']) assert(fs.existsSync(file));
 const atlasJs = fs.readFileSync('dist/atlas.js', 'utf8');
@@ -196,4 +196,7 @@ const catalogSource = fs.readFileSync('src/platform/catalog.mjs', 'utf8');
 assert(!catalogSource.includes('exercises.html'), 'The library is a practice entry, not a new top-level catalog direction');
 
 fs.rmSync(temp, {recursive: true, force: true});
+const pageHtml = fs.readFileSync('dist/exercises.html', 'utf8');
+assert(!/чернетк/i.test(pageHtml) && !/чернетк/i.test(fs.readFileSync('dist/exercises.js', 'utf8')), 'No stale draft wording once entries are video-checked');
+
 console.log('Exercise library: 12 video-checked entries, data model, safe wording, filters, detail layers, click-to-load video and Atlas link passed.');

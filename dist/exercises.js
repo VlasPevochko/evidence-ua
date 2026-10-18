@@ -88,7 +88,7 @@ function listSection(doc, id, title, layer, items, emptyText) {
 
 const layerLabels = {
   facts: 'Опис руху та анатомія',
-  coaching: 'Редакційні поради (чернетка)',
+  coaching: 'Поради до виконання',
   safety: 'Безпека',
   evidence: 'Докази'
 };

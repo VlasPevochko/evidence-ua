@@ -194,6 +194,43 @@ async function nutritionFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function supplementsFlow(browser, origin, viewport) {
+  const where = `supplements @${viewport.name}`;
+  const {context, page} = await open(browser, origin, viewport, '/supplements.html');
+  await page.waitForSelector('.sp-row');
+  const phone = viewport.width <= 900;
+  check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once');
+  check(where, (await page.locator('.sp-row').count()) === 10, 'expected ten supplements');
+  // Every entry has a photo, a folded limit and a link to its existing dossier.
+  const links = await page.locator('.sp-go').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
+  check(where, links.length === 10 && links.every(h => h.startsWith('./index.html#')), 'every row must link to its dossier');
+  check(where, (await page.locator('.sp-limit[open]').count()) === 0, 'limits must start folded');
+  await page.locator('.sp-limit summary').first().click();
+  check(where, (await page.locator('.sp-limit[open] p').first().isVisible()), 'opening the limit must show its text');
+  const photo = await page.locator('.sp-photo').first().boundingBox();
+  check(where, photo && photo.width >= (phone ? 80 : 120), `photo too small: ${photo && photo.width}`);
+  // Filter and search.
+  await page.locator('[data-sp-filter="health"]').click();
+  check(where, (await page.locator('.sp-row').count()) === 3, 'the health filter must show three rows');
+  check(where, (await page.locator('[data-sp-filter="health"]').getAttribute('aria-pressed')) === 'true', 'the filter is not marked pressed');
+  await page.locator('[data-sp-filter="all"]').click();
+  await page.locator('#sp-q').fill('креа');
+  check(where, (await page.locator('.sp-row').count()) === 1 && (await page.locator('#sp-count').innerText()).includes('1 з 10'), 'search by name failed');
+  await page.locator('#sp-q').fill('qwerty');
+  check(where, await page.locator('#sp-empty').isVisible(), 'the empty state must show for no results');
+  await page.locator('#sp-q').fill('');
+  // Heading font is the self-hosted serif, nothing overflows, filters are one row on phones.
+  check(where, (await page.locator('.sp-head h1').evaluate(n => getComputedStyle(n).fontFamily)).includes('Source Serif 4'), 'heading font is not the site serif');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+  if (phone) {
+    const chips = await page.locator('.sp-chips').evaluate(n => ({scroll: n.scrollWidth, client: n.clientWidth}));
+    check(where, chips.scroll >= chips.client, 'filter chips misbehave on phones');
+  }
+  // The photo strip is the real sprite, not an empty box.
+  check(where, (await page.locator('.sp-photo').first().evaluate(n => getComputedStyle(n).backgroundImage)).includes('supplement-backgrounds'), 'photo sprite not applied');
+  await context.close();
+}
+
 async function muscleLabFlow(browser, origin, viewport) {
   const where = `muscle lab @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
@@ -408,6 +445,7 @@ try {
   for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
   for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
   for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
+  for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
   for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));

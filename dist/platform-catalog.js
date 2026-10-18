@@ -25,7 +25,7 @@ export const areas = [
     {id:'timeline',title:'Нутрієнти у часі',href:'./nutrition.html#nutrient-time',entityIds:[]},
     {id:'digestion',title:'Травлення та всмоктування',href:'./nutrition-digestion.html',entityIds:[]}
   ]},
-  {id:'supplements',title:'Добавки',lab:'Досьє та докази',href:'./index.html#supplement-library',group:'evidence',available:true,state:'Креатин і попередні досьє',review:'Креатин: попередні оцінки; інші досьє: рівні впевненості не оцінено',description:'Наукові пояснення, джерела, практичні орієнтири та обмеження.',units:[
+  {id:'supplements',title:'Добавки',lab:'Досьє та докази',href:'./supplements.html',group:'evidence',available:true,state:'Креатин і попередні досьє',review:'Креатин: попередні оцінки; інші досьє: рівні впевненості не оцінено',description:'Наукові пояснення, джерела, практичні орієнтири та обмеження.',units:[
     {id:'creatine',title:'Креатин',href:'./index.html#creatine',entityIds:['MOL-CREATINE']},
     {id:'atp-pcr',title:'Механізм ATP–PCr',href:'./index.html#creatine-mechanism',entityIds:['PTH-ATP-PCR','MOL-ATP','MOL-PHOSPHOCREATINE']},
     ...[['protein','Протеїн'],['caffeine','Кофеїн'],['omega','Омега-3'],['vitd','Вітамін D'],['magnesium','Магній'],['collagen','Колаген'],['beta-alanine','Бета-аланін'],['citrulline','Цитрулін'],['electrolytes','Електроліти']].map(([id,title])=>({id,title,href:`./index.html#supplement-${id}`,entityIds:[]}))

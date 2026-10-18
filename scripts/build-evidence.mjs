@@ -43,7 +43,7 @@ html=html.slice(0,section.start)+renderModule({topline:top,pubmed:pub})+html.sli
 html=html.replace(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g,(tag,body)=>body.includes("const studies={strength:")&&body.includes("getElementById('study-source')")?'':tag);
 // Place CSS last in head to isolate current module overrides; load JS after legacy route initialization.
 html=html.replace(/<link[^>]*data-evidence-style[^>]*>/g,'').replace(/<script[^>]*data-evidence-script[^>]*><\/script>/g,'');
-html=html.replace('</head>','<link rel="stylesheet" href="./evidence/evidence.css?v=1.7" data-evidence-style></head>');
+html=html.replace('</head>','<link rel="stylesheet" href="./evidence/evidence.css?v=1.8" data-evidence-style></head>');
 html=html.replace('</body>','<script type="module" src="./evidence/ui.js?v=1.9" data-evidence-script></script></body>');
 // Only visible text: do not localize code, URLs, attributes, scientific values or article titles.
 html=html.split(/(<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>)/gi).map((part,i)=>i%2?part:part.replace(/>([^<>]+)</g,(all,text)=>'>'+publicText(text)+'<')).join('');

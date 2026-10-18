@@ -1,3 +1,4 @@
+// home-vcard.css version bumped 76 -> 77 because its border-radius values moved to the 8/16/30 scale (cache busting).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,7 +53,7 @@ assert(muscle.includes('href="./index.html#top"'));assert(muscle.includes('href=
 // The VM records declarations; v76 resolves the home layout through CSS so
 // desktop grid and mobile flex survive a round trip through an article.
 const layoutCSS=fs.readFileSync('dist/home-vcard.css','utf8');
-assert(home.includes('./home-vcard.css?v=76'));
+assert(home.includes('./home-vcard.css?v=77'));
 assert(layoutCSS.includes('--home-layout:grid'));assert(layoutCSS.includes('--home-layout:flex'));
 const start=home.indexOf('(()=>{\n const page='),end=home.indexOf('</script>',start);assert(start>=0&&end>start);
 const nodes=new Map(),callbacks=new Map(),articles=[];

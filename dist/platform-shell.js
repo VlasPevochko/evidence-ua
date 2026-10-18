@@ -1,4 +1,4 @@
-import './site-header.js?v=1';
+import './site-header.js?v=2';
 import {toolsHTML,mountQuickTools} from './platform-tools.js?v=83';
 import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=83';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

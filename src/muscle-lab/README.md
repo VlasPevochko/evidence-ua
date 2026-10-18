@@ -1,3 +1,15 @@
+# Muscle Lab — redesign of 2026-10-18 (owner-approved)
+
+This section supersedes the UI notes below; the science (structures, topics, sources, Claims) is unchanged and still frozen by `tests/muscle-flow.test.mjs`.
+
+- **One control per action.** Six numbered scale buttons replace the four overlapping controls (image markers, legend, Back/Next, scale row) and the jump buttons.
+- **Own drawings.** `scale-art.mjs` draws the six scales; they contain no text (labels are an HTML legend, readable on a phone). The earlier generated raster is still used by the home and directory cards, not by this page.
+- **Animated contraction.** `sarcomere.mjs` is the single sarcomere drawing: filaments keep a fixed length, only overlap and Z-disc distance change. A slider and a one-pass animation (`requestAnimationFrame`, stoppable, off under reduced motion) drive it. `scenes.mjs` draws the myosin-head cycle once; the step is a `data-step` attribute and CSS moves the parts.
+- **Growth and atrophy as mirrored opposites** in one section with one shared stepper; on a phone one panel is shown at a time.
+- **No reading-level switcher.** The full wording is always shown; the level text stays in `learning-copy.mjs` and the topic data for a later, separate feature (planned as a tab for subscribers).
+- Topic markup must not use `<header>`: the shared shell injects its navigation after every `<header>`.
+- Browser QA (`scripts/browser-qa/run.mjs`, `muscleLabFlow`) checks the scale control, the cycle, the sarcomere animation, the mirror and the phone layout.
+
 # Muscle Lab — current structured UI version 1.0
 
 The v58 increment preserves all v57 public structure descriptions, functions, topic wording and three SVG storyboards. A frozen fixture independently checks this migration. The original v0.1 notes below describe the retained foundation, not the current Claim count.

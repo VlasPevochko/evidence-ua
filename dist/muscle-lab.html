@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Muscle Lab — Evidence UA</title><meta name="description" content="Від м’яза до молекул: інтерактивна будова, скорочення, гіпертрофія та атрофія."><link rel="stylesheet" href="./evidence/evidence.css?v=55"><link rel="stylesheet" href="./muscle-lab.css?v=69"><link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Muscle Lab — Evidence UA</title><meta name="description" content="Від м’яза до молекул: інтерактивна будова, скорочення, гіпертрофія та атрофія."><link rel="stylesheet" href="./evidence/evidence.css?v=55"><link rel="stylesheet" href="./muscle-lab.css?v=70"><link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="icon" href="./favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="canonical" href="https://vlaspevochko.github.io/evidence-ua/muscle-lab.html">
@@ -15,7 +15,89 @@
 <meta property="og:image:alt" content="Evidence UA — наука для здорового життя">
 <meta name="twitter:card" content="summary_large_image">
 </head>
-<body data-platform-area="muscle"><a class="skip-link" href="#explorer">Перейти до моделі</a><header class="lab-header"><a class="brand" href="./index.html#top">Evidence <span>UA</span><small>НАУКА ДЛЯ РЕАЛЬНОГО ЖИТТЯ</small></a><nav aria-label="Основна навігація"><a href="./directions.html">Каталог</a></nav><div class="levels" role="group" aria-label="Рівень пояснення"><button data-level="school" aria-pressed="false">Школа</button><button data-level="university" aria-pressed="true">Університет</button><button data-level="advanced" aria-pressed="false">Поглиблено</button></div><button id="lesson" aria-pressed="false">Режим для заняття</button></header>
+<body data-platform-area="muscle">
+<a class="skip-link" href="#explorer">Перейти до моделі</a>
+<header class="lab-header">
+<a class="brand" href="./index.html#top">Evidence <span>UA</span>
+<small>НАУКА ДЛЯ РЕАЛЬНОГО ЖИТТЯ</small>
+</a>
+<nav aria-label="Основна навігація">
+<a href="./directions.html">Каталог</a>
+</nav>
+<button type="button" id="lesson" aria-pressed="false">Режим для заняття</button>
+</header>
 <div class="lab-layout">
-<main><section id="explorer"><p class="eyebrow">МАСШТАБИ ОДНІЄЇ СИСТЕМИ</p><h1>Від м’яза до молекул</h1><p class="lead">Інтерактивна подорож від цілого м’яза до механізмів усередині волокна.</p><nav class="lab-route learning-start" aria-label="Перші кроки в модулі"><a href="#model-view"><span>01</span> Обери структуру</a><a href="#structure-explanation" data-learning-tab="function"><span>02</span> Прочитай функцію</a><a href="#contraction"><span>03</span> Досліди скорочення</a></nav><details class="module-sections model-help"><summary>Усі теми модуля</summary><nav aria-label="Теми Muscle Lab"><a href="#explorer">Будова</a><a href="#contraction">Скорочення</a><a href="#growth">Ріст м’яза</a><a href="#atrophy">Атрофія</a><a href="#sources">Джерела</a></nav></details><details class="model-help"><summary>Як користуватися моделлю</summary><p class="lab-entry-note">Обери структуру на ілюстрації або перемикай масштаб кнопками. Пояснення й джерела — поруч із моделлю.</p></details><details class="module-status"><summary>Навчальний модуль · межі перевірки</summary><p>Механістичні пояснення не встановлюють величину ефекту у людей. Рівні впевненості не оцінено; науковий перегляд не завершено. Наявні джерела — контекстні посилання, а не автоматичне підтвердження кожного опису.</p></details><div id="scales" class="scales" role="group" aria-label="Масштаб будови"></div><div class="exploration"><div class="scene" id="model-view" tabindex="-1"><nav class="model-jumps" aria-label="Модель і пояснення"><a href="#structure-explanation">До пояснення ↓</a></nav><div class="viewer-navigation" role="group" aria-label="Перехід між масштабами"><button data-move-structure="-1" aria-label="Попередній масштаб">← Назад</button><div class="scale-current"><span id="scale-progress"></span><strong id="scale-name"></strong></div><button data-move-structure="1" aria-label="Наступний масштаб">Далі →</button></div><div class="art-view" id="art-view"><div class="art-window"><img id="muscle-art" src="./muscle-lab-art-v1.webp" alt="Художній розріз: скелетний м’яз, пучок, волокно та міофібрила" width="1536" height="512"><div id="art-hotspots" role="group" aria-label="Обрати структуру на ілюстрації"></div></div><div id="art-key" class="art-key" aria-label="Позначення структур"></div><details class="model-help"><summary>Як читати ілюстрацію</summary><p class="small">Художня ілюстрація · масштаб і кількість структур умовні. Обраний масштаб наближає ілюстрацію, а не показує мікроскопічне вимірювання.</p></details></div><div class="sarcomere" id="sarcomere-view" aria-label="Умовна схема саркомера" hidden><div class="schematic-select" role="group" aria-label="Структури на схемі"><button data-structure="STRUCT-SARCOMERE" aria-controls="structure-copy" aria-pressed="false">Саркомер</button><button data-structure="PRT-ACTIN-MYOSIN" aria-controls="structure-copy" aria-pressed="false">Актин і міозин</button></div><svg viewBox="0 0 640 170" role="img" aria-labelledby="sarcomere-title"><title id="sarcomere-title">Саркомер: актин від Z-дисків, міозин у центрі</title><g id="left-filament"><path d="M70 35V130" stroke="#c3d5e5" stroke-width="7"/><path d="M70 55H290M70 110H290" stroke="#a895ff" stroke-width="10"/><text x="45" y="158">Z-диск</text></g><g id="right-filament"><path d="M570 35V130" stroke="#c3d5e5" stroke-width="7"/><path d="M350 55H570M350 110H570" stroke="#a895ff" stroke-width="10"/><text x="540" y="158">Z-диск</text></g><path d="M225 82H415" stroke="#ff8496" stroke-width="16"/><path d="M250 82l-15 -18M280 82l-15 18M360 82l15 -18M390 82l15 18" stroke="#ff8496" stroke-width="6"/><path d="M320 25V132" stroke="#658297" stroke-dasharray="4 4"/><text x="112" y="25">Актин</text><text x="275" y="145">Міозин</text></svg><label for="shortening">Показати ковзання філаментів</label><input id="shortening" type="range" min="0" max="100" value="0" aria-label="Умовне ковзання філаментів"><p class="small">Повзунок не задає силу чи відсоток реального скорочення. Довжина філаментів незмінна; змінюється їх перекриття.</p><a class="open-contraction" href="#contraction">Перейти до кроків скорочення →</a></div><div class="art-status"><p id="art-selection" aria-live="polite"></p><button id="art-overview" data-structure="TISSUE-SKELETAL-MUSCLE" hidden>↺ Повний огляд</button></div></div><aside class="explanation" id="structure-explanation" tabindex="-1" aria-labelledby="structure-title"><nav class="model-jumps" aria-label="Перейти від пояснення"><a href="#model-view">До моделі ↑</a><a href="#contraction">До скорочення →</a></nav><p class="eyebrow">ОБРАНА СТРУКТУРА</p><h2 id="structure-title"></h2><div class="reading-level"><p id="reading-level-label">Рівень пояснення</p><div class="reading-level-options" role="group" aria-labelledby="reading-level-label" aria-describedby="reading-level-hint"><button data-level="school" aria-pressed="false" aria-controls="structure-copy">Школа</button><button data-level="university" aria-pressed="true" aria-controls="structure-copy">Університет</button><button data-level="advanced" aria-pressed="false" aria-controls="structure-copy">Поглиблено</button></div><p id="reading-level-hint" class="small">Університет — повний опис будови та функції. Вибір діє для всього модуля.</p></div><div class="tabs" role="group" aria-label="Пояснення структури"><button data-tab="description" aria-pressed="true">Структура</button><button data-tab="function" aria-pressed="false">Функція</button><button data-tab="sources" aria-pressed="false">Джерела</button></div><div id="structure-copy" aria-live="polite"></div><details class="model-help share-help"><summary>Поділитися обраною структурою</summary><a class="structure-link" id="structure-link" href="#explorer">Посилання на цю структуру ↗</a><p class="small">Вибрана структура зберігається в адресі сторінки. Це посилання можна скопіювати й надіслати.</p></details></aside></div></section>
-<section id="topics" class="topic-grid" aria-label="Механізм скорочення, ріст та атрофія"></section><section id="muscle-evidence" class="muscle-shared evidence-index"><h2>Пояснення, джерела та межі знання</h2><p>Ті самі описи, що біля моделі та сцен, зібрані в картки. Вони не є окремою оцінкою ефективності тренувань.</p><details><summary>Відкрити всі картки пояснень</summary><div id="claim-list" class="muscle-claims"></div></details><p class="small" id="visual-note"></p></section><section class="related"><h2>Пов’язані матеріали</h2><div class="related-grid"><a href="./cell-lab.html"><strong>Cell Lab</strong><span>Клітина, органели та їхні функції ↗</span></a><a href="./index.html#creatine"><strong>Креатин</strong><span>Механізм і докази у людей ↗</span></a><a href="./nutrition.html"><strong>Харчування</strong><span>Травлення та всмоктування ↗</span></a><a href="./movement.html"><strong>Рух</strong><span>Біомеханіка й просторові осі ↗</span></a></div><p class="small">Типи волокон, моторні одиниці, тренувальні параметри та muscle memory — наступні теми, ще не реалізовані тут.</p></section><section id="sources"><h2>Джерела та межі знання</h2><p>Механістичні пояснення не встановлюють величину довгострокового ефекту у людей. Окремі твердження та оцінки впевненості для нового модуля ще потребують наукового перегляду.</p><div id="source-list" class="muscle-shared"></div><p class="small" id="review-meta"></p></section><footer class="lab-footer"><a href="./index.html#top">← На головну</a><a href="./directions.html">Усі напрями →</a><a href="./index.html#home-feedback">Поділитися враженням →</a></footer><noscript><p class="module-status">Для інтерактивної моделі потрібен JavaScript. <a href="./directions.html">Перейти до напрямків</a>.</p></noscript></main></div><dialog class="eua-dialog muscle-shared" id="eua-evidence-dialog" aria-labelledby="eua-drawer-title"><div data-evidence-content></div></dialog><script type="module" src="./muscle-lab.js?v=69"></script><script type="module" src="./platform-shell.js?v=83"></script></body></html>
+<main>
+<section id="explorer">
+<p class="eyebrow">МАСШТАБИ ОДНІЄЇ СИСТЕМИ</p>
+<h1>Від м’яза до молекул</h1>
+<p class="lead">Інтерактивна подорож від цілого м’яза до механізмів усередині волокна.</p>
+<details class="module-status">
+<summary>Межі перевірки</summary>
+<p>Механістичні пояснення не встановлюють величину ефекту у людей. Рівні впевненості не оцінено; науковий перегляд не завершено. Наявні джерела — контекстні посилання, а не автоматичне підтвердження кожного опису.</p>
+</details>
+<div class="exploration">
+<div class="scene" id="model-view" tabindex="-1">
+<div id="scales" class="scales" role="group" aria-label="Масштаб будови"></div>
+<figure class="scale-figure">
+<div id="scale-art" class="scale-art"></div>
+<ul id="scale-legend" class="legend" aria-label="Позначення"></ul>
+<figcaption class="small">Схематично: форми й пропорції спрощені, масштаб умовний.</figcaption>
+</figure>
+<p id="art-selection" class="visually-hidden" aria-live="polite"></p>
+</div>
+<aside class="explanation" id="structure-explanation" tabindex="-1" aria-labelledby="structure-title">
+<p class="eyebrow">ОБРАНА СТРУКТУРА</p>
+<h2 id="structure-title"></h2>
+<div class="tabs" role="group" aria-label="Пояснення структури">
+<button type="button" data-tab="description" aria-pressed="true">Структура</button>
+<button type="button" data-tab="function" aria-pressed="false">Функція</button>
+<button type="button" data-tab="sources" aria-pressed="false">Джерела</button>
+</div>
+<div id="structure-copy" aria-live="polite"></div>
+</aside>
+</div>
+</section>
+<section id="topics" class="topic-stack" aria-label="Механізм скорочення, ріст та атрофія"></section>
+<section id="muscle-evidence" class="muscle-shared evidence-index">
+<h2>Пояснення та межі знання</h2>
+<details>
+<summary>Усі пояснення з джерелами</summary>
+<p>Ті самі описи, що біля моделі та сцен, зібрані в картки. Вони не є окремою оцінкою ефективності тренувань.</p>
+<div id="claim-list" class="muscle-claims"></div>
+</details>
+<p class="small" id="visual-note"></p>
+</section>
+<section class="related">
+<h2>Пов’язані матеріали</h2>
+<div class="related-grid">
+<a href="./cell-lab.html"><strong>Cell Lab</strong><span>Клітина, органели та їхні функції ↗</span></a>
+<a href="./index.html#creatine"><strong>Креатин</strong><span>Механізм і докази у людей ↗</span></a>
+<a href="./nutrition.html"><strong>Харчування</strong><span>Травлення та всмоктування ↗</span></a>
+<a href="./movement.html"><strong>Рух</strong><span>Біомеханіка й просторові осі ↗</span></a>
+</div>
+<p class="small">Типи волокон, моторні одиниці, тренувальні параметри та muscle memory — наступні теми, ще не реалізовані тут.</p>
+</section>
+<section id="sources">
+<h2>Джерела та межі знання</h2>
+<p>Механістичні пояснення не встановлюють величину довгострокового ефекту у людей. Окремі твердження та оцінки впевненості для нового модуля ще потребують наукового перегляду.</p>
+<details class="source-details">
+<summary>Список джерел (<span id="source-count">0</span>)</summary>
+<div id="source-list" class="muscle-shared"></div>
+</details>
+<p class="small" id="review-meta"></p>
+</section>
+<footer class="lab-footer">
+<a href="./index.html#top">← На головну</a>
+<a href="./directions.html">Усі напрями →</a>
+<a href="./index.html#home-feedback">Поділитися враженням →</a>
+</footer>
+<noscript>
+<p class="module-status">Для інтерактивної моделі потрібен JavaScript. <a href="./directions.html">Перейти до напрямків</a>.</p>
+</noscript>
+</main>
+</div>
+<dialog class="eua-dialog muscle-shared" id="eua-evidence-dialog" aria-labelledby="eua-drawer-title">
+<div data-evidence-content></div>
+</dialog>
+<script type="module" src="./muscle-lab.js?v=70"></script><script type="module" src="./platform-shell.js?v=83"></script></body></html>

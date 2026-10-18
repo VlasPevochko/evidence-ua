@@ -1,112 +1,293 @@
 import {moduleMeta,sources,structures,topics,muscleKnowledge,topicClaimIds,visual} from './muscle-lab-data.js?v=61';
-import {sceneFrame} from './muscle-lab-scenes.js?v=58';
+import {sceneFrame} from './muscle-lab-scenes.js?v=59';
 import {structureLearningCopy} from './muscle-learning-copy.js?v=68';
+import {scaleArt,scaleLegend} from './muscle-scale-art.js?v=1';
+import {sarcomereSVG,sarcomereState} from './muscle-sarcomere.js?v=1';
 import {ClaimCard,SourceCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=61';
+
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const levels=['school','university','advanced'],tabs=['description','function','sources'];
-const readingHints={school:'Школа — коротко й просто.',university:'Університет — повний опис будови та функції.',advanced:'Поглиблено — більше деталей і межі пояснення.'};
-export function initialStructure(href){const id=new URL(href||'https://evidence.invalid').searchParams.get('structure');return structures.find(s=>s.id===id)||structures[0];}
-export function initialPreferences(href){const url=new URL(href||'https://evidence.invalid');return {level:levels.includes(url.searchParams.get('level'))?url.searchParams.get('level'):'university',tab:tabs.includes(url.searchParams.get('tab'))?url.searchParams.get('tab'):'description'};}
-export function adjacentStructure(id,direction){const index=structures.findIndex(s=>s.id===id);if(index<0)throw new Error('Unknown structure');if(![-1,1].includes(direction))throw new Error('Invalid direction');return structures[Math.max(0,Math.min(structures.length-1,index+direction))];}
-export function structureURL(href,id,level='university',tab='description'){
- if(!structures.some(s=>s.id===id)||!levels.includes(level)||!tabs.includes(tab))throw Error('Unknown selection');
- const url=new URL(href||'https://evidence.invalid/muscle-lab.html');url.searchParams.set('structure',id);url.searchParams.set('level',level);url.searchParams.set('tab',tab);return url;
+// The reading-level switcher is removed from the page; the full (university) wording is always shown.
+// Level wording stays in the data for a later, separate feature.
+const LEVEL='university';
+const tabs=['description','function','sources'];
+const PLAY_HINT='Кроки умовні: не реальний час і не кількісна симуляція.';
+const SLIDE_MS=3200,HOLD_MS=500;
+
+export function initialStructure(href){
+ const id=new URL(href||'https://evidence.invalid').searchParams.get('structure');
+ return structures.find(s=>s.id===id)||structures[0];
 }
-export function renderHotspots(){return structures.slice(0,4).map((s,i)=>`<button class="art-hotspot" data-structure="${s.id}" style="--point:${[16,38,55,82][i]}%" aria-label="Обрати: ${esc(s.label)}" aria-controls="structure-copy" aria-pressed="${i===0}" title="${esc(s.label)}">${i+1}</button>`).join('');}
-export function sourceLinks(ids){return ids.map(id=>{const s=sources.find(s=>s.id===id);if(!s)throw Error('Unknown source');return `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)} ↗</a>`;}).join('<br>');}
-export function structureContent(s,tab,level){
+export function initialPreferences(href){
+ const url=new URL(href||'https://evidence.invalid');
+ return {level:LEVEL,tab:tabs.includes(url.searchParams.get('tab'))?url.searchParams.get('tab'):'description'};
+}
+export function adjacentStructure(id,direction){
+ const index=structures.findIndex(s=>s.id===id);
+ if(index<0)throw new Error('Unknown structure');
+ if(![-1,1].includes(direction))throw new Error('Invalid direction');
+ return structures[Math.max(0,Math.min(structures.length-1,index+direction))];
+}
+export function structureURL(href,id,tab='description'){
+ if(!structures.some(s=>s.id===id)||!tabs.includes(tab))throw Error('Unknown selection');
+ const url=new URL(href||'https://evidence.invalid/muscle-lab.html');
+ url.searchParams.set('structure',id);url.searchParams.set('tab',tab);url.searchParams.delete('level');
+ return url;
+}
+export function renderScaleButtons(selectedId){
+ return structures.map((s,i)=>`<button type="button" class="scale-btn" data-structure="${s.id}" aria-pressed="${s.id===selectedId}" aria-controls="structure-copy"><span class="scale-num" aria-hidden="true">${i+1}</span><span class="scale-name">${esc(s.label)}</span></button>`).join('');
+}
+export function renderLegend(id){
+ return (scaleLegend[id]||[]).map(item=>`<li><i style="background:${item.color}" aria-hidden="true"></i>${esc(item.text)}</li>`).join('');
+}
+export function sourceLinks(ids){
+ return ids.map(id=>{
+  const s=sources.find(s=>s.id===id);if(!s)throw Error('Unknown source');
+  return `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)} ↗</a>`;
+ }).join('<br>');
+}
+export function structureContent(s,tab,level=LEVEL){
  const text=structureLearningCopy(s,tab,level);
  const claim=muscleKnowledge.claims.find(c=>c.id===s.claimId);
  const records=muscleKnowledge.records.filter(r=>r.claimId===s.claimId);
- const groups=[...new Set(records.map(r=>r.claimPart))].map(part=>{const matching=records.filter(r=>r.claimPart===part);return `<h3>${esc(matching[0].claimPartLabel)}</h3>${sourceLinks([...new Set(matching.map(r=>r.sourceId))])}`;}).join('');
+ const groups=[...new Set(records.map(r=>r.claimPart))].map(part=>{
+  const matching=records.filter(r=>r.claimPart===part);
+  return `<h3>${esc(matching[0].claimPartLabel)}</h3>${sourceLinks([...new Set(matching.map(r=>r.sourceId))])}`;
+ }).join('');
  const note=claim.claimType==='physiology'?'Навчальне пояснення будови.':'Механістичне пояснення.';
- const content=tab==='sources'?`<p class="small">Джерела для визначення та функції наведено окремо. Повний науковий перегляд ще не завершено.</p>${groups}`:`<p>${esc(text)}</p>${level==='advanced'?`<p class="small">${note} Не встановлює силу, швидкість або довгостроковий ефект конкретної програми у людей.</p>`:''}`;
+ const content=tab==='sources'
+  ?`<p class="small">Джерела для визначення та функції наведено окремо. Повний науковий перегляд ще не завершено.</p>${groups}`
+  :`<p>${esc(text)}</p>${level==='advanced'?`<p class="small">${note} Не встановлює силу, швидкість або довгостроковий ефект конкретної програми у людей.</p>`:''}`;
  return content+claimButton(s.claimId);
 }
-export function renderTopics(level){return topics.map(t=>{const c=muscleKnowledge.claims.find(c=>c.id===topicClaimIds[t.id]),modelNote=t.id==='growth'||t.id==='atrophy'?c.limitations[0]:null;return `<article class="topic" id="${t.id}" tabindex="-1" data-color="${t.color}"><p class="eyebrow">${t.id==='contraction'?'МЕХАНІЗМ':'АДАПТАЦІЯ З ЧАСОМ'}</p><h2>${esc(t.title)}</h2><p>${esc(t.description)}</p>
-<div class="topic-player"><div class="topic-scene" id="scene-${t.id}" data-topic-scene="${t.id}" aria-describedby="progress-${t.id}">${sceneFrame(t.id)}</div><div class="player-panel">
-<div class="step-picker" role="group" aria-label="Обрати крок: ${esc(t.title)}">${t.steps.map((text,i)=>`<button data-step-topic="${t.id}" data-step-index="${i}" aria-pressed="false" aria-controls="scene-${t.id}"><span>${i+1}</span>${esc(text)}</button>`).join('')}</div>
-<div class="scene-controls"><button data-previous="${t.id}" aria-label="Попередній крок: ${esc(t.title)}" disabled>← Назад</button><button data-next="${t.id}" aria-label="Наступний крок: ${esc(t.title)}">Далі →</button><button data-play="${t.id}" aria-pressed="false">▶ Показати послідовність</button><button data-reset="${t.id}">↺ Спочатку</button></div><p class="small" id="progress-${t.id}" data-progress="${t.id}" aria-live="polite">Кроки умовні: не реальний час і не кількісна симуляція.</p><p data-topic-copy="${t.id}">${esc(t[level])}</p>${modelNote?`<p class="small">${esc(modelNote)}</p>`:''}${claimButton(topicClaimIds[t.id])}</div></div>
-<details class="step-details"><summary>Усі кроки та пояснення</summary><ol>${t.steps.map((s,i)=>`<li data-topic-step="${t.id}-${i}">${esc(s)}</li>`).join('')}</ol></details><details><summary>Контекстні джерела</summary><p class="small">Не окрема оцінка величини ефекту у людей.</p><p class="source-links">${sourceLinks(t.sourceIds)}</p></details><a class="return-to-structure" href="#explorer">↑ Повернутися до будови м’яза</a></article>`;}).join('');}
+
+const claimOf=id=>muscleKnowledge.claims.find(c=>c.id===topicClaimIds[id]);
+const stepButtons=(t,attr)=>t.steps.map((text,i)=>`<button type="button" class="step-dot" ${attr}="${t.id}" data-step-index="${i}" aria-pressed="false" aria-controls="scene-${t.id}" aria-label="Крок ${i+1}: ${esc(text)}"><span aria-hidden="true">${i+1}</span></button>`).join('');
+const mirrorSteps=()=>[0,1,2,3].map(i=>`<button type="button" class="step-dot" data-mirror-step="${i}" aria-pressed="false" aria-controls="scene-growth scene-atrophy" aria-label="Крок ${i+1} для росту й атрофії"><span aria-hidden="true">${i+1}</span></button>`).join('');
+const modelNoteOf=t=>(t.id==='growth'||t.id==='atrophy')?claimOf(t.id).limitations[0]:null;
+
+function renderContraction(t,level){
+ const state=sarcomereState(0);
+ return `<article class="topic topic-contraction" id="contraction" tabindex="-1" data-color="${t.color}" aria-labelledby="contraction-title">
+<div class="topic-head"><p class="eyebrow">МЕХАНІЗМ</p><h2 id="contraction-title">${esc(t.title)}</h2><p class="topic-lead">${esc(t.description)}</p></div>
+<div class="contraction-grid">
+<section class="panel sarcomere-panel" aria-labelledby="sliding-title"><h3 id="sliding-title">Ковзання ниток</h3>
+<div class="sarcomere-stage" data-sarcomere-stage>${sarcomereSVG({t:0,idPrefix:'ctr'})}</div>
+<ul class="slide-readout" data-slide-readout aria-label="Що змінюється під час скорочення">
+<li><span>Відстань між Z-дисками</span><b class="bar"><i data-readout-bar="distance" style="width:${state.relative.sarcomere*100}%"></i></b><em data-readout-state="distance">у спокої</em></li>
+<li><span>Перекриття ниток</span><b class="bar"><i data-readout-bar="overlap" style="width:${state.relative.overlap*100}%"></i></b><em data-readout-state="overlap">у спокої</em></li>
+<li><span>Довжина самих ниток</span><b class="bar"><i data-readout-bar="length" style="width:100%"></i></b><em data-readout-state="length">не змінюється</em></li>
+</ul>
+<div class="sarcomere-controls"><button type="button" class="play-btn" data-sarcomere-play aria-pressed="false">▶ Показати скорочення</button>
+<label class="slide-label" for="shortening">Положення (умовно)</label><input id="shortening" type="range" min="0" max="100" value="0" aria-label="Умовне ковзання філаментів"></div>
+<p class="small" id="slide-note">Нитки не вкорочуються: змінюється їх перекриття. Повзунок не задає силу чи відсоток реального скорочення.</p></section>
+<section class="panel cycle-panel" aria-labelledby="cycle-title"><h3 id="cycle-title">Один цикл головки міозину</h3>
+<div class="topic-scene" id="scene-contraction" data-topic-scene="contraction" aria-describedby="progress-contraction">${sceneFrame('contraction')}</div>
+<div class="cycle-controls"><div class="step-picker" role="group" aria-label="Обрати крок: ${esc(t.title)}">${stepButtons(t,'data-step-topic')}</div>
+<button type="button" class="play-btn" data-play="contraction" aria-pressed="false">▶ Цикл</button><button type="button" class="ghost-btn" data-reset="contraction" aria-label="Спочатку: ${esc(t.title)}">↺</button></div>
+<p class="step-text" id="progress-contraction" data-progress="contraction" aria-live="polite">${PLAY_HINT}</p></section>
+</div>
+<p class="topic-copy" data-topic-copy="contraction">${esc(t[level])}</p>
+${claimButton(topicClaimIds.contraction)}
+</article>`;
+}
+
+function renderAdaptation(t,level,mirror=false){
+ const note=modelNoteOf(t);
+ const arrow=t.id==='growth'?'↑':'↓';
+ return `<article class="topic topic-${t.id}" id="${t.id}" tabindex="-1" data-color="${t.color}" aria-labelledby="${t.id}-title">
+<h3 id="${t.id}-title"><span class="dir" aria-hidden="true">${arrow}</span> ${esc(t.title)}</h3>
+<p class="topic-lead">${esc(t.description)}</p>
+<div class="topic-scene" id="scene-${t.id}" data-topic-scene="${t.id}" aria-describedby="progress-${t.id}">${sceneFrame(t.id)}</div>
+<p class="balance-legend" aria-hidden="true"><span>← синтез білків</span><span>розпад білків →</span></p>
+<p class="step-text" id="progress-${t.id}" data-progress="${t.id}" aria-live="polite">${PLAY_HINT}</p>
+<p class="topic-copy" data-topic-copy="${t.id}">${esc(t[level])}</p>
+${note?`<p class="small">${esc(note)}</p>`:''}
+${claimButton(topicClaimIds[t.id])}
+</article>`;
+}
+
+export function renderTopics(level=LEVEL){
+ const [contraction,growth,atrophy]=['contraction','growth','atrophy'].map(id=>topics.find(t=>t.id===id));
+ return renderContraction(contraction,level)+`<section class="mirror" id="adaptation" data-mirror-view="growth" aria-labelledby="mirror-title">
+<div class="topic-head"><p class="eyebrow">АДАПТАЦІЯ З ЧАСОМ</p><h2 id="mirror-title">Ріст і атрофія: дві протилежності</h2>
+<p class="topic-lead">Той самий м’яз і той самий баланс синтезу та розпаду білків, але протилежний напрямок.</p>
+<div class="mirror-controls"><div class="mirror-tabs" role="group" aria-label="Що показувати">
+<button type="button" data-mirror-show="growth" aria-pressed="true">↑ Ріст</button><button type="button" data-mirror-show="atrophy" aria-pressed="false">↓ Атрофія</button></div>
+<div class="step-picker" role="group" aria-label="Крок для росту й атрофії">${mirrorSteps()}</div>
+<button type="button" class="play-btn" data-mirror-play aria-pressed="false">▶ Показати</button></div>
+<p class="small">Схематично: розмір волокна й нахил ваг умовні. Це не вимірювання і не прогноз для конкретної людини.</p></div>
+<div class="mirror-grid">${renderAdaptation(growth,level)}${renderAdaptation(atrophy,level)}</div></section>`;
+}
+
 export function mount(root=document){
  const view=root.defaultView,preferences=initialPreferences(view?.location?.href);
- let selected=initialStructure(view?.location?.href),tab=preferences.tab,level=preferences.level;
+ let selected=initialStructure(view?.location?.href),tab=preferences.tab,slideT=0,mirrorView='growth';
  const timers=new Map(),indices=new Map();
+ let frame=null,slidePhase=null;
  const motion=view?.matchMedia?.('(prefers-reduced-motion: reduce)');
  const schedule=view?.setInterval?.bind(view)||setInterval,cancel=view?.clearInterval?.bind(view)||clearInterval;
- root.querySelector('#scales').innerHTML=structures.map(s=>`<button data-structure="${s.id}" aria-pressed="${s.id===selected.id}" aria-controls="structure-copy">${esc(s.label)}</button>`).join('');
- root.querySelector('#topics').innerHTML=renderTopics(level);
- root.querySelector('#art-hotspots').innerHTML=renderHotspots();
- root.querySelector('#art-key').innerHTML=structures.slice(0,4).map((s,i)=>`<span>${i+1} · ${esc(s.label)}</span>`).join('');
- const stop=id=>{cancel(timers.get(id));timers.delete(id);const button=root.querySelector(`[data-play="${id}"]`);button.setAttribute('aria-pressed','false');button.textContent='▶ Показати послідовність';};
- const stopAll=()=>topics.forEach(t=>stop(t.id));
- const step=(id,index)=>{
-  const t=topics.find(t=>t.id===id);if(!t||!Number.isInteger(index)||index< -1||index>=t.steps.length)throw Error('Invalid topic step');
-  indices.set(id,index);root.querySelector(`[data-topic-scene="${id}"]`).innerHTML=sceneFrame(id,index);
-  root.querySelector(`[data-previous="${id}"]`).disabled=index<=0;root.querySelector(`[data-next="${id}"]`).disabled=index>=t.steps.length-1;
-  root.querySelectorAll(`[data-step-topic="${id}"]`).forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));
-  root.querySelectorAll(`[data-topic-step^="${id}-"]`).forEach((li,i)=>li.classList.toggle('active',i===index));
-  root.querySelector(`[data-progress="${id}"]`).textContent=index<0?'Кроки умовні: не реальний час і не кількісна симуляція.':`Крок ${index+1} із ${t.steps.length}: ${t.steps[index]}`;
+ const raf=view?.requestAnimationFrame?.bind(view),caf=view?.cancelAnimationFrame?.bind(view);
+ const $=s=>root.querySelector(s);
+ $('#scales').innerHTML=renderScaleButtons(selected.id);
+ $('#topics').innerHTML=renderTopics(LEVEL);
+ const clamp=v=>Math.max(0,Math.min(1,v));
+
+ // Cycle and mirror steps: the scene is drawn once; the step is a data attribute that CSS animates.
+ const stepScene=(id,index)=>{
+  const t=topics.find(t=>t.id===id);
+  if(!t||!Number.isInteger(index)||index< -1||index>=t.steps.length)throw Error('Invalid topic step');
+  indices.set(id,index);
+  const holder=$(`[data-topic-scene="${id}"]`),svg=holder.querySelector?.('svg');
+  if(svg?.setAttribute)svg.setAttribute('data-step',String(index));else holder.innerHTML=sceneFrame(id,index);
+  const pressed=i=>String(i===index);
+  root.querySelectorAll(`[data-step-topic="${id}"]`).forEach((button,i)=>button.setAttribute('aria-pressed',pressed(i)));
+  const progress=$(`[data-progress="${id}"]`);
+  progress.textContent=index<0?PLAY_HINT:`Крок ${index+1} із ${t.steps.length}: ${t.steps[index]}`;
  };
- const slide=value=>{const bounded=Math.max(0,Math.min(100,Number(value)||0));root.querySelector('#left-filament').setAttribute('transform',`translate(${bounded*.7} 0)`);root.querySelector('#right-filament').setAttribute('transform',`translate(${-bounded*.7} 0)`);root.querySelector('#shortening').value=bounded;};
+ const syncMirrorButtons=()=>{
+  const index=indices.get('growth')??-1;
+  root.querySelectorAll('[data-mirror-step]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.mirrorStep)===index)));
+ };
+ const stepMirror=index=>{stepScene('growth',index);stepScene('atrophy',index);syncMirrorButtons();};
+ const stop=id=>{
+  cancel(timers.get(id));timers.delete(id);
+  const button=id==='mirror'?$('[data-mirror-play]'):$(`[data-play="${id}"]`);
+  if(button){button.setAttribute('aria-pressed','false');button.textContent=id==='mirror'?'▶ Показати':'▶ Цикл';}
+ };
+ const stopSlide=()=>{
+  if(frame!==null){caf?.(frame);frame=null;}slidePhase=null;
+  const button=$('[data-sarcomere-play]');if(button){button.setAttribute('aria-pressed','false');button.textContent='▶ Показати скорочення';}
+ };
+ const stopAll=()=>{['contraction','mirror'].forEach(stop);stopSlide();};
+ const play=(id,total,go)=>{
+  if(timers.has(id)){stop(id);return;}
+  stopAll();
+  const current=id==='mirror'?(indices.get('growth')??-1):(indices.get(id)??-1);
+  let i=current+1;if(i>=total)i=0;go(i);
+  if(motion?.matches){$(`[data-progress="${id==='mirror'?'growth':id}"]`).textContent+=' · Зменшений рух: наступний крок обери вручну.';return;}
+  const button=id==='mirror'?$('[data-mirror-play]'):$(`[data-play="${id}"]`);
+  button.textContent='Ⅱ Пауза';button.setAttribute('aria-pressed','true');
+  timers.set(id,schedule(()=>{i++;if(i>=total){stop(id);return;}go(i);},1800));
+ };
+
+ // Sarcomere: continuous sliding. t is a schematic position, never a measured shortening.
+ const readout=state=>{
+  const set=(key,width,text)=>{
+   const bar=$(`[data-readout-bar="${key}"]`),label=$(`[data-readout-state="${key}"]`);
+   if(bar)bar.style.width=`${Math.round(width*100)}%`;
+   if(label)label.textContent=text;
+  };
+  const moved=state.t>0.005;
+  set('distance',state.relative.sarcomere,moved?'зменшується':'у спокої');
+  set('overlap',state.relative.overlap,moved?'збільшується':'у спокої');
+  set('length',1,'не змінюється');
+ };
+ const slide=value=>{
+  slideT=clamp(Number(value)/100||0);
+  const stage=$('[data-sarcomere-stage]');if(stage)stage.innerHTML=sarcomereSVG({t:slideT,idPrefix:'ctr'});
+  const input=$('#shortening');if(input)input.value=Math.round(slideT*100);
+  readout(sarcomereState(slideT));
+ };
+ const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+ const playSlide=()=>{
+  if(frame!==null){stopSlide();return;}
+  stopAll();
+  if(motion?.matches||!raf){slide(slideT<.5?100:0);$('#slide-note').textContent='Зменшений рух: використай повзунок, щоб змінювати положення.';return;}
+  const button=$('[data-sarcomere-play]');button.textContent='Ⅱ Пауза';button.setAttribute('aria-pressed','true');
+  // 0 -> 1, hold, 1 -> 0, then stop.
+  slidePhase={from:slideT,start:null};
+  const tick=now=>{
+   if(!slidePhase)return;
+   if(slidePhase.start===null)slidePhase.start=now;
+   const elapsed=now-slidePhase.start,span=SLIDE_MS;
+   if(elapsed<span){slide(ease(elapsed/span)*100*(1-slidePhase.from)+slidePhase.from*100);}
+   else if(elapsed<span+HOLD_MS){slide(100);}
+   else if(elapsed<2*span+HOLD_MS){slide((1-ease((elapsed-span-HOLD_MS)/span))*100);}
+   else{slide(0);stopSlide();return;}
+   frame=raf(tick);
+  };
+  frame=raf(tick);
+ };
+
  const render=()=>{
-  root.querySelector('#structure-title').textContent=selected.label;root.querySelector('#structure-copy').innerHTML=structureContent(selected,tab,level);
+  $('#structure-title').textContent=selected.label;
+  $('#structure-copy').innerHTML=structureContent(selected,tab,LEVEL);
   root.querySelectorAll('[data-structure]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.structure===selected.id)));
   root.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===tab)));
-  root.querySelectorAll('[data-level]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.level===level)));
-  const hint=root.querySelector('#reading-level-hint');if(hint)hint.textContent=`${readingHints[level]} Вибір діє для всього модуля.`;
-  const selectedIndex=structures.indexOf(selected),molecular=selectedIndex>=4;
-  root.querySelector('#art-view').hidden=molecular;root.querySelector('#sarcomere-view').hidden=!molecular;
-  root.querySelector('#scale-progress').textContent=`Масштаб ${selectedIndex+1} із ${structures.length}`;
-  root.querySelector('#scale-name').textContent=selected.label;
-  root.querySelector('[data-move-structure="-1"]').disabled=selectedIndex===0;root.querySelector('[data-move-structure="1"]').disabled=selectedIndex===structures.length-1;
-  const art=root.querySelector('#muscle-art');art.style.setProperty('--zoom',selected.zoom);art.style.setProperty('--origin',selected.position+'%');
-  const markers=root.querySelector('#art-hotspots'),overview=root.querySelector('#art-overview');markers.hidden=selected.zoom>1;overview.hidden=selected.zoom===1||molecular;
-  root.querySelector('#art-selection').textContent=`Обрано: ${selected.label}`;
-  if(markers.hidden&&markers.contains(root.activeElement))overview.focus();
+  const art=$('#scale-art');if(art)art.innerHTML=scaleArt(selected.id);
+  const legend=$('#scale-legend');if(legend)legend.innerHTML=renderLegend(selected.id);
+  const index=structures.indexOf(selected);
+  $('#art-selection').textContent=`Обрано: ${selected.label} (масштаб ${index+1} із ${structures.length})`;
   if(view?.location?.href){
-   const url=structureURL(view.location.href,selected.id,level,tab);view.history?.replaceState(null,'',url.toString());
-   const share=root.querySelector('#structure-link');if(share){const clean=new URL(url.pathname,url.origin);for(const key of ['structure','level','tab'])clean.searchParams.set(key,url.searchParams.get(key));clean.hash='explorer';share.href=clean.toString();}
+   const url=structureURL(view.location.href,selected.id,tab);
+   view.history?.replaceState(null,'',url.toString());
   }
  };
+ const setMirrorView=name=>{
+  if(!['growth','atrophy'].includes(name))return;
+  mirrorView=name;const section=$('#adaptation');if(section)section.setAttribute('data-mirror-view',name);
+  root.querySelectorAll('[data-mirror-show]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mirrorShow===name)));
+ };
+
  const onClick=e=>{
   const learning=e.target.closest?.('[data-learning-tab]');
   if(learning&&tabs.includes(learning.dataset.learningTab)){tab=learning.dataset.learningTab;render();return;}
   const b=e.target.closest('button');if(!b)return;
-  if(b.dataset.moveStructure){const direction=Number(b.dataset.moveStructure);if([-1,1].includes(direction)){selected=adjacentStructure(selected.id,direction);render();}}
   if(b.dataset.structure){const item=structures.find(s=>s.id===b.dataset.structure);if(item){selected=item;render();}}
   if(b.dataset.tab&&tabs.includes(b.dataset.tab)){tab=b.dataset.tab;render();}
-  if(b.dataset.level&&levels.includes(b.dataset.level)){level=b.dataset.level;stopAll();topics.forEach(t=>{root.querySelector(`[data-topic-copy="${t.id}"]`).textContent=t[level];});render();}
-  if(b.dataset.stepTopic){const t=topics.find(t=>t.id===b.dataset.stepTopic),index=Number(b.dataset.stepIndex);if(t&&Number.isInteger(index)&&index>=0&&index<t.steps.length){stop(t.id);step(t.id,index);}}
-  if(b.dataset.play){
-   const t=topics.find(t=>t.id===b.dataset.play);if(!t)return;
-   if(timers.has(t.id)){stop(t.id);return;}stopAll();let i=(indices.get(t.id)??-1)+1;if(i>=t.steps.length)i=0;step(t.id,i);
-   if(motion?.matches){root.querySelector(`[data-progress="${t.id}"]`).textContent+=' · Зменшений рух: наступний крок обери вручну.';return;}
-   b.textContent='Ⅱ Пауза';b.setAttribute('aria-pressed','true');timers.set(t.id,schedule(()=>{i++;if(i>=t.steps.length){stop(t.id);return;}step(t.id,i);},1800));
+  if(b.dataset.stepTopic==='contraction'){
+   const t=topics.find(t=>t.id==='contraction'),index=Number(b.dataset.stepIndex);
+   if(Number.isInteger(index)&&index>=0&&index<t.steps.length){stop('contraction');stepScene('contraction',index);}
   }
-  if(b.dataset.next||b.dataset.previous){const id=b.dataset.next||b.dataset.previous,t=topics.find(t=>t.id===id);if(t){stop(id);step(id,Math.max(0,Math.min(t.steps.length-1,(indices.get(id)??-1)+(b.dataset.next?1:-1))));}}
-  if(b.dataset.reset&&topics.some(t=>t.id===b.dataset.reset)){stop(b.dataset.reset);step(b.dataset.reset,-1);}
+  if(b.dataset.play==='contraction'){play('contraction',topics.find(t=>t.id==='contraction').steps.length,i=>stepScene('contraction',i));}
+  if(b.dataset.reset==='contraction'){stop('contraction');stepScene('contraction',-1);}
+  if(b.dataset.mirrorStep!==undefined){
+   const index=Number(b.dataset.mirrorStep);
+   if(Number.isInteger(index)&&index>=0&&index<4){stop('mirror');stepMirror(index);}
+  }
+  if(b.dataset.mirrorPlay!==undefined){play('mirror',4,stepMirror);}
+  if(b.dataset.mirrorShow)setMirrorView(b.dataset.mirrorShow);
+  if(b.dataset.sarcomerePlay!==undefined)playSlide();
   if(b.id==='lesson'||b.id==='lesson-exit'){
-   const on=root.body.classList.toggle('lesson');let exit=root.querySelector('#lesson-exit');
+   const on=root.body.classList.toggle('lesson');let exit=$('#lesson-exit');
    if(on&&!exit){exit=root.createElement('button');exit.id='lesson-exit';exit.textContent='Вийти з режиму заняття';root.body.append(exit);exit.focus();}
-   root.querySelector('#lesson').setAttribute('aria-pressed',String(on));
-   if(!on&&exit){exit.remove();root.querySelector('#lesson').focus();}
+   $('#lesson').setAttribute('aria-pressed',String(on));
+   if(!on&&exit){exit.remove();$('#lesson').focus();}
   }
  };
- const onKey=e=>{if(e.key==='Escape'&&root.body?.classList.contains('lesson')&&!root.querySelector('dialog[open]')){root.querySelector('#lesson-exit')?.click();return;}const b=e.target.closest?.('[data-structure]');if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();selected=adjacentStructure(selected.id,e.key==='ArrowRight'?1:-1);render();root.querySelector(`#scales [data-structure="${selected.id}"]`)?.focus();};
- const onSlide=e=>{stop('contraction');slide(e.target.value);};
+ const onKey=e=>{
+  if(e.key==='Escape'&&root.body?.classList.contains('lesson')&&!root.querySelector('dialog[open]')){$('#lesson-exit')?.click();return;}
+  const b=e.target.closest?.('[data-structure]');
+  if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+  e.preventDefault();selected=adjacentStructure(selected.id,e.key==='ArrowRight'?1:-1);render();
+  $(`#scales [data-structure="${selected.id}"]`)?.focus();
+ };
+ const onSlide=e=>{stopSlide();slide(e.target.value);};
  const onVisibility=()=>{if(root.hidden)stopAll();};
  const onMotion=()=>{if(motion.matches)stopAll();};
- const onPop=()=>{selected=initialStructure(view.location.href);({tab,level}=initialPreferences(view.location.href));stopAll();topics.forEach(t=>{root.querySelector(`[data-topic-copy="${t.id}"]`).textContent=t[level];});render();};
- root.addEventListener('click',onClick);root.addEventListener('keydown',onKey);root.querySelector('#shortening').addEventListener('input',onSlide);root.addEventListener('visibilitychange',onVisibility);
+ const onPop=()=>{selected=initialStructure(view.location.href);({tab}=initialPreferences(view.location.href));stopAll();render();};
+ root.addEventListener('click',onClick);root.addEventListener('keydown',onKey);
+ $('#shortening').addEventListener('input',onSlide);root.addEventListener('visibilitychange',onVisibility);
  view?.addEventListener?.('pagehide',stopAll);view?.addEventListener?.('popstate',onPop);motion?.addEventListener?.('change',onMotion);
- root.querySelector('#source-list').innerHTML=sources.map(s=>SourceCard(s,[])).join('');
- root.querySelector('#claim-list').innerHTML=muscleKnowledge.claims.map(c=>ClaimCard(c.id,muscleKnowledge)).join('');
- root.querySelector('#review-meta').textContent=`Версія ${moduleMeta.version} · перевірка структури модуля ${moduleMeta.lastChecked} · ${moduleMeta.status}`;
- root.querySelector('#visual-note').textContent=visual.simplificationNote;
- const unmountDrawer=mountEvidenceDrawer(root,muscleKnowledge);render();
+ $('#source-list').innerHTML=sources.map(s=>SourceCard(s,[])).join('');
+ const count=$('#source-count');if(count)count.textContent=String(sources.length);
+ $('#claim-list').innerHTML=muscleKnowledge.claims.map(c=>ClaimCard(c.id,muscleKnowledge)).join('');
+ $('#review-meta').textContent=`Версія ${moduleMeta.version} · перевірка структури модуля ${moduleMeta.lastChecked} · ${moduleMeta.status}`;
+ $('#visual-note').textContent=visual.simplificationNote;
+ const unmountDrawer=mountEvidenceDrawer(root,muscleKnowledge);render();readout(sarcomereState(0));
  // Topic anchors are inserted by the module, after the static document has parsed.
- const hash=view?.location?.hash;if(['#contraction','#growth','#atrophy'].includes(hash))view.requestAnimationFrame?.(()=>root.querySelector(hash)?.scrollIntoView());
- return {state:()=>({selected:selected.id,tab,level,steps:Object.fromEntries(indices),playing:[...timers.keys()]}),destroy(){stopAll();root.removeEventListener('click',onClick);root.removeEventListener('keydown',onKey);root.removeEventListener('visibilitychange',onVisibility);root.querySelector('#shortening').removeEventListener('input',onSlide);view?.removeEventListener?.('pagehide',stopAll);view?.removeEventListener?.('popstate',onPop);motion?.removeEventListener?.('change',onMotion);unmountDrawer?.();}};
+ const hash=view?.location?.hash;
+ if(['#contraction','#growth','#atrophy','#adaptation'].includes(hash))view.requestAnimationFrame?.(()=>{
+  if(hash==='#growth'||hash==='#atrophy')setMirrorView(hash.slice(1));
+  $(hash)?.scrollIntoView();
+ });
+ return {
+  state:()=>({selected:selected.id,tab,steps:Object.fromEntries(indices),playing:[...timers.keys(),...(frame!==null?['sarcomere']:[])],slide:slideT,mirrorView}),
+  destroy(){
+   stopAll();root.removeEventListener('click',onClick);root.removeEventListener('keydown',onKey);root.removeEventListener('visibilitychange',onVisibility);
+   $('#shortening').removeEventListener('input',onSlide);view?.removeEventListener?.('pagehide',stopAll);view?.removeEventListener?.('popstate',onPop);
+   motion?.removeEventListener?.('change',onMotion);unmountDrawer?.();
+  }
+ };
 }
 if(typeof document!=='undefined')mount();

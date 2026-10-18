@@ -136,6 +136,73 @@ async function exerciseFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function muscleLabFlow(browser, origin, viewport) {
+  const where = `muscle lab @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
+  await page.waitForSelector('#scale-art svg');
+  const phone = viewport.width <= 760;
+  check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once (no <header> inside topic cards)');
+  check(where, (await page.locator('[data-level]').count()) === 0, 'the retired level switcher is back');
+  // One scale control: six buttons, each shows its own drawing and legend.
+  const scaleButtons = page.locator('#scales [data-structure]');
+  check(where, (await scaleButtons.count()) === 6, 'expected six scale buttons');
+  const drawings = new Set();
+  for (let i = 0; i < 6; i++) {
+    await scaleButtons.nth(i).click();
+    drawings.add(await page.locator('#scale-art svg').getAttribute('aria-label'));
+    check(where, (await scaleButtons.nth(i).getAttribute('aria-pressed')) === 'true', `scale ${i + 1} is not marked selected`);
+    check(where, (await page.locator('#scale-legend li').count()) >= 3, `scale ${i + 1} has no legend`);
+    const box = await page.locator('#scale-art svg').boundingBox();
+    check(where, box && box.width > 200 && box.height > 100, `scale ${i + 1} drawing is too small`);
+  }
+  check(where, drawings.size === 6, 'each scale must show its own drawing');
+  check(where, /structure=PRT-ACTIN-MYOSIN/.test(page.url()) && !/level=/.test(page.url()), 'the address keeps the structure and no level');
+  // Contraction: the cycle changes by attribute, the sarcomere slides, filaments keep their length.
+  await page.locator('#contraction').scrollIntoViewIfNeeded();
+  for (let i = 0; i < 4; i++) {
+    await page.locator('[data-step-topic="contraction"]').nth(i).click();
+    check(where, (await page.locator('#scene-contraction svg').getAttribute('data-step')) === String(i), `cycle step ${i + 1} not applied`);
+  }
+  const head = await page.locator('.cy-head').evaluate(node => getComputedStyle(node).transform);
+  check(where, head && head !== 'none', 'the myosin head has no transform');
+  await page.locator('#shortening').fill('100');
+  check(where, (await page.locator('[data-sarcomere-stage] svg').getAttribute('data-sarcomere-t')) === '1', 'the slider does not move the sarcomere');
+  check(where, (await page.locator('[data-readout-state="length"]').innerText()).includes('не змінюється'), 'filament length must read as unchanged');
+  await page.locator('#shortening').fill('0');
+  await page.locator('[data-sarcomere-play]').click();
+  await page.waitForTimeout(900);
+  const moving = Number(await page.locator('[data-sarcomere-stage] svg').getAttribute('data-sarcomere-t'));
+  check(where, moving > 0 && moving < 1, `the sarcomere animation is not running (t=${moving})`);
+  await page.locator('[data-sarcomere-play]').click();
+  const paused = await page.locator('[data-sarcomere-stage] svg').getAttribute('data-sarcomere-t');
+  await page.waitForTimeout(300);
+  check(where, (await page.locator('[data-sarcomere-stage] svg').getAttribute('data-sarcomere-t')) === paused, 'the animation did not pause');
+  // Growth and atrophy share one stepper; on a phone one of them is shown at a time.
+  await page.locator('#adaptation').scrollIntoViewIfNeeded();
+  for (let i = 0; i < 4; i++) {
+    await page.locator('[data-mirror-step]').nth(i).click();
+    const steps = [await page.locator('#scene-growth svg').getAttribute('data-step'), await page.locator('#scene-atrophy svg').getAttribute('data-step')];
+    check(where, steps.every(step => step === String(i)), `mirror step ${i + 1} not applied to both panels: ${steps}`);
+  }
+  const visible = async id => page.locator(id).isVisible();
+  if (phone) {
+    check(where, (await visible('#growth')) && !(await visible('#atrophy')), 'on a phone only growth should show first');
+    await page.locator('[data-mirror-show="atrophy"]').click();
+    check(where, !(await visible('#growth')) && (await visible('#atrophy')), 'the atrophy tab does not switch the panel');
+    check(where, (await page.evaluate(() => document.documentElement.scrollHeight)) < 7000, 'the phone page is too long again');
+  } else {
+    check(where, (await visible('#growth')) && (await visible('#atrophy')), 'on a desktop both mirrored panels should show');
+  }
+  // Evidence stays one click away and sources are collapsed by default.
+  await page.locator(`${phone ? '#atrophy' : '#growth'} [data-claim-open]`).click();
+  check(where, await page.locator('#eua-evidence-dialog').evaluate(node => node.open), 'the evidence drawer does not open');
+  await page.keyboard.press('Escape');
+  check(where, !(await page.locator('.source-details').evaluate(node => node.open)), 'the source list should start collapsed');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party request: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
 async function atlasFlow(browser, origin, viewport) {
   const where = `atlas shoulder map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
@@ -281,6 +348,7 @@ const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
 try {
   for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
   for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
+  for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
   for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
@@ -294,4 +362,4 @@ if (failures.length) {
   console.error(`Browser QA failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
   process.exit(1);
 }
-console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, atlas, muscles-zone, spine-zone and home-menu flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);
+console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas, muscles-zone, spine-zone and home-menu flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);

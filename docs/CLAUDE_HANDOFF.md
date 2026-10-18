@@ -1,5 +1,14 @@
 # Evidence UA — continuation handoff, 2026-10-17
 
+## Нові рішення власника та зміни дизайну — 2026-10-18
+
+Нова конкретна вказівка Всеслава щодо дизайну, кольорів, шрифтів, текстів інтерфейсу, композиції, навігації чи поведінки має пріоритет над попередніми макетами, маніфестами, стандартами, референсами та вимогами «зберігати» / «не змінювати» у межах доручення. Вона є достатнім дозволом на відповідну зміну; повторне підтвердження лише через старе рішення не потрібне.
+
+Попередні рішення діють для незачеплених частин. Після зміни оновлювати пов’язані чинні інструкції та відповідні UI-контракти з поясненням. Історичні звіти, резервні копії та попередні версії залишати історією; не відновлювати старий дизайн автоматично. Залежності між сторінками враховувати та пояснювати; уточнення потрібне тільки для справді невизначеного обсягу або суттєвого вибору.
+
+Дизайн і макети можна розвивати; «зафіксовано» означає захист від випадкових змін поза завданням. Для дозволеної зміни оновлювати лише відповідні UI-еталони, зберігаючи наукові перевірки. Доручення змінити оформлення не дозволяє вигадувати чи самостійно змінювати наукові висновки, рівні впевненості або provenance. Зберігати перевірки, резервні копії та чинний порядок Git/PR/публікації.
+
+
 ## LATEST UPDATE — read before anything below
 
 **Production verified after the owner's Sites follow-up:** Sites v83 is published successfully at https://evidence-ua.surecrow3.chatgpt.site. Native `get_deployment_status` returned `succeeded` at `2026-10-17T18:38:27.260536+00:00` for deployment `appgdep_6ad3c06acb408191b21544f4d6be061b`, version `appgprj_6ac7f3c091bc8191938b21dc533c67c8~appgver_953d3f8ac454819192a144b1702e23df`, source commit `725d3a211ebcd5efc173e859329954ca4dce05d1`. The existing scheduled-publisher record maps it to GitHub main `221259006962daf81314c3d62ddcf7607a78a424`, successful workflow run `39041546149`, 108 dist files, provenance manifest SHA-256 `8582f365a8c3354fc74ca21335003ea93b55b821312677a3d9585d735c7ef3a7`. No duplicate deployment was necessary. The site's audience remains public. This confirms the selected main updates are live; it does NOT include the extra unmerged Atlas fixes in #21. Below, statements that production was not yet verified describe the earlier checkpoint.

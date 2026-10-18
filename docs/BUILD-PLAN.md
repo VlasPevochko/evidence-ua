@@ -1,5 +1,14 @@
 # Evidence UA — master build plan
 
+## Нові рішення власника та зміни дизайну — 2026-10-18
+
+Нова конкретна вказівка Всеслава щодо дизайну, кольорів, шрифтів, текстів інтерфейсу, композиції, навігації чи поведінки має пріоритет над попередніми макетами, маніфестами, стандартами, референсами та вимогами «зберігати» / «не змінювати» у межах доручення. Вона є достатнім дозволом на відповідну зміну; повторне підтвердження лише через старе рішення не потрібне.
+
+Попередні рішення діють для незачеплених частин. Після зміни оновлювати пов’язані чинні інструкції та відповідні UI-контракти з поясненням. Історичні звіти, резервні копії та попередні версії залишати історією; не відновлювати старий дизайн автоматично. Залежності між сторінками враховувати та пояснювати; уточнення потрібне тільки для справді невизначеного обсягу або суттєвого вибору.
+
+Дизайн і макети можна розвивати; «зафіксовано» означає захист від випадкових змін поза завданням. Для дозволеної зміни оновлювати лише відповідні UI-еталони, зберігаючи наукові перевірки. Доручення змінити оформлення не дозволяє вигадувати чи самостійно змінювати наукові висновки, рівні впевненості або provenance. Зберігати перевірки, резервні копії та чинний порядок Git/PR/публікації.
+
+
 User instruction 2026-10-10: build the full Project Bible incrementally, not only Creatine. Earlier “future / do not build now” sections become sequenced backlog; scientific approval, access boundaries and hard-stop safeguards remain in force. This is not authorization to manufacture evidence or silently publish automated conclusions.
 
 `project-roadmap-160.json` preserves every numbered requirement of the original 160-section Project Bible. Initial statuses are conservative and not a completed acceptance audit. `ongoing_policy` is a constraint, not completed feature work; `verified_technical` means the bounded tests passed, not scientific validation. No project-wide completion percentage is derived.

@@ -136,6 +136,56 @@ async function exerciseFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function nutritionFlow(browser, origin, viewport) {
+  const where = `nutrition @${viewport.name}`;
+  const {context, page} = await open(browser, origin, viewport, '/nutrition.html');
+  await page.waitForSelector('#nl-cell');
+  const phone = viewport.width <= 760;
+  check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once');
+  check(where, (await page.locator('[data-nl-depth]').count()) === 0, 'the retired depth switcher is back');
+  check(where, (await page.locator('.nl-page-nav').count()) === 1, 'expected a single page navigation');
+  // Folds are collapsed by default; the shared context paragraph is not repeated per card.
+  check(where, (await page.locator('details.nl-fold[open]').count()) === 0, 'evidence folds must start collapsed');
+  const routes = page.locator('[data-nl-nutrient]');
+  check(where, (await routes.count()) === 3, 'expected three routes');
+  for (let r = 0; r < 3; r++) {
+    await routes.nth(r).click();
+    check(where, (await page.locator('#nl-legend li').count()) >= 2, `route ${r + 1} has no legend`);
+    const steps = page.locator('[data-nl-step]');
+    check(where, (await steps.count()) === 4, `route ${r + 1} must have four steps`);
+    for (let i = 0; i < 4; i++) {
+      await steps.nth(i).click();
+      check(where, (await steps.nth(i).getAttribute('aria-pressed')) === 'true', `route ${r + 1} step ${i + 1} not selected`);
+      check(where, (await page.locator('#nl-step-text h3').innerText()).length > 3, `route ${r + 1} step ${i + 1} has no heading`);
+    }
+  }
+  const stage = await page.locator('#nl-stage').boundingBox();
+  check(where, stage && stage.width > (phone ? 280 : 500) && stage.height > 150, 'the diagram is too small');
+  // Single play button toggles; a second press pauses.
+  await routes.nth(0).click();
+  const play = page.locator('[data-nl-action="play"]').first();
+  await play.click();
+  check(where, (await play.getAttribute('aria-pressed')) === 'true', 'play did not start');
+  await page.waitForTimeout(2600);
+  check(where, Number((await page.locator('#nl-counter').innerText()).match(/\d/)?.[0]) >= 2, 'playback did not advance');
+  await play.click();
+  check(where, (await play.getAttribute('aria-pressed')) === 'false', 'the second press must pause');
+  // Timeline directly follows the lab, readable on the dark theme.
+  const order = await page.evaluate(() => ['nutrition-lab', 'nutrient-time', 'nutrition-evidence'].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
+  check(where, order[0] < order[1] && order[1] < order[2], 'timeline must follow the lab and precede the evidence');
+  check(where, (await page.locator('#nutrient-time').evaluate(n => getComputedStyle(n).backgroundColor)).match(/\d+/g).slice(0, 3).every(v => Number(v) < 80), 'the timeline is not dark');
+  // Diets: horizontal strip on phones.
+  if (phone) {
+    const grid = page.locator('.nd-grid').first();
+    const strip = await grid.evaluate(n => ({scroll: n.scrollWidth, client: n.clientWidth, overflowX: getComputedStyle(n).overflowX}));
+    check(where, strip.overflowX === 'auto' && strip.scroll > strip.client + 50, 'diets must be a swipeable strip on phones');
+  }
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+  const height = await page.evaluate(() => document.documentElement.scrollHeight);
+  check(where, height < (phone ? 8000 : 6500), `page is too long again (${height}px)`);
+  await context.close();
+}
+
 async function muscleLabFlow(browser, origin, viewport) {
   const where = `muscle lab @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
@@ -349,6 +399,7 @@ try {
   for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
   for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
   for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
+  for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
   for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));

@@ -20,6 +20,8 @@ export const proteinModule = {
   version: '1.0',
   scientificApproval: null,
   ...accepted,
+  route: 'supplement-protein',
+  replacesDossier: 'DOS-PROTEIN',
   claimIds: ['CLM-000009', 'CLM-000010', 'CLM-000053', 'CLM-000054', 'CLM-000055'],
   notClaimed: [
     {topic: 'Час прийому', reason: 'Прийом до чи після тренування не змінював приросту безжирової маси (Casuso 2025, PMID 40647175); у Morton доза після тренування не впливала на ефект.'},

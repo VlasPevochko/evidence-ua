@@ -23,3 +23,7 @@ The source-card accessibility change in #26 uses `h3` instead of `h4` under the 
 ## Deliberate replacement — 2026-10-18 (owner-approved)
 
 By explicit decision of the site owner, the 2D digestion schema on `nutrition-digestion.html` was replaced by the 3D «Шлях їжі» module (`src/evidence/digestion/`). The frozen hash in `v57-retained-page-hashes.json` is **not refreshed**; `muscle-flow.test.mjs` skips that one page, exactly as for `movement.html`. The new page is protected by `food-path.test.mjs`: retained share metadata, platform shell, the «Всмоктування ≠ виведення» reading section with its NIDDK/OpenStax links, model attribution, and Claims shown without a confidence level.
+
+## Deliberate revision — 2026-10-18, protein card (owner-approved)
+
+By explicit decision of the site owner («Картку протеїн конкретно оновлюємо»), only the `supplement-protein` digest in `home-v56-science-digests.json` and `first-visit-v59-science-digests.json` was refreshed. The section now renders the approved protein module (`src/evidence/supplements/protein/module.mjs`, five Claims, wording approved 18.10.2026, confidence not assessed) through `scripts/build-protein.mjs`; the preliminary `DOS-PROTEIN` dossier panel is no longer rendered there. The h1, navigation to other supplements and the link to `protein-meta.html` are kept; the editorial practical notes are retained in a collapsed block. All other article digests are unchanged. New content is protected by `tests/protein-card.test.mjs`.

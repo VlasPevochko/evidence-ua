@@ -1,0 +1,14 @@
+{
+  "name": "evidence-ua-spine-viewer-build",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Builds dist/spine-viewer.js (schematic 3D spine viewer) from src/spine with only the used parts of three.js. Kept out of the root package so the site build stays dependency-free.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "three": "0.186.1"
+  }
+}

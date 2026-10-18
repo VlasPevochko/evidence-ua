@@ -1,7 +1,9 @@
-// Exercise Library data — first runtime slice (three entries).
-// Content layers are kept separate: description/anatomy (facts), coaching (editorial), Claims (science).
+// Exercise Library data (twelve entries).
+// Content layers are kept separate: description/anatomy (facts), coaching (editorial), author experience, Claims (science).
 // Nothing here is a scientific outcome Claim. relatedClaimIds stays empty until Claims are reviewed.
-// Coaching text is an editorial DRAFT written without access to the videos; verify it against each video.
+// Coaching text was checked against the videos by the owner (see editorial.reviewStatus and lastReviewed).
+// Optional field authorExperienceUk: array of short statements of the author's practical experience.
+// It is shown under its own "Практичний досвід автора" label and must not claim treatment, prevention or evidence.
 
 export const contentTypes = {
   strength: 'Силова',

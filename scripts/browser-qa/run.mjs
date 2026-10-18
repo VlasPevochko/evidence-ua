@@ -107,6 +107,13 @@ async function exerciseFlow(browser, origin, viewport) {
   await page.keyboard.press('Enter');
   const src = await page.locator('.ex-video iframe').getAttribute('src');
   check(where, /^https:\/\/www\.youtube-nocookie\.com\/embed\/[\w-]{11}/.test(src || ''), `unexpected embed address: ${src}`);
+  // Browsing: previous/next and related exercises lead to another existing detail page.
+  check(where, (await page.locator('.ex-pager').count()) === 1, 'detail has no previous/next navigation');
+  check(where, (await page.locator('.ex-related-list a').count()) >= 1, 'detail lists no related exercises');
+  const before = await page.locator('h1:visible').innerText();
+  await page.locator('.ex-pager-next').click();
+  await page.waitForSelector('.ex-detail');
+  check(where, (await page.locator('h1:visible').innerText()) !== before, 'next exercise did not open another exercise');
   // Old shared links keep working.
   await page.goto(origin + '/exercises.html?e=tyaha-hanteli-v-nahyli');
   await page.waitForSelector('.ex-detail');

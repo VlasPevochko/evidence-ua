@@ -37,7 +37,7 @@ details[open]>summary::before{transform:rotate(90deg)}
 .nl-switch,.nl-routes,.nl-structures,.nl-step-buttons{display:flex;flex-wrap:wrap;gap:8px}
 .nl-switch{padding:4px;border:1px solid #ffffff1c;border-radius:14px;background:#111419}
 .nl-lab button{min-height:44px;min-width:0;padding:10px 14px;border:1px solid #474a50;border-radius:12px;background:#1a1d23;color:var(--nl-text);font:inherit;font-size:14px;line-height:1.4;cursor:pointer;touch-action:manipulation}
-.nl-lab button[aria-pressed=true]{background:var(--nl-gold);border-color:#f3d47c;color:#17140b}
+.nl-lab button[aria-pressed=true]{background:var(--nl-gold);border-color:#ffdc7e;color:#17140b}
 .nl-lab button:hover:not(:disabled){border-color:var(--nl-gold)}
 .nl-lab button:disabled{cursor:default;opacity:.45}
 .nl-switch button{flex:1;border-color:transparent;background:transparent}
@@ -149,8 +149,8 @@ details[open]>summary::before{transform:rotate(90deg)}
 .nl-footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:32px;padding-top:20px;border-top:1px solid var(--nl-line)}
 .nl-footer a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;text-decoration:none}
 .nl-lab,.nl-section,.nl-timeline,#nl-model-view,#nl-explanation{scroll-margin-top:24px}
-.nl-lab button:focus-visible,.nl-page-nav a:focus-visible,.nl-model-help summary:focus-visible,.nl-fold>summary:focus-visible,.nl-more>summary:focus-visible,.nl-dialog button:focus-visible,.nl-dialog a:focus-visible,.nl-timeline button:focus-visible,.nl-timeline a:focus-visible{outline:3px solid #f1ce6d;outline-offset:3px}
-.nl-lab:focus-visible,.nl-section:focus-visible,.nl-timeline:focus-visible,#nl-model-view:focus-visible,#nl-explanation:focus-visible{outline:2px solid #f1ce6d;outline-offset:5px}
+.nl-lab button:focus-visible,.nl-page-nav a:focus-visible,.nl-model-help summary:focus-visible,.nl-fold>summary:focus-visible,.nl-more>summary:focus-visible,.nl-dialog button:focus-visible,.nl-dialog a:focus-visible,.nl-timeline button:focus-visible,.nl-timeline a:focus-visible{outline:3px solid #ffdc7e;outline-offset:3px}
+.nl-lab:focus-visible,.nl-section:focus-visible,.nl-timeline:focus-visible,#nl-model-view:focus-visible,#nl-explanation:focus-visible{outline:2px solid #ffdc7e;outline-offset:5px}
 
 @media(max-width:1000px){
  .nl-explorer{grid-template-columns:minmax(0,1fr)}
@@ -200,7 +200,7 @@ details[open]>summary::before{transform:rotate(90deg)}
 #nl-body .digestion-panel{border:0;background:none;padding:0}
 #nl-body .digestion-panel>summary,#nl-body .digestion-panel>p{display:none}
 #nl-body .digestion-panel iframe{display:block;width:100%;border:0;border-radius:14px;background:#0f1217}
-.nl-page-nav .nl-nav-model{border-color:var(--nl-accent,#e7bd46);color:#f6d681}
+.nl-page-nav .nl-nav-model{border-color:var(--nl-accent,#e7bd46);color:#ffdc7e}
 /* v75: timeline is a folded section; open state is compact */
 .nl-timeline{padding:22px 28px;margin-top:40px}
 .nl-timeline>.eyebrow{margin:0 0 6px}

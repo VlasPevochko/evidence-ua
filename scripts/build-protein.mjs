@@ -72,7 +72,7 @@ const css = `#supplement-protein .pc{--pc-line:#2f3b40;--pc-cyan:#65ddf2;--pc-cy
 #supplement-protein .pc-more li{margin-bottom:12px;line-height:1.65;color:#d9dede}
 #supplement-protein .pc-note,#supplement-protein .pc-status{color:var(--pc-muted);font-size:13px;line-height:1.7}
 #supplement-protein .pc-links{display:flex;flex-wrap:wrap;gap:8px 24px}
-#supplement-protein .pc-links a{display:inline-flex;align-items:center;min-height:44px;color:#90d8ec}
+#supplement-protein .pc-links a{display:inline-flex;align-items:center;min-height:44px;color:#8bdefb}
 #supplement-protein .pc-status{margin-top:28px}
 @media(max-width:760px){#supplement-protein .pc-bars,#supplement-protein .pc-facts{grid-template-columns:1fr}#supplement-protein .pc-row{grid-template-columns:78px minmax(0,1fr) 72px;gap:8px;font-size:13px}}`;
 

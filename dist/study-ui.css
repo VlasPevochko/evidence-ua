@@ -14,7 +14,7 @@ body[data-study-ui] p{line-height:1.65}
 body[data-study-ui] .eyebrow{color:#e7bd46}
 body[data-study-ui] a{color:#e7bd46;text-underline-offset:4px}
 body[data-study-ui] button{background:#1a1d23;color:#f4f2ed;border-color:#474a50;border-radius:12px;min-height:44px}
-body[data-study-ui] button[aria-pressed=true]{background:#e7bd46;color:#17140b;border-color:#f3d47c}
+body[data-study-ui] button[aria-pressed=true]{background:#e7bd46;color:#17140b;border-color:#ffdc7e}
 body[data-study-ui] input[type=search]{background:#101318;color:#f4f2ed;border:1px solid #60636b;border-radius:12px;min-height:48px;font-size:16px}
 body[data-study-ui] :focus-visible{outline:3px solid #e7bd46;outline-offset:4px}
 body[data-study-ui]>.eua-platform-nav{background:#13161b;border-color:#ffffff16;justify-content:flex-end;padding:10px max(20px,4vw)}

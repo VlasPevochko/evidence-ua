@@ -96,7 +96,11 @@ async function exerciseFlow(browser, origin, viewport) {
   await page.keyboard.press('Enter');
   await page.waitForSelector('.ex-detail');
   check(where, (await page.locator('h1:visible').count()) === 1, 'detail should show one visible <h1>');
-  check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation is injected more than once');
+  // The shell script injects the navigation asynchronously: wait for it, let it settle, then count (duplicates still fail).
+  await page.waitForSelector('.eua-platform-nav', {timeout: 5000}).catch(() => {});
+  await page.waitForTimeout(300);
+  const navCount = await page.locator('.eua-platform-nav').count();
+  check(where, navCount === 1, `shared navigation should be injected exactly once, found ${navCount}`);
   check(where, (await page.locator('iframe').count()) === 0, 'a video iframe exists before the click');
   check(where, seen.external.length === 0, `third-party request before the click: ${seen.external.join(', ')}`);
   await page.locator('.ex-video-play').focus();

@@ -304,7 +304,10 @@ section[id^="supplement-"]>.d-nav{margin-top:28px;border-top:1px solid #484133;p
 (()=>{
  const page=document.querySelector('.page');
  const views=[document.getElementById('creatine'),...document.querySelectorAll('body>section[id^="supplement-"]')];
+ let previousHash=location.hash;
  function route(){
+  const returningFromResearch=previousHash==='#pubmed-live'&&(location.hash===''||location.hash==='#top');
+  previousHash=location.hash;
   const id=location.hash.slice(1),target=document.getElementById(id);
   const view=views.find(v=>v===target||v.contains(target));
   views.forEach(v=>{v.classList.toggle('route-active',v===view);v.style.setProperty('display',v===view?'block':'none','important')});page.style.setProperty('display',view?'none':'var(--home-layout, block)','important');
@@ -312,6 +315,11 @@ section[id^="supplement-"]>.d-nav{margin-top:28px;border-top:1px solid #484133;p
   if(view){document.title='Evidence UA — '+view.querySelector('h1').textContent;}
   else document.title='Evidence UA — Досліджуй';
   if(id==='about'){document.getElementById('about').showModal();return;}
+  // Browser Back from Research should reveal the whole homepage, not its old scroll position.
+  if(returningFromResearch){
+   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'instant'})));
+   return;
+  }
   if(target&&target.tagName!=='DIALOG')requestAnimationFrame(()=>target.scrollIntoView({block:'start',behavior:'auto'}));
  }
  window.addEventListener('hashchange',route);

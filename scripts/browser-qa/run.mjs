@@ -456,7 +456,7 @@ async function spineFlow(browser, origin, viewport) {
 // receive pointer input and the palette is shared with the Supplements page.
 async function homeLowerFlow(browser, origin, viewport) {
   const where=`home pine/shippo @${viewport.name}`;
-  const {context,page,seen}=await open(browser,origin,viewport,'/index.html#start-here');
+  const {context,page,seen}=await open(browser,origin,viewport,'/index.html');
   await page.waitForSelector('.evidence-guide');
   const style=await page.evaluate(()=>{
     const category=document.querySelector('#categories'),guide=document.querySelector('.evidence-guide');

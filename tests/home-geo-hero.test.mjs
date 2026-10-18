@@ -26,4 +26,9 @@ for (const [name, text] of [['home-geo-hero.js', js], ['home-geo-hero.css', css]
 }
 assert(!html.includes('fonts.googleapis.com'), 'home must not load fonts from a third party');
 
+// Heading font is self-hosted (SIL OFL); both subsets and the licence must ship with the site.
+const typography=fs.readFileSync('dist/home-typography.css','utf8');
+for(const f of ['source-serif-4-cyrillic-wght-normal.woff2','source-serif-4-latin-wght-normal.woff2','SourceSerif4-OFL.txt'])assert(fs.existsSync('dist/fonts/'+f),'Missing dist/fonts/'+f);
+assert(/@font-face\{font-family:"Source Serif 4"/.test(typography)&&typography.includes('./fonts/'),'Self-hosted Source Serif 4 must be declared');
+assert(/font-display:swap/.test(typography),'Text stays visible while the font loads');
 console.log('home geometric hero: wiring, fallback, reduced motion and no third-party requests verified');

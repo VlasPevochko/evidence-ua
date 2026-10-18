@@ -151,12 +151,12 @@ body[data-platform-area="home"] .home-picker-close:focus-visible{outline:3px sol
   body[data-platform-area="home"] .home-picker-cards>.topic-card,
   body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd){
     display:grid;grid-template-columns:104px minmax(0,1fr);
-    grid-template-rows:auto auto 1fr auto;align-items:start;column-gap:13px;
-    min-height:120px;padding:10px;
+    grid-template-rows:auto 1fr auto;align-items:start;column-gap:13px;
+    min-height:110px;padding:10px;
   }
   body[data-platform-area="home"] .home-picker-cards .topic-card .home-picker-visual,
   body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) .home-picker-visual{
-    grid-column:1;grid-row:1 / 5;order:initial;width:104px;height:100%;min-height:100px;
+    grid-column:1;grid-row:1 / 4;order:initial;width:104px;height:100%;min-height:90px;
     margin:0;border-radius:10px;
   }
   body[data-platform-area="home"] .home-picker-cards .topic-card strong,
@@ -165,21 +165,28 @@ body[data-platform-area="home"] .home-picker-close:focus-visible{outline:3px sol
   }
   body[data-platform-area="home"] .home-picker-cards .topic-card small,
   body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) small{
-    grid-column:2;grid-row:2;margin:0 0 3px;font-size:10px;
+    grid-column:2;grid-row:2;margin:0 0 3px;font-size:10px;display:none;
   }
   body[data-platform-area="home"] .home-picker-description{
-    grid-column:2;grid-row:3;min-height:0;margin:0 0 6px;font-size:11px;line-height:1.4;
+    grid-column:2;grid-row:2;min-height:0;margin:3px 0 6px;font-size:11px;line-height:1.4;
   }
   body[data-platform-area="home"] .home-picker-cards .topic-card .topic-state,
   body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) .topic-state{
-    grid-column:2;grid-row:4;margin:0;border:0;padding:0;
+    grid-column:2;grid-row:3;margin:0;border:0;padding:0;
     font-size:10px;line-height:1.4;
   }
-  body[data-platform-area="home"] .home-picker-note{font-size:11px;margin:14px 3px 4px}
+  body[data-platform-area="home"] .home-picker-note{display:none}
 }
 @media(max-width:360px){
   body[data-platform-area="home"] .home-picker-cards>.topic-card{
     grid-template-columns:82px minmax(0,1fr);column-gap:10px;
   }
   body[data-platform-area="home"] .home-picker-cards .topic-card .home-picker-visual{width:82px}
+}
+/* A calmer close affordance avoids the oversized yellow halo seen on iOS. */
+body[data-platform-area="home"] .page .home-picker-close{
+  box-shadow:none;border-color:#d0c49b55;
+}
+body[data-platform-area="home"] .page .home-picker-close:focus-visible{
+  outline:2px solid #e4d08a99;outline-offset:2px;
 }

@@ -1,3 +1,4 @@
+// evidence.css version bumped 1.7 -> 1.8 because its border-radius values moved to the 8/16/30 scale (cache busting).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -22,7 +23,7 @@ check('mechanism has controls, chemistry, provenance and no auto-play',()=>{cons
 check('legacy source discovery preserved, not auto-claimed as evidence',()=>{assert(legacySources.some(s=>s.url.includes('39519498')));assert(legacySources.some(s=>s.url.includes('40944139')));assert(legacySources.every(s=>s.reviewStatus.includes('перевірки')));});
 check('HTML safe interpolation',()=>assert.equal(escapeHTML('<script>"&'), '&lt;script&gt;&quot;&amp;'));
 const html=fs.readFileSync('dist/index.html','utf8');
-check('new module assets and existing routes / PubMed controls present',()=>{for(const id of ['creatine','supplement-protein','supplement-caffeine','research-load','pubmed-live','research-topic','research-results','eua-evidence-dialog'])assert(html.includes(`id="${id}"`));for(const file of ['movement.html','nutrition.html','protein-meta.html'])assert(fs.existsSync('dist/'+file));assert(html.includes('evidence/ui.js?v=1.9'));assert(html.includes('evidence/evidence.css?v=1.7'));});
+check('new module assets and existing routes / PubMed controls present',()=>{for(const id of ['creatine','supplement-protein','supplement-caffeine','research-load','pubmed-live','research-topic','research-results','eua-evidence-dialog'])assert(html.includes(`id="${id}"`));for(const file of ['movement.html','nutrition.html','protein-meta.html'])assert(fs.existsSync('dist/'+file));assert(html.includes('evidence/ui.js?v=1.9'));assert(html.includes('evidence/evidence.css?v=1.8'));});
 check('module IDs unique; full-width mobile / dialog / reduced-motion CSS',()=>{const start=html.indexOf('<section id="creatine"'),end=html.indexOf('</dialog>',start);const module=html.slice(start,end);const ids=[...module.matchAll(/(?:^|\s)id="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);const css=fs.readFileSync('dist/evidence/evidence.css','utf8');assert(css.includes('grid-template-columns:minmax(0,1fr)'));assert(css.includes('height:100dvh'));assert(css.includes('prefers-reduced-motion:reduce'));assert(css.includes(':focus-visible'));});
 check('legacy inline scripts remain syntactically valid',()=>{for(const m of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){if(m[1].trim())new vm.Script(m[1]);}});
 check('hero cannot inherit legacy 88px header; module layout is explicitly in flow',()=>{
@@ -36,7 +37,7 @@ check('hero cannot inherit legacy 88px header; module layout is explicitly in fl
   const declaration=css.slice(start,css.indexOf('}',start)+1);
   if(selector!=='.eua-block')assert(declaration.includes('height:auto'),selector+' has fixed legacy height');
  }
- assert(html.includes('evidence/evidence.css?v=1.7'));
+ assert(html.includes('evidence/evidence.css?v=1.8'));
 });
 check('build is idempotent',()=>{execFileSync(process.execPath,['scripts/build-evidence.mjs']);assert.equal(fs.readFileSync('dist/index.html','utf8'),html);});
 check('client controllers: drawer, focus return, next/previous/reset/play/pause',()=>{
@@ -143,7 +144,7 @@ check('movement has one header entry and retains its page link',()=>{
 check('mobile structure explanation shares a compact frame with its controls',()=>{
  const css=fs.readFileSync('src/evidence/evidence.css','utf8');const mobile=css.slice(css.lastIndexOf('@media(max-width:760px)'));
  assert(mobile.includes('.eua-structure-layout{gap:0;'));assert(mobile.includes('.eua-structure-panel{padding:12px 14px 16px;'));
- assert(css.includes('min-height:44px'));assert(html.includes('evidence.css?v=1.7'));
+ assert(css.includes('min-height:44px'));assert(html.includes('evidence.css?v=1.8'));
 });
 check('additional mechanism scenes collapse and kidney evidence is not duplicated',()=>{
  const h=renderModule();assert.equal((h.match(/class="eua-mechanism-extra"/g)||[]).length,2);

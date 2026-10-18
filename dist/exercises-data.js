@@ -35,7 +35,7 @@ export const equipmentLabels = {
 };
 
 export const reviewStatusLabels = {
-  draft: 'Чернетка: редакційний перегляд не завершено'
+  video_checked: 'Тексти звірено з відео (18.10.2026). Наукові твердження та медичний перегляд ще не завершено.'
 };
 
 export const claimsPendingNote = 'Пов’язані наукові твердження ще проходять перевірку.';
@@ -96,7 +96,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'muscles', 'spine'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_scapular_activation_control',
@@ -142,7 +142,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'muscles'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_rotator_cuff_complex',
@@ -189,7 +189,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'muscles'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
 
   {
@@ -222,7 +222,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'spine'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_chest_shoulder_girdle_context',
@@ -253,7 +253,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'muscles'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_scapular_control_progression',
@@ -283,7 +283,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'muscles'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_back_mobility_complex',
@@ -314,7 +314,7 @@ export const exercises = [
     atlasZones: ['spine', 'shoulder', 'muscles'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'exercise_back_strength_cobra_set',
@@ -346,7 +346,7 @@ export const exercises = [
     atlasZones: ['muscles', 'shoulder', 'spine'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_animal_flow_mobility',
@@ -378,7 +378,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'spine', 'muscles'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_animal_flow_integrated',
@@ -409,7 +409,7 @@ export const exercises = [
     atlasZones: ['shoulder', 'spine', 'muscles'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'practice_general_movement_skills',
@@ -438,7 +438,7 @@ export const exercises = [
     atlasZones: ['muscles', 'spine', 'shoulder', 'knee'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   },
   {
     id: 'screen_coordination_challenge',
@@ -467,6 +467,6 @@ export const exercises = [
     atlasZones: ['muscles', 'spine', 'shoulder', 'knee'],
     relatedClaimIds: [],
     relatedSourceIds: [],
-    editorial: { reviewStatus: 'draft', claimReviewStatus: 'not_assessed', lastReviewed: null }
+    editorial: { reviewStatus: 'video_checked', claimReviewStatus: 'not_assessed', lastReviewed: '2026-10-18' }
   }
 ];

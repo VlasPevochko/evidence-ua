@@ -155,7 +155,7 @@ async function hydrateRelatedPractice(){
  const zone=box.dataset.relatedPractice;
  const library=()=>{const p=document.createElement('p');p.className='atlas-practice-more';const a=document.createElement('a');a.href='./exercises.html';a.textContent='Відкрити всю бібліотеку вправ →';p.append(a);return p;};
  try{
-  const {exercises,contentTypes}=await import('./exercises-data.js?v=3');
+  const {exercises,contentTypes}=await import('./exercises-data.js?v=4');
   if(!box.isConnected||selectedZone!==zone)return;
   const related=exercises.filter(item=>item.atlasZones.includes(zone));
   const heading=document.createElement('h3');heading.textContent='Пов’язані вправи';

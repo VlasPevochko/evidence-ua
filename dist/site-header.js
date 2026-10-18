@@ -10,7 +10,7 @@ export function mountSiteHeader(doc=document){
   const previous=doc.querySelector('header');
   if(!previous)return;
   if(!doc.querySelector('link[data-site-header-style]')){
-    const css=doc.createElement('link');css.rel='stylesheet';css.href='./site-header.css?v=3';css.dataset.siteHeaderStyle='';doc.head.append(css);
+    const css=doc.createElement('link');css.rel='stylesheet';css.href='./site-header.css?v=4';css.dataset.siteHeaderStyle='';doc.head.append(css);
   }
   const holder=doc.createElement('div');holder.innerHTML=headerHTML();
   const header=holder.firstElementChild;

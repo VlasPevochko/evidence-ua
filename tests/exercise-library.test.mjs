@@ -86,9 +86,11 @@ assert.equal(lib.filterExercises(exercises, {q: 'координац'}).length, 2
 assert.equal(lib.filterExercises(exercises, {q: 'zzzz'}).length, 0);
 assert.equal(lib.findExercise(exercises, 'kontrol-lopatky').id, 'practice_scapular_activation_control');
 assert.equal(lib.findExercise(exercises, 'nope'), null);
-assert.deepEqual(lib.readState('?e=a&region=shoulder&q=x'), {slug: 'a', q: 'x', region: 'shoulder', type: '', pattern: '', equipment: ''});
+assert.deepEqual(lib.readState('?e=a&region=shoulder&q=x'), {slug: 'a', q: 'x', region: 'shoulder', type: '', pattern: '', equipment: '', view: '', sort: ''});
 assert.equal(lib.writeState({q: 'тяга', region: 'shoulder'}), '?q=%D1%82%D1%8F%D0%B3%D0%B0&region=shoulder');
 assert.equal(lib.writeState({}), '');
+assert.equal(lib.writeState({view: 'type', sort: 'title'}), '?view=type&sort=title');
+assert.deepEqual([lib.readState('?view=type&sort=title').view, lib.readState('?view=x&sort=y').view, lib.readState('?sort=y').sort], ['type', '', ''], 'Only known view/sort values are accepted');
 assert.equal(lib.facetOptions(exercises, 'equipment', equipmentLabels).length, 1, 'Single-value facets are not worth a filter');
 for (const e of exercises) for (const field of ['bodyRegions', 'movementPatterns']) assert(lib.facetOptions([e], field, {...bodyRegions, ...movementPatterns}).every(o => o.label !== o.value), 'Every facet value has a Ukrainian label');
 assert.equal(lib.youtubeEmbedUrl('qrL6N-35QrE'), 'https://www.youtube-nocookie.com/embed/qrL6N-35QrE?autoplay=1&rel=0');
@@ -165,13 +167,33 @@ index.querySelector('#ex-search').value = '';
 index.querySelector('#ex-filter-type').value = 'strength';
 form.fire('change');
 assert.equal(results().length, 3);
+// Presentation: sorting and grouping never change which exercises are shown.
+const titles = list => list.map(e => e.titleUk);
+const byTitle = lib.arrangeExercises(exercises, {sort: 'title'}).map(e => e.item);
+assert.deepEqual(titles(byTitle), titles([...exercises].sort((a, b) => a.titleUk.localeCompare(b.titleUk, 'uk'))), 'Sorting by title');
+assert.equal(lib.arrangeExercises(exercises).length, 12, 'Default arrangement is the plain list');
+const grouped = lib.arrangeExercises(exercises, {view: 'type'});
+const groupHeadings = grouped.filter(e => e.group);
+assert.deepEqual(groupHeadings.map(h => [h.group, h.count]), [['Силова', 3], ['Мобільність', 3], ['Контроль руху', 3], ['Координація', 1], ['Реабілітаційна практика', 1], ['Тест або скринінг', 1]]);
+assert.equal(grouped.filter(e => e.item).length, 12, 'Grouping keeps every exercise exactly once');
+assert.equal(new Set(grouped.filter(e => e.item).map(e => e.item.slug)).size, 12);
+index.querySelector('#ex-view').value = 'type';
+index.children[1].fire('change');
+assert.equal(results().length, 3 + 1, 'A type filter keeps only its own group heading');
+index.querySelector('#ex-filter-type').value = '';
+form.fire('change');
+assert.equal(results().length, 12 + 6, 'Grouped view adds one heading per type');
+assert.equal(changed.view, 'type');
+index.querySelector('#ex-view').value = '';
+index.children[1].fire('change');
+assert.equal(results().length, 12);
 const cardLinks = index.find(n => n.tagName === 'a' && String(n.attrs.href).startsWith('./exercises.html?e='));
 assert(cardLinks.length >= 1 && cardLinks.every(a => a.textContent.length));
 
 // --- Page and Atlas wiring ------------------------------------------------------
 const html = fs.readFileSync('dist/exercises.html', 'utf8');
 assert(html.includes('<html lang="uk">') && html.includes('<title>') && html.includes('id="exercise-app"'));
-assert(html.includes('src="./exercises.js?v=7"') && html.includes('href="./exercises.css?v=2"'));
+assert(html.includes('src="./exercises.js?v=8"') && html.includes('href="./exercises.css?v=6"'));
 assert(!/<iframe/i.test(html) && !/youtube/i.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '')), 'No YouTube resource in the static page');
 for (const file of ['dist/exercises.css', 'dist/exercises.js', 'dist/exercises-data.js']) assert(fs.existsSync(file));
 const atlasJs = fs.readFileSync('dist/atlas.js', 'utf8');

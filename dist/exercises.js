@@ -45,6 +45,20 @@ export function relatedExercises(list, item, limit = 3) {
     .map(entry => entry.other);
 }
 
+// Presentation order: optional sort by title, optional grouping by content type (group order follows contentTypes).
+// Returns a flat list of {group} headings and {item} cards so the grid stays a single list.
+export function arrangeExercises(list, {view = '', sort = ''} = {}) {
+  const ordered = sort === 'title' ? [...list].sort((a, b) => a.titleUk.localeCompare(b.titleUk, 'uk')) : [...list];
+  if (view !== 'type') return ordered.map(item => ({item}));
+  const out = [];
+  for (const type of Object.keys(contentTypes)) {
+    const group = ordered.filter(item => item.contentType === type);
+    if (!group.length) continue;
+    out.push({group: contentTypes[type], count: group.length}, ...group.map(item => ({item})));
+  }
+  return out;
+}
+
 export function facetOptions(list, key, labels) {
   const values = new Map();
   for (const item of list) {
@@ -76,13 +90,15 @@ export function readState(search) {
     region: params.get('region') || '',
     type: params.get('type') || '',
     pattern: params.get('pattern') || '',
-    equipment: params.get('equipment') || ''
+    equipment: params.get('equipment') || '',
+    view: params.get('view') === 'type' ? 'type' : '',
+    sort: params.get('sort') === 'title' ? 'title' : ''
   };
 }
 
 export function writeState(state) {
   const params = new URLSearchParams();
-  for (const key of ['q', 'region', 'type', 'pattern', 'equipment']) if (state[key]) params.set(key, state[key]);
+  for (const key of ['q', 'region', 'type', 'pattern', 'equipment', 'view', 'sort']) if (state[key]) params.set(key, state[key]);
   const text = params.toString();
   return text ? `?${text}` : '';
 }
@@ -288,6 +304,23 @@ export function renderIndex(doc, list, state, onChange) {
     placeholder: 'Назва або псевдонім', value: state.q || ''
   });
   const status = el(doc, 'p', {class: 'ex-count', id: 'ex-count', role: 'status', 'aria-live': 'polite'});
+  const viewSelect = el(doc, 'select', {id: 'ex-view', name: 'view'}, [
+    el(doc, 'option', {value: '', text: 'Усі разом'}),
+    el(doc, 'option', {value: 'type', text: 'За типом'})
+  ]);
+  viewSelect.value = state.view || '';
+  const sortSelect = el(doc, 'select', {id: 'ex-sort', name: 'sort'}, [
+    el(doc, 'option', {value: '', text: 'Як у бібліотеці'}),
+    el(doc, 'option', {value: 'title', text: 'За назвою А–Я'})
+  ]);
+  sortSelect.value = state.sort || '';
+  const toolbar = el(doc, 'div', {class: 'ex-toolbar'}, [
+    status,
+    el(doc, 'div', {class: 'ex-arrange'}, [
+      el(doc, 'label', {class: 'ex-field ex-field--inline', for: 'ex-view'}, [el(doc, 'span', {text: 'Вигляд'}), viewSelect]),
+      el(doc, 'label', {class: 'ex-field ex-field--inline', for: 'ex-sort'}, [el(doc, 'span', {text: 'Сортування'}), sortSelect])
+    ])
+  ]);
   const results = el(doc, 'ul', {class: 'ex-grid', id: 'ex-results'});
   const controls = el(doc, 'form', {class: 'ex-controls', role: 'search', 'aria-label': 'Пошук і фільтри вправ'}, [
     el(doc, 'label', {class: 'ex-field ex-field--search', for: 'ex-search'}, [el(doc, 'span', {text: 'Пошук'}), search]),
@@ -298,9 +331,13 @@ export function renderIndex(doc, list, state, onChange) {
   const draw = () => {
     const current = {...state, q: search.value};
     for (const [id, , , key] of fields) current[key] = controls.querySelector(`#${id}`).value;
+    current.view = viewSelect.value;
+    current.sort = sortSelect.value;
     Object.assign(state, current);
     const found = filterExercises(list, state);
-    results.replaceChildren(...found.map(item => card(doc, item)));
+    results.replaceChildren(...arrangeExercises(found, state).map(entry => entry.item
+      ? card(doc, entry.item)
+      : el(doc, 'li', {class: 'ex-group-heading'}, [el(doc, 'h2', {text: entry.group}), el(doc, 'span', {class: 'ex-muted', text: String(entry.count)})])));
     status.textContent = found.length
       ? `Знайдено вправ: ${found.length}`
       : 'За цими умовами вправ не знайдено. Змініть пошук або фільтри.';
@@ -308,8 +345,9 @@ export function renderIndex(doc, list, state, onChange) {
   };
   controls.addEventListener('input', draw);
   controls.addEventListener('change', draw);
+  toolbar.addEventListener('change', draw);
   draw();
-  return el(doc, 'div', {class: 'ex-index'}, [controls, status, results]);
+  return el(doc, 'div', {class: 'ex-index'}, [controls, toolbar, results]);
 }
 
 export function mountExerciseLibrary(doc = document, win = window) {

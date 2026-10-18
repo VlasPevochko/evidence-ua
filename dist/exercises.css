@@ -11,7 +11,13 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{ou
 .ex-controls{display:grid;grid-template-columns:minmax(220px,2fr) repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
 .ex-field{display:grid;gap:6px;color:var(--atlas-muted);font-size:13px}
 .ex-field input,.ex-field select{width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--atlas-line);border-radius:12px;background:var(--atlas-panel);color:var(--atlas-text);font:inherit;font-size:16px}
-.ex-count{margin:8px 0 18px;color:var(--atlas-muted);font-size:14px}
+.ex-count{margin:0;color:var(--atlas-muted);font-size:14px}
+.ex-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:8px 0 18px}
+.ex-arrange{display:flex;flex-wrap:wrap;gap:10px}
+.ex-field--inline{grid-template-columns:auto 1fr;align-items:center;gap:8px}
+.ex-field--inline select{min-height:38px;width:auto;padding:6px 10px}
+.ex-group-heading{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin-top:10px;padding-bottom:6px;border-bottom:1px solid var(--atlas-line)}
+.ex-group-heading h2{margin:0;font-size:20px}
 
 .ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;margin:0;padding:0;list-style:none}
 .ex-card{display:flex;flex-direction:column;gap:10px;height:100%;padding:20px;border:1px solid var(--atlas-line);border-radius:20px;background:linear-gradient(180deg,var(--atlas-panel-2),var(--atlas-panel))}
@@ -66,6 +72,16 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{ou
 .ex-disclaimer{margin-top:28px;padding:14px 16px;border:1px solid var(--atlas-line);border-radius:14px;color:var(--atlas-muted);font-size:13px;line-height:1.5}
 
 @media (max-width:640px){
+  .ex-card-text{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .ex-arrange{width:100%}
+  .ex-field--inline{flex:1 1 100%}
+  .ex-field--inline select{width:100%}
+  /* This page only: a compact shared navigation, tools in one scrollable row instead of three stacked buttons. */
+  body:has(#exercise-app) .eua-platform-nav{padding:6px 14px}
+  body:has(#exercise-app) .eua-platform-nav a{min-height:36px;padding:4px 10px}
+  body:has(#exercise-app) .eua-platform-nav summary{min-height:36px;padding:6px 10px}
+  body:has(#exercise-app) .eua-tools{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+  body:has(#exercise-app) .eua-tools>*{flex:0 0 auto;min-height:36px;padding:6px 12px;white-space:nowrap;overflow-wrap:normal}
   .ex-page{padding:24px 0 36px}
   .ex-section{padding:16px}
   .ex-controls{grid-template-columns:1fr 1fr}

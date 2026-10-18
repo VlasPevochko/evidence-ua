@@ -34,6 +34,6 @@
 #start-here .path-card .path-start{padding:10px 12px;border:1px solid #e7bd46;border-radius:8px;color:#e7bd46;text-decoration:none;font-weight:600}
 #start-here #feedback-clear{background:transparent;color:#eeeae1;border-color:#66727c}
 @media(max-width:900px){#start-here .start-paths{grid-template-columns:minmax(0,1fr)}}
-#start-here :focus-visible{outline:3px solid #78daee;outline-offset:4px}
+#start-here :focus-visible{outline:3px solid #65ddf2;outline-offset:4px}
 .topic-card[data-area=cell]:before{background-image:radial-gradient(ellipse at 40% 35%,#385865 0%,#142530 42%,#090a0c 85%);background-size:100% 100%}
 @media(max-width:700px){#start-here{padding:20px 16px}#start-here .start-choices{grid-template-columns:minmax(0,1fr);gap:8px;margin:18px 0}#start-here .start-choices>a{min-height:88px;padding:14px 16px;gap:6px}#start-here .start-links a{flex:1 1 130px;justify-content:center}#start-here>p{font-size:15px}#start-here textarea,#start-here select{font-size:16px}}

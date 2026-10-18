@@ -19,3 +19,7 @@ By explicit approval of the site owner, three baselines were refreshed after rev
 The retention tests continue to use these reviewed fixtures, including the revision above. The duplicate `retained-content-sha256.json` proposed in #26 used older content and a different raw-HTML serialization; it is removed rather than refreshed from current output.
 
 The source-card accessibility change in #26 uses `h3` instead of `h4` under the creatine sources section. Both homepage retention tests normalize only those source-card headings to their historical tag before comparing the full article digest. All wording and article order remain protected; no digest is changed by this integration.
+
+## Deliberate replacement — 2026-10-18 (owner-approved)
+
+By explicit decision of the site owner, the 2D digestion schema on `nutrition-digestion.html` was replaced by the 3D «Шлях їжі» module (`src/evidence/digestion/`). The frozen hash in `v57-retained-page-hashes.json` is **not refreshed**; `muscle-flow.test.mjs` skips that one page, exactly as for `movement.html`. The new page is protected by `food-path.test.mjs`: retained share metadata, platform shell, the «Всмоктування ≠ виведення» reading section with its NIDDK/OpenStax links, model attribution, and Claims shown without a confidence level.

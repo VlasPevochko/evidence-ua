@@ -13,6 +13,7 @@ const runtimeAccessibilityIds = new Map([
   ['index.html', new Set(['eua-drawer-title'])],
   ['muscle-lab.html', new Set(['eua-drawer-title'])],
   ['nutrition.html', new Set(['eua-drawer-title'])],
+  ['nutrition-digestion.html', new Set(['eua-drawer-title'])],
 ]);
 
 function localPath(reference, basePath, origin) {

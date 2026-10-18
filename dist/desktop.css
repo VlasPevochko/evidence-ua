@@ -15,7 +15,7 @@
  .copy h1{font-size:clamp(59px,5.55vw,94px);line-height:1;letter-spacing:-3px;margin-bottom:24px}
  .copy .three{font-size:19px;line-height:1.6}
  .copy .desc{font-size:16px;line-height:1.6;max-width:490px;margin:25px 0}
- .copy .cta{border-radius:6px;min-width:260px;justify-content:space-between;font-size:18px;padding:19px 25px}
+ .copy .cta{border-radius:8px;min-width:260px;justify-content:space-between;font-size:18px;padding:19px 25px}
  .hero .aside{display:none}
  .desktop-mission{display:block!important;position:absolute;right:2.7vw;top:calc(39.77vw - 330px);width:clamp(170px,13vw,230px);margin:0;font-size:clamp(16px,1.2vw,20px);line-height:1.65;background:#090a0cd9;padding:18px 0}
  .desktop-mission strong{display:block;font-weight:500;margin-bottom:8px}

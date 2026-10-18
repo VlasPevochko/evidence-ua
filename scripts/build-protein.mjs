@@ -44,7 +44,7 @@ export function ProteinCard() {
 const css = `#supplement-protein .pc{--pc-line:#2f3b40;--pc-cyan:#65ddf2;--pc-cyan-soft:#b9f5ff;--pc-gold:#e7bd46;--pc-muted:#b8bdc6;margin-top:8px}
 #supplement-protein .pc-headline{font-size:clamp(23px,3vw,34px);line-height:1.3;margin:0 0 16px;color:var(--pc-cyan-soft);text-wrap:balance}
 #supplement-protein .pc-lead{color:#e5dfcf;line-height:1.6;font-weight:600}
-#supplement-protein .pc-scale{margin:32px 0 16px;padding:clamp(20px,3vw,32px);border:1px solid var(--pc-line);border-radius:20px;background:linear-gradient(135deg,#16242a,#101517 70%)}
+#supplement-protein .pc-scale{margin:32px 0 16px;padding:clamp(20px,3vw,32px);border:1px solid var(--pc-line);border-radius:16px;background:linear-gradient(135deg,#16242a,#101517 70%)}
 #supplement-protein .pc h2.pc-h2,#supplement-protein .pc-scale h2,#supplement-protein .pc-not h2{font-size:clamp(24px,3vw,34px);line-height:1.2;margin:0 0 8px}
 #supplement-protein .pc-sub,#supplement-protein .pc-foot{color:var(--pc-muted);font-size:14px;line-height:1.6;margin:0}
 #supplement-protein .pc-foot{margin-top:18px;font-size:13px}
@@ -53,12 +53,12 @@ const css = `#supplement-protein .pc{--pc-line:#2f3b40;--pc-cyan:#65ddf2;--pc-cy
 #supplement-protein .pc-row{display:grid;grid-template-columns:92px minmax(0,1fr) 84px;align-items:center;gap:12px;margin:10px 0;font-size:14px}
 #supplement-protein .pc-row span{color:var(--pc-muted)}
 #supplement-protein .pc-row b{text-align:right;font-variant-numeric:tabular-nums}
-#supplement-protein .pc-track{height:14px;border-radius:7px;background:#ffffff0d;overflow:hidden}
-#supplement-protein .pc-track i{display:block;height:100%;border-radius:7px;background:#5d6b7a}
+#supplement-protein .pc-track{height:14px;border-radius:8px;background:#ffffff0d;overflow:hidden}
+#supplement-protein .pc-track i{display:block;height:100%;border-radius:8px;background:#5d6b7a}
 #supplement-protein .pc-p .pc-track i{background:var(--pc-cyan);min-width:6px}
 #supplement-protein .pc-p b,#supplement-protein .pc-p span{color:var(--pc-cyan-soft)}
 #supplement-protein .pc-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 44px}
-#supplement-protein .pc-facts div{border:1px solid var(--pc-line);border-radius:14px;padding:20px;background:#111416;min-width:0}
+#supplement-protein .pc-facts div{border:1px solid var(--pc-line);border-radius:16px;padding:20px;background:#111416;min-width:0}
 #supplement-protein .pc-facts span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a5c9d1}
 #supplement-protein .pc-facts strong{display:block;font-size:clamp(22px,2.6vw,30px);margin:10px 0 6px;color:var(--pc-cyan-soft)}
 #supplement-protein .pc-facts small{color:var(--pc-muted);line-height:1.5;font-size:13px}

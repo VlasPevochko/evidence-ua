@@ -111,7 +111,7 @@ for(const shell of [shellSource,shellBuilt]){
   assert(shell.includes('./atlas.html'),'Shared shell must link to Atlas');
   assert(shell.includes('Атлас'),'Shared shell must name Atlas');
   assert(shell.includes('Досліджуйте людське тіло'),'Home teaser headline missing');
-  assert(shell.includes('Від анатомії — до доказів.'),'Home teaser proposition missing');
+  assert(shell.includes('Анатомія, яку можна звірити з джерелами.'),'Home teaser proposition missing');
   assert(shell.includes('Відкрити Атлас'),'Home teaser CTA missing');
 }
 

@@ -18,7 +18,7 @@ body[data-platform-area="home"] .hero .copy .hero-search {margin:12px 0 0 10px;}
 .home-scene figcaption {display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid #b3996026;padding-top:12px;color:#d6ccb9;font-size:12px;line-height:1.6;}
 .home-scene figcaption small {color:#aaa9a3;font-size:10px;}
 body[data-platform-area="home"] #cards > .topic-card {
-  min-height:288px;padding:176px 22px 22px;border-color:#4e4637;border-radius:18px;
+  min-height:288px;padding:176px 22px 22px;border-color:#4e4637;border-radius:16px;
   background:linear-gradient(155deg,#2a2927,#1d1e21)!important;
   transition:border-color .2s,box-shadow .2s,transform .2s;
 }

@@ -19,7 +19,8 @@ const generated = new Set([
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',
   'movement.js', 'movement-model.js', 'movement-learning.js', 'sleep.js',
   'sleep.html', 'platform-glossary.js', 'platform-glossary-data.js',
-  'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js'
+  'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js',
+  'evidence/protein-data.js', 'evidence/protein-ui.js'
 ]);
 
 function inventory(directory, relative = '') {

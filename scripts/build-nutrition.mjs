@@ -7,3 +7,5 @@ fs.copyFileSync('src/evidence/nutrition/player.mjs','dist/nutrition-player.js');
 console.log('Nutrition module:',{claims:nutritionBase.claims.length,records:nutritionBase.records.length,routes:nutritionModule.routes.length,confidence:'not assessed'});
 
 buildNutritionDiets(process.cwd());
+
+import './build-digestion.mjs';

@@ -53,8 +53,9 @@ for (const e of exercises) {
   e.atlasZones.forEach(z => assert(atlasZones.includes(z), `Atlas zone must reuse an existing identity: ${z}`));
   assert(e.shortDescriptionUk.length > 20 && e.jointActionsUk.length && e.primaryStructuresUk.length);
   assert(e.limitationsUk.length, 'Every entry carries a caution section');
-  // Draft editorial state; no fake evidence.
-  assert.equal(e.editorial.reviewStatus, 'draft');
+  // Texts checked against the videos, but claims and medical review are still pending; no fake evidence.
+  assert.equal(e.editorial.reviewStatus, 'video_checked');
+  assert.equal(e.editorial.lastReviewed, '2026-10-18');
   assert.equal(e.editorial.claimReviewStatus, 'not_assessed');
   assert.deepEqual(e.relatedClaimIds, [], 'No Claim may be attached before it is reviewed');
   assert.deepEqual(e.relatedSourceIds, []);
@@ -127,7 +128,7 @@ assert.equal(detail.find(n => n.attrs.class === 'ex-disclaimer').length, 0, 'The
 const layers = detail.find(n => n.attrs['data-layer']).map(n => n.attrs['data-layer']);
 for (const layer of ['facts', 'coaching', 'safety', 'evidence']) assert(layers.includes(layer), `Missing layer ${layer}`);
 assert(detail.textContent.includes(claimsPendingNote), 'Shows the pending-claims note instead of a fake evidence score');
-assert(detail.textContent.includes('Чернетка'), 'Shows draft status');
+assert(detail.textContent.includes('звірено з відео') && detail.textContent.includes('не завершено'), 'Shows review status and its limits');
 assert.equal(detail.find(n => n.tagName === 'iframe').length, 0, 'No YouTube request before the click');
 const play = detail.find(n => n.attrs.class === 'ex-video-play')[0];
 assert(play && play.attrs['aria-label'].includes(row.titleUk));
@@ -170,7 +171,7 @@ assert(cardLinks.length >= 1 && cardLinks.every(a => a.textContent.length));
 // --- Page and Atlas wiring ------------------------------------------------------
 const html = fs.readFileSync('dist/exercises.html', 'utf8');
 assert(html.includes('<html lang="uk">') && html.includes('<title>') && html.includes('id="exercise-app"'));
-assert(html.includes('src="./exercises.js?v=4"') && html.includes('href="./exercises.css?v=1"'));
+assert(html.includes('src="./exercises.js?v=5"') && html.includes('href="./exercises.css?v=1"'));
 assert(!/<iframe/i.test(html) && !/youtube/i.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '')), 'No YouTube resource in the static page');
 for (const file of ['dist/exercises.css', 'dist/exercises.js', 'dist/exercises-data.js']) assert(fs.existsSync(file));
 const atlasJs = fs.readFileSync('dist/atlas.js', 'utf8');
@@ -195,4 +196,4 @@ const catalogSource = fs.readFileSync('src/platform/catalog.mjs', 'utf8');
 assert(!catalogSource.includes('exercises.html'), 'The library is a practice entry, not a new top-level catalog direction');
 
 fs.rmSync(temp, {recursive: true, force: true});
-console.log('Exercise library: 12 draft entries, data model, safe wording, filters, detail layers, click-to-load video and Atlas link passed.');
+console.log('Exercise library: 12 video-checked entries, data model, safe wording, filters, detail layers, click-to-load video and Atlas link passed.');

@@ -3,7 +3,7 @@
 import {
   exercises, contentTypes, movementPatterns, bodyRegions, equipmentLabels,
   reviewStatusLabels, claimsPendingNote
-} from './exercises-data.js?v=3';
+} from './exercises-data.js?v=4';
 
 const atlasZoneLabels = {shoulder: 'Плече', spine: 'Хребет', muscles: 'М’язова система', knee: 'Коліно', brain: 'Мозок', gut: 'ШКТ'};
 const norm = value => String(value ?? '').toLocaleLowerCase('uk').replace(/ё/g, 'е').trim();

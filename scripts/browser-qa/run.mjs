@@ -60,6 +60,19 @@ async function open(browser, origin, viewport, route) {
 async function generic(browser, origin, viewport, file) {
   const where = `${file} @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
+  await page.waitForSelector('.eua-site-header');
+  check(where, (await page.locator('.eua-site-header').count()) === 1, 'exactly one common header is required');
+  check(where, (await page.locator('.eua-header-wordmark small').innerText()).includes('ЗДОРОВ’Я'), 'the common brand tagline is missing');
+  check(where, (await page.locator('.eua-site-header nav a').count()) === 7, 'common navigation must contain the same seven destinations');
+  if(viewport.name === 'mobile'){
+    const menu=page.locator('.eua-header-links'),toggle=page.locator('.eua-header-toggle');
+    check(where, !(await menu.isVisible()), 'common menu must start closed on a phone');
+    await toggle.click();
+    check(where, await menu.isVisible(), 'common menu must open');
+    await page.keyboard.press('Escape');
+    check(where, !(await menu.isVisible()), 'Escape must close the common menu');
+    check(where, await toggle.evaluate(n=>document.activeElement===n), 'Escape must restore focus to the menu toggle');
+  }
   check(where, (await page.title()).trim().length > 0, 'empty <title>');
   check(where, (await page.locator('html').getAttribute('lang')) === 'uk', 'html lang is not "uk"');
   check(where, seen.console.length === 0, `console errors: ${seen.console.join(' | ')}`);
@@ -199,7 +212,13 @@ async function supplementsFlow(browser, origin, viewport) {
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
   await page.waitForSelector('.sp-row');
   const phone = viewport.width <= 900;
-  check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once');
+  // Owner request: remove the entire secondary tools/navigation block on this page.
+  check(where, (await page.locator('.eua-platform-nav').count()) === 0, 'retired secondary navigation returned');
+  check(where, (await page.locator('.eua-site-header').count()) === 1, 'one common site header is required');
+  const hero = await page.locator('.sp-head').boundingBox();
+  const pattern = await page.locator('.sp-shippo').boundingBox();
+  check(where, hero && hero.x <= 1 && hero.width >= viewport.width - 1, 'the title band must span the viewport');
+  check(where, pattern && pattern.width >= viewport.width - 1, 'shippo pattern must span the viewport');
   check(where, (await page.locator('.sp-row').count()) === 10, 'expected ten supplements');
   // Every entry has a photo, a folded limit and a link to its existing dossier.
   const links = await page.locator('.sp-go').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));

@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 // These are the outputs of the two existing builders, including HTML fragments.
 // Everything else in dist is authored source and must retain its exact bytes.
 const generated = new Set([
-  'index.html', 'cell-lab.html', 'directions.html', 'movement.html',
+  'site-header.js', 'site-header.css', 'index.html', 'cell-lab.html', 'directions.html', 'movement.html',
   'muscle-lab.html', 'nutrition-digestion.html', 'nutrition.html', 'protein-meta.html',
   'evidence/registry.js', 'evidence/entities.js', 'evidence/components.js',
   'evidence/public-text.js', 'evidence/module-composer.js', 'evidence/muscle-fiber-v1.webp',

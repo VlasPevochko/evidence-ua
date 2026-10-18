@@ -1,3 +1,4 @@
+import './site-header.mjs';
 import {findMaterials,materials} from './materials.mjs';
 import {materialCard} from './quick-tools.mjs';
 import {catalog,findAreas} from './catalog.mjs';

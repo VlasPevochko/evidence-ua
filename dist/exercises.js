@@ -23,6 +23,28 @@ export function findExercise(list, slug) {
   return list.find(item => item.slug === slug || (item.legacySlugs || []).includes(slug)) || null;
 }
 
+// Neighbours in library order, wrapping around, so the visitor can browse without going back to the list.
+export function neighbours(list, item) {
+  const index = list.findIndex(other => other.slug === item.slug);
+  if (index < 0 || list.length < 2) return {previous: null, next: null};
+  return {previous: list[(index - 1 + list.length) % list.length], next: list[(index + 1) % list.length]};
+}
+
+// Related = shared body regions and movement patterns (patterns weigh more); stable order for ties.
+export function relatedExercises(list, item, limit = 3) {
+  const shared = (a, b) => a.filter(value => b.includes(value)).length;
+  return list
+    .filter(other => other.slug !== item.slug)
+    .map((other, order) => ({
+      other, order,
+      score: shared(other.bodyRegions, item.bodyRegions) + 2 * shared(other.movementPatterns, item.movementPatterns) + (other.contentType === item.contentType ? 1 : 0)
+    }))
+    .filter(entry => entry.score > 0)
+    .sort((a, b) => b.score - a.score || a.order - b.order)
+    .slice(0, limit)
+    .map(entry => entry.other);
+}
+
 export function facetOptions(list, key, labels) {
   const values = new Map();
   for (const item of list) {
@@ -90,6 +112,7 @@ const layerLabels = {
   facts: 'Опис руху та анатомія',
   coaching: 'Поради до виконання',
   safety: 'Безпека',
+  experience: 'Досвід автора',
   evidence: 'Докази'
 };
 
@@ -110,7 +133,9 @@ function videoBlock(doc, item) {
     'aria-label': `Відтворити відео: ${item.titleUk}`
   }, [
     el(doc, 'span', {class: 'ex-video-icon', 'aria-hidden': 'true', text: '▶'}),
-    el(doc, 'span', {class: 'ex-video-label', text: 'Відтворити відео'})
+    el(doc, 'span', {class: 'ex-video-label', text: 'Відтворити відео'}),
+    el(doc, 'span', {class: 'ex-video-title', text: item.titleUk}),
+    el(doc, 'span', {class: 'ex-video-hint', text: `Автор відео: ${item.media.author} · YouTube завантажиться після натискання`})
   ]);
   play.addEventListener('click', () => {
     const iframe = el(doc, 'iframe', {
@@ -128,6 +153,40 @@ function videoBlock(doc, item) {
       el(doc, 'a', {href: watch, target: '_blank', rel: 'noopener noreferrer', text: 'Відкрити на YouTube'}),
       el(doc, 'span', {text: ` · Автор відео: ${item.media.author}`})
     ])
+  ]);
+}
+
+// Practitioner experience is shown only when the author supplied it, and is always labelled as such (not evidence).
+function experienceSection(doc, item) {
+  const notes = item.authorExperienceUk || [];
+  if (!notes.length) return null;
+  return section(doc, 'ex-experience', 'Практичний досвід автора', 'experience', [
+    el(doc, 'ul', {class: 'ex-list'}, notes.map(text => el(doc, 'li', {text}))),
+    el(doc, 'p', {class: 'ex-note', text: 'Це спостереження автора з практики, а не результат дослідження. Реакція на вправу індивідуальна.'})
+  ]);
+}
+
+function pagerBlock(doc, item) {
+  const {previous, next} = neighbours(exercises, item);
+  if (!previous || !next) return null;
+  const link = (target, label, className) => el(doc, 'a', {
+    class: `ex-pager-link ${className}`, href: `./exercises.html?e=${encodeURIComponent(target.slug)}`
+  }, [el(doc, 'span', {class: 'ex-pager-label', text: label}), el(doc, 'span', {class: 'ex-pager-title', text: target.titleUk})]);
+  return el(doc, 'nav', {class: 'ex-pager', 'aria-label': 'Інші вправи'}, [
+    link(previous, '← Попередня', 'ex-pager-prev'),
+    link(next, 'Наступна →', 'ex-pager-next')
+  ]);
+}
+
+function relatedBlock(doc, item) {
+  const related = relatedExercises(exercises, item);
+  if (!related.length) return null;
+  return el(doc, 'section', {class: 'ex-related', 'aria-labelledby': 'ex-related-title'}, [
+    el(doc, 'h2', {id: 'ex-related-title', text: 'Схожі вправи'}),
+    el(doc, 'ul', {class: 'ex-related-list'}, related.map(other => el(doc, 'li', {}, [
+      el(doc, 'a', {class: 'ex-link', href: `./exercises.html?e=${encodeURIComponent(other.slug)}`, text: other.titleUk}),
+      el(doc, 'span', {class: 'ex-muted', text: ` · ${contentTypes[other.contentType] || other.contentType}`})
+    ])))
   ]);
 }
 
@@ -171,6 +230,7 @@ export function renderDetail(doc, item) {
       el(doc, 'ul', {class: 'ex-list'}, item.progressionsUk.map(text => el(doc, 'li', {text})))
     ]),
     item.variationsUk.length ? listSection(doc, 'ex-variations', 'Варіанти', 'coaching', item.variationsUk, '') : null,
+    experienceSection(doc, item),
     listSection(doc, 'ex-care', 'Коли бути обережним', 'safety', item.limitationsUk, 'Не додано.'),
     section(doc, 'ex-evidence', 'Докази', 'evidence', [claims]),
     section(doc, 'ex-explore', 'Дослідити тіло', 'facts', [
@@ -183,6 +243,8 @@ export function renderDetail(doc, item) {
       ]))),
       el(doc, 'p', {class: 'ex-muted', text: 'Атлас показує області тіла, анатомію й навантаження. Він не ставить діагнозів.'})
     ]),
+    pagerBlock(doc, item),
+    relatedBlock(doc, item)
   ].filter(Boolean));
 }
 

@@ -15,7 +15,7 @@
  .topic-card{min-height:205px}
  header nav{font-size:clamp(13px,1.1vw,17px);gap:25px}
 }
-.evidence-guide{margin:24px 0 30px;padding:24px;border:1px solid #41444b;border-radius:12px;background:#191c22;color:#f4f2ed}
+.evidence-guide{margin:24px 0 30px;padding:24px;border:1px solid #41444b;border-radius:16px;background:#191c22;color:#f4f2ed}
 .evidence-guide h2{font-size:24px;letter-spacing:-.02em;margin:0 0 12px}
 .evidence-guide>p{max-width:800px;color:#c9cbd0;line-height:1.65;margin:0 0 20px}
 .evidence-guide details{border-top:1px solid #41444b;padding:15px 0}
@@ -61,7 +61,7 @@ body{background:#111318}
 .guide-example th,.guide-example td{padding:12px;border-bottom:1px solid #41444b;color:#dce0e5}
 .guide-example .example-reveal{padding:14px;background:#20242c;border:1px solid #41444b;border-radius:8px}
 .guide-sources{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.guide-sources a{padding:8px 10px;border:1px solid #555345;border-radius:7px;color:#e7bd46;font-size:11px;line-height:1.5}
+.guide-sources a{padding:8px 10px;border:1px solid #555345;border-radius:8px;color:#e7bd46;font-size:11px;line-height:1.5}
 /* Mobile header follows its content instead of a fixed screen allocation. */
 @media(max-width:1024px){
  .page>header{height:auto!important;min-height:0!important;display:grid!important;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-content:start;align-items:start;padding:20px 20px 12px;gap:16px 12px}

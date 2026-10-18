@@ -1,5 +1,8 @@
 # GitHub source of truth and Sites deployment
 
+> **Current status.** The primary site is **GitHub Pages**: <https://vlaspevochko.github.io/evidence-ua/>. It is published automatically by `site-publish.yml` for every successful run on `main` (the `PAGES_ENABLED` repository variable is set and Pages uses the "GitHub Actions" source). The OpenAI Sites copy (<https://evidence-ua.surecrow3.chatgpt.site>, last published as v83) is a **legacy copy that is no longer updated**; the sections below that describe Sites are historical context. To avoid duplicate content, retire or redirect the Sites copy when convenient; that is done on the Sites side, not in this repository.
+
+
 ## Source of truth
 
 `VlasPevochko/evidence-ua` is the canonical repository. All website changes start in a branch from current `main`, pass website build/tests, and go through a PR. Merge requires the owner's explicit approval. Do not edit or import the old Sites checkout as the current source. Sites remains the production host and a deployment destination.
@@ -65,3 +68,19 @@ node scripts/test-site.mjs
 Python must be available as `python`; the test runner sets `PYTHONUTF8=1` for its children on all platforms. The root website has no npm dependencies. Remotion is a separate subproject and is not installed or rendered by website CI.
 
 The two former historical-Git dependencies now use authentic independent fixtures, recovered read-only from the exact original Sites commits. See [fixture provenance](../tests/fixtures/README_BASELINES.md). CI needs neither Sites credentials nor the old Git history.
+
+## GitHub Pages (optional, owner-enabled)
+
+> The stock GitHub "Deploy Jekyll with GitHub Pages" template (`jekyll-gh-pages.yml`) was removed: it published the repository root through Jekyll instead of the verified `dist/`, and shared the `github-pages` environment and `pages` concurrency group with the job above. Use only the `deploy-pages` job in `site-publish.yml`.
+
+`site-publish.yml` can also publish the verified `dist/` to GitHub Pages, so the live site does not depend on any outside account. It runs only while the repository variable `PAGES_ENABLED` is `true`; otherwise both the packaging step and the `deploy-pages` job are skipped (this is the off switch).
+
+What runs when enabled: only for a push to this repository's `main`, after the `verify` job (build plus every test) has passed, the exact tested `dist/` is uploaded with `actions/upload-pages-artifact` and deployed with `actions/deploy-pages` (both pinned to commit SHAs). Pull requests and forks never deploy. The job has only `pages: write` and `id-token: write`; no secrets are used.
+
+Owner setup, once:
+
+1. Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+2. Settings → Secrets and variables → Actions → Variables → add `PAGES_ENABLED` = `true`.
+3. Merge to `main` or run the workflow manually (Actions → Run workflow on `main`). The address appears in the `github-pages` environment and the job summary; it will be under `https://<owner>.github.io/evidence-ua/`.
+
+All links in `dist/` are relative, so the site works under the `/evidence-ua/` sub-path. A custom domain can be added later in the Pages settings. To turn it off, delete the variable or set it to anything but `true`. Rollback: revert on `main` through a PR; the next successful run republishes that state.

@@ -1,79 +1,92 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {structures,topics,sources,visual,moduleMeta} from '../dist/muscle-lab-data.js';
-import {renderTopics,structureContent,renderHotspots,adjacentStructure,mount} from '../dist/muscle-lab.js';
+import {structures,topics,sources,visual,moduleMeta,topicClaimIds} from '../dist/muscle-lab-data.js';
+import {renderTopics,structureContent,renderScaleButtons,renderLegend,adjacentStructure} from '../dist/muscle-lab.js';
 import {sceneFrame} from '../dist/muscle-lab-scenes.js';
+import {scaleArt,scaleArtIds,scaleLegend} from '../dist/muscle-scale-art.js';
+import {sarcomereSVG,sarcomereState,GEOMETRY} from '../dist/muscle-sarcomere.js';
 const html=fs.readFileSync('dist/muscle-lab.html','utf8'),css=fs.readFileSync('dist/muscle-lab.css','utf8');
+
+// Data links (science itself is frozen in muscle-flow.test.mjs).
 assert.equal(structures.length,6);assert.equal(topics.length,3);assert.equal(new Set(structures.map(s=>s.id)).size,6);
 for(const item of [...structures,...topics])for(const id of item.sourceIds)assert(sources.some(s=>s.id===id));
-for(const level of ['school','university','advanced']){const rendered=renderTopics(level);for(const t of topics){assert(rendered.includes(t[level]));assert(rendered.includes(`data-play="${t.id}"`));assert(rendered.includes(`data-reset="${t.id}"`));}}
+assert(moduleMeta.status.includes('не завершено'));assert(visual.simplified);assert.deepEqual(visual.claimIds,structures.map(s=>s.claimId));
+assert(!/художн|webp/i.test(visual.simplificationNote),'The note must describe the schematic drawings, not the retired raster');
 assert(structureContent(structures[5],'function','advanced').includes('від’єднує'));assert(structureContent(structures[0],'sources','school').includes('openstax.org'));
-assert(html.includes('id="shortening"'));assert(html.includes('Довжина філаментів незмінна'));assert(html.includes('id="left-filament"'));assert(html.includes('id="right-filament"'));
-assert(css.includes('prefers-reduced-motion'));assert(css.includes('min-height:44px'));assert(css.includes('max-width:700px'));
-assert(fs.existsSync('dist/muscle-lab-art-v1.webp'));assert(moduleMeta.status.includes('не завершено'));assert(visual.simplified);assert.deepEqual(visual.claimIds,structures.map(s=>s.claimId));
 assert(fs.readFileSync('dist/navigation-v17.js','utf8').includes("'./muscle-lab.html'"));
-for(const id of ['contraction','growth','atrophy']){const initial=sceneFrame(id);assert(initial.includes('role="img"'));for(let i=0;i<4;i++){const frame=sceneFrame(id,i);assert(frame.includes('scene-node active'));assert.notEqual(frame,initial);}const topic=renderTopics('school');assert(topic.includes(`data-next="${id}"`));assert(topic.includes(`data-previous="${id}"`));}
-assert.throws(()=>sceneFrame('unknown'),/Unknown scene/);assert.throws(()=>sceneFrame('growth',9),/Invalid storyboard/);
-const markers=renderHotspots();assert.equal((markers.match(/class="art-hotspot"/g)||[]).length,4);
-for(const s of structures.slice(0,4)){assert(markers.includes(`data-structure="${s.id}"`));assert(markers.includes(`Обрати: ${s.label}`));}
-assert(!markers.includes('STRUCT-SARCOMERE'));assert(html.includes('id="art-hotspots"'));assert(html.includes('id="art-overview"'));assert(html.includes('id="art-selection" aria-live="polite"'));
-for(const s of structures.slice(4))assert(html.includes(`data-structure="${s.id}"`));
-assert(css.includes('#art-hotspots[hidden]'));assert(css.includes('width:44px;height:44px'));assert(css.includes('.art-key{grid-template-columns:repeat(2'));
-console.log('Muscle Lab: data links, six scales, three explanation levels, sources, controls, static mobile/accessibility and honest review status passed. Browser verification not performed.');
 
-// Exercise real event handlers with an in-memory DOM adapter (no visual layout claim).
-const nodes=new Map(),listeners=new Map();
-function node(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',innerHTML:'',value:0,hidden:false,disabled:false,dataset:{},attributes:{},style:{setProperty(){}},classList:{toggle(){}},setAttribute(k,v){this.attributes[k]=v;},addEventListener(k,fn){this[k]=fn;},contains(){return false;},focus(){}});return nodes.get(selector);}
-const root={querySelector:node,querySelectorAll(selector){const match=selector.match(/^\[data-step-topic="([^"]+)"\]$/);return match?topics.find(t=>t.id===match[1]).steps.map((_,i)=>node(`step-${match[1]}-${i}`)):[];},addEventListener(k,fn){if(!listeners.has(k))listeners.set(k,[]);listeners.get(k).push(fn);},activeElement:null};
-mount(root);
-function click(dataset){const button={dataset,setAttribute(){},textContent:''};for(const fn of listeners.get('click'))fn({target:{closest(selector){return selector==='button'?button:null;}}});}
-assert.equal(node('#structure-title').textContent,structures[0].label);
-assert.equal(node('[data-move-structure="-1"]').disabled,true);
-for(let i=1;i<structures.length;i++){
- click({moveStructure:'1'});
- assert.equal(node('#structure-title').textContent,structures[i].label);
- assert.equal(node('#structure-copy').innerHTML,structureContent(structures[i],'description','university'));
- assert.equal(node('#scale-progress').textContent,`Масштаб ${i+1} із ${structures.length}`);
- assert.equal(node('#scale-name').textContent,structures[i].label);
+// Page structure: one scale control, no reading-level switcher, no stale art overlay.
+for(const id of ['explorer','model-view','structure-explanation','scales','scale-art','scale-legend','structure-title','structure-copy','art-selection','topics','muscle-evidence','claim-list','sources','source-list','review-meta','visual-note','eua-evidence-dialog'])assert(html.includes(`id="${id}"`),`Missing #${id}`);
+for(const gone of ['data-level','reading-level','art-hotspots','art-key','viewer-navigation','model-jumps','lab-route','sarcomere-view','structure-link'])assert(!html.includes(gone),`Retired control still in the page: ${gone}`);
+assert.equal((html.match(/<h1\b/g)||[]).length,1);
+assert.equal((html.match(/<header\b/g)||[]).length,1,'The shared shell injects navigation after every <header>: only the page header may use that tag');
+assert(html.includes('Механістичні пояснення не встановлюють величину ефекту у людей'));
+assert(html.includes('muscle-lab.js?v=70')&&html.includes('muscle-lab.css?v=70'));
+const rendered=renderTopics('university');
+assert(!/<header\b/.test(rendered),'Topic markup must not use <header> (the shell would inject duplicate navigation)');
+assert(!/data-level|reading-level/.test(rendered));
+
+// Scale buttons, drawings and legends.
+assert.deepEqual(scaleArtIds,structures.map(s=>s.id),'One drawing per structure, in scale order');
+const buttons=renderScaleButtons(structures[2].id);
+assert.equal((buttons.match(/data-structure=/g)||[]).length,6);assert(buttons.includes(`data-structure="${structures[2].id}" aria-pressed="true"`));
+for(const s of structures){
+ const art=scaleArt(s.id);
+ assert(art.startsWith('<svg')&&art.includes('role="img"')&&/aria-label="[^"]{20,}"/.test(art),`Accessible drawing: ${s.id}`);
+ assert(!art.includes('<text'),`Labels live in the HTML legend, not in the drawing: ${s.id}`);
+ assert(scaleLegend[s.id].length>=3&&renderLegend(s.id).includes('<li>'));
 }
-assert.equal(node('[data-move-structure="1"]').disabled,true);
-assert.equal(node('#art-view').hidden,true);
-assert.equal(node('#sarcomere-view').hidden,false);
-click({structure:structures[0].id});
-assert.equal(node('#art-view').hidden,false);assert.equal(node('#sarcomere-view').hidden,true);
-click({structure:structures[4].id});click({tab:'sources'});
-assert(node('#structure-copy').innerHTML.includes('10-2-skeletal-muscle'));
-node('#shortening').value=35;
-for(let i=0;i<4;i++)click({next:'contraction'});
-assert.equal(node('[data-next="contraction"]').disabled,true);
-assert(node('[data-progress="contraction"]').textContent.startsWith('Крок 4 із 4'));
-// A topic must update its own visible scene, never a remote model above it.
-assert.equal(node('#shortening').value,35);
-click({reset:'contraction'});assert.equal(node('[data-previous="contraction"]').disabled,true);
-assert.equal(node('[data-topic-scene="contraction"]').innerHTML,sceneFrame('contraction'));
-click({play:'contraction'});assert(node('[data-progress="contraction"]').textContent.startsWith('Крок 1'));
-click({play:'contraction'}); // Pause and clear interval.
+assert.throws(()=>scaleArt('UNKNOWN'),/Unknown scale/);
+
+// Sarcomere geometry: filaments keep their length, only overlap changes.
+const rest=sarcomereState(0),end=sarcomereState(1);
+assert.equal(rest.relative.aBand,1);assert.equal(end.relative.aBand,1);
+assert.equal(rest.myosinRight-rest.myosinLeft,GEOMETRY.myosinLength);assert.equal(end.myosinRight-end.myosinLeft,GEOMETRY.myosinLength);
+assert.equal(rest.actinLeftTip-rest.zLeft,GEOMETRY.actinLength);assert.equal(end.actinLeftTip-end.zLeft,GEOMETRY.actinLength);
+let previous=sarcomereState(0);
+for(let i=1;i<=20;i++){
+ const state=sarcomereState(i/20);
+ assert(state.length<previous.length,'Z-discs approach monotonically');
+ assert(state.relative.overlap>=previous.relative.overlap,'Overlap never decreases while contracting');
+ assert(state.relative.hZone<=previous.relative.hZone);
+ previous=state;
+}
+assert(end.relative.overlap>rest.relative.overlap&&end.relative.sarcomere<1&&end.relative.hZone===0);
+assert.deepEqual([sarcomereState(-5).t,sarcomereState(9).t,sarcomereState('x').t],[0,1,0],'Out-of-range input is clamped');
+assert.notEqual(sarcomereSVG({t:0}),sarcomereSVG({t:1}));
+assert(sarcomereSVG({t:.5}).includes('data-sarcomere-t="0.5"'));
+for(const part of ['sc-zdisc','sc-actin','sc-myosin','sc-heads','sc-mline'])assert(sarcomereSVG({t:0}).includes(part));
+
+// Scenes: drawn once, step is a data attribute; text inside drawings is limited to Ca²⁺ and ATP.
 for(const id of ['contraction','growth','atrophy']){
- const rendered=renderTopics('university'),article=rendered.slice(rendered.indexOf(`id="${id}"`));
- assert(article.indexOf('class="scene-controls"')<article.indexOf('<ol>'));
+ const initial=sceneFrame(id);
+ assert(initial.includes('role="img"')&&initial.includes('data-step="-1"'));
+ for(let i=0;i<4;i++){
+  const frame=sceneFrame(id,i);
+  assert(frame.includes(`data-step="${i}"`));
+  assert.equal(frame.replace(`data-step="${i}"`,'data-step="-1"'),initial,'Steps differ only by the data attribute, so CSS can animate them');
+ }
+ const words=[...sceneFrame(id).matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map(m=>m[1]);
+ assert(words.every(w=>['Ca²⁺','ATP'].includes(w)),`Unexpected text in the ${id} drawing: ${words}`);
+ assert(css.includes(`.scene-${id}[data-step="3"]`)||id==='contraction'&&css.includes('.scene-contraction[data-step="3"]'),`CSS states for ${id}`);
 }
+assert.throws(()=>sceneFrame('unknown'),/Unknown scene/);assert.throws(()=>sceneFrame('growth',9),/Invalid storyboard/);assert.throws(()=>sceneFrame('growth',1.5),/Invalid storyboard/);
+
+// Topics: contraction cycle, shared mirror for growth and atrophy.
+for(const level of ['school','university','advanced']){const out=renderTopics(level);for(const t of topics){assert(out.includes(t[level]));assert(out.includes(`data-claim-open="${topicClaimIds[t.id]}"`));assert(out.includes(`id="${t.id}"`));assert(out.includes(`data-topic-scene="${t.id}"`));}}
+assert.equal((rendered.match(/data-step-topic="contraction"/g)||[]).length,4);
+assert.equal((rendered.match(/data-mirror-step=/g)||[]).length,4);
+for(const marker of ['data-play="contraction"','data-reset="contraction"','data-sarcomere-play','data-mirror-play','data-mirror-show="growth"','data-mirror-show="atrophy"','id="shortening"','id="adaptation"','data-mirror-view="growth"'])assert(rendered.includes(marker),`Missing ${marker}`);
+assert(rendered.includes('Нитки не вкорочуються'),'Contraction states sliding, not shortening of filaments');
+assert(!/data-step-topic="(growth|atrophy)"/.test(rendered),'Growth and atrophy share one stepper');
+assert.equal((rendered.match(/data-claim-open=/g)||[]).length,3,'One evidence button per topic');
+
+// CSS: reduced motion, touch targets, phone layout and the states the scenes rely on.
+for(const key of ['prefers-reduced-motion','min-height:44px','height:100dvh','max-width:760px','.cy-head','.ad-beam','.mirror[data-mirror-view="growth"] .topic-atrophy','.scale-btn[aria-pressed=true]'])assert(css.includes(key),`CSS missing ${key}`);
+assert(css.includes('.muscle-claims,.related-grid{grid-template-columns:minmax(0,1fr)}'));
+assert(!/art-hotspot|\.reading-level|\.levels\b/.test(css),'No styles for retired controls');
+
 assert.equal(adjacentStructure(structures[0].id,-1).id,structures[0].id);
 assert.equal(adjacentStructure(structures[5].id,1).id,structures[5].id);
 assert.throws(()=>adjacentStructure('unknown',1),/Unknown structure/);
-console.log('Viewer navigation, selected model, source links, step boundaries, reset, play/pause and independent models passed in memory.');
-
-click({stepTopic:'contraction',stepIndex:'2'});
-assert(node('[data-progress="contraction"]').textContent.startsWith('Крок 3 із 4'));
-assert(node('[data-topic-scene="contraction"]').innerHTML.includes('ATP: від’єднання головок'));
-for(let i=0;i<4;i++)assert.equal(node(`step-contraction-${i}`).attributes['aria-pressed'],String(i===2));
-click({stepTopic:'contraction',stepIndex:'99'});
-assert(node('[data-progress="contraction"]').textContent.startsWith('Крок 3 із 4'));
-click({previous:'contraction'});
-assert(node('[data-progress="contraction"]').textContent.startsWith('Крок 2 із 4'));
-click({reset:'contraction'});
-for(let i=0;i<4;i++)assert.equal(node(`step-contraction-${i}`).attributes['aria-pressed'],'false');
-assert(html.includes('href="#contraction"'));
-assert(renderTopics('school').includes('id="scene-contraction"'));
-assert.equal((renderTopics('university').match(/data-step-index=/g)||[]).length,12);
-assert(renderTopics('advanced').includes('href="#explorer"'));
-console.log('Manual step selection, invalid-index guard, selected state and reset passed.');
+console.log('Muscle Lab: one scale control, six own drawings with HTML legends, sarcomere geometry (fixed filaments, growing overlap), single-attribute scenes, shared growth/atrophy stepper, no duplicate navigation and honest review status passed. Browser verification is in Browser QA.');

@@ -71,6 +71,17 @@
         "role": "selected_publication",
         "metadataReview": "pending",
         "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-CAFFEINE-3",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42356375/",
+        "label": "PubMed",
+        "role": "published_study",
+        "title": "Dose-Response Effect of Oral Caffeine Use on Aerobic Exercise Performance: A Systematic Review and Meta-Analysis",
+        "citation": "Martins et al. · Nutrients · 2026;18(12)",
+        "doi": "10.3390/nu18121989",
+        "metadataReview": "pubmed_verified",
+        "claimLinkStatus": "not_assessed"
       }
     ],
     "claimIds": [],
@@ -155,6 +166,17 @@
         "role": "selected_publication",
         "metadataReview": "pending",
         "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-VITD-3",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42161415/",
+        "label": "PubMed",
+        "role": "published_study",
+        "title": "Calcium, vitamin D, or combined supplementation to prevent fractures and falls: systematic review and meta-analysis",
+        "citation": "Massé et al. · BMJ · 2026;393:e088050",
+        "doi": "10.1136/bmj-2025-088050",
+        "metadataReview": "pubmed_verified",
+        "claimLinkStatus": "not_assessed"
       }
     ],
     "claimIds": [],
@@ -188,7 +210,8 @@
         "label": "Джерело базових пояснень ↗",
         "role": "background_reference",
         "metadataReview": "pending",
-        "claimLinkStatus": "not_assessed"
+        "claimLinkStatus": "not_assessed",
+        "title": "NIH ODS — Magnesium: матеріал для споживачів"
       },
       {
         "id": "DSRC-MAGNESIUM-2",
@@ -196,6 +219,18 @@
         "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
         "role": "background_reference",
         "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed",
+        "title": "NIH ODS — Magnesium: матеріал для фахівців"
+      },
+      {
+        "id": "DSRC-MAGNESIUM-3",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/32956536/",
+        "label": "PubMed",
+        "role": "published_study",
+        "title": "Magnesium for skeletal muscle cramps",
+        "citation": "Garrison et al. · Cochrane Database Syst Rev · 2020;9:CD009402",
+        "doi": "10.1002/14651858.CD009402.pub3",
+        "metadataReview": "pubmed_verified",
         "claimLinkStatus": "not_assessed"
       }
     ],
@@ -264,7 +299,10 @@
         "label": "↗ ПОЗИЦІЙНИЙ ДОКУМЕНТ ISSN",
         "role": "selected_publication",
         "metadataReview": "pending",
-        "claimLinkStatus": "not_assessed"
+        "claimLinkStatus": "not_assessed",
+        "title": "International society of sports nutrition position stand: Beta-Alanine",
+        "citation": "Trexler et al. · J Int Soc Sports Nutr · 2015;12:30",
+        "doi": "10.1186/s12970-015-0090-y"
       },
       {
         "id": "DSRC-BETA-ALANINE-2",
@@ -272,6 +310,20 @@
         "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
         "role": "selected_publication",
         "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed",
+        "title": "β-alanine supplementation to improve exercise capacity and performance: a systematic review and meta-analysis",
+        "citation": "Saunders et al. · Br J Sports Med · 51(8):658–669",
+        "doi": "10.1136/bjsports-2016-096396"
+      },
+      {
+        "id": "DSRC-BETA-ALANINE-3",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/41971372/",
+        "label": "PubMed",
+        "role": "published_study",
+        "title": "No ergogenic effect of β-alanine on repeated sprint ability: a systematic review and multilevel meta-analysis of randomized controlled trials",
+        "citation": "Liang et al. · Front Nutr · 2026;13:1818755",
+        "doi": "10.3389/fnut.2026.1818755",
+        "metadataReview": "pubmed_verified",
         "claimLinkStatus": "not_assessed"
       }
     ],
@@ -307,6 +359,17 @@
         "role": "selected_publication",
         "metadataReview": "pending",
         "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-CITRULLINE-3",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42356270/",
+        "label": "PubMed",
+        "role": "published_study",
+        "title": "Effects of Citrulline Malate Supplementation on Exercise Performance: A Systematic Review and Three-Level Meta-Analysis",
+        "citation": "Wang et al. · Nutrients · 2026;18(12)",
+        "doi": "10.3390/nu18121881",
+        "metadataReview": "pubmed_verified",
+        "claimLinkStatus": "not_assessed"
       }
     ],
     "claimIds": [],
@@ -340,6 +403,17 @@
         "label": "↗ ВІДКРИТИ ДЖЕРЕЛО",
         "role": "selected_publication",
         "metadataReview": "pending",
+        "claimLinkStatus": "not_assessed"
+      },
+      {
+        "id": "DSRC-ELECTROLYTES-3",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38116803/",
+        "label": "PubMed",
+        "role": "published_study",
+        "title": "Oral Rehydration Beverages for Treating Exercise-Associated Dehydration: A Systematic Review, Part I. Carbohydrate-Electrolyte Solutions",
+        "citation": "Borra et al. · J Athl Train · 2025;60(1):34–54",
+        "doi": "10.4085/1062-6050-0682.22",
+        "metadataReview": "pubmed_verified",
         "claimLinkStatus": "not_assessed"
       }
     ],

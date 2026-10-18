@@ -1,4 +1,4 @@
-// User-generated text only: no network, persistence, tracking or automatic sending.
+// User-generated text only: no network, persistence, tracking or automatic sending. (feedback-send.mjs is inactive until an endpoint is configured.)
 import {materials} from './materials.mjs';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function feedbackMaterial(href,selection){

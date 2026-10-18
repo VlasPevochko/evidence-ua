@@ -1,6 +1,6 @@
 .nav-about{padding:10px 0;background:none;border:0;color:inherit;font:inherit;white-space:nowrap}
 .topic-card{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:flex-end;min-width:0;min-height:190px;padding:18px 13px;text-align:left;border:1px solid #4a4432;border-radius:8px;color:#fff;overflow:hidden;background:#101214}
-.topic-card:before{content:'';position:absolute;inset:0;z-index:-1;background-image:linear-gradient(0deg,#090a0c 0%,#090a0cf2 29%,transparent 78%),url('./desktop-reference.png');background-size:100% 100%,800% auto;background-position:center,var(--topic-x) 86.5%;background-repeat:no-repeat}
+.topic-card:before{content:'';position:absolute;inset:0;z-index:-1;background-image:linear-gradient(0deg,#090a0c 0%,#090a0cf2 29%,transparent 78%),url('./desktop-reference.webp');background-size:100% 100%,800% auto;background-position:center,var(--topic-x) 86.5%;background-repeat:no-repeat}
 .topic-card strong{font-size:15px;text-transform:uppercase;line-height:1.3}.topic-card small{font-size:11px;line-height:1.5;margin-top:7px;color:#d4d1c7}.topic-state{font-size:10px;color:#ffe237;margin-top:12px;letter-spacing:.5px}
 .topic-card:hover,.topic-card:focus-visible{border-color:#ffe237;outline:2px solid #ffe237;outline-offset:2px}
 .bottom>.cards{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:35px}
@@ -8,7 +8,7 @@
 #supplement-library{scroll-margin-top:24px}
 @media(min-width:1025px){
  .hero{min-height:530px;padding-bottom:40px}
- .hero:before{background-image:linear-gradient(90deg,#090a0c 0%,#090a0c 31%,#090a0cdd 43%,transparent 56%,transparent 80%,#090a0cdd 95%),url('./desktop-reference-clean-v13.png');mask-image:linear-gradient(black 0%,black 62%,transparent 85%)}
+ .hero:before{background-image:linear-gradient(90deg,#090a0c 0%,#090a0c 31%,#090a0cdd 43%,transparent 56%,transparent 80%,#090a0cdd 95%),url('./desktop-reference-clean-v13.webp');mask-image:linear-gradient(black 0%,black 62%,transparent 85%)}
  .copy{position:relative;background:linear-gradient(90deg,#090a0c 0%,#090a0cf2 65%,#090a0c00);padding-right:20px}
  .desktop-mission{top:170px}
  .bottom .supplement-heading{margin-top:0!important}

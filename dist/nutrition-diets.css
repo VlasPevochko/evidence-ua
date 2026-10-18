@@ -8,3 +8,20 @@
 @media(max-width:1050px){.nd-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nd-card-intro{min-height:3.4em}.nd-art{height:180px}.nd-heading{display:block}.nd-heading>p{margin-top:20px;max-width:640px}.nd-card-title{min-height:1.3em}}
 @media(max-width:600px){.nd-catalog{margin-top:34px;margin-bottom:42px}.nd-grid{gap:10px}.nd-art{height:110px}.nd-card{border-radius:14px}.nd-card-copy{padding:15px 12px 0}.nd-card-number{left:9px;top:9px;width:23px;height:23px}.nd-category{font-size:7px;letter-spacing:.07em;margin-bottom:8px}.nd-card-title{font-size:16px;min-height:2.6em;hyphens:auto}.nd-card-intro{font-size:11px;line-height:1.65;min-height:8.25em;margin:10px 0}.nd-open{font-size:10px;min-height:49px;gap:4px}.nd-open i{font-size:18px}.nd-jumps{gap:2px 12px}.nd-jumps a{font-size:10px}.nd-card[open]>summary{grid-template-columns:minmax(0,1fr)}.nd-card[open] .nd-art{height:155px;min-height:0}.nd-card[open] .nd-card-copy{padding:20px 20px 0}.nd-card[open] .nd-card-title{font-size:24px}.nd-card[open] .nd-card-intro{font-size:13px}.nd-card-detail{grid-template-columns:minmax(0,1fr);padding:22px 20px;gap:25px}.nd-description,.nd-next-review li{font-size:13px}.nd-review-plan>summary{font-size:12px;padding:15px 18px}.nd-heading h2{font-size:34px}.nd-heading>p{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.nd-card,.nd-open i{transition:none}}
+
+/* v87: calmer card heights, a swipe strip on phones, no duplicate jump links (the cards are the navigation). */
+.nd-jumps{display:none}
+.nd-grid{align-items:stretch}
+.nd-card:not([open])>summary{display:flex;flex-direction:column;height:100%}
+.nd-card:not([open]) .nd-card-copy{flex:1}
+.nd-card-intro{min-height:0;flex:1}
+.nd-open{margin-top:auto}
+@media(max-width:760px){
+ .nd-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;margin:0 -16px;padding:2px 16px 12px;scrollbar-width:thin}
+ .nd-card{flex:0 0 74%;scroll-snap-align:center}
+ .nd-card[open]{flex-basis:92%}
+ .nd-card-title{min-height:0;font-size:18px}
+ .nd-card-intro{font-size:13px;min-height:0}
+ .nd-art{height:118px}
+ .nd-catalog-meta{margin:16px 0 14px}
+}

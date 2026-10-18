@@ -1,0 +1,18 @@
+{
+  "name": "evidence-ua",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "start": "python3 -m http.server 8000 --directory dist",
+    "test": "node scripts/test-site.mjs",
+    "smoke": "node scripts/smoke-check.mjs",
+    "validate": "node scripts/validate-content.mjs",
+    "check": "npm run build && npm run validate && npm test && npm run smoke",
+    "qa:browser": "npm ci --prefix scripts/browser-qa --ignore-scripts --no-audit --no-fund && node scripts/browser-qa/run.mjs"
+  }
+}

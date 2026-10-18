@@ -1,5 +1,5 @@
 /* Геометричний фон hero головної сторінки.
-   Замінює статичне фото home-coast.jpg: анімацію малює home-geo-hero.js.
+   Замінює статичне фото берега: анімацію малює home-geo-hero.js.
    Без JS або при prefers-reduced-motion лишається статичний градієнт нижче. */
 body[data-platform-area="home"] .page::before{
   background:

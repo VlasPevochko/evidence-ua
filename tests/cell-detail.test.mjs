@@ -22,8 +22,8 @@ test('viewer stays in the atlas and exposes accessible close and bounded zoom co
  assert(small.includes('data-cell-detail-action="zoom-out" disabled'));assert(large.includes('data-cell-detail-action="zoom-in" disabled'));
 });
 
-test('all eleven close-ups are separate high-resolution local PNG assets',()=>{
+test('all eleven close-ups are separate high-resolution local WebP assets',()=>{
  const hashes=[];
- for(const o of organelles){const path=api.getCellDetail(o.id).image.replace('./','dist/'),bytes=fs.readFileSync(path);assert.equal(bytes.subarray(1,4).toString(),'PNG');assert(bytes.readUInt32BE(16)>=1000);assert(bytes.readUInt32BE(20)>=1000);hashes.push(createHash('sha256').update(bytes).digest('hex'));}
+ for(const o of organelles){const path=api.getCellDetail(o.id).image.replace('./','dist/'),bytes=fs.readFileSync(path);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');const kind=bytes.toString('ascii',12,16);const dim=kind==='VP8X'?{w:1+bytes.readUIntLE(24,3),h:1+bytes.readUIntLE(27,3)}:kind==='VP8 '?{w:bytes.readUInt16LE(26)&0x3fff,h:bytes.readUInt16LE(28)&0x3fff}:{w:1+(bytes.readUInt32LE(21)&0x3fff),h:1+((bytes.readUInt32LE(21)>>14)&0x3fff)};assert(dim.w>=1000);assert(dim.h>=1000);hashes.push(createHash('sha256').update(bytes).digest('hex'));}
  assert.equal(new Set(hashes).size,11,'Each structure needs its own detailed image');
 });

@@ -1,39 +1,53 @@
-# Evidence UA
+# evidence-ua
 
-Український освітній сайт про тіло, спорт і харчування, у якому твердження спираються на наукові джерела. Мета проєкту: зібрати доказові матеріали в одному місці й чесно показувати, що відомо, наскільки це надійно і де докази закінчуються.
+Static knowledge and evidence site for the current project snapshot.
 
-Сайт не ставить діагнозів і не дає персональних лікувальних рекомендацій.
+**Live site:** <https://vlaspevochko.github.io/evidence-ua/> (GitHub Pages, published automatically from `main` after the build and tests pass).
 
-## Що всередині
+## Local setup
 
-- **Клітина** (`src/cell-lab`): будова клітини, 11 органел, детальні ілюстрації.
-- **М'язи** (`src/muscle-lab`): будова м'яза і механізм скорочення.
-- **Рух** (`src/movement`): біомеханіка, важелі, хода.
-- **Сон** (`src/sleep`): стадії та напрямки сну.
-- **Харчування** (`src/nutrition-diets`): ілюстровані картки дієт із джерелами.
-- **Добавки** (`src/evidence`): досьє на кофеїн, креатин, вітамін D, цитрулін, електроліти.
-- **Оболонка сайту** (`src/platform`): навігація, головна сторінка, каталог матеріалів.
-- **Відео** (`video/remotion`): виробництво коротких відео за тими самими джерелами.
+Requirements:
+- Node.js 24+
+- Python 3 with `lxml==6.1.1` (`python -m pip install lxml==6.1.1`)
 
-## Як влаштований репозиторій
+## Build
 
-- `dist/` — статичний сайт, який публікується. Тут є авторські HTML, CSS та ресурси, які **не відтворюються зі `src/`**, тому зберігається весь `dist/`.
-- `src/` — джерела модулів, з яких скрипти оновлюють частину `dist/`.
-- `scripts/` — збірка (`build-site.mjs`) і запуск тестів (`test-site.mjs`).
-- `tests/` — тести, кожен запускається в ізольованій копії.
-- `docs/` — звіти, наукові рецензії, плани й рішення.
-
-## Збірка і тести
-
-Потрібні Node 24, Python 3 з `lxml` та Git. Під Windows задайте `PYTHONUTF8=1`.
-
-```text
-node scripts/build-site.mjs
-node scripts/test-site.mjs
+```bash
+npm run build
 ```
 
-Запускати з клону Git-репозиторію: частина перевірок використовує перелік відстежуваних файлів.
+## Preview locally
 
-## Правила роботи
+```bash
+npm run start
+```
 
-`main` — джерело істини. Зміни йдуть через гілку від актуального `main` і PR; зливати можна лише з явного дозволу власника. Деталі публікації: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Історія імпорту з Sites: [README_IMPORT.md](README_IMPORT.md).
+Then open http://localhost:8000 in the browser.
+
+## Tests
+
+```bash
+npm test
+```
+
+Run the full build and generated-site checks:
+
+```bash
+npm run check
+```
+
+This runs the retained-dist build with provenance, content validation, the regression suite in a fresh copy per test file, and a smoke check of generated HTML pages, JavaScript syntax and module imports, local resources, CSS imports/assets (including inline styles), executable URL schemes, duplicate IDs, local HTML anchors, safe new-tab link relations, document language/title/main landmark, heading order, ARIA ID references, image alt attributes, form labels, and link/button names. GitHub CI runs these same gates before publishing artifacts. These basic markup checks do not replace a full accessibility audit or visual browser testing.
+
+## Browser QA
+
+Static tests cannot see layout, keyboard focus or runtime errors, so a separate check drives a real Chrome:
+
+```bash
+npm run qa:browser
+```
+
+It serves `dist/` locally, blocks third-party requests, and checks every page at 390 and 1440 px (no console or network errors, no horizontal overflow, one visible `h1`, no broken images, nothing loaded from third parties), plus the exercise library, the Atlas shoulder map (keyboard focus) and the mobile home menu. It needs Chrome on the machine; set `BROWSER_EXECUTABLE` to use a specific binary. The only dependency, `playwright-core`, is pinned in `scripts/browser-qa/package-lock.json` and kept out of the root package. In CI it is the separate `Browser QA` job.
+
+The smoke check uses `python` on Windows and `python3` elsewhere; set `PYTHON` to select another Python 3 executable. Scientific retention tests use the reviewed fixtures documented in [baseline provenance](tests/fixtures/README_BASELINES.md); do not refresh hashes merely to silence a failure.
+
+The generated site is served from the [dist](dist) folder, while source files live under [src](src).

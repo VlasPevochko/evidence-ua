@@ -473,7 +473,13 @@ async function homeLowerFlow(browser, origin, viewport) {
       surface:getComputedStyle(document.querySelector('.start-choices>a')).backgroundColor,fragments};
   });
   check(where,style.background==='rgb(13, 25, 22)'&&style.footer===style.background,'pine background must continue through the footer');
-  check(where,style.surface==='rgb(20, 37, 32)','choice cards must use the Supplements surface');
+  // First-step block is editorial rows now: transparent at rest over the pine
+  // background, and the shared Supplements surface (#142520) on hover.
+  check(where,style.surface==='rgba(0, 0, 0, 0)','first-step rows must rest on the pine background');
+  const firstRow=page.locator('.start-choices>a').first();
+  await firstRow.hover();
+  await page.waitForTimeout(350);
+  check(where,await firstRow.evaluate(e=>getComputedStyle(e).backgroundColor)==='rgb(20, 37, 32)','hovered first-step row must use the Supplements surface');
   check(where,style.title.includes('Source Serif 4'),'section headings must share the Supplements serif');
   for(const fragment of style.fragments){
     check(where,fragment.image.includes('home-shippo.svg'),'each fragment must use the same shippo repeat');

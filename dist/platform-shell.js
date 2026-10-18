@@ -1,3 +1,4 @@
+import './site-header.js?v=1';
 import {toolsHTML,mountQuickTools} from './platform-tools.js?v=83';
 import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=83';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -19,7 +20,9 @@ export function mountPlatformNavigation(root=document){
     if(homeNav&&!homeNav.querySelector('.eua-home-atlas-entry')){const link=root.createElement('a');link.href='./atlas.html';link.className='eua-home-atlas-entry';link.textContent='Атлас';link.setAttribute('aria-label','Інтерактивний Атлас Evidence');homeNav.append(link);}
     if(homeNav&&!homeNav.querySelector('.eua-home-exercises-entry')){const link=root.createElement('a');link.href='./exercises.html';link.className='eua-home-exercises-entry';link.textContent='Вправи';link.setAttribute('aria-label','Бібліотека вправ Evidence UA');homeNav.append(link);}
   }
-  const headers=[...root.querySelectorAll('header')].filter(h=>selected!=='home'&&!h.closest('dialog'));
+  // The supplements catalogue has its own primary header; omit the retired tools block there.
+  const supplementCatalogue=selected==='supplements'&&root.querySelector('.sp-page');
+  const headers=[...root.querySelectorAll('header')].filter(h=>selected!=='home'&&!supplementCatalogue&&!h.closest('dialog'));
   const targets=[...headers.map(header=>({element:header,current:selected})),...catalog.getArea('supplements').units.filter(u=>u.id!=='atp-pcr').map(u=>({element:root.getElementById(u.id==='creatine'?'creatine':'supplement-'+u.id),current:'supplements',prepend:true})).filter(t=>t.element)];
   for(const target of targets){if(target.prepend&&target.element.querySelector(':scope > .eua-platform-nav'))continue;if(!target.prepend&&target.element.nextElementSibling?.classList.contains('eua-platform-nav'))continue;
     const nav=root.createElement('nav');nav.className='eua-platform-nav';nav.setAttribute('aria-label','Напрями платформи');const contents=navigationHTML(target.current)+toolsHTML(target.current);nav.innerHTML=['movement','sleep'].includes(target.current)?'<details class="eua-module-menu"><summary>Навігація й інструменти</summary><div class="eua-module-menu-content">'+contents+'</div></details>':contents;

@@ -16,9 +16,9 @@ fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. A
 fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=83'"));
 fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
 fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=83'"));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'").replace("'./site-header.mjs'","'./site-header.js?v=1'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./materials.mjs'","'./platform-materials.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=83'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./materials.mjs'","'./platform-materials.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=83'").replace("'./site-header.mjs'","'./site-header.js?v=1'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -64,3 +64,8 @@ for(const area of ['movement','sleep']){
  const next=old.replace(marker,'<!-- EUA_LEARNING_NOTES_START -->'+learningNotesHTML(area)+'<!-- EUA_LEARNING_NOTES_END -->');
  if(next!==old)fs.writeFileSync(file,next);
 }
+
+// Shared header assets and explicit cache versions on every document.
+fs.copyFileSync('src/platform/site-header.mjs','dist/site-header.js');
+fs.copyFileSync('src/platform/site-header.css','dist/site-header.css');
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=83','platform-shell.js?v=84').replaceAll('directions.js?v=83','directions.js?v=84');if(next!==old)fs.writeFileSync(file,next);}

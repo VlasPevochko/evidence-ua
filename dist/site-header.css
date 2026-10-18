@@ -1,0 +1,43 @@
+/* Shared Evidence UA header: the approved home brand on every page. */
+body header.eua-site-header.eua-site-header,
+body[data-platform-area] header.eua-site-header.eua-site-header{
+  box-sizing:border-box;display:flex!important;flex-direction:row;align-items:center;justify-content:space-between;
+  position:relative;top:auto;width:100%;max-width:none;height:auto;min-height:110px;
+  margin:0;padding:28px max(32px,calc((100% - 1344px)/2));gap:24px;
+  border:0;border-radius:0;background:#041722;box-shadow:none;z-index:40;
+  color:#f5f5ed;font:500 13px/1.4 Inter,system-ui,sans-serif;
+}
+.eua-site-header .eua-header-brand{display:flex;align-items:center;gap:12px;flex:none;min-height:44px;color:#f5f5ed;text-decoration:none;white-space:nowrap}
+.eua-site-header .eua-header-emblem{display:grid;place-items:center;flex:none;width:43px;height:43px;border:1px solid #f9e7ad42;border-radius:16px;background:#ffe7a510;color:#ffdc7e;font-size:26px;font-weight:750;box-shadow:inset 0 1px #fff1;transform-origin:center}
+.eua-site-header .eua-header-wordmark{display:grid;gap:4px}
+.eua-site-header .eua-header-wordmark strong{font:800 23px/1.2 Inter,system-ui,sans-serif;letter-spacing:-.7px}
+.eua-site-header .eua-header-wordmark b{color:#ffdc7e}
+.eua-site-header .eua-header-wordmark small{display:block;margin:0;color:#e7d9b5;font:500 9px/1.4 Inter,system-ui,sans-serif;letter-spacing:.06em}
+.eua-site-header .eua-header-links{display:flex;align-items:center;justify-content:flex-end;gap:24px;min-width:0}
+body header.eua-site-header.eua-site-header.eua-site-header nav{display:flex!important;flex-direction:row;align-items:center;flex-wrap:nowrap;gap:22px!important;width:auto;margin:0;padding:0;border:0;background:none;box-shadow:none}
+body header.eua-site-header.eua-site-header.eua-site-header nav a{display:inline-flex;align-items:center;min-height:44px;margin:0;padding:8px 0;border:0;border-radius:0;background:none;box-shadow:none;color:#f5f5ed;font:500 13px/1.4 Inter,system-ui,sans-serif;text-decoration:none;white-space:nowrap}
+body header.eua-site-header.eua-site-header.eua-site-header nav a::after{display:none}
+.eua-site-header nav a:hover,.eua-site-header nav a[aria-current=page]{color:#ffdc7e}
+.eua-site-header .eua-header-about{display:flex;align-items:center;justify-content:space-between;gap:20px;flex:none;min-height:44px;padding:10px 17px;border:1px solid #ffffff45;border-radius:16px;background:#071e254d;color:#f8f1dc;text-decoration:none;white-space:nowrap}
+.eua-site-header .eua-header-toggle{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:10px;border:1px solid #ffffff45;border-radius:12px;background:#071e254d;color:#ffdc7e}
+.eua-site-header .eua-header-toggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8}
+.eua-site-header [hidden]{display:none!important}
+.eua-site-header a:focus-visible,.eua-site-header button:focus-visible{outline:2px solid #ffdc7e;outline-offset:4px}
+@media(max-width:1250px){body header.eua-site-header.eua-site-header.eua-site-header nav{gap:14px!important}.eua-site-header .eua-header-links{gap:16px}}
+@media(max-width:1100px){
+  body header.eua-site-header.eua-site-header,body[data-platform-area] header.eua-site-header.eua-site-header{flex-wrap:wrap;min-height:80px;padding:18px 20px;gap:12px}
+  .eua-site-header .eua-header-brand{margin-right:auto}
+  .eua-site-header .eua-header-emblem{width:39px;height:39px;font-size:24px}
+  .eua-site-header .eua-header-wordmark strong{font-size:21px}
+  .eua-site-header .eua-header-links{width:100%;display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:12px;border:1px solid #ffffff30;border-radius:16px;background:#061d28f5}
+  body header.eua-site-header.eua-site-header.eua-site-header nav{flex-direction:column;align-items:stretch;gap:2px!important;width:100%}
+  body header.eua-site-header.eua-site-header.eua-site-header nav a{padding:10px 12px;min-height:44px}
+  .eua-site-header .eua-header-about{width:100%;box-sizing:border-box}
+}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){.eua-header-brand:hover .eua-header-emblem{animation:eua-header-clockwise .85s cubic-bezier(.4,0,.2,1) 1}}
+@keyframes eua-header-clockwise{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+body[data-platform-area="home"] header.eua-site-header.eua-site-header{background:transparent}
+body[data-platform-area="supplements"] header.eua-site-header.eua-site-header{background:var(--sp-bg,#041722)}
+
+body[data-platform-area="home"] .hero .copy>.eyebrow{display:none}

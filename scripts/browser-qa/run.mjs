@@ -91,6 +91,21 @@ async function exerciseFlow(browser, origin, viewport) {
   check(where, /не знайдено/.test(await page.locator('#ex-count').innerText()), 'no empty-result message');
   await page.fill('#ex-search', '');
   check(where, (await page.locator('.ex-card').count()) === total, 'clearing the search does not restore the list');
+  // Arrangement: grouping adds headings, sorting reorders, neither loses an exercise.
+  await page.selectOption('#ex-view', 'type');
+  check(where, (await page.locator('.ex-group-heading').count()) >= 3, 'grouped view shows no type headings');
+  check(where, (await page.locator('.ex-card').count()) === total, 'grouping changed the number of exercises');
+  check(where, /view=type/.test(page.url()), 'grouped view is not kept in the address');
+  await page.selectOption('#ex-sort', 'title');
+  const names = await page.locator('.ex-card-title a').allInnerTexts();
+  check(where, names.length === total, 'sorting changed the number of exercises');
+  await page.selectOption('#ex-view', '');
+  await page.selectOption('#ex-sort', '');
+  check(where, (await page.locator('.ex-group-heading').count()) === 0, 'plain view still shows group headings');
+  if (viewport.width <= 640) {
+    const navHeight = await page.locator('.eua-platform-nav').first().evaluate(node => node.getBoundingClientRect().height);
+    check(where, navHeight < 135, `shared navigation takes ${Math.round(navHeight)}px on a phone`);
+  }
   // Keyboard path into a detail page.
   await page.locator('.ex-card-title a').first().focus();
   await page.keyboard.press('Enter');
@@ -107,6 +122,13 @@ async function exerciseFlow(browser, origin, viewport) {
   await page.keyboard.press('Enter');
   const src = await page.locator('.ex-video iframe').getAttribute('src');
   check(where, /^https:\/\/www\.youtube-nocookie\.com\/embed\/[\w-]{11}/.test(src || ''), `unexpected embed address: ${src}`);
+  // Browsing: previous/next and related exercises lead to another existing detail page.
+  check(where, (await page.locator('.ex-pager').count()) === 1, 'detail has no previous/next navigation');
+  check(where, (await page.locator('.ex-related-list a').count()) >= 1, 'detail lists no related exercises');
+  const before = await page.locator('h1:visible').innerText();
+  await page.locator('.ex-pager-next').click();
+  await page.waitForSelector('.ex-detail');
+  check(where, (await page.locator('h1:visible').innerText()) !== before, 'next exercise did not open another exercise');
   // Old shared links keep working.
   await page.goto(origin + '/exercises.html?e=tyaha-hanteli-v-nahyli');
   await page.waitForSelector('.ex-detail');

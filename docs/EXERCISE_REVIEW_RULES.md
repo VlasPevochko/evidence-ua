@@ -50,3 +50,12 @@ Questions to research first. None is asserted; each needs verified sources, appr
 5. Coordination test: no outcome claim; keep as a self-observation tool, never as a diagnostic screen.
 
 Each candidate becomes a Claim only through section 3. A "no good evidence found" result is a valid, publishable outcome (EvidenceGap).
+
+## 7. Author experience block
+
+Each library entry may carry `authorExperienceUk` in `dist/exercises-data.js`: short statements of the author's practical experience (for example for whom the exercise is used and what the author notices).
+
+- It is shown under its own label "Практичний досвід автора" with the note that it is an observation from practice, not a research result.
+- It is not evidence: it never appears in the "Докази" layer and never replaces a Claim.
+- It must not promise outcomes (treatment, prevention, posture correction, guarantees). A test rejects the most common phrases; the author and reviewer still check the meaning.
+- The block is hidden while the field is empty. The owner supplies the text.

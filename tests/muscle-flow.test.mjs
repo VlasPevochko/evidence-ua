@@ -156,6 +156,7 @@ for(const [file,hash] of Object.entries(pageHashes)){
  // Directory navigation is intentionally extended in v59 and tested separately.
  if(file==='directions.html'||file==='index.html')continue; // Home presentation updated; article integrity is checked in home-entry and first-visit-flow.
  if(file==='movement.html')continue; // Replaced by the approved introductory movement module; geometry and navigation are tested separately. Historical fixture is retained unchanged.
+ if(file==='nutrition-digestion.html')continue; // Replaced 2026-10-18 by the owner-approved 3D «Шлях їжі» module; content and evidence links are tested in food-path.test.mjs. Historical fixture is retained unchanged.
  if(file==='cell-lab.html'||file==='nutrition.html')continue; // Exact retained semantics checked against the independent v69 fixture above.
  let html=fs.readFileSync('dist/'+file,'utf8') .replaceAll('platform-shell.js?v=83','platform-shell.js?v=54').replaceAll('platform-shell.js?v=82','platform-shell.js?v=54').replaceAll('platform-shell.js?v=63','platform-shell.js?v=54').replaceAll('platform-shell.js?v=60','platform-shell.js?v=54').replaceAll('nutrition-lab.js?v=59','nutrition-lab.js?v=55').replaceAll('cell-lab.js?v=59','cell-lab.js?v=56').replaceAll('home-feedback.js?v=60','home-feedback.js?v=57').replaceAll('supplement-backgrounds-v10.webp','supplement-backgrounds-v10.png'); // PNG->WebP asset format change only; pixels/layout reference unchanged
  if(file==='index.html'){

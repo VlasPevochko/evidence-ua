@@ -86,3 +86,100 @@ body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-ch
 }
 @media(prefers-reduced-motion:reduce){.home-directions-picker,.home-directions-picker::backdrop,.home-direction-chevron,body[data-platform-area="home"] .home-picker-cards>.topic-card{transition:none!important}body[data-platform-area="home"] .home-picker-cards>.topic-card:hover,body[data-platform-area="home"] .home-picker-cards>.topic-card:focus-visible{transform:none}}
 [data-area="sleep"]>.home-picker-visual{background-image:url('./home-sleep.svg');background-size:cover;background-color:#10252c}
+
+/* Direction picker v2: a readable editorial catalog, independent of the home card grid. */
+body[data-platform-area="home"] .page .home-directions-picker{
+  width:min(1020px,calc(100% - 40px));padding:30px;
+  border:1px solid #d9c78a69;border-radius:26px;
+  background:radial-gradient(ellipse at 88% 0%,#25505a 0%,transparent 48%),linear-gradient(145deg,#102e38,#071b25 76%);
+  box-shadow:0 34px 120px #000b,0 0 0 1px #ffffff08 inset;
+}
+body[data-platform-area="home"] .home-picker-heading{margin-bottom:23px;align-items:flex-start}
+body[data-platform-area="home"] .home-picker-kicker{font-size:11px;letter-spacing:.16em;margin-bottom:8px}
+body[data-platform-area="home"] .home-picker-heading h2{font-size:clamp(27px,3vw,38px);line-height:1.12;letter-spacing:-.04em;font-weight:750}
+body[data-platform-area="home"] .home-picker-close{border-radius:50%;background:#f7efdc0b;border-color:#e0d2a73b;color:#ffdd92}
+body[data-platform-area="home"] .home-picker-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+body[data-platform-area="home"] .home-picker-cards>.topic-card{
+  display:flex;flex-direction:column;align-items:stretch;min-width:0;min-height:284px;
+  padding:14px;border-radius:18px;border:1px solid #c6d9d32d;
+  background:linear-gradient(160deg,#153641,#0b2430);
+  box-shadow:0 10px 24px #01101940;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease;
+}
+body[data-platform-area="home"] .home-picker-cards>.topic-card:hover,
+body[data-platform-area="home"] .home-picker-cards>.topic-card:focus-visible{
+  transform:translateY(-4px);border-color:#ffda82a6;
+  background:linear-gradient(160deg,#1d4147,#112d33);
+  box-shadow:0 18px 38px #0007,0 0 0 1px #f5ce7d24 inset;
+}
+body[data-platform-area="home"] .home-picker-cards .topic-card .home-picker-visual{
+  order:-1;width:100%;height:140px;flex:none;margin:0 0 14px;
+  border-radius:12px;border:1px solid #ffffff17;
+  box-shadow:0 8px 24px #0004;
+}
+body[data-platform-area="home"] .home-picker-cards .topic-card strong{
+  order:0;min-height:0;margin:0 2px 5px;font-size:18px;font-weight:750;
+  letter-spacing:-.025em;line-height:1.3;color:#fffaf0;
+}
+body[data-platform-area="home"] .home-picker-cards .topic-card small{
+  order:1;margin:0 2px 7px;font-size:11px;line-height:1.4;
+  color:#e8c77e;letter-spacing:.035em;
+}
+body[data-platform-area="home"] .home-picker-description{
+  order:2;display:block;margin:0 2px 14px;min-height:36px;
+  color:#c4d5d5;font-size:12px;line-height:1.55;
+}
+body[data-platform-area="home"] .home-picker-cards .topic-card .topic-state{
+  order:3;margin:auto 2px 0;padding-top:10px;border-top:1px solid #e6e3ce24;
+  color:#ffe0a0;font-size:11px;line-height:1.45;
+}
+body[data-platform-area="home"] .home-picker-note{font-size:12px;line-height:1.6;margin-top:20px}
+body[data-platform-area="home"] .home-picker-cards>.topic-card:focus-visible,
+body[data-platform-area="home"] .home-picker-close:focus-visible{outline:3px solid #ffdc7e;outline-offset:3px}
+@media(max-width:700px){
+  body[data-platform-area="home"] .page .home-directions-picker{
+    width:calc(100% - 20px);max-height:calc(100dvh - 20px);padding:16px;
+    border-radius:20px;
+  }
+  body[data-platform-area="home"] .home-picker-heading{
+    position:sticky;top:-16px;z-index:2;margin:-16px -16px 15px;padding:18px 16px 13px;
+    background:linear-gradient(120deg,#153b43f7,#09242ef7);border-bottom:1px solid #ffffff20;
+  }
+  body[data-platform-area="home"] .home-picker-heading h2{font-size:26px}
+  body[data-platform-area="home"] .home-picker-kicker{font-size:10px}
+  body[data-platform-area="home"] .home-picker-cards{grid-template-columns:minmax(0,1fr);gap:10px}
+  body[data-platform-area="home"] .home-picker-cards>.topic-card,
+  body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd){
+    display:grid;grid-template-columns:104px minmax(0,1fr);
+    grid-template-rows:auto auto 1fr auto;align-items:start;column-gap:13px;
+    min-height:120px;padding:10px;
+  }
+  body[data-platform-area="home"] .home-picker-cards .topic-card .home-picker-visual,
+  body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) .home-picker-visual{
+    grid-column:1;grid-row:1 / 5;order:initial;width:104px;height:100%;min-height:100px;
+    margin:0;border-radius:10px;
+  }
+  body[data-platform-area="home"] .home-picker-cards .topic-card strong,
+  body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) strong{
+    grid-column:2;grid-row:1;margin:0 0 3px;min-height:0;font-size:16px;line-height:1.27;
+  }
+  body[data-platform-area="home"] .home-picker-cards .topic-card small,
+  body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) small{
+    grid-column:2;grid-row:2;margin:0 0 3px;font-size:10px;
+  }
+  body[data-platform-area="home"] .home-picker-description{
+    grid-column:2;grid-row:3;min-height:0;margin:0 0 6px;font-size:11px;line-height:1.4;
+  }
+  body[data-platform-area="home"] .home-picker-cards .topic-card .topic-state,
+  body[data-platform-area="home"] .home-picker-cards>.topic-card:last-child:nth-child(odd) .topic-state{
+    grid-column:2;grid-row:4;margin:0;border:0;padding:0;
+    font-size:10px;line-height:1.4;
+  }
+  body[data-platform-area="home"] .home-picker-note{font-size:11px;margin:14px 3px 4px}
+}
+@media(max-width:360px){
+  body[data-platform-area="home"] .home-picker-cards>.topic-card{
+    grid-template-columns:82px minmax(0,1fr);column-gap:10px;
+  }
+  body[data-platform-area="home"] .home-picker-cards .topic-card .home-picker-visual{width:82px}
+}

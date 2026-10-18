@@ -57,6 +57,7 @@ async function open(browser, origin, viewport, route) {
   return {context, page, seen};
 }
 
+const headerGeometry = new Map();
 async function generic(browser, origin, viewport, file) {
   const where = `${file} @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
@@ -64,6 +65,21 @@ async function generic(browser, origin, viewport, file) {
   check(where, (await page.locator('.eua-site-header').count()) === 1, 'exactly one common header is required');
   check(where, (await page.locator('.eua-header-wordmark small').innerText()).includes('ЗДОРОВ’Я'), 'the common brand tagline is missing');
   check(where, (await page.locator('.eua-site-header nav a').count()) === 7, 'common navigation must contain the same seven destinations');
+  // Compare actual rendered positions, not just common markup: the digestion
+  // page previously lacked a border-box reset and made the same header taller.
+  await page.evaluate(() => document.fonts.ready);
+  const geometry = await page.evaluate(mobile => {
+    const selectors=['.eua-site-header','.eua-header-brand','.eua-header-emblem','.eua-header-wordmark',mobile?'.eua-header-toggle':'.eua-header-links'];
+    return selectors.map(selector=>{
+      const rect=document.querySelector(selector).getBoundingClientRect();
+      return {selector,x:rect.x,y:rect.y,width:rect.width,height:rect.height};
+    });
+  }, viewport.name === 'mobile');
+  const reference=headerGeometry.get(viewport.name);
+  if(!reference)headerGeometry.set(viewport.name,geometry);
+  else for(let i=0;i<geometry.length;i++)for(const axis of ['x','y','width','height']){
+    check(where,Math.abs(geometry[i][axis]-reference[i][axis])<=1,`${geometry[i].selector} ${axis}=${geometry[i][axis]} differs from shared reference ${reference[i][axis]}`);
+  }
   if(viewport.name === 'mobile'){
     const menu=page.locator('.eua-header-links'),toggle=page.locator('.eua-header-toggle');
     check(where, !(await menu.isVisible()), 'common menu must start closed on a phone');

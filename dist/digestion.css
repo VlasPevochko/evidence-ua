@@ -75,3 +75,6 @@ body[data-platform-area="nutrition"]>header a:focus-visible{outline:2px solid #e
  .fp-hint{display:none}
 }
 @media(prefers-reduced-motion:reduce){[data-food-path] *{scroll-behavior:auto!important}}
+
+/* Посилання в блоці «Читати далі»: власний колір замість стандартного синього (контраст 1.6 -> 10.7) */
+.fp-reading a{color:#9be3f4;text-underline-offset:3px}

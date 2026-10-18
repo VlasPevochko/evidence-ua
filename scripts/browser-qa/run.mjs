@@ -170,6 +170,14 @@ async function nutritionFlow(browser, origin, viewport) {
   check(where, Number((await page.locator('#nl-counter').innerText()).match(/\d/)?.[0]) >= 2, 'playback did not advance');
   await play.click();
   check(where, (await play.getAttribute('aria-pressed')) === 'false', 'the second press must pause');
+  // The timeline heading stays; the chart opens on demand and is compact.
+  check(where, !(await page.locator('#chart').isVisible()), 'the timeline chart must be folded by default');
+  const folded = (await page.locator('#nutrient-time').boundingBox()).height;
+  check(where, folded < 260, `folded timeline is too tall (${folded}px)`);
+  await page.locator('.nl-time-fold > summary').click();
+  check(where, (await page.locator('#chart .row').first().isVisible()) && (await page.locator('#chart .row').count()) === 3, 'opening the fold must show the three nutrient rows');
+  check(where, (await page.locator('#nutrient-time').boundingBox()).height < (phone ? 1700 : 1250), 'the open timeline is not compact');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the timeline open');
   // Timeline directly follows the lab, readable on the dark theme.
   const order = await page.evaluate(() => ['nutrition-lab', 'nutrient-time', 'nutrition-evidence'].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
   check(where, order[0] < order[1] && order[1] < order[2], 'timeline must follow the lab and precede the evidence');

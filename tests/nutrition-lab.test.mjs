@@ -58,4 +58,7 @@ assert.equal((html.match(/<header\b/g)||[]).length,1,'The shared shell injects n
 const ctx=t=>`<article><div class="eua-context"><span>Для кого / контекст</span><p>${t}</p></div></article><p></p>`;
 const same=dedupeContext([ctx('A'),ctx('A'),ctx('A')]);assert.equal(same.shared,'A');assert(same.cards.every(c=>!c.includes('eua-context')));
 const mixed=dedupeContext([ctx('A'),ctx('B')]);assert.equal(mixed.shared,null);assert(mixed.cards[0].includes('eua-context'));
+assert(/<details class="nl-fold nl-time-fold"><summary>Відкрити графік<\/summary>/.test(html)&&!/nl-time-fold" open/.test(html),'The timeline chart sits in a collapsed fold under its heading');
+assert(html.indexOf('id="timeline-title"')<html.indexOf('nl-time-fold')&&html.indexOf('nl-time-fold')<html.indexOf('id="chart"'),'Heading stays visible, chart is inside the fold');
+assert(/nl-time-notes/.test(html)&&/nl-time-context/.test(html),'Secondary notes are folded as well');
 console.log('Nutrition Lab: approved wording, linked sources, all eight drawers, real controller events, playback, three routes, fixed luminal micelle, peptide hydrolysis, focus return and retained timeline passed. Browser visual QA not performed.');

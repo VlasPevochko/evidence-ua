@@ -13,7 +13,7 @@ const generated = new Set([
   'evidence/public-text.js', 'evidence/module-composer.js', 'evidence/muscle-fiber-v1.webp',
   'evidence/data.js', 'evidence/ui.js', 'evidence/evidence.css',
   'platform-catalog.js', 'home-catalog.js', 'home-feedback.js', 'platform-materials.js',
-  'platform-tools.js', 'platform-shell.js', 'platform-learning.js', 'directions.js',
+  'platform-tools.js', 'platform-shell.js', 'appearance.js', 'platform-learning.js', 'directions.js',
   'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',

@@ -271,6 +271,40 @@ async function trainerFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function appearanceFlow(browser, origin, viewport) {
+  const where = `appearance @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const html = page.locator('html');
+  check(where, (await html.getAttribute('data-theme')) === null && (await html.getAttribute('data-text')) === null, 'first visit keeps the current dark look');
+  const toggle = page.locator('.eua-appearance-toggle');
+  check(where, (await toggle.count()) === 1 && (await toggle.getAttribute('aria-expanded')) === 'false', 'one appearance button in the header');
+  const tbox = await toggle.boundingBox();
+  check(where, tbox && tbox.width >= 44 && tbox.height >= 44 && tbox.x + tbox.width <= viewport.width + 1, 'the button must be a tap target inside the viewport');
+  await toggle.click();
+  const panel = page.locator('.eua-appearance-panel');
+  check(where, await panel.isVisible(), 'the panel opens');
+  const pbox = await panel.boundingBox();
+  check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the panel must stay inside the viewport');
+  await panel.getByRole('radio', {name: 'Світла'}).click();
+  check(where, (await html.getAttribute('data-theme')) === 'light', 'choosing «Світла» turns the light theme on');
+  await panel.getByRole('radio', {name: 'Більший'}).click();
+  check(where, (await html.getAttribute('data-text')) === 'lg', 'choosing «Більший» enlarges the text');
+  await page.keyboard.press('Escape');
+  check(where, !(await panel.isVisible()) && (await toggle.evaluate(n => n === document.activeElement)), 'Escape closes the panel and returns focus to the button');
+  // The choice survives a reload and is applied before the page is shown.
+  await page.reload({waitUntil: 'load'});
+  check(where, (await html.getAttribute('data-theme')) === 'light' && (await html.getAttribute('data-text')) === 'lg', 'the choice must persist after reload');
+  const nav = await open(browser, origin, viewport, '/nutrition.html');
+  await nav.context.close();
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in light theme with larger text');
+  await page.locator('.eua-appearance-toggle').click();
+  await page.locator('.eua-appearance-panel').getByRole('radio', {name: 'Темна'}).click();
+  await page.locator('.eua-appearance-panel').getByRole('radio', {name: 'Звичайний'}).click();
+  check(where, (await html.getAttribute('data-theme')) === null && (await html.getAttribute('data-text')) === null, 'switching back restores the default look');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'appearance must not raise errors');
+  await context.close();
+}
+
 async function supplementsFlow(browser, origin, viewport) {
   const where = `supplements @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
@@ -608,6 +642,7 @@ try {
   for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
   for (const viewport of viewports) await continueFlow(browser, origin, viewport);
   for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
+  for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

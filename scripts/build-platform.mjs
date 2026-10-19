@@ -90,3 +90,12 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 
 // Home: «Продовжити з місця» (останній відкритий матеріал, лише в браузері відвідувача).
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=90','platform-shell.js?v=91');if(next!==old)fs.writeFileSync(file,next);}
+
+// Вигляд сайту (тема й розмір тексту): модуль, стилі й ранній скрипт у <head> кожної сторінки (без мигання теми).
+fs.copyFileSync('src/platform/appearance.mjs','dist/appearance.js');
+const {earlyScript}=await import('../src/platform/appearance.mjs');
+const appearanceHead=`<link rel="stylesheet" href="./appearance.css?v=1"><script>${earlyScript}</script><script type="module" src="./appearance.js?v=1"></script></head>`;
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');if(old.includes('eua-appearance-v1'))continue;const next=old.replace('</head>',appearanceHead);if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=1','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=2','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=3','appearance.css?v=4');if(next!==old)fs.writeFileSync(file,next);}

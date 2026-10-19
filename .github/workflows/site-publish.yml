@@ -99,7 +99,7 @@ jobs:
 
   deploy-pages:
     name: Deploy to GitHub Pages
-    needs: verify
+    needs: [verify, browser-qa]
     if: vars.PAGES_ENABLED == 'true' && github.repository == 'VlasPevochko/evidence-ua' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10

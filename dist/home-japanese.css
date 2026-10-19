@@ -141,3 +141,34 @@ body[data-platform-area="home"] #categories :is(a,button,input,select,textarea,s
  body[data-platform-area="home"] #categories::after,
  body[data-platform-area="home"] #categories .evidence-guide::before{animation:none!important;transform:none!important}
 }
+
+/* «Твій перший крок»: редакційні рядки замість трьох однакових карток.
+   Розмітка, посилання й ілюстрації card-*.svg лишаються; номери рядків дає CSS-лічильник. */
+body[data-platform-area="home"] #categories .start-choices{display:flex;flex-direction:column;gap:0;margin:30px 0 28px;border-top:1px solid var(--jp-line);counter-reset:choice}
+body[data-platform-area="home"] #categories .start-choices>a{
+ display:grid;grid-template-columns:44px minmax(0,1fr) 168px auto;grid-template-areas:"n t a x" "n q a x";
+ align-items:center;column-gap:22px;row-gap:4px;min-height:0;padding:20px 8px;
+ border:0;border-bottom:1px solid var(--jp-line);border-radius:0;background:transparent;
+}
+body[data-platform-area="home"] #categories .start-choices>a::before{
+ counter-increment:choice;content:counter(choice,decimal-leading-zero);grid-area:n;align-self:start;
+ padding-top:8px;font:500 14px/1 var(--jp-serif);color:var(--jp-accent);
+}
+body[data-platform-area="home"] #categories .start-choices>a:hover,
+body[data-platform-area="home"] #categories .start-choices>a:focus-visible{background:var(--jp-surface);border-color:transparent;border-bottom-color:var(--jp-line)}
+body[data-platform-area="home"] #categories .start-choices .choice-art{grid-area:a;width:168px;height:auto;aspect-ratio:360/176;margin:0;border-radius:8px;outline-offset:2px}
+body[data-platform-area="home"] #categories .start-choices strong{grid-area:t;align-self:end;font-size:clamp(24px,2.6vw,32px);line-height:1.1}
+body[data-platform-area="home"] #categories .start-choices .choice-question{grid-area:q;align-self:start;font-size:16px}
+body[data-platform-area="home"] #categories .start-choices .choice-action{grid-area:x;margin:0;padding:0;white-space:nowrap;font-size:13px}
+@media(min-width:1025px) and (prefers-reduced-motion:no-preference){
+ body[data-platform-area="home"] #categories .start-choices>a{transition:background-color .18s,padding-left .18s}
+ body[data-platform-area="home"] #categories .start-choices>a:hover{padding-left:20px}
+ body[data-platform-area="home"] #categories .start-choices .choice-action{display:inline-block;transition:transform .18s}
+ body[data-platform-area="home"] #categories .start-choices>a:hover .choice-action{transform:translateX(4px)}
+}
+@media(max-width:720px){
+ body[data-platform-area="home"] #categories .start-choices>a{grid-template-columns:30px minmax(0,1fr) 96px;grid-template-areas:"n t a" "n q a" "n x x";column-gap:14px;padding:18px 4px}
+ body[data-platform-area="home"] #categories .start-choices .choice-art{width:96px}
+ body[data-platform-area="home"] #categories .start-choices strong{font-size:22px}
+ body[data-platform-area="home"] #categories .start-choices .choice-action{margin-top:6px}
+}

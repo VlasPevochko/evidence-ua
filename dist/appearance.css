@@ -1,0 +1,36 @@
+/* Вигляд сайту: світла тема («розумне інвертування» зберігає відтінки, зображення й 3D лишаються як є) і розмір тексту.
+   Темна тема — це вигляд за замовчуванням, окремих правил для неї нема. */
+html[data-theme="light"]{filter:invert(1) hue-rotate(180deg);background:#0d1916;color-scheme:light}
+html[data-theme="light"] :is(img,video,picture,iframe,svg image){filter:invert(1) hue-rotate(180deg)}
+html[data-theme="light"] :is(.page,body,main)>canvas:not(.home-geo-hero){filter:invert(1) hue-rotate(180deg)}
+html[data-theme="light"] :has(>canvas:not(.home-geo-hero)):not(.page,body,main,html){filter:invert(1) hue-rotate(180deg)}
+html[data-text="lg"]{zoom:1.12}
+html[data-text="xl"]{zoom:1.25}
+@media print{html[data-theme="light"]{filter:none;background:#fff}html[data-text]{zoom:1}}
+
+.eua-appearance{position:relative;order:5;flex:none;display:flex;align-items:center}
+.eua-appearance-toggle{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #ffffff45;border-radius:16px;background:#071e254d;color:#ffdc7e;font:700 17px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.eua-appearance-toggle:hover,.eua-appearance-toggle[aria-expanded="true"]{border-color:#ffdc7e}
+.eua-appearance-toggle:focus-visible,.eua-appearance-panel button:focus-visible{outline:2px solid #ffdc7e;outline-offset:3px}
+.eua-appearance-panel{position:absolute;top:calc(100% + 10px);right:0;z-index:70;width:min(320px,calc(100vw - 32px));padding:14px;border:1px solid #ffffff30;border-radius:16px;background:#061d28;box-shadow:0 14px 40px #00000066;color:#f5f5ed;font:500 14px/1.4 Inter,system-ui,sans-serif}
+.eua-appearance-panel[hidden]{display:none}
+.eua-appearance-group+.eua-appearance-group{margin-top:12px}
+.eua-appearance-group>p{margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#e7d9b5}
+.eua-appearance-group>div{display:flex;flex-wrap:wrap;gap:6px}
+.eua-appearance-panel button{flex:1 1 auto;min-height:44px;padding:8px 12px;border:1px solid #ffffff30;border-radius:12px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.eua-appearance-panel button[aria-checked="true"]{border-color:#ffdc7e;background:#ffdc7e1f;color:#ffdc7e}
+@media(max-width:1100px){
+  .eua-site-header .eua-header-brand{order:0}
+  .eua-appearance{order:1;position:static}
+  .eua-appearance-panel{top:calc(100% + 6px);right:16px}
+  .eua-site-header .eua-header-toggle{order:2}
+  .eua-site-header .eua-header-links{order:3}
+}
+
+/* Збільшений текст звужує робочу ширину (zoom), а точки перелому медіа-запитів лишаються за шириною екрана.
+   Тому там, де макет у два стовпці, вмикаємо вузький вигляд раніше; зайвий зсув убік не залишаємо. */
+html[data-text] body{overflow-x:clip}
+/* Вузькі телефони мають найменший запас по ширині: там «Більший» і «Великий» трохи скромніші. */
+@media(max-width:480px){html[data-text="lg"]{zoom:1.06}html[data-text="xl"]{zoom:1.12}}
+@media(max-width:1560px){html[data-text="xl"] .atlas-workspace{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1380px){html[data-text="lg"] .atlas-workspace{grid-template-columns:minmax(0,1fr)}}

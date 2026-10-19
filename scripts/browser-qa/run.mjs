@@ -507,6 +507,9 @@ async function homeLowerFlow(browser, origin, viewport) {
   const entryLinks=await page.locator('.supplement-entry .se-list a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
   check(where,entryLinks.length===10&&entryLinks.every(h=>h.startsWith('#')),'ten entry chips must link to the existing dossiers');
   check(where,(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth))<=1,'horizontal overflow in the supplement entry');
+  // The three explainer blocks now live inside the folded «Про сайт» group (owner decision 2026-10-19).
+  check(where,!(await page.locator('#home-overview').isVisible()),'the group must start folded');
+  await page.locator('#home-about>summary').click();
   await page.locator('#home-overview>summary').click();
   // Details content expands over 280 ms; wait for actual visibility instead of
   // sampling during the first, clipped animation frame.
@@ -515,6 +518,11 @@ async function homeLowerFlow(browser, origin, viewport) {
   await page.locator('.evidence-guide>details').nth(1).locator('summary').first().click();
   check(where,await visibleAfterDisclosureTransition(page.locator('.guide-example')),'evidence example must open');
   check(where,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'opened home content must not overflow horizontally');
+  // Deep links from other pages (#home-feedback) must open the folded group together with the block.
+  const feedbackPage=await context.newPage();
+  await feedbackPage.goto(page.url().split('#')[0]+'#home-feedback',{waitUntil:'load'});
+  check(where,await feedbackPage.evaluate(()=>document.getElementById('home-about').open&&document.getElementById('home-feedback').open),'#home-feedback must open «Про сайт» and the feedback form');
+  await feedbackPage.close();
   await page.emulateMedia({reducedMotion:'reduce'});
   check(where,await page.locator('#categories').evaluate(e=>getComputedStyle(e,'::before').animationName)==='none','reduced motion must disable shippo movement');
   check(where,seen.pageErrors.length===0&&seen.console.length===0,'home interactions must remain error-free');

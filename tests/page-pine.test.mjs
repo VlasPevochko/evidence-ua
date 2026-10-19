@@ -10,7 +10,7 @@ assert(!/https?:\/\//.test(css.replaceAll('http://www.w3.org/2000/svg','').repla
 assert(css.includes('@font-face'));
 
 // Pages that adopted the theme so far (add a page here when it gets its band).
-const pages={'exercises.html':'yagasuri','atlas.html':'asanoha','directions.html':'kumiko','nutrition.html':'nami','muscle-lab.html':'take'};
+const pages={'exercises.html':'yagasuri','atlas.html':'asanoha','directions.html':'kumiko','nutrition.html':'nami','muscle-lab.html':'take','cell-lab.html':'kikko'};
 const usedMotifs=new Set(['shippo']); // supplements.html has its own band (supplements.css)
 for(const [file,motif] of Object.entries(pages)){
   const html=fs.readFileSync('dist/'+file,'utf8');

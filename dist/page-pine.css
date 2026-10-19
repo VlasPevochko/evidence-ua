@@ -41,3 +41,4 @@ body[data-pine][data-study-ui]{--bg:#0d1211;--panel:#17201e;--line:#364b46;backg
 body[data-pine][data-study-ui] button{background:#162622;border-color:#2f4a43}
 body[data-pine][data-study-ui] button[aria-pressed=true]{background:#e3bd6b;border-color:#f0d08a}
 body[data-pine] .lab-layout{padding-top:0}
+body[data-pine][data-platform-area="cell"] .pb h1::after{width:170px;height:14px;margin:12px 0 0;border-radius:0;background:var(--pine-accent)}

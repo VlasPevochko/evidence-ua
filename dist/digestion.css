@@ -1,16 +1,16 @@
 @import url(./fonts.css?v=1);
 /* «Шлях їжі» — 3D digestive route. Tokens follow the nutrition area (nutrition-lab.css)
    and shared evidence colours (evidence.css). Layout: scene + step panel; stacked on phones. */
-body[data-platform-area="nutrition"]{background:radial-gradient(ellipse at 75% 0,#29251b,transparent 50%),#0d0f12;color:#f4f2ed;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0}
+body[data-platform-area="nutrition"]{background:radial-gradient(ellipse at 75% 0,#1c2825,transparent 50%),#0d1211;color:#f4f2ed;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0}
 /* Page header retained from the previous digestion page. */
 body[data-platform-area="nutrition"]>header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 6vw;border-bottom:1px solid #ffffff15}
 body[data-platform-area="nutrition"]>header a{color:inherit;text-decoration:none}
 body[data-platform-area="nutrition"]>header .brand{font-size:27px;font-weight:800;letter-spacing:-1px}
-body[data-platform-area="nutrition"]>header .brand b{color:#e7bd46}
+body[data-platform-area="nutrition"]>header .brand b{color:#e3bd6b}
 body[data-platform-area="nutrition"]>header .back{font-size:12px;color:#bec6d0}
-body[data-platform-area="nutrition"]>header a:focus-visible{outline:2px solid #e7bd46;outline-offset:4px}
+body[data-platform-area="nutrition"]>header a:focus-visible{outline:2px solid #e3bd6b;outline-offset:4px}
 @media(max-width:760px){body[data-platform-area="nutrition"]>header{padding:20px}body[data-platform-area="nutrition"]>header .brand{font-size:24px}}
-[data-food-path]{--fp-gold:#e7bd46;--fp-blue:#65ddf2;--fp-organ:#5d6b7a;--fp-bolus:#fff1c7;--fp-surface:#171a20;--fp-line:#3c3f45;--fp-text:#f4f2ed;--fp-muted:#b8bdc6;
+[data-food-path]{--fp-gold:#e3bd6b;--fp-blue:#65ddf2;--fp-organ:#5d6b7a;--fp-bolus:#fff1c7;--fp-surface:#17201e;--fp-line:#364b46;--fp-text:#f4f2ed;--fp-muted:#b8bdc6;
  max-width:1320px;margin:0 auto;padding:32px clamp(16px,4vw,32px) 64px;min-width:0;box-sizing:border-box}
 [data-food-path] *{box-sizing:border-box}
 [data-food-path] [hidden]{display:none!important}
@@ -20,7 +20,7 @@ body[data-platform-area="nutrition"]>header a:focus-visible{outline:2px solid #e
 .fp-intro{max-width:760px;color:#c6cad1;font-size:18px;line-height:1.7;margin:0 0 28px}
 
 .fp-explorer{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);min-height:620px;height:min(78vh,820px);border:1px solid var(--fp-line);border-radius:20px;overflow:hidden;background:var(--fp-surface)}
-.fp-stage{position:relative;min-width:0;min-height:0;outline:none;background:radial-gradient(ellipse at 50% 40%,#1b2028,#101317 70%)}
+.fp-stage{position:relative;min-width:0;min-height:0;outline:none;background:radial-gradient(ellipse at 50% 40%,#1c2724,#101715 70%)}
 .fp-stage:focus-visible{box-shadow:inset 0 0 0 3px #8bdefb}
 .fp-stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
 .fp-status{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--fp-muted);font-size:14px;line-height:1.6}
@@ -30,7 +30,7 @@ body[data-platform-area="nutrition"]>header a:focus-visible{outline:2px solid #e
 .fp-legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .fp-legend .fp-key-focus{background:var(--fp-gold)}.fp-legend .fp-key-context{background:var(--fp-blue)}.fp-legend .fp-key-bolus{background:var(--fp-bolus)}
 
-.fp-panel{min-width:0;min-height:0;display:flex;flex-direction:column;border-left:1px solid var(--fp-line);background:#13161b}
+.fp-panel{min-width:0;min-height:0;display:flex;flex-direction:column;border-left:1px solid var(--fp-line);background:#131b19}
 .fp-rail{list-style:none;margin:0;padding:16px 18px 10px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
 .fp-rail button{width:100%;min-height:44px;border:0;background:none;color:var(--fp-muted);font:600 12px/1 Inter,system-ui,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:8px;padding:0}
 .fp-rail button::before{content:"";display:block;width:100%;height:3px;border-radius:2px;background:var(--fp-line)}
@@ -51,10 +51,10 @@ body[data-platform-area="nutrition"]>header a:focus-visible{outline:2px solid #e
 .fp-step .eua-statement{font-size:16px;color:#eeeae1;line-height:1.6;margin:4px 0 12px}
 .fp-step .eua-claim p{font-size:14px;line-height:1.65;color:#c7cece}
 .fp-zoom{align-self:flex-start;display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border:1px solid var(--fp-gold);border-radius:10px;color:var(--fp-gold);text-decoration:none;font-weight:600;font-size:14px}
-.fp-zoom:hover{background:#29251b}
+.fp-zoom:hover{background:#1c2825}
 .fp-nav{display:flex;gap:8px;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--fp-line)}
-.fp-nav button{flex:1;min-height:46px;border-radius:10px;font:600 15px Inter,system-ui,sans-serif;cursor:pointer;border:1px solid var(--fp-line);background:#1b1f26;color:var(--fp-text)}
-.fp-nav [data-fp-next]{background:var(--fp-gold);border-color:var(--fp-gold);color:#15130c}
+.fp-nav button{flex:1;min-height:46px;border-radius:10px;font:600 15px Inter,system-ui,sans-serif;cursor:pointer;border:1px solid var(--fp-line);background:#1b2623;color:var(--fp-text)}
+.fp-nav [data-fp-next]{background:var(--fp-gold);border-color:var(--fp-gold);color:#0d1412}
 .fp-nav button:disabled{opacity:.4;cursor:default}
 .fp-nav button:focus-visible{outline:3px solid #8bdefb;outline-offset:2px}
 

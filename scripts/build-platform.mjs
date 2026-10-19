@@ -75,3 +75,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 
 // The tools block folds into the one-line disclosure on the Atlas and Exercises pages too (pine theme rollout).
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=85','platform-shell.js?v=86');if(next!==old)fs.writeFileSync(file,next);}
+
+// Every page with the pine theme (data-pine) folds the tools line, whatever its area.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=86','platform-shell.js?v=87');if(next!==old)fs.writeFileSync(file,next);}

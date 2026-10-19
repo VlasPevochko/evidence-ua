@@ -33,3 +33,5 @@ body[data-pine] .eua-platform-nav a{color:#c9ddd2}
 body[data-pine] .eua-platform-nav summary{color:var(--pine-muted)}
 body[data-pine] .eua-platform-nav a[aria-current=page]{background:#1b3029;border-color:var(--pine-ink)}
 body[data-pine] .eua-platform-nav .eua-atlas-link,body[data-pine] .eua-platform-nav .eua-exercises-link{background:#1a2b25;border:1px solid #4f7a69;color:#e3bd6b}
+body[data-pine] .eua-site-header nav a svg{stroke:#9fc2b2}
+body[data-pine] .eua-site-header nav a[aria-current=page] svg{stroke:#e3bd6b}

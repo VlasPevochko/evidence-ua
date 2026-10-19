@@ -501,10 +501,12 @@ async function homeLowerFlow(browser, origin, viewport) {
     check(where,fragment.pointer==='none'&&fragment.opacity>0&&fragment.opacity<=.35,'decorations must stay quiet and noninteractive');
     check(where,fragment.width<=viewport.width*.7,'shippo must be fragmented, not a full-width stripe');
   }
-  await page.locator('#supplement-search').fill('креатин');
-  check(where,await page.locator('#supplement-carousel .preview-tile:visible').count()===1,'home supplement search must still filter');
-  await page.locator('#supplement-search').fill('');
-  check(where,await page.locator('#supplement-carousel .preview-tile:visible').count()===10,'clearing search must restore all ten previews');
+  // The carousel is gone: one short entry leads to the catalogue and to every existing dossier.
+  check(where,await page.locator('#supplement-carousel, .supplement-rail, #supplement-search').count()===0,'the retired supplement carousel is back on the home page');
+  check(where,(await page.locator('.supplement-entry .se-cta').getAttribute('href'))==='./supplements.html','the entry must lead to the catalogue');
+  const entryLinks=await page.locator('.supplement-entry .se-list a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
+  check(where,entryLinks.length===10&&entryLinks.every(h=>h.startsWith('#')),'ten entry chips must link to the existing dossiers');
+  check(where,(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth))<=1,'horizontal overflow in the supplement entry');
   await page.locator('#home-overview>summary').click();
   // Details content expands over 280 ms; wait for actual visibility instead of
   // sampling during the first, clipped animation frame.

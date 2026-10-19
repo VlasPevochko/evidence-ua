@@ -35,7 +35,7 @@
   document.querySelector('.supplement-heading').id = 'supplement-library';
   document.querySelector('.copy .cta').href = '#start-here';
   nav.querySelector('a').href = '#start-here';
-  const carousel = document.querySelector('.supplement-carousel-shell');
+  const carousel = document.querySelector('.supplement-entry');
   const mobile = matchMedia('(max-width:1024px)');
   const guide = document.createElement('section');
   guide.className = 'evidence-guide';

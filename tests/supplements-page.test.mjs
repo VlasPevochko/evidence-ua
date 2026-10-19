@@ -4,18 +4,28 @@ import {supplements,groups,filterSupplements,renderRow} from '../dist/supplement
 
 const html=fs.readFileSync('dist/supplements.html','utf8'),css=fs.readFileSync('dist/supplements.css','utf8'),home=fs.readFileSync('dist/index.html','utf8');
 
-// The catalogue repeats the home library texts word for word; science is not rewritten here.
-const tiles=[...home.matchAll(/<a class="supplement-tile preview-tile" href="#([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)];
-assert.equal(tiles.length,10);
+// The catalogue repeats the wording of the former home carousel word for word (frozen; captured from it
+// before the carousel was retired on 2026-10-19). Science is not rewritten here.
+const frozen=[
+  {"id": "creatine", "tag": "Сила · безжирова маса", "summary": "Силові тренування та повторні інтенсивні зусилля — найкраще вивчені напрями.", "limit": "Безжирова маса включає воду; результат не гарантований."},
+  {"id": "supplement-protein", "tag": "Білок · гіпертрофія", "summary": "У розборі — роль білка в адаптації до силових тренувань.", "limit": "Важливий загальний білок у раціоні, а не лише добавка."},
+  {"id": "supplement-caffeine", "tag": "Працездатність · сон", "summary": "Може покращувати окремі показники спортивної працездатності.", "limit": "Враховуй індивідуальну реакцію та вплив на сон."},
+  {"id": "supplement-omega", "tag": "EPA · DHA", "summary": "Розглядаємо серцево-судинні результати окремо для різних показань.", "limit": "Ефект залежить від складу, дози та досліджуваної групи."},
+  {"id": "supplement-vitd", "tag": "Кістки · дефіцит", "summary": "У розборі — кісткове здоров’я та межі користі додаткового прийому.", "limit": "Не переносимо висновки для дефіциту на всіх людей."},
+  {"id": "supplement-magnesium", "tag": "Мінерал · дефіцит", "summary": "Необхідний для нервової та м’язової функції; важливе достатнє споживання.", "limit": "Фізіологічна роль не доводить користь додаткової дози для кожного."},
+  {"id": "supplement-collagen", "tag": "Сухожилля · навантаження", "summary": "Досліджують як доповнення до тренувань для опорно-рухового апарату.", "limit": "Для багатьох результатів певність доказів низька або дуже низька."},
+  {"id": "supplement-beta-alanine", "tag": "Карнозин · інтенсивність", "summary": "Може допомагати в окремих видах інтенсивної роботи після регулярного прийому.", "limit": "Ефект залежить від тривалості та типу зусилля."},
+  {"id": "supplement-citrulline", "tag": "Зусилля · відновлення", "summary": "Досліджують вплив на сприйняття навантаження та біль після тренування.", "limit": "Зміна самопочуття не означає доведений приріст м’язів."},
+  {"id": "supplement-electrolytes", "tag": "Гідратація · потовиділення", "summary": "Відновлення рідини й натрію залежить від тривалості, спеки та втрат із потом.", "limit": "Спортивний напій не усуває ризик надмірного пиття."}
+];
 assert.equal(supplements.length,10);
-const text=(body,pattern)=>body.match(pattern)[1].replace(/<[^>]+>/g,'').trim();
-tiles.forEach(([,id,body],index)=>{
+frozen.forEach((original,index)=>{
   const item=supplements[index];
-  assert.equal(item.id,id,`Same order as the home library: ${id}`);
-  assert.equal(item.tag,text(body,/<em>([\s\S]*?)<\/em>/));
-  assert.equal(item.summary,text(body,/class="preview-summary">([\s\S]*?)<\/p>/));
-  assert.equal(item.limit,text(body,/class="preview-limit">[\s\S]*?<\/span>([\s\S]*?)<\/p>/));
-  assert(home.includes(`id="${id}"`),`The dossier ${id} exists on the home page`);
+  assert.equal(item.id,original.id,`Same order as before: ${original.id}`);
+  assert.equal(item.tag,original.tag);
+  assert.equal(item.summary,original.summary);
+  assert.equal(item.limit,original.limit);
+  assert(home.includes(`id="${original.id}"`),`The dossier ${original.id} exists on the home page`);
   assert.equal(item.x,(index%5)*25);assert.equal(item.y,Math.floor(index/5)*100);
 });
 assert.equal(new Set(supplements.map(s=>s.id)).size,10);

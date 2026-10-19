@@ -53,3 +53,11 @@ body[data-pine]>section.pb,body[data-pine]>.pb{max-width:none;width:100%;margin:
 body[data-pine] .intro{display:block}
 body[data-pine] .intro>figure{max-width:420px;margin:28px 0 0}
 body[data-pine] .pb-byline{margin-top:8px;font-size:14px}
+/* Compact tools row on phones: Атлас, Вправи and the tools sit in one scrolling line instead of two stacked rows. */
+@media (max-width:760px){
+ body[data-pine][data-study-ui]>.eua-platform-nav,body[data-pine][data-pine-tools]>.eua-platform-nav{display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:6px;overflow-x:auto;scrollbar-width:none}
+ body[data-pine][data-study-ui]>.eua-platform-nav .eua-tools,body[data-pine][data-pine-tools]>.eua-platform-nav .eua-tools{display:contents}
+ body[data-pine][data-study-ui]>.eua-platform-nav>*,body[data-pine][data-pine-tools]>.eua-platform-nav>*,body[data-pine][data-pine-tools]>.eua-platform-nav .eua-tools>*{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal;min-width:max-content}
+}
+/* Cell Lab: the intro card uses the same surface as the cards inside it. */
+body[data-pine][data-platform-area="cell"] .intro{background:#142520;border-color:#26403a}

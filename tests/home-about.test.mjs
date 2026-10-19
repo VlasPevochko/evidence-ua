@@ -14,5 +14,5 @@ assert(js.includes('MutationObserver')&&js.includes('hashchange'),'The group ope
 assert(/min-height:60px/.test(css)&&!/https?:\/\//.test(css+js),'Touch target and no third-party requests');
 // The share tool is mounted inside the group by the shell, so no loose button remains under the cards.
 const shell=fs.readFileSync('dist/platform-shell.js','utf8');
-assert(shell.includes(".home-about-body")&&html.includes('platform-shell.js?v=90'),'The shell mounts the home tools inside the folded group');
+assert(shell.includes(".home-about-body")&&html.includes('platform-shell.js?v=91'),'The shell mounts the home tools inside the folded group');
 console.log('Home «Про сайт» group: folded, ids kept, status note visible, auto-opens for nested anchors passed.');

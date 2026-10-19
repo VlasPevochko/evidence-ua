@@ -1,0 +1,36 @@
+/* Тренажер «Перевір твердження» у блоці «Як читати докази»: сосновий вигляд, одна картка за раз. */
+.eua-trainer{margin:22px 0 8px;padding:22px 24px;border:1px solid var(--jp-accent,#e3bd6b);border-radius:16px;background:var(--jp-surface,#142520);color:var(--jp-text,#e9efe9)}
+.eua-trainer-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin:0 0 12px}
+.eua-trainer h3{margin:0;font:700 22px/1.25 var(--jp-serif,Georgia,serif);letter-spacing:-.01em}
+.eua-trainer-progress{margin:0;font-size:14px;color:var(--jp-accent,#e3bd6b);font-weight:600}
+.eua-trainer-claim{margin:0 0 10px;font:700 19px/1.3 var(--jp-serif,Georgia,serif)}
+.eua-trainer-facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;list-style:none}
+.eua-trainer-facts li{padding:6px 12px;border:1px solid var(--jp-line,#26403a);border-radius:20px;background:var(--jp-bg,#0d1916);font-size:14px;line-height:1.4;color:var(--jp-muted,#9db1a7)}
+.eua-trainer-question{margin:0 0 10px;font-size:17px;line-height:1.5;font-weight:600}
+.eua-trainer-options{display:grid;gap:10px}
+.eua-trainer-option{display:block;width:100%;min-height:56px;padding:14px 16px;text-align:left;font:inherit;font-size:16px;line-height:1.5;color:var(--jp-text,#e9efe9);background:var(--jp-bg,#0d1916);border:1px solid var(--jp-line,#26403a);border-radius:14px;cursor:pointer}
+.eua-trainer-option:hover:not(:disabled){border-color:var(--jp-accent,#e3bd6b)}
+.eua-trainer-option:focus-visible,.eua-trainer-btn:focus-visible,.eua-trainer-source:focus-visible{outline:2px solid var(--jp-accent,#e3bd6b);outline-offset:3px}
+.eua-trainer-option:disabled{cursor:default;opacity:1}
+.eua-trainer-option.is-correct{border-color:var(--jp-accent,#e3bd6b);background:#1b2e24}
+.eua-trainer-option.is-wrong{border-style:dashed;border-color:#b98a6b}
+.eua-trainer-option{display:flex;gap:12px;align-items:flex-start}
+.eua-trainer-letter{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--jp-line,#26403a);border-radius:50%;font-size:14px;font-weight:700;color:var(--jp-accent,#e3bd6b)}
+.eua-trainer-text{flex:1;min-width:0}
+.eua-trainer-mark{display:inline-block;margin:0 10px 4px 0;padding:2px 10px;border-radius:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;background:var(--jp-accent,#e3bd6b);color:#1b1608}
+.is-wrong .eua-trainer-mark{background:#b98a6b}
+.eua-trainer-feedback{margin-top:14px}
+.eua-trainer-feedback:empty{display:none}
+.eua-trainer-verdict{margin:0 0 8px;font-weight:700;font-size:17px}
+.eua-trainer-why strong{color:var(--jp-text,#e9efe9)}
+.eua-trainer-why{margin:0 0 8px;padding-left:12px;border-left:2px solid var(--jp-line,#26403a);font-size:15px;line-height:1.6;color:var(--jp-muted,#9db1a7)}
+.eua-trainer-why.is-correct{border-left-color:var(--jp-accent,#e3bd6b);color:var(--jp-text,#e9efe9)}
+.eua-trainer-source{display:inline-block;margin:4px 0 12px;font-size:14px;color:var(--jp-accent,#e3bd6b)}
+.eua-trainer-btn{display:inline-flex;align-items:center;min-height:48px;padding:0 24px;font:inherit;font-weight:700;color:#1b1608;background:var(--jp-accent,#e3bd6b);border:0;border-radius:30px;cursor:pointer}
+.eua-trainer-btn:hover{filter:brightness(1.06)}
+.eua-trainer-feedback .eua-trainer-btn{display:flex}
+.eua-trainer-done p{margin:0 0 14px;font-size:17px;line-height:1.6}
+.eua-trainer-note{margin:16px 0 0;font-size:13px;line-height:1.6;color:var(--jp-muted,#9db1a7)}
+.eua-trainer [tabindex="-1"]:focus{outline:none}
+@media(max-width:600px){.eua-trainer{padding:18px 14px}.eua-trainer h3{font-size:20px}.eua-trainer-btn{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:no-preference){.eua-trainer-feedback{animation:eua-trainer-in .25s ease-out}@keyframes eua-trainer-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}}

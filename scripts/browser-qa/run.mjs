@@ -240,6 +240,37 @@ async function continueFlow(browser, origin, viewport) {
   await first.context.close();
 }
 
+async function trainerFlow(browser, origin, viewport) {
+  const where = `trainer @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const trainer = page.locator('.evidence-guide .eua-trainer');
+  await trainer.waitFor({state: 'attached'});
+  await trainer.scrollIntoViewIfNeeded();
+  check(where, (await trainer.locator('.eua-trainer-option').count()) === 3, 'a card offers three readings');
+  // Wrong answer first: it must be explained, not just marked.
+  const options = trainer.locator('.eua-trainer-option');
+  // On the first card the right reading is the second one, so the first option is a wrong answer.
+  await options.nth(0).click();
+  check(where, (await trainer.locator('.eua-trainer-why').count()) === 3, 'every reading is explained after an answer');
+  check(where, (await trainer.locator('.eua-trainer-mark').count()) === 2, 'the right and the chosen option carry a text mark, not only colour');
+  check(where, (await options.evaluateAll(nodes => nodes.every(n => n.disabled))), 'options lock after an answer');
+  const link = trainer.locator('.eua-trainer-source');
+  check(where, (await link.getAttribute('href')).startsWith('https://pubmed.ncbi.nlm.nih.gov/') && (await link.getAttribute('rel')).includes('noopener'), 'the source is a safe PubMed link');
+  for (let i = 0; i < 3; i++) {
+    const next = trainer.locator('.eua-trainer-feedback .eua-trainer-btn');
+    check(where, await next.isVisible(), 'the next button must be reachable');
+    const box = await next.boundingBox();
+    check(where, box && box.height >= 44 && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'next button must be a tap target inside the viewport');
+    await next.click();
+    if (i < 2) await trainer.locator('.eua-trainer-option').first().click();
+  }
+  check(where, (await trainer.locator('.eua-trainer-done').count()) === 1, 'finishing shows the closing note');
+  check(where, (await trainer.locator('.eua-trainer-note').innerText()).includes('не порада приймати добавки'), 'the safety note stays visible');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the trainer');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the trainer must not raise errors');
+  await context.close();
+}
+
 async function supplementsFlow(browser, origin, viewport) {
   const where = `supplements @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
@@ -576,6 +607,7 @@ try {
   for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
   for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
   for (const viewport of viewports) await continueFlow(browser, origin, viewport);
+  for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

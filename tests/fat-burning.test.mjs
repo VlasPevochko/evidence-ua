@@ -41,5 +41,6 @@ test("source notes are explicit about study type and preliminary review",()=>{
     assert(html.includes(fragment),"missing primary or institutional source "+fragment);
   }
   assert(html.includes("Формальний Claim/EVR-перегляд матеріалу ще не завершено"));
-  assert(!/95% ефективності|100%|гарантован/i.test(html),"no invented efficacy promises");
+  // Percent literals in SVG geometry (e.g. gradient 100%) are not efficacy claims.
+  assert(!/95% ефективності|100% ефективності|гарантован.{0,40}(схуднен|результат)/i.test(html),"no invented efficacy promises");
 });

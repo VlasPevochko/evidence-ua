@@ -84,3 +84,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 
 // Pages that keep their own compact tools row opt out of the fold with data-pine-tools (Muscle Lab).
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=88','platform-shell.js?v=89');if(next!==old)fs.writeFileSync(file,next);}
+
+// Home: the share tool joins the folded «Про сайт» group (owner decision 2026-10-19), so the shell mounts it there.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=89','platform-shell.js?v=90');if(next!==old)fs.writeFileSync(file,next);}

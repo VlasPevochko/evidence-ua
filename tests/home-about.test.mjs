@@ -9,7 +9,10 @@ assert(!/<details class="home-about"[^>]*\sopen/.test(html),'The group starts fo
 for(const id of ['home-learning-paths','home-overview','home-feedback'])assert(group[1].includes(`id="${id}"`),`${id} stays inside the group with its id`);
 const status='Статус наукового перегляду та межі пояснення вказано в кожному матеріалі.';
 assert(html.includes(`<p class="start-status">${status}</p>`)&&!group[1].includes('start-status'),'The science status note stays visible outside the fold');
-assert(html.includes('home-about.css?v=3')&&html.includes('home-about.js?v='),'Styles and script are wired');
+assert(html.includes('home-about.css?v=4')&&html.includes('home-about.js?v='),'Styles and script are wired');
 assert(js.includes('MutationObserver')&&js.includes('hashchange'),'The group opens when a nested block is opened by script or by an anchor');
 assert(/min-height:60px/.test(css)&&!/https?:\/\//.test(css+js),'Touch target and no third-party requests');
+// The share tool is mounted inside the group by the shell, so no loose button remains under the cards.
+const shell=fs.readFileSync('dist/platform-shell.js','utf8');
+assert(shell.includes(".home-about-body")&&html.includes('platform-shell.js?v=90'),'The shell mounts the home tools inside the folded group');
 console.log('Home «Про сайт» group: folded, ids kept, status note visible, auto-opens for nested anchors passed.');

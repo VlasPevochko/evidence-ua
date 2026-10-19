@@ -14,3 +14,6 @@ body[data-platform-area="home"] .home-about-body>#home-feedback>summary{display:
 body[data-platform-area="home"] .home-about-body>#home-feedback>summary::-webkit-details-marker{display:none}
 body[data-platform-area="home"] .home-about-body>#home-feedback>summary::after{content:'⌄';flex:none;font-size:20px;color:var(--jp-accent,#e3bd6b);transition:transform .24s}
 body[data-platform-area="home"] .home-about-body>#home-feedback[open]>summary::after{transform:rotate(180deg)}
+/* The share tool lives inside the group now: no divider of its own, one line of text. */
+body[data-platform-area="home"] #start-here .home-about-body>.eua-home-tools{margin:0;padding:0;border:0}
+body[data-platform-area="home"] #start-here .home-about-body .eua-tools button{white-space:nowrap}

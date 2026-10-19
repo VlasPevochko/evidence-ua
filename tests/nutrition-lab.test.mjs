@@ -47,7 +47,8 @@ assert.equal(fixture('https://evidence.invalid/nutrition.html?nutrient=unknown&s
 const structureDeep=fixture('https://evidence.invalid/nutrition.html?nutrient=lipids&structure=pept1&step=3');assert.equal(structureDeep.ui.state().routeId,'protein');assert.equal(structureDeep.ui.state().index,1);
 const html=fs.readFileSync('dist/nutrition.html','utf8'),css=fs.readFileSync('dist/nutrition-lab.css','utf8');
 for(const id of ['nutrition-lab','nutrition-evidence','nutrition-sources','nutrient-time','chart','time','play','reset','detail','digestion-panel','digestion-frame'])assert(html.includes(`id="${id}"`));
-assert.equal((html.match(/<h1>/g)||[]).length,1);assert(css.includes('minmax(0,1fr)'));assert(css.includes('prefers-reduced-motion'));assert(css.includes('min-height:44px'));assert(html.includes('nutrition-timeline.js?v=27'));
+// The h1 now carries an id (it sits in the pine title band), so match the tag, not the exact string.
+assert.equal((html.match(/<h1\b/g)||[]).length,1);assert(css.includes('minmax(0,1fr)'));assert(css.includes('prefers-reduced-motion'));assert(css.includes('min-height:44px'));assert(html.includes('nutrition-timeline.js?v=27'));
 // Redesign v72: no depth switch, one play button, one nav, folded evidence, timeline as a section.
 assert(!/data-nl-depth|data-nl-action="(previous|next|reset|pause)"/.test(html),'Retired controls');
 assert.equal((html.match(/data-nl-action="play"/g)||[]).length,1);

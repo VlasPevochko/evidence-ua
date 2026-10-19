@@ -173,6 +173,13 @@ async function nutritionFlow(browser, origin, viewport) {
   check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once');
   check(where, (await page.locator('[data-nl-depth]').count()) === 0, 'the retired depth switcher is back');
   check(where, (await page.locator('.nl-page-nav').count()) === 1, 'expected a single page navigation');
+  // User discovery: the Fat Burning Lab must be prominent within Nutrition, not only in the global catalogue.
+  const featured=page.locator('#nutrition-fat-burning');
+  check(where,await featured.isVisible(),'the Fat Burning Lab entry must be visible without expanding a disclosure');
+  check(where,(await page.locator('.nl-page-nav .nf-nav').getAttribute('href'))==='#nutrition-fat-burning','top menu must point to the featured entry');
+  check(where,(await featured.locator('.nf-open').getAttribute('href'))==='./fat-burning.html','featured CTA must open the Lab directly');
+  check(where,await page.evaluate(()=>{const e=document.querySelector('#nutrition-fat-burning'),d=document.querySelector('#nutrition-diets');return e&&d&&e.getBoundingClientRect().top+scrollY<d.getBoundingClientRect().top+scrollY}),'featured entry must precede diet cards');
+  check(where,(await featured.locator('.nf-open').count())===1,'one clear featured action');
   // Folds are collapsed by default; the shared context paragraph is not repeated per card.
   check(where, (await page.locator('details.nl-fold[open]').count()) === 0, 'evidence folds must start collapsed');
   const routes = page.locator('[data-nl-nutrient]');
@@ -219,7 +226,10 @@ async function nutritionFlow(browser, origin, viewport) {
   }
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
-  check(where, height < (phone ? 8000 : 6500), `page is too long again (${height}px)`);
+  check(where, height < (phone ? 8350 : 6800), `page is too long again (${height}px)`);
+  await featured.locator('.nf-open').click();
+  await page.waitForURL(/\/fat-burning\.html$/);
+  check(where,(await page.locator('#fb-title').innerText()).includes('зникає жир'),'featured link opens the real Fat Burning Lab');
   await context.close();
 }
 

@@ -40,3 +40,7 @@ This **first educational edition** is not a complete systematic review, approved
 2. Outcome-specific comparison of eating patterns, aerobic and resistance training, NEAT, sleep and maintenance.
 3. Study-backed myth cards with graded uncertainty, especially fasted training and spot reduction.
 4. Additional tailored short-form visuals and ethical analytics after explicit owner decisions.
+
+## Visible entry within Nutrition (2026-10-20)
+
+The existing Fat Burning Lab remains at `./fat-burning.html`. A compact featured visual on `nutrition.html` now sits **above the diet catalogue**, with one clear action linking directly to the Lab and a top-of-page local anchor labeled «Жироспалення». Canonical markup is `src/nutrition-fat-burning/entry.mjs`, injected into a bounded marker pair by `scripts/build-nutrition-fat-burning.mjs`; the adjacent educational scientific HTML remains unchanged. Styling is scoped in `dist/nutrition-fat-burning.css`. Test coverage includes builder idempotence, live link, small-screen layout, and browser click-through.

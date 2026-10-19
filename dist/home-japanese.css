@@ -86,6 +86,24 @@ body[data-platform-area="home"] #categories .preview-tile .preview-summary{color
 body[data-platform-area="home"] #categories .preview-tile .preview-limit{border-color:var(--jp-line)}
 body[data-platform-area="home"] #categories :is(.preview-limit span,.preview-tile>b,.supplement-feature-link){color:var(--jp-accent)}
 body[data-platform-area="home"] #categories .preview-tile:hover{background:#192f27;border-color:#658471;box-shadow:none}
+/* Бібліотека добавок на комп’ютері: двоколонковий індекс замість каруселі.
+   Усі 10 досьє видно одразу, текст і межі висновку лишаються на місці; пошук працює як і раніше.
+   На телефоні й планшеті (до 1024 px) лишається карусель. */
+@media(min-width:1025px){
+ body[data-platform-area="home"] #categories :is(.supplement-controls,.supplement-edge-arrow){display:none!important}
+ body[data-platform-area="home"] #categories .supplement-rail{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px;row-gap:0;overflow:visible!important;scroll-snap-type:none;padding:0;border-top:1px solid var(--jp-line)}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile[hidden]{display:none!important}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile{width:auto!important;min-height:0;flex:none;grid-template-columns:56px minmax(0,1fr) auto;grid-template-rows:auto auto auto auto auto;gap:4px 14px;padding:18px 6px;border:0;border-bottom:1px solid var(--jp-line);border-radius:0;background:transparent;scroll-snap-align:none}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile::before{width:56px;height:56px;grid-column:1;grid-row:1/4;align-self:start;border-radius:8px}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile>span{grid-column:2/-1;grid-row:1}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile strong{grid-column:2;grid-row:2;align-self:end;font-size:22px!important}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile em{grid-column:2;grid-row:3;align-self:start}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile>b{grid-column:3;grid-row:2/4;align-self:center;margin:0;white-space:nowrap}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile .preview-summary{grid-column:1/-1;grid-row:4;margin:8px 0 0;font-size:14px}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile .preview-limit{grid-column:1/-1;grid-row:5;margin:2px 0 0;padding:8px 0 0;border-top:0;font-size:13px}
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile:hover,
+ body[data-platform-area="home"] #categories .supplement-rail .preview-tile:focus-visible{background:var(--jp-surface);border-bottom-color:var(--jp-line)}
+}
 body[data-platform-area="home"] #categories .evidence-guide{position:relative;isolation:isolate;padding-top:42px;margin-top:40px;border-color:var(--jp-line);color:var(--jp-text)}
 body[data-platform-area="home"] #categories .evidence-guide>p{color:var(--jp-muted);font-size:16px;max-width:78ch}
 body[data-platform-area="home"] #categories .evidence-guide>details{background:var(--jp-surface);border-color:var(--jp-line);box-shadow:none;margin-top:12px}

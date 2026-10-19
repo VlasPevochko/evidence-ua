@@ -6,6 +6,34 @@ const learningListeners=new WeakMap();
 const atlasLink=current=>`<a class="eua-atlas-link" href="./atlas.html"${current==='atlas'?' aria-current="page"':''}>Атлас</a>`;
 const exercisesLink=current=>`<a class="eua-exercises-link" href="./exercises.html"${current==='practice'?' aria-current="page"':''}>Вправи</a>`;
 const atlasTeaserHTML=()=>`<aside class="eua-atlas-teaser" aria-labelledby="eua-atlas-teaser-title"><div><span>АТЛАС EVIDENCE</span><h2 id="eua-atlas-teaser-title">Досліджуйте людське тіло</h2><p>Анатомія, яку можна звірити з джерелами.</p></div><a href="./atlas.html">Відкрити Атлас →</a></aside>`;
+
+// «Продовжити з місця»: останній відкритий матеріал лишається тільки в цьому браузері (localStorage), нічого не надсилається.
+export const CONTINUE_KEY='eua-continue-v1';
+const CONTINUE_PATH=/^[a-z0-9-]+\.html(\?[A-Za-z0-9=&_%.-]{0,120})?$/;
+const CONTINUE_SKIP=new Set(['index.html','directions.html','supplements.html']);
+export function continueEntry(pathname,search,title,now){
+  const file=String(pathname||'').split('/').pop()||'';const href=file+(search||'');
+  if(!CONTINUE_PATH.test(href)||CONTINUE_SKIP.has(file))return null;
+  const name=String(title||'').replace(/^\s*Evidence UA\s*[—–-]\s*/i,'').replace(/\s*[—–-]\s*Evidence UA\s*$/i,'').trim().slice(0,70);
+  return name?{href,title:name,at:now}:null;
+}
+export function continueFromStorage(raw,now){
+  try{const v=JSON.parse(raw);if(!v||typeof v.href!=='string'||typeof v.title!=='string'||!CONTINUE_PATH.test(v.href)||CONTINUE_SKIP.has(v.href.split('?')[0]))return null;
+    if(!(now-Number(v.at)<90*864e5))return null;return {href:v.href,title:v.title.slice(0,70)};}catch{return null;}
+}
+const continueHTML=entry=>`<a class="eua-continue" href="./${esc(entry.href)}"><span>Продовжити з місця</span><strong>${esc(entry.title)}</strong><b aria-hidden="true">→</b></a>`;
+function rememberVisit(root,selected){
+  const view=root.defaultView;if(!view||selected==='home')return;
+  try{const location=view.location,entry=continueEntry(location.pathname,location.search,root.title,Date.now());if(entry)view.localStorage.setItem(CONTINUE_KEY,JSON.stringify(entry));}catch{}
+}
+function mountContinue(root,start){
+  if(!start||start.querySelector('.eua-continue'))return;
+  let entry=null;try{entry=continueFromStorage(root.defaultView?.localStorage?.getItem(CONTINUE_KEY),Date.now());}catch{}
+  if(!entry)return;
+  const box=root.createElement('div');box.innerHTML=continueHTML(entry);
+  const choices=start.querySelector('.start-choices'),node=box.firstElementChild;
+  if(node&&choices)choices.before(node);
+}
 export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a>${atlasLink(current)}${exercisesLink(current)}<details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}
 export function learningNavigationHTML(location){const {path,index}=location;return `<p><strong>${esc(path.title)}</strong><span>Крок ${index+1} із ${path.steps.length}</span></p><div>${index>0?`<a href="${esc(learningHref(path.id,index-1))}">← Попередній матеріал</a>`:''}${index<path.steps.length-1?`<a href="${esc(learningHref(path.id,index+1))}">Наступний матеріал →</a>`:'<a href="./directions.html#learning-paths">До маршрутів →</a>'}<a href="./index.html#home-learning-paths">Обрати інший маршрут</a></div>`;}
 export function mountPlatformNavigation(root=document){
@@ -31,8 +59,10 @@ export function mountPlatformNavigation(root=document){
   if(selected==='home'){
     const start=root.getElementById('start-here');
     if(start&&!start.querySelector('.eua-home-tools')){const tools=root.createElement('div');tools.className='eua-home-tools';tools.innerHTML=toolsHTML('home');(root.querySelector('.home-about-body')||start).append(tools);}
+    mountContinue(root,start);
     if(start&&!start.querySelector('.eua-atlas-teaser')){const teaser=root.createElement('div');teaser.innerHTML=atlasTeaserHTML();const atlas=teaser.firstElementChild;if(atlas)start.append(atlas);}
   }
+  rememberVisit(root,selected);
   mountQuickTools(root);
   const renderLearning=()=>{
     root.querySelector('.eua-learning-nav')?.remove();

@@ -223,6 +223,23 @@ async function nutritionFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function continueFlow(browser, origin, viewport) {
+  const where = `continue @${viewport.name}`;
+  // A fresh visitor sees no card; after opening a material the home page offers to continue there.
+  const first = await open(browser, origin, viewport, '/index.html');
+  check(where, (await first.page.locator('.eua-continue').count()) === 0, 'a first-time visitor must not see «Продовжити»');
+  await first.page.goto(origin + '/nutrition.html', {waitUntil: 'load'});
+  await first.page.goto(origin + '/index.html', {waitUntil: 'load'});
+  const card = first.page.locator('#start-here .eua-continue');
+  check(where, (await card.count()) === 1, 'home must offer to continue after a material was opened');
+  check(where, (await card.getAttribute('href')).startsWith('./nutrition.html'), 'the card must lead back to the last material (Nutrition keeps its own step in the URL)');
+  check(where, !/Evidence UA/.test(await card.locator('strong').innerText()), 'the card names the material without the site suffix');
+  const box = await card.boundingBox();
+  check(where, box && box.height >= 44 && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the card must be a comfortable tap target inside the viewport');
+  check(where, (await first.page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the continue card');
+  await first.context.close();
+}
+
 async function supplementsFlow(browser, origin, viewport) {
   const where = `supplements @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
@@ -558,6 +575,7 @@ try {
   for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
   for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
   for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await continueFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

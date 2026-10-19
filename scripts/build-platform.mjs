@@ -87,3 +87,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 
 // Home: the share tool joins the folded «Про сайт» group (owner decision 2026-10-19), so the shell mounts it there.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=89','platform-shell.js?v=90');if(next!==old)fs.writeFileSync(file,next);}
+
+// Home: «Продовжити з місця» (останній відкритий матеріал, лише в браузері відвідувача).
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=90','platform-shell.js?v=91');if(next!==old)fs.writeFileSync(file,next);}

@@ -44,7 +44,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{ou
 .ex-video-play{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;border:0;background:radial-gradient(circle at 50% 40%,#1f4038,#08110f);color:var(--atlas-text);cursor:pointer}
 .ex-video-icon{display:grid;place-items:center;width:68px;height:68px;border:2px solid var(--atlas-cyan);border-radius:50%;color:var(--atlas-cyan);font-size:26px;padding-left:4px}
 .ex-video-label{font-size:16px;font-weight:700}
-.ex-video-title{max-width:80%;color:#e3bd6b;font-size:18px;font-weight:700;text-align:center}
+.ex-video-title{max-width:80%;color:#eaf4ef;font-size:18px;font-weight:700;text-align:center}
 .ex-video-hint{max-width:84%;color:#a8bbb2;font-size:12px;text-align:center;line-height:1.4}
 .ex-media-note{margin:0;color:var(--atlas-muted);font-size:13px;line-height:1.5}
 .ex-media-note a{color:var(--atlas-cyan)}
@@ -55,7 +55,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{ou
 .ex-layer{margin:0 0 6px;color:var(--atlas-muted);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 .ex-section[data-layer=coaching]{border-left:3px solid var(--atlas-amber)}
 .ex-section[data-layer=safety]{border-left:3px solid #ff7a59}
-.ex-section[data-layer=experience]{border-left:3px solid #e3bd6b}
+.ex-section[data-layer=experience]{border-left:3px solid #bfdcce}
 .ex-section[data-layer=evidence]{border-left:3px solid var(--atlas-blue)}
 .ex-section[data-layer=facts]{border-left:3px solid var(--atlas-cyan)}
 .ex-list{margin:0;padding-left:20px;line-height:1.6}

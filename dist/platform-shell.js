@@ -25,7 +25,7 @@ export function mountPlatformNavigation(root=document){
   const headers=[...root.querySelectorAll('header')].filter(h=>selected!=='home'&&!supplementCatalogue&&!h.closest('dialog'));
   const targets=[...headers.map(header=>({element:header,current:selected})),...catalog.getArea('supplements').units.filter(u=>u.id!=='atp-pcr').map(u=>({element:root.getElementById(u.id==='creatine'?'creatine':'supplement-'+u.id),current:'supplements',prepend:true})).filter(t=>t.element)];
   for(const target of targets){if(target.prepend&&target.element.querySelector(':scope > .eua-platform-nav'))continue;if(!target.prepend&&target.element.nextElementSibling?.classList.contains('eua-platform-nav'))continue;
-    const nav=root.createElement('nav');nav.className='eua-platform-nav';nav.setAttribute('aria-label','Напрями платформи');const contents=navigationHTML(target.current)+toolsHTML(target.current);nav.innerHTML=['movement','sleep','practice','atlas'].includes(target.current)?'<details class="eua-module-menu"><summary>Навігація й інструменти</summary><div class="eua-module-menu-content">'+contents+'</div></details>':contents;
+    const nav=root.createElement('nav');nav.className='eua-platform-nav';nav.setAttribute('aria-label','Напрями платформи');const contents=navigationHTML(target.current)+toolsHTML(target.current);nav.innerHTML=(['movement','sleep','practice','atlas'].includes(target.current)||root.body.dataset.pine!==undefined)?'<details class="eua-module-menu"><summary>Навігація й інструменти</summary><div class="eua-module-menu-content">'+contents+'</div></details>':contents;
     if(target.prepend)target.element.prepend(nav);else target.element.after(nav);
   }
   if(selected==='home'){

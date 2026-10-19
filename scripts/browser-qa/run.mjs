@@ -268,7 +268,7 @@ async function supplementsFlow(browser, origin, viewport) {
 
 async function pineFlow(browser, origin, viewport) {
   // Pages that adopted the pine theme: patterned band, serif heading, folded tools line, no overflow, motif visible.
-  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['atlas.html', 'asanoha'], ['directions.html', 'kumiko'], ['nutrition.html', 'nami']]) {
+  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['atlas.html', 'asanoha'], ['directions.html', 'kumiko'], ['nutrition.html', 'nami'], ['muscle-lab.html', 'take']]) {
     const where = `pine ${file} @${viewport.name}`;
     const {context, page} = await open(browser, origin, viewport, '/' + file);
     await page.waitForSelector('.pb h1');
@@ -277,7 +277,7 @@ async function pineFlow(browser, origin, viewport) {
     const band = await page.locator('.pb').boundingBox();
     check(where, band && Math.abs(band.width - viewport.width) <= 1, `the band must span the full width (${band && band.width})`);
     check(where, (await page.locator('.pb').evaluate(n => getComputedStyle(n, '::before').backgroundImage)).includes('data:image/svg+xml'), 'the motif is not drawn');
-    const toolsLines = (await page.locator('body[data-study-ui]').count()) ? 0 : await page.locator('body > .eua-platform-nav').count();
+    const toolsLines = (await page.locator('body[data-study-ui], body[data-pine-tools]').count()) ? 0 : await page.locator('body > .eua-platform-nav').count();
     check(where, toolsLines === 0 || (await page.locator('body > .eua-platform-nav details.eua-module-menu').count()) === 1, 'the tools line must be one folded disclosure');
     check(where, (await page.locator('body > .eua-platform-nav details[open]').count()) === 0, 'the tools line must start folded');
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).map(Number));

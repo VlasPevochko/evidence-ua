@@ -81,3 +81,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 
 // Study-UI pages (Nutrition, Cell Lab) keep their own compact tools row; only other pine pages fold it.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=87','platform-shell.js?v=88');if(next!==old)fs.writeFileSync(file,next);}
+
+// Pages that keep their own compact tools row opt out of the fold with data-pine-tools (Muscle Lab).
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=88','platform-shell.js?v=89');if(next!==old)fs.writeFileSync(file,next);}

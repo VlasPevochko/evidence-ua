@@ -40,3 +40,4 @@ body[data-pine][data-study-ui] .eua-platform-nav .eua-tools button,body[data-pin
 body[data-pine][data-study-ui]{--bg:#0d1211;--panel:#17201e;--line:#364b46;background:radial-gradient(ellipse at 78% 0,#1d3a31,transparent 50%),#0d1211}
 body[data-pine][data-study-ui] button{background:#162622;border-color:#2f4a43}
 body[data-pine][data-study-ui] button[aria-pressed=true]{background:#e3bd6b;border-color:#f0d08a}
+body[data-pine] .lab-layout{padding-top:0}

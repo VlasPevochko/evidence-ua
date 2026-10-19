@@ -10,11 +10,11 @@ assert(!/https?:\/\//.test(css.replaceAll('http://www.w3.org/2000/svg','').repla
 assert(css.includes('@font-face'));
 
 // Pages that adopted the theme so far (add a page here when it gets its band).
-const pages={'exercises.html':'yagasuri','atlas.html':'asanoha','directions.html':'kumiko','nutrition.html':'nami'};
+const pages={'exercises.html':'yagasuri','atlas.html':'asanoha','directions.html':'kumiko','nutrition.html':'nami','muscle-lab.html':'take'};
 const usedMotifs=new Set(['shippo']); // supplements.html has its own band (supplements.css)
 for(const [file,motif] of Object.entries(pages)){
   const html=fs.readFileSync('dist/'+file,'utf8');
-  assert(/<body[^>]* data-pine>/.test(html),`${file} opts into the pine theme`);
+  assert(/<body[^>]* data-pine[ >]/.test(html),`${file} opts into the pine theme`);
   assert(html.includes('page-pine.css?v='),`${file} loads page-pine.css`);
   assert(html.includes('<section class="pb"')&&html.includes(`data-motif="${motif}"`),`${file} has the ${motif} band`);
   assert.equal((html.match(/<h1\b/g)||[]).length,1,`${file}: one h1`);
@@ -26,7 +26,7 @@ for(const [file,motif] of Object.entries(pages)){
 // The tools line is folded (not removed) on these pages.
 const shell=fs.readFileSync('src/platform/shell.mjs','utf8');
 for(const area of ['movement','sleep','practice','atlas'])assert(shell.includes(`'${area}'`),`Tools are folded on ${area}`);
-assert(shell.includes('dataset.pine!==undefined')&&shell.includes('dataset.studyUi===undefined'),'Pine pages fold the tools line, except study-UI pages that keep their own compact row');
+assert(shell.includes('dataset.pine!==undefined')&&shell.includes('dataset.studyUi===undefined')&&shell.includes('dataset.pineTools===undefined'),'Pine pages fold the tools line, except study-UI pages that keep their own compact row');
 // Stylesheets that were recoloured must not keep the old navy/cyan accents.
 for(const file of ['dist/atlas.css','dist/exercises.css']){
   const text=fs.readFileSync(file,'utf8');

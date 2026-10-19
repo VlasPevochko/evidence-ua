@@ -11,6 +11,9 @@ const chips=[...html.matchAll(/<ul class="se-list"[^>]*>([\s\S]*?)<\/ul>/g)][0][
 assert.equal(chips.length,10);
 for(const c of chips){const id=c.match(/href="#([^"]+)"/)[1];assert(html.includes(`id="${id}"`),`Dossier ${id} still exists on the home page`);}
 assert(html.includes('home-supplement-entry.css?v=')&&nav.includes("document.querySelector('.supplement-entry')"),'Styles and the guide placement use the entry');
-for(const key of ['max-width:760px','min-height:44px','.se-cta'])assert(css.includes(key),`CSS missing ${key}`);
+// Chips grew from 44px to 60px (48px thumbnails) so the artwork reads; touch target stays well above 44px.
+for(const key of ['max-width:760px','min-height:60px','.se-cta'])assert(css.includes(key),`CSS missing ${key}`);
+assert(/\.se-thumb\{[^}]*width:48px/.test(css),'Chip thumbnails are large enough to read (48px)');
+for(const dead of ['.supplement-rail','.supplement-tile','.preview-tile','.supplement-edge-arrow','.supplement-search-box','.supplement-carousel-shell'])assert(!html.includes(dead),`Dead carousel style left in index.html: ${dead}`);
 assert(!/https?:\/\//.test(css),'No third-party requests');
 console.log('Home supplement entry: carousel retired, one catalogue entry, ten chips to existing dossiers passed.');

@@ -35,3 +35,8 @@ body[data-pine] .eua-platform-nav a[aria-current=page]{background:#1b3029;border
 body[data-pine] .eua-platform-nav .eua-atlas-link,body[data-pine] .eua-platform-nav .eua-exercises-link{background:#1a2b25;border:1px solid #4f7a69;color:#e3bd6b}
 body[data-pine] .eua-site-header nav a svg{stroke:#9fc2b2}
 body[data-pine] .eua-site-header nav a[aria-current=page] svg{stroke:#e3bd6b}
+body[data-pine][data-study-ui]>.eua-platform-nav{background:#0f1c18;border-color:var(--pine-line)}
+body[data-pine][data-study-ui] .eua-platform-nav .eua-tools button,body[data-pine][data-study-ui] .eua-platform-nav .eua-tools a{background:#162622;border-color:#2f4a43;color:#d7e4dc}
+body[data-pine][data-study-ui]{--bg:#0d1211;--panel:#17201e;--line:#364b46;background:radial-gradient(ellipse at 78% 0,#1d3a31,transparent 50%),#0d1211}
+body[data-pine][data-study-ui] button{background:#162622;border-color:#2f4a43}
+body[data-pine][data-study-ui] button[aria-pressed=true]{background:#e3bd6b;border-color:#f0d08a}

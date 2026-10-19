@@ -78,3 +78,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 
 // Every page with the pine theme (data-pine) folds the tools line, whatever its area.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=86','platform-shell.js?v=87');if(next!==old)fs.writeFileSync(file,next);}
+
+// Study-UI pages (Nutrition, Cell Lab) keep their own compact tools row; only other pine pages fold it.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=87','platform-shell.js?v=88');if(next!==old)fs.writeFileSync(file,next);}

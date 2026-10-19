@@ -30,7 +30,7 @@ export function mountPlatformNavigation(root=document){
   }
   if(selected==='home'){
     const start=root.getElementById('start-here');
-    if(start&&!start.querySelector('.eua-home-tools')){const tools=root.createElement('div');tools.className='eua-home-tools';tools.innerHTML=toolsHTML('home');start.append(tools);}
+    if(start&&!start.querySelector('.eua-home-tools')){const tools=root.createElement('div');tools.className='eua-home-tools';tools.innerHTML=toolsHTML('home');(root.querySelector('.home-about-body')||start).append(tools);}
     if(start&&!start.querySelector('.eua-atlas-teaser')){const teaser=root.createElement('div');teaser.innerHTML=atlasTeaserHTML();const atlas=teaser.firstElementChild;if(atlas)start.append(atlas);}
   }
   mountQuickTools(root);

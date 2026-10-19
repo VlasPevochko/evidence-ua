@@ -6,8 +6,9 @@
   <meta name="description" content="Бібліотека вправ Evidence UA — вправи, пов’язані з анатомією, рухом і доказами.">
   <title>Бібліотека вправ — Evidence UA</title>
   <link rel="stylesheet" href="./platform.css?v=83" data-platform-style>
-  <link rel="stylesheet" href="./atlas.css?v=6">
-  <link rel="stylesheet" href="./exercises.css?v=6">
+  <link rel="stylesheet" href="./atlas.css?v=7">
+  <link rel="stylesheet" href="./exercises.css?v=7">
+  <link rel="stylesheet" href="./page-pine.css?v=1">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="icon" href="./favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -24,7 +25,7 @@
 <meta property="og:image:alt" content="Evidence UA — наука для здорового життя">
 <meta name="twitter:card" content="summary_large_image">
 </head>
-<body data-platform-area="practice">
+<body data-platform-area="practice" data-pine>
   <header class="atlas-topbar">
     <a class="atlas-brand" href="./index.html#top" aria-label="Evidence UA — на головну">
       <span class="atlas-brand-mark" aria-hidden="true">E</span>
@@ -42,12 +43,15 @@
     <a class="atlas-back" href="./index.html#start-here">На головну</a>
   </header>
 
-  <main class="ex-page">
-    <section id="exercise-intro" class="ex-intro" aria-labelledby="exercise-library-title">
-      <p class="ex-eyebrow">ПРАКТИКА · ТЕКСТИ ЗВІРЕНО З ВІДЕО</p>
+  <section class="pb" id="exercise-intro" data-motif="yagasuri" aria-labelledby="exercise-library-title">
+    <div class="pb-inner">
+      <p class="pb-eyebrow">ПРАКТИКА · ТЕКСТИ ЗВІРЕНО З ВІДЕО</p>
       <h1 id="exercise-library-title">Бібліотека вправ</h1>
-      <p>Кожна вправа тут — не окреме відео, а пов’язаний матеріал: що рухається, які структури працюють і де закінчується те, що ми знаємо. Опис руху, поради та наукові твердження показано окремо.</p>
-    </section>
+      <p class="pb-lead">Кожна вправа тут — не окреме відео, а пов’язаний матеріал: що рухається, які структури працюють і де закінчується те, що ми знаємо. Опис руху, поради та наукові твердження показано окремо.</p>
+    </div>
+  </section>
+
+  <main class="ex-page">
 
     <div id="exercise-app">
       <noscript><p class="ex-muted">Для роботи бібліотеки вправ потрібен JavaScript.</p></noscript>
@@ -57,6 +61,6 @@
   </main>
 
   <script type="module" src="./exercises.js?v=8"></script>
-  <script type="module" src="./platform-shell.js?v=85"></script>
+  <script type="module" src="./platform-shell.js?v=86"></script>
 </body>
 </html>

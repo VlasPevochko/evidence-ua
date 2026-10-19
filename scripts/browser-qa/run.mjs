@@ -266,6 +266,26 @@ async function supplementsFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function pineFlow(browser, origin, viewport) {
+  // Pages that adopted the pine theme: patterned band, serif heading, folded tools line, no overflow, motif visible.
+  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['atlas.html', 'asanoha']]) {
+    const where = `pine ${file} @${viewport.name}`;
+    const {context, page} = await open(browser, origin, viewport, '/' + file);
+    await page.waitForSelector('.pb h1');
+    check(where, (await page.locator('.pb').getAttribute('data-motif')) === motif, 'motif attribute');
+    check(where, (await page.locator('.pb h1').evaluate(n => getComputedStyle(n).fontFamily)).includes('Source Serif 4'), 'heading font is not the site serif');
+    const band = await page.locator('.pb').boundingBox();
+    check(where, band && Math.abs(band.width - viewport.width) <= 1, `the band must span the full width (${band && band.width})`);
+    check(where, (await page.locator('.pb').evaluate(n => getComputedStyle(n, '::before').backgroundImage)).includes('data:image/svg+xml'), 'the motif is not drawn');
+    check(where, (await page.locator('body > .eua-platform-nav details.eua-module-menu').count()) === 1, 'the tools line must be one folded disclosure');
+    check(where, (await page.locator('body > .eua-platform-nav details[open]').count()) === 0, 'the tools line must start folded');
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).map(Number));
+    check(where, bg[1] > bg[2] && bg[0] < 30, `the page background is not pine-green: ${bg}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+    await context.close();
+  }
+}
+
 async function muscleLabFlow(browser, origin, viewport) {
   const where = `muscle lab @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
@@ -527,6 +547,7 @@ try {
   for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
   for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
   for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
   for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));

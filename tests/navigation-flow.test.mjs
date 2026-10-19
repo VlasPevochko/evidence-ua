@@ -41,7 +41,10 @@ for name,tree in documents.items():
         count+=1
 print(json.dumps({'internalLinkOccurrences':count,'htmlPages':len(documents),'missingTargets':0}))
 `],{input:JSON.stringify(generated),encoding:'utf8'}));
-assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,12); // 12 since the Добавки catalogue page (supplements.html) was added; every internal link and anchor in it is checked above
+// New educational pages belong to the same complete local-link and anchor audit.
+assert.equal(result.missingTargets,0);
+assert.equal(result.htmlPages,fs.readdirSync('dist').filter(file=>file.endsWith('.html')).length);
+assert(result.htmlPages>=13,'Fat Burning Lab adds the 13th available HTML page');
 for(const area of catalog.areas.filter(a=>a.available)){
  const url=new URL(area.href,'https://evidence.invalid/');assert(fs.existsSync(path.join('dist',url.pathname)));
 }

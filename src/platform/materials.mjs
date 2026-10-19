@@ -31,6 +31,7 @@ const searchTerms={
  'supplements-omega':'омега 3 omega-3',
  'supplements-vitd':'вітамін д vitamin d',
  'nutrition-digestion':'травлення їжі перетравлення засвоєння',
+ 'nutrition-fat-loss':'жироспалення спалювання жиру fat burning fat loss схуднення жир жирів ліполіз окиснення жирової маси',
  'movement-elbow':'лікоть ліктя біцепс згинання розгинання',
  'movement-shoulder':'плече плеча рука відведення приведення',
  'movement-walk':'крок крокування ходьба суглоби коліно',

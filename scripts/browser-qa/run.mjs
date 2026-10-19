@@ -611,6 +611,35 @@ async function homeLowerFlow(browser, origin, viewport) {
   await context.close();
 }
 
+// Fat Burning Lab: verify actual controls, not only presence of labels in static HTML.
+async function fatBurningFlow(browser, origin, viewport) {
+  const where = "fat burning @" + viewport.name;
+  const {context, page, seen} = await open(browser, origin, viewport, "/fat-burning.html");
+  await page.waitForSelector("#fb-step-title");
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Енергія у запасі"), "initial stage");
+  await page.locator('[data-fb-step="1"]').click();
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Мобілізація"), "click selects lipolysis");
+  check(where, await page.locator('[data-visual="1"]').evaluate(el => el.classList.contains("is-active")), "stage visual does not change");
+  check(where, (await page.locator('[data-fb-step="1"]').getAttribute("aria-pressed")) === "true", "stage button state");
+  await page.locator("#fb-step-next").click();
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Окиснення"), "next stage");
+  await page.locator('[data-fb-step="3"]').click();
+  await page.locator("#fb-step-next").click();
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Енергія у запасі"), "last stage wraps to start");
+  await page.locator('[data-fb-balance="surplus"]').click();
+  check(where, (await page.locator(".fb-balance").getAttribute("data-balance")) === "surplus", "surplus chart state");
+  check(where, (await page.locator("#fb-balance-title").innerText()).includes("більше"), "surplus explanation state");
+  await page.locator('[data-fb-balance="equal"]').click();
+  check(where, (await page.locator('[data-fb-balance="equal"]').getAttribute("aria-pressed")) === "true", "energy balance button state");
+  await page.locator(".fb-myth-list summary").first().click();
+  check(where, await page.locator(".fb-myth-list details").first().evaluate(el => el.open), "myth explanation disclosure");
+  await page.emulateMedia({reducedMotion:"reduce"});
+  check(where, await page.locator(".fb-trace").evaluate(el => getComputedStyle(el).animationName === "none"), "reduced motion must stop diagram animation");
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, "interactive console or runtime error");
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, "interaction causes horizontal overflow");
+  await context.close();
+}
+
 async function homeMenuFlow(browser, origin) {
   const viewport = viewports[0];
   const where = `home menu @${viewport.name}`;
@@ -649,6 +678,7 @@ try {
   for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
   await homeMenuFlow(browser, origin);
   for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
+  for (const viewport of viewports) await fatBurningFlow(browser, origin, viewport);
 } finally {
   await browser.close();
   server.close();

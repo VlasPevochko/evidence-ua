@@ -472,6 +472,52 @@ async function spineFlow(browser, origin, viewport) {
   return hasCanvas;
 }
 
+async function visibleAfterDisclosureTransition(locator){
+  try{await locator.waitFor({state:'visible',timeout:1500});return true;}
+  catch{return false;}
+}
+
+// Home restyle keeps the working library and disclosures; decorations never
+// receive pointer input and the palette is shared with the Supplements page.
+async function homeLowerFlow(browser, origin, viewport) {
+  const where=`home pine/shippo @${viewport.name}`;
+  const {context,page,seen}=await open(browser,origin,viewport,'/index.html');
+  await page.waitForSelector('.evidence-guide');
+  const style=await page.evaluate(()=>{
+    const category=document.querySelector('#categories'),guide=document.querySelector('.evidence-guide');
+    const fragments=[[category,'::before'],[category,'::after'],[guide,'::before']].map(([e,pseudo])=>{
+      const css=getComputedStyle(e,pseudo);return {image:css.backgroundImage,pointer:css.pointerEvents,opacity:Number(css.opacity),width:parseFloat(css.width)};
+    });
+    return {background:getComputedStyle(category).backgroundColor,footer:getComputedStyle(document.querySelector('.mission')).backgroundColor,
+      title:getComputedStyle(document.querySelector('#start-here-title')).fontFamily,
+      surface:getComputedStyle(document.querySelector('.start-choices>a')).backgroundColor,fragments};
+  });
+  check(where,style.background==='rgb(13, 25, 22)'&&style.footer===style.background,'pine background must continue through the footer');
+  check(where,style.surface==='rgb(20, 37, 32)','choice cards must use the Supplements surface');
+  check(where,style.title.includes('Source Serif 4'),'section headings must share the Supplements serif');
+  for(const fragment of style.fragments){
+    check(where,fragment.image.includes('home-shippo.svg'),'each fragment must use the same shippo repeat');
+    check(where,fragment.pointer==='none'&&fragment.opacity>0&&fragment.opacity<=.35,'decorations must stay quiet and noninteractive');
+    check(where,fragment.width<=viewport.width*.7,'shippo must be fragmented, not a full-width stripe');
+  }
+  await page.locator('#supplement-search').fill('креатин');
+  check(where,await page.locator('#supplement-carousel .preview-tile:visible').count()===1,'home supplement search must still filter');
+  await page.locator('#supplement-search').fill('');
+  check(where,await page.locator('#supplement-carousel .preview-tile:visible').count()===10,'clearing search must restore all ten previews');
+  await page.locator('#home-overview>summary').click();
+  // Details content expands over 280 ms; wait for actual visibility instead of
+  // sampling during the first, clipped animation frame.
+  const overviewContent=page.locator('#home-overview .home-overview-grid');
+  check(where,await visibleAfterDisclosureTransition(overviewContent),'overview must still expand');
+  await page.locator('.evidence-guide>details').nth(1).locator('summary').first().click();
+  check(where,await visibleAfterDisclosureTransition(page.locator('.guide-example')),'evidence example must open');
+  check(where,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'opened home content must not overflow horizontally');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  check(where,await page.locator('#categories').evaluate(e=>getComputedStyle(e,'::before').animationName)==='none','reduced motion must disable shippo movement');
+  check(where,seen.pageErrors.length===0&&seen.console.length===0,'home interactions must remain error-free');
+  await context.close();
+}
+
 async function homeMenuFlow(browser, origin) {
   const viewport = viewports[0];
   const where = `home menu @${viewport.name}`;
@@ -506,6 +552,7 @@ try {
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
   for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
   await homeMenuFlow(browser, origin);
+  for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
 } finally {
   await browser.close();
   server.close();

@@ -268,7 +268,7 @@ async function supplementsFlow(browser, origin, viewport) {
 
 async function pineFlow(browser, origin, viewport) {
   // Pages that adopted the pine theme: patterned band, serif heading, folded tools line, no overflow, motif visible.
-  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['atlas.html', 'asanoha'], ['directions.html', 'kumiko'], ['nutrition.html', 'nami'], ['muscle-lab.html', 'take'], ['cell-lab.html', 'kikko']]) {
+  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['atlas.html', 'asanoha'], ['directions.html', 'kumiko'], ['nutrition.html', 'nami'], ['muscle-lab.html', 'take'], ['cell-lab.html', 'kikko'], ['movement.html', 'seigaiha'], ['sleep.html', 'kasumi'], ['nutrition-digestion.html', 'enso'], ['protein-meta.html', 'shippo']]) {
     const where = `pine ${file} @${viewport.name}`;
     const {context, page} = await open(browser, origin, viewport, '/' + file);
     await page.waitForSelector('.pb h1');

@@ -10,7 +10,7 @@ assert(!/https?:\/\//.test(css.replaceAll('http://www.w3.org/2000/svg','').repla
 assert(css.includes('@font-face'));
 
 // Pages that adopted the theme so far (add a page here when it gets its band).
-const pages={'exercises.html':'yagasuri','atlas.html':'asanoha','directions.html':'kumiko','nutrition.html':'nami','muscle-lab.html':'take','cell-lab.html':'kikko'};
+const pages={'exercises.html':'yagasuri','atlas.html':'asanoha','directions.html':'kumiko','nutrition.html':'nami','muscle-lab.html':'take','cell-lab.html':'kikko','movement.html':'seigaiha','sleep.html':'kasumi','nutrition-digestion.html':'enso','protein-meta.html':'shippo'};
 const usedMotifs=new Set(['shippo']); // supplements.html has its own band (supplements.css)
 for(const [file,motif] of Object.entries(pages)){
   const html=fs.readFileSync('dist/'+file,'utf8');
@@ -20,8 +20,7 @@ for(const [file,motif] of Object.entries(pages)){
   assert.equal((html.match(/<h1\b/g)||[]).length,1,`${file}: one h1`);
   assert.equal((html.match(/<header\b/g)||[]).length,1,`${file}: only the page header uses <header> (the shell injects navigation after every one)`);
   assert(html.indexOf('class="pb"')<html.indexOf('<main'),`${file}: the band opens the page, above the constrained main`);
-  assert(!usedMotifs.has(motif),`${file}: every page keeps its own motif (${motif} repeats)`);
-  usedMotifs.add(motif);
+  if(file!=='protein-meta.html'){assert(!usedMotifs.has(motif),`${file}: every page keeps its own motif (${motif} repeats)`);usedMotifs.add(motif);} // protein-meta shares shippo on purpose: it belongs to the supplements family
 }
 // The tools line is folded (not removed) on these pages.
 const shell=fs.readFileSync('src/platform/shell.mjs','utf8');
@@ -42,3 +41,8 @@ for(const old of ['#8bdefb','#08131e'])assert(!fs.readFileSync('dist/directions-
 for(const file of ['dist/atlas.css','dist/exercises.css','dist/directions-pine.css'])assert(!/--(?:atlas-)?text:#e3bd6b/.test(fs.readFileSync(file,'utf8')),`${file}: text token is not gold`);
 for(const old of ['#e9f4fb','#cce8f8','#e7f0f7'])assert(!fs.readFileSync('dist/atlas.css','utf8').includes(old)||true);
 console.log('Catalogue pine copy and light-text guard passed.');
+
+// protein-meta.html lost its whole-file hash when it adopted the theme: its words are pinned here instead.
+const meta=fs.readFileSync('dist/protein-meta.html','utf8').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
+for(const phrase of ['Білок + силові тренування','Що дає додатковий білок людям, які тренуються? Розбираємо результати дослідження простою мовою.','Morton та співавт. (2018), British Journal of Sports Medicine.','49 досліджень · 1863 учасники','Здорові дорослі, силові тренування тривалістю щонайменше шість тижнів.','Що таке метааналіз?','Що показали результати?','Як це зрозуміти для себе?','Чого цей аналіз не доводить?','Дослідження не порівнювало ціни'])assert(meta.includes(phrase),`protein-meta.html lost: ${phrase}`);
+console.log('Protein meta-analysis wording pinned.');

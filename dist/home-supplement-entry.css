@@ -15,3 +15,4 @@
  .supplement-entry .se-list{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px;scrollbar-width:none}
  .supplement-entry .se-list li{flex:0 0 auto}
 }
+.supplement-entry .se-thumb-berberine{background-image:url("./supplement-berberine-v1.webp");background-size:cover;background-position:center}

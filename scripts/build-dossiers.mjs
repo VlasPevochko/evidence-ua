@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import {DossierPanel,validateDossiers} from '../src/evidence/core/dossier.mjs';
 import {proteinModule} from '../src/evidence/supplements/protein/module.mjs';
 import {buildProtein} from './build-protein.mjs';
+import {buildBerberine} from './build-berberine.mjs';
 // Dossiers whose route now shows an approved evidence module are not rendered as preliminary panels.
 export const replacedDossiers=new Set([proteinModule.replacesDossier]);
 const file='dist/index.html';
@@ -17,4 +18,5 @@ const css=`.dossier-panel{margin:28px 0;padding:clamp(18px,3vw,32px);border:1px 
 html=html.replace('</head>','<style data-dossier-style>'+css+'</style></head>');
 fs.writeFileSync(file,html);
 buildProtein();
+buildBerberine();
 console.log('Structured preliminary dossiers: '+dossiers.length+'; creatine retained unchanged.');

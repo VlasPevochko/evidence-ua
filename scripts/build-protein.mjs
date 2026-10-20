@@ -41,40 +41,40 @@ export function ProteinCard() {
 </div>`;
 }
 
-const css = `#supplement-protein .pc{--pc-line:#2f3b40;--pc-cyan:#65ddf2;--pc-cyan-soft:#b9f5ff;--pc-gold:#e7bd46;--pc-muted:#b8bdc6;margin-top:8px}
-#supplement-protein .pc-headline{font-size:clamp(23px,3vw,34px);line-height:1.3;margin:0 0 16px;color:var(--pc-cyan-soft);text-wrap:balance}
-#supplement-protein .pc-lead{color:#e5dfcf;line-height:1.6;font-weight:600}
-#supplement-protein .pc-scale{margin:32px 0 16px;padding:clamp(20px,3vw,32px);border:1px solid var(--pc-line);border-radius:16px;background:linear-gradient(135deg,#16242a,#101517 70%)}
-#supplement-protein .pc h2.pc-h2,#supplement-protein .pc-scale h2,#supplement-protein .pc-not h2{font-size:clamp(24px,3vw,34px);line-height:1.2;margin:0 0 8px}
-#supplement-protein .pc-sub,#supplement-protein .pc-foot{color:var(--pc-muted);font-size:14px;line-height:1.6;margin:0}
-#supplement-protein .pc-foot{margin-top:18px;font-size:13px}
-#supplement-protein .pc-bars{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:22px}
-#supplement-protein .pc-bar-group h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#a5c9d1;margin:0 0 12px}
-#supplement-protein .pc-row{display:grid;grid-template-columns:92px minmax(0,1fr) 84px;align-items:center;gap:12px;margin:10px 0;font-size:14px}
-#supplement-protein .pc-row span{color:var(--pc-muted)}
-#supplement-protein .pc-row b{text-align:right;font-variant-numeric:tabular-nums}
-#supplement-protein .pc-track{height:14px;border-radius:8px;background:#ffffff0d;overflow:hidden}
-#supplement-protein .pc-track i{display:block;height:100%;border-radius:8px;background:#5d6b7a}
-#supplement-protein .pc-p .pc-track i{background:var(--pc-cyan);min-width:6px}
-#supplement-protein .pc-p b,#supplement-protein .pc-p span{color:var(--pc-cyan-soft)}
-#supplement-protein .pc-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 44px}
-#supplement-protein .pc-facts div{border:1px solid var(--pc-line);border-radius:16px;padding:20px;background:#111416;min-width:0}
-#supplement-protein .pc-facts span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a5c9d1}
-#supplement-protein .pc-facts strong{display:block;font-size:clamp(22px,2.6vw,30px);margin:10px 0 6px;color:var(--pc-cyan-soft)}
-#supplement-protein .pc-facts small{color:var(--pc-muted);line-height:1.5;font-size:13px}
-#supplement-protein .pc h2.pc-h2{margin-bottom:18px}
-#supplement-protein .pc-not{margin:44px 0 0;padding-top:28px;border-top:1px solid var(--pc-line)}
-#supplement-protein .pc-not article{border-left:3px solid var(--pc-gold);background:#211f19;padding:14px 18px;margin:12px 0;border-radius:0 10px 10px 0}
-#supplement-protein .pc-not h3{margin:0 0 6px;font-size:17px}
-#supplement-protein .pc-not p{margin:0;color:#d3cfc5;line-height:1.6;font-size:15px}
-#supplement-protein .pc-more{margin-top:24px;border-top:1px solid var(--pc-line);padding-top:6px}
-#supplement-protein .pc-more>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#a9d7e7;font-size:16px;font-weight:600}
-#supplement-protein .pc-more li{margin-bottom:12px;line-height:1.65;color:#d9dede}
-#supplement-protein .pc-note,#supplement-protein .pc-status{color:var(--pc-muted);font-size:13px;line-height:1.7}
-#supplement-protein .pc-links{display:flex;flex-wrap:wrap;gap:8px 24px}
-#supplement-protein .pc-links a{display:inline-flex;align-items:center;min-height:44px;color:#8bdefb}
-#supplement-protein .pc-status{margin-top:28px}
-@media(max-width:760px){#supplement-protein .pc-bars,#supplement-protein .pc-facts{grid-template-columns:1fr}#supplement-protein .pc-row{grid-template-columns:78px minmax(0,1fr) 72px;gap:8px;font-size:13px}}`;
+const css = `:is(#supplement-protein,#supplement-berberine) .pc{--pc-line:#2f3b40;--pc-cyan:#65ddf2;--pc-cyan-soft:#b9f5ff;--pc-gold:#e7bd46;--pc-muted:#b8bdc6;margin-top:8px}
+:is(#supplement-protein,#supplement-berberine) .pc-headline{font-size:clamp(23px,3vw,34px);line-height:1.3;margin:0 0 16px;color:var(--pc-cyan-soft);text-wrap:balance}
+:is(#supplement-protein,#supplement-berberine) .pc-lead{color:#e5dfcf;line-height:1.6;font-weight:600}
+:is(#supplement-protein,#supplement-berberine) .pc-scale{margin:32px 0 16px;padding:clamp(20px,3vw,32px);border:1px solid var(--pc-line);border-radius:16px;background:linear-gradient(135deg,#16242a,#101517 70%)}
+:is(#supplement-protein,#supplement-berberine) .pc h2.pc-h2,:is(#supplement-protein,#supplement-berberine) .pc-scale h2,:is(#supplement-protein,#supplement-berberine) .pc-not h2{font-size:clamp(24px,3vw,34px);line-height:1.2;margin:0 0 8px}
+:is(#supplement-protein,#supplement-berberine) .pc-sub,:is(#supplement-protein,#supplement-berberine) .pc-foot{color:var(--pc-muted);font-size:14px;line-height:1.6;margin:0}
+:is(#supplement-protein,#supplement-berberine) .pc-foot{margin-top:18px;font-size:13px}
+:is(#supplement-protein,#supplement-berberine) .pc-bars{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:22px}
+:is(#supplement-protein,#supplement-berberine) .pc-bar-group h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#a5c9d1;margin:0 0 12px}
+:is(#supplement-protein,#supplement-berberine) .pc-row{display:grid;grid-template-columns:92px minmax(0,1fr) 84px;align-items:center;gap:12px;margin:10px 0;font-size:14px}
+:is(#supplement-protein,#supplement-berberine) .pc-row span{color:var(--pc-muted)}
+:is(#supplement-protein,#supplement-berberine) .pc-row b{text-align:right;font-variant-numeric:tabular-nums}
+:is(#supplement-protein,#supplement-berberine) .pc-track{height:14px;border-radius:8px;background:#ffffff0d;overflow:hidden}
+:is(#supplement-protein,#supplement-berberine) .pc-track i{display:block;height:100%;border-radius:8px;background:#5d6b7a}
+:is(#supplement-protein,#supplement-berberine) .pc-p .pc-track i{background:var(--pc-cyan);min-width:6px}
+:is(#supplement-protein,#supplement-berberine) .pc-p b,:is(#supplement-protein,#supplement-berberine) .pc-p span{color:var(--pc-cyan-soft)}
+:is(#supplement-protein,#supplement-berberine) .pc-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 44px}
+:is(#supplement-protein,#supplement-berberine) .pc-facts div{border:1px solid var(--pc-line);border-radius:16px;padding:20px;background:#111416;min-width:0}
+:is(#supplement-protein,#supplement-berberine) .pc-facts span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a5c9d1}
+:is(#supplement-protein,#supplement-berberine) .pc-facts strong{display:block;font-size:clamp(22px,2.6vw,30px);margin:10px 0 6px;color:var(--pc-cyan-soft)}
+:is(#supplement-protein,#supplement-berberine) .pc-facts small{color:var(--pc-muted);line-height:1.5;font-size:13px}
+:is(#supplement-protein,#supplement-berberine) .pc h2.pc-h2{margin-bottom:18px}
+:is(#supplement-protein,#supplement-berberine) .pc-not{margin:44px 0 0;padding-top:28px;border-top:1px solid var(--pc-line)}
+:is(#supplement-protein,#supplement-berberine) .pc-not article{border-left:3px solid var(--pc-gold);background:#211f19;padding:14px 18px;margin:12px 0;border-radius:0 10px 10px 0}
+:is(#supplement-protein,#supplement-berberine) .pc-not h3{margin:0 0 6px;font-size:17px}
+:is(#supplement-protein,#supplement-berberine) .pc-not p{margin:0;color:#d3cfc5;line-height:1.6;font-size:15px}
+:is(#supplement-protein,#supplement-berberine) .pc-more{margin-top:24px;border-top:1px solid var(--pc-line);padding-top:6px}
+:is(#supplement-protein,#supplement-berberine) .pc-more>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#a9d7e7;font-size:16px;font-weight:600}
+:is(#supplement-protein,#supplement-berberine) .pc-more li{margin-bottom:12px;line-height:1.65;color:#d9dede}
+:is(#supplement-protein,#supplement-berberine) .pc-note,:is(#supplement-protein,#supplement-berberine) .pc-status{color:var(--pc-muted);font-size:13px;line-height:1.7}
+:is(#supplement-protein,#supplement-berberine) .pc-links{display:flex;flex-wrap:wrap;gap:8px 24px}
+:is(#supplement-protein,#supplement-berberine) .pc-links a{display:inline-flex;align-items:center;min-height:44px;color:#8bdefb}
+:is(#supplement-protein,#supplement-berberine) .pc-status{margin-top:28px}
+@media(max-width:760px){:is(#supplement-protein,#supplement-berberine) .pc-bars,:is(#supplement-protein,#supplement-berberine) .pc-facts{grid-template-columns:1fr}:is(#supplement-protein,#supplement-berberine) .pc-row{grid-template-columns:78px minmax(0,1fr) 72px;gap:8px;font-size:13px}}`;
 
 const ui = `// Generated by scripts/build-protein.mjs. Opens the evidence drawer for protein Claims.
 import {proteinBase} from './protein-data.js?v=1';

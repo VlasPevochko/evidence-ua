@@ -27,3 +27,7 @@ By explicit decision of the site owner, the 2D digestion schema on `nutrition-di
 ## Deliberate revision — 2026-10-18, protein card (owner-approved)
 
 By explicit decision of the site owner («Картку протеїн конкретно оновлюємо»), only the `supplement-protein` digest in `home-v56-science-digests.json` and `first-visit-v59-science-digests.json` was refreshed. The section now renders the approved protein module (`src/evidence/supplements/protein/module.mjs`, five Claims, wording approved 18.10.2026, confidence not assessed) through `scripts/build-protein.mjs`; the preliminary `DOS-PROTEIN` dossier panel is no longer rendered there. The h1, navigation to other supplements and the link to `protein-meta.html` are kept; the editorial practical notes are retained in a collapsed block. All other article digests are unchanged. New content is protected by `tests/protein-card.test.mjs`.
+
+## Deliberate addition — 2026-10-21, berberine dossier (owner-approved)
+
+By explicit decision of the site owner («Давай по новій добавці — Берберин», wording approved «Погоджую»), a new article section `supplement-berberine` was added after `supplement-electrolytes`. Its digest was **added** to `home-v56-science-digests.json` and `first-visit-v59-science-digests.json`; the ten existing digests are unchanged (verified before adding). Both retention tests now expect eleven sections. Content comes from `src/evidence/supplements/berberine/module.mjs` (six Claims, confidence not assessed) via `scripts/build-berberine.mjs` and is protected by `tests/berberine-card.test.mjs`.

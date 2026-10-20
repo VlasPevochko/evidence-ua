@@ -18,7 +18,8 @@ const frozen=[
   {"id": "supplement-citrulline", "tag": "Зусилля · відновлення", "summary": "Досліджують вплив на сприйняття навантаження та біль після тренування.", "limit": "Зміна самопочуття не означає доведений приріст м’язів."},
   {"id": "supplement-electrolytes", "tag": "Гідратація · потовиділення", "summary": "Відновлення рідини й натрію залежить від тривалості, спеки та втрат із потом.", "limit": "Спортивний напій не усуває ризик надмірного пиття."}
 ];
-assert.equal(supplements.length,10);
+// Berberine was added as the 11th entry on 2026-10-21 (owner decision); the ten frozen rows stay unchanged.
+assert.equal(supplements.length,11);
 frozen.forEach((original,index)=>{
   const item=supplements[index];
   assert.equal(item.id,original.id,`Same order as before: ${original.id}`);
@@ -28,13 +29,17 @@ frozen.forEach((original,index)=>{
   assert(home.includes(`id="${original.id}"`),`The dossier ${original.id} exists on the home page`);
   assert.equal(item.x,(index%5)*25);assert.equal(item.y,Math.floor(index/5)*100);
 });
-assert.equal(new Set(supplements.map(s=>s.id)).size,10);
+assert.equal(new Set(supplements.map(s=>s.id)).size,11);
+const berberine=supplements[10];
+assert.equal(berberine.id,'supplement-berberine');assert(home.includes('id="supplement-berberine"'));
+assert.equal(berberine.photo,'./supplement-berberine-v1.webp');assert(fs.existsSync('dist/supplement-berberine-v1.webp'));
+assert(renderRow(berberine).includes('background-image:url(./supplement-berberine-v1.webp)'),'Berberine uses its own photo, not the sprite');
 
 // Filtering and search.
 assert.deepEqual(Object.keys(groups),['all','sport','health']);
-assert.equal(filterSupplements(supplements).length,10);
-assert.equal(filterSupplements(supplements,{group:'sport'}).length+filterSupplements(supplements,{group:'health'}).length,10);
-assert.deepEqual(filterSupplements(supplements,{group:'health'}).map(s=>s.name),['Омега-3','Вітамін D','Магній']);
+assert.equal(filterSupplements(supplements).length,11);
+assert.equal(filterSupplements(supplements,{group:'sport'}).length+filterSupplements(supplements,{group:'health'}).length,11);
+assert.deepEqual(filterSupplements(supplements,{group:'health'}).map(s=>s.name),['Омега-3','Вітамін D','Магній','Берберин']);
 assert.deepEqual(filterSupplements(supplements,{query:'  КРЕА '}).map(s=>s.id),['creatine']);
 assert.equal(filterSupplements(supplements,{query:'немає такої'}).length,0);
 

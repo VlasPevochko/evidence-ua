@@ -21,6 +21,7 @@ export const normalizeSearch=text=>String(text||'').toLocaleLowerCase('uk').repl
 // Alternative topic names for discovery only; scientific content is not changed.
 const searchTerms={
  'supplements-protein':'білок білка білки білкові протеїнові protein',
+ 'supplements-berberine':'берберин берберину berberine цукор глюкоза діабет холестерин ліпіди',
  'nutrition-protein-absorption':'білок білка білки білкові засвоєння білка',
  'guide-protein-meta':'білок білка білки білкові',
  'guide-glossary':'словник терміни глосарій значення слів що означає ДІ РКД GRADE інтервал',

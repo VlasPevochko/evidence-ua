@@ -368,7 +368,7 @@ async function savedAndTermsFlow(browser, origin, viewport) {
   check(where, (await pop.count()) === 1 && await pop.isVisible(), 'clicking a term opens the hint');
   const pbox = await pop.boundingBox();
   check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the hint stays inside the viewport');
-  check(where, (await pop.locator('a').getAttribute('rel')).includes('noopener') && (await pop.locator('a').getAttribute('href')).startsWith('https://'), 'the source link is safe');
+  check(where, (await pop.locator('a').first().getAttribute('rel')).includes('noopener') && (await pop.locator('a').first().getAttribute('href')).startsWith('https://'), 'the source link is safe');
   check(where, (await first.getAttribute('aria-expanded')) === 'true', 'the term button reports it is expanded');
   await fat.page.keyboard.press('Escape');
   check(where, (await fat.page.locator('.eua-term-pop').count()) === 0 && (await first.evaluate(n => n === document.activeElement)), 'Escape closes the hint and returns focus');
@@ -380,6 +380,37 @@ async function savedAndTermsFlow(browser, origin, viewport) {
   await home.page.locator('.evidence-guide').waitFor({state: 'attached'});
   check(where, (await home.page.locator('.evidence-guide .eua-term').count()) >= 1, 'the evidence guide marks its terms');
   await home.context.close();
+}
+
+async function glossaryFlow(browser, origin, viewport) {
+  const where = `glossary @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/glossary.html');
+  const items = page.locator('.gl-term');
+  await items.first().waitFor({state: 'attached'});
+  const total = await items.count();
+  check(where, total >= 17, 'the dictionary lists every hint, movement and sleep term');
+  check(where, (await page.locator('.gl-term .gl-source[rel~="noopener"]').count()) === total, 'every entry has a safe source link');
+  await page.fill('#gl-q', 'інтервал');
+  const shown = await page.locator('.gl-term:not([hidden])').count();
+  check(where, shown >= 1 && shown < total, 'search narrows the list');
+  check(where, (await page.locator('#gl-count').innerText()).includes('Знайдено'), 'the count reports the result');
+  await page.fill('#gl-q', 'цццццц');
+  check(where, await page.locator('.gl-empty').isVisible(), 'an empty search says so');
+  await page.fill('#gl-q', '');
+  // A link from a hint lands on and highlights the entry.
+  await page.goto(origin + '/glossary.html#term-ci', {waitUntil: 'load'});
+  await page.locator('#term-ci.is-target').waitFor({state: 'attached'});
+  const box = await page.locator('#term-ci').boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'entries stay inside the viewport');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in the dictionary');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the dictionary raises no errors');
+  await context.close();
+  // The hint in a text links to the matching entry.
+  const fat = await open(browser, origin, viewport, '/fat-burning.html');
+  await fat.page.locator('.fb-main .eua-term').first().click();
+  const href = await fat.page.locator('.eua-term-pop a', {hasText: 'У словнику'}).getAttribute('href');
+  check(where, /^\.\/glossary\.html#term-[a-z0-9-]+$/.test(href), 'the hint links to its dictionary entry');
+  await fat.context.close();
 }
 
 async function supplementsFlow(browser, origin, viewport) {
@@ -751,6 +782,7 @@ try {
   for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
   for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
   for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

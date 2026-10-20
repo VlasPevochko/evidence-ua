@@ -1,0 +1,35 @@
+/* Fat Burning Lab в сосновій системі сайту: смуга заголовка з мотивом «уроко» (риб'ячі луски),
+   засічний шрифт заголовків, спокійніші поверхні, коротший телефон (джерела згорнуті). Наукові тексти не змінені. */
+body[data-platform-area="fat-burning"]{background:var(--pine-bg,#0d1916);color:var(--pine-text,#e9efe9)}
+.fb-band{border-bottom:1px solid var(--pine-line,#26403a)}
+.fb-band .fb-hero{min-height:0;padding:56px 32px 52px}
+.fb-main h1,.fb-main h2,.fb-main h3{font-family:var(--pine-serif,"Source Serif 4",Georgia,serif);font-weight:700;letter-spacing:-.015em}
+.fb-hero h1{font-size:clamp(40px,5.4vw,76px);line-height:1.05;letter-spacing:-.02em}
+.fb-section-head h2,.fb-next h2{font-size:clamp(28px,3.6vw,48px);line-height:1.12;letter-spacing:-.015em}
+.fb-main em{color:var(--pine-accent,#e3bd6b)}
+.fb-kicker{color:var(--pine-muted,#9db1a7)}
+.fb-primary{background:var(--pine-accent,#e3bd6b)!important;border-color:var(--pine-accent,#e3bd6b)}
+.fb-hero-art{border-color:var(--pine-line,#26403a)}
+
+/* Згорнуті джерела: службове лишається доступним, але не подовжує сторінку. */
+.fb-sources-fold{margin:0 0 4px;border:1px solid var(--pine-line,#26403a);border-radius:16px;background:var(--pine-surface,#142520);overflow:hidden}
+.fb-sources-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;padding:14px 18px;list-style:none;cursor:pointer;font-weight:650;font-size:16px;color:var(--pine-text,#e9efe9)}
+.fb-sources-fold>summary::-webkit-details-marker{display:none}
+.fb-sources-fold>summary::after{content:'⌄';flex:none;font-size:20px;color:var(--pine-accent,#e3bd6b);transition:transform .24s}
+.fb-sources-fold[open]>summary::after{transform:rotate(180deg)}
+.fb-sources-fold>summary:focus-visible{outline:2px solid var(--pine-accent,#e3bd6b);outline-offset:-4px;border-radius:16px}
+.fb-sources-fold .fb-sources{padding:0 14px 14px}
+@media(prefers-reduced-motion:reduce){.fb-sources-fold>summary::after{transition:none}}
+
+@media(max-width:760px){
+  .fb-band .fb-hero{padding:34px 20px 26px}
+  .fb-section{padding:40px 20px 4px}
+  /* Чотири картки практики гортаються вбік (видно край наступної), а не складаються в довгу колону. */
+  .fb-practice-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .fb-practice-grid::-webkit-scrollbar{display:none}
+  .fb-practice-card{flex:0 0 82%;scroll-snap-align:start;padding:16px}
+  .fb-practice-card h3{font-size:20px;margin:10px 0 8px}
+  .fb-practice-card a{padding-top:12px}
+  .fb-hero-art{min-height:240px}
+  .fb-sources-fold .fb-sources article{padding:16px}
+}

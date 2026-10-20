@@ -65,5 +65,12 @@ export function mountFatBurning(root=document) {
   }
   balanceButtons.forEach(b=>b.addEventListener("click",()=>setBalance(b.dataset.fbBalance)));
   setStep(0);setBalance("deficit");
+  // The sources are folded; links to #sources (or to anything inside) open the fold.
+  const fold=root.getElementById("sources-fold");
+  if(fold){
+    const open=()=>{const id=(root.defaultView?.location?.hash||"").slice(1);if(id==="sources"||(id&&fold.contains(root.getElementById(id))))fold.open=true;};
+    open();root.defaultView?.addEventListener("hashchange",open);
+    root.addEventListener("click",event=>{const a=event.target.closest?.('a[href="#sources"]');if(a)fold.open=true;});
+  }
 }
 if(typeof document!=="undefined")mountFatBurning(document);

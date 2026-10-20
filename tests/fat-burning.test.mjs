@@ -14,8 +14,9 @@ test("fat-burning page is a discoverable Ukrainian educational route",()=>{
     assert.match(html,new RegExp('id="'+id+'"'));
   }
   assert.match(html,/https:\/\/vlaspevochko\.github\.io\/evidence-ua\/fat-burning\.html/);
-  assert.match(html,/src="\.\/fat-burning\.js\?v=1"/);
-  assert.match(html,/href="\.\/fat-burning\.css\?v=1"/);
+  // v=2: pine recolour, serif headings and folded sources (owner decision 2026-10-20: page aligned with the site standard).
+  assert.match(html,/src="\.\/fat-burning\.js\?v=2"/);
+  assert.match(html,/href="\.\/fat-burning\.css\?v=2"/);
   assert.match(css,/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert(!/<iframe\b/i.test(html),"no unlicensed third-party media");
   const results=findMaterials("жироспалення");

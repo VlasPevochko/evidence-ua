@@ -40,9 +40,11 @@ function mountSavedButton(root,nav){
   const paint=()=>{const on=readSaved(view).some(i=>i.href===file);button.setAttribute('aria-pressed',String(on));button.textContent=on?'✓ У моєму списку · прибрати':'☆ Зберегти в мій список';};
   button.addEventListener('click',()=>{writeSaved(view,toggleSaved(readSaved(view),{href:file,title}));paint();});
   paint();nav.append(button);
+  const print=root.createElement('button');print.type='button';print.className='eua-print';print.textContent='Друкувати або зберегти PDF';
+  print.addEventListener('click',()=>view.print());nav.append(print);
 }
 function ensureStyle(root){
-  const head=root.head;if(head&&!root.querySelector('link[data-next-steps-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./next-steps.css?v=4';css.dataset.nextStepsStyle='';head.append(css);}
+  const head=root.head;if(head&&!root.querySelector('link[data-next-steps-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./next-steps.css?v=5';css.dataset.nextStepsStyle='';head.append(css);}
 }
 export function mountSavedHome(root,start){
   if(!start||start.querySelector('.eua-saved'))return;

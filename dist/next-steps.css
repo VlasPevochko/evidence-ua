@@ -11,7 +11,7 @@
 @media(max-width:760px){.eua-next ul{grid-template-columns:1fr}.eua-next{margin:28px auto 20px}}
 
 /* «Мій список»: кнопка збереження під «Куди далі» і блок на головній. */
-.eua-next .eua-save{grid-column:1/-1;display:inline-flex;align-items:center;min-height:48px;margin:14px 0 0;padding:0 20px;border:1px solid var(--pine-line,#26403a);border-radius:30px;background:transparent;color:var(--pine-text,#e9efe9);font:600 15px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
+.eua-next .eua-save,.eua-next .eua-print{grid-column:1/-1;margin-right:10px;display:inline-flex;align-items:center;min-height:48px;margin:14px 0 0;padding:0 20px;border:1px solid var(--pine-line,#26403a);border-radius:30px;background:transparent;color:var(--pine-text,#e9efe9);font:600 15px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
 .eua-next .eua-save[aria-pressed="true"]{border-color:var(--pine-accent,#e3bd6b);background:var(--pine-accent,#e3bd6b);color:#1b1608}
 .eua-next .eua-save:hover{border-color:var(--pine-accent,#e3bd6b)}
 .eua-save:focus-visible{outline:2px solid var(--pine-accent,#e3bd6b);outline-offset:3px}
@@ -22,3 +22,7 @@
 .eua-saved li a{display:inline-flex;align-items:center;min-height:44px;padding:0 6px 0 16px;color:var(--jp-text,#e9efe9);text-decoration:none;font-size:15px}
 .eua-saved li button{min-width:44px;min-height:44px;margin:0;padding:0;border:0!important;border-radius:0 24px 24px 0;background:transparent!important;box-shadow:none!important;color:var(--jp-accent,#e3bd6b)!important;font:400 22px/1 Inter,system-ui,sans-serif!important;cursor:pointer}
 .eua-saved a:focus-visible,.eua-saved button:focus-visible{outline:2px solid var(--jp-accent,#e3bd6b);outline-offset:2px}
+
+.eua-next .eua-print{display:inline-flex;align-items:center;min-height:48px;margin:14px 0 0;padding:0 20px;border:1px solid var(--pine-line,#26403a);border-radius:30px;background:transparent;color:var(--pine-text,#e9efe9);font:600 15px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
+.eua-next .eua-print:hover{border-color:var(--pine-accent,#e3bd6b)}
+.eua-print:focus-visible{outline:2px solid var(--pine-accent,#e3bd6b);outline-offset:3px}

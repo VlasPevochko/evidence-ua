@@ -62,7 +62,8 @@ for (const page of pages) {
   assert.equal(meta('og:type'), 'website');
   assert.equal(meta('og:site_name'), 'Evidence UA');
   assert.equal(meta('og:locale'), 'uk_UA');
-  assert.equal(meta('og:image'), BASE + 'og-image.png', `${page}: og:image must be absolute`);
+  // Since 2026-10-20 every page has its own 1200x630 card (scripts/make-og-cards.mjs); og-image.png stays as the brand default.
+  assert.equal(meta('og:image'), BASE + 'og/' + page.replace('.html', '.jpg'), `${page}: og:image must be its own absolute card`);
   assert.equal(meta('og:image:width'), '1200'); assert.equal(meta('og:image:height'), '630');
   assert(meta('og:image:alt'), `${page}: og:image:alt is missing`);
   assert.equal(meta('twitter:card'), 'summary_large_image');

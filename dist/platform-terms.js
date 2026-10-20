@@ -46,8 +46,9 @@ function openPop(root,wrap,term){
   const h=root.createElement('strong');h.textContent=term.title;
   const p=root.createElement('p');p.textContent=term.definition;
   const a=root.createElement('a');a.href=term.source.href;a.target='_blank';a.rel='noopener';a.textContent=term.source.label;
+  const all=root.createElement('a');all.href='./glossary.html#term-'+term.id;all.textContent='У словнику →';
   const x=root.createElement('button');x.type='button';x.className='eua-term-close';x.textContent='Закрити';
-  pop.append(h,p,a,x);wrap.append(pop);
+  pop.append(h,p,a,all,x);wrap.append(pop);
   wrap.querySelector('.eua-term').setAttribute('aria-expanded','true');
   const view=root.defaultView;
   // Keep the card inside the viewport: shift it left when the term sits near the right edge.

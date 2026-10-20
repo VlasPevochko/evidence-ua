@@ -1,6 +1,7 @@
 import './site-header.js?v=2';
 import {toolsHTML,mountQuickTools} from './platform-tools.js?v=83';
-import {mountNextSteps} from './platform-next-steps.js?v=1';
+import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=2';
+import {mountTerms} from './platform-terms.js?v=1';
 import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=83';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
@@ -61,10 +62,12 @@ export function mountPlatformNavigation(root=document){
     const start=root.getElementById('start-here');
     if(start&&!start.querySelector('.eua-home-tools')){const tools=root.createElement('div');tools.className='eua-home-tools';tools.innerHTML=toolsHTML('home');(root.querySelector('.home-about-body')||start).append(tools);}
     mountContinue(root,start);
+    mountSavedHome(root,start);
     if(start&&!start.querySelector('.eua-atlas-teaser')){const teaser=root.createElement('div');teaser.innerHTML=atlasTeaserHTML();const atlas=teaser.firstElementChild;if(atlas)start.append(atlas);}
   }
   rememberVisit(root,selected);
   mountNextSteps(root);
+  mountTerms(root);
   mountQuickTools(root);
   const renderLearning=()=>{
     root.querySelector('.eua-learning-nav')?.remove();

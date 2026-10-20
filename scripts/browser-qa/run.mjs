@@ -438,6 +438,34 @@ async function compareFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function mapFlow(browser, origin, viewport) {
+  const where = `map @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/map.html');
+  await page.locator('.km-list li').first().waitFor({state: 'attached'});
+  check(where, (await page.locator('.km-list li').count()) === 11, 'every page appears in the list');
+  check(where, (await page.locator('.km-list li p').first().innerText()).startsWith('Поруч:'), 'every item names its neighbours');
+  if (viewport.width > 820) {
+    check(where, (await page.locator('.km-node').count()) === 11, 'eleven nodes on the map');
+    await page.locator('.km-node[data-file="nutrition.html"]').focus();
+    check(where, await page.locator('.km-stage.has-focus').count() === 1, 'focusing a node highlights its neighbours');
+    check(where, (await page.locator('#km-caption').innerText()).includes('поруч'), 'the caption names the neighbours');
+    check(where, (await page.locator('.km-node.is-on').count()) >= 2 && (await page.locator('.km-node.is-on').count()) < 11, 'only related nodes stay lit');
+    const lit = await page.locator('g.is-on').count();
+    check(where, lit >= 2, 'the connected lines are highlighted');
+    const boxes = await page.locator('.km-node').evaluateAll(nodes => nodes.map(n => { const r = n.getBoundingClientRect(); return [r.x, r.width, r.height]; }));
+    check(where, boxes.every(([x, w, h]) => x >= 0 && x + w <= viewport.width + 1 && h >= 40), 'nodes stay inside the viewport and are tappable');
+    const stage = await page.locator('.km-stage').boundingBox();
+    check(where, boxes.every(([x, w]) => x >= stage.x - 1 && x + w <= stage.x + stage.width + 1), 'nodes stay inside the map');
+    await page.locator('.km-node[data-file="nutrition.html"]').blur();
+    check(where, (await page.locator('.km-stage.has-focus').count()) === 0, 'leaving a node resets the map');
+  } else {
+    check(where, !(await page.locator('.km-stage').isVisible()), 'the graph is replaced by a list on phones');
+  }
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the map');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors on the map');
+  await context.close();
+}
+
 async function supplementsFlow(browser, origin, viewport) {
   const where = `supplements @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
@@ -809,6 +837,7 @@ try {
   for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
   for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
   for (const viewport of viewports) await compareFlow(browser, origin, viewport);
+  for (const viewport of viewports) await mapFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

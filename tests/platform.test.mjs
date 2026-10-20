@@ -60,7 +60,7 @@ assert.equal(directory.querySelector('#search-empty').hidden,true);
 assert(!/<a[\s>]/.test(directory.querySelector('#planned-list').innerHTML));
 const muscle=root('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE');mountMuscle(muscle);assert.equal(muscle.querySelector('#structure-title').textContent,'М’язове волокно');
 const cell=root('https://evidence.invalid/cell-lab.html?organelle=ORG-RIBOSOME');mountCell(cell);assert.equal(cell.querySelector('#organelle-title').textContent,'Рибосома');assert(cell.querySelector('#cell-canvas').innerHTML.includes('data-organelle="ORG-RIBOSOME" role="button" tabindex="0" aria-pressed="true"'));
-for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=91'));
+for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=92'));
 console.log('Platform: registry, links/anchors, planned states, search/reset, learning routes and actual selected-entity initialization passed. Browser visual QA not performed.');
 
 const created=[],header={nextElementSibling:null,closest(){return null;},after(element){this.nextElementSibling=element;}};

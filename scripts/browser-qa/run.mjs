@@ -315,6 +315,25 @@ async function appearanceFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function nextStepsFlow(browser, origin, viewport) {
+  const files = ['nutrition', 'nutrition-digestion', 'fat-burning', 'muscle-lab', 'cell-lab', 'movement', 'sleep', 'atlas', 'exercises', 'supplements', 'protein-meta'];
+  for (const name of files) {
+    const where = `next @${viewport.name} ${name}`;
+    const {context, page, seen} = await open(browser, origin, viewport, `/${name}.html`);
+    const block = page.locator('.eua-next');
+    await block.waitFor({state: 'attached'});
+    check(where, (await block.count()) === 1 && (await block.locator('a').count()) === 3, 'three next steps, mounted once');
+    const hrefs = await block.locator('a').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
+    check(where, !hrefs.some(h => h.includes(`${name}.html`)), 'no self-link');
+    await block.scrollIntoViewIfNeeded();
+    const boxes = await block.locator('a').evaluateAll(nodes => nodes.map(n => { const r = n.getBoundingClientRect(); return [r.x, r.width, r.height]; }));
+    check(where, boxes.every(([x, w, h]) => x >= 0 && x + w <= viewport.width + 1 && h >= 44), 'cards are tap targets inside the viewport');
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the next-steps block');
+    check(where, seen.pageErrors.length === 0, 'no page errors');
+    await context.close();
+  }
+}
+
 async function supplementsFlow(browser, origin, viewport) {
   const where = `supplements @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
@@ -682,6 +701,7 @@ try {
   for (const viewport of viewports) await continueFlow(browser, origin, viewport);
   for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
   for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
+  for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

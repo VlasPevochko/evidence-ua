@@ -334,6 +334,54 @@ async function nextStepsFlow(browser, origin, viewport) {
   }
 }
 
+async function savedAndTermsFlow(browser, origin, viewport) {
+  const where = `list+terms @${viewport.name}`;
+  // Saved list: save a page, see it on the home page, remove it.
+  const sleep = await open(browser, origin, viewport, '/sleep.html');
+  const save = sleep.page.locator('.eua-save');
+  await save.waitFor({state: 'attached'});
+  await save.scrollIntoViewIfNeeded();
+  check(where, (await save.getAttribute('aria-pressed')) === 'false', 'a page starts unsaved');
+  await save.click();
+  check(where, (await save.getAttribute('aria-pressed')) === 'true', 'saving marks the button pressed');
+  await sleep.page.reload({waitUntil: 'load'});
+  check(where, (await sleep.page.locator('.eua-save').getAttribute('aria-pressed')) === 'true', 'the saved state survives reload');
+  await sleep.page.goto(origin + '/index.html', {waitUntil: 'load'});
+  const item = sleep.page.locator('#start-here .eua-saved li a');
+  check(where, (await item.count()) === 1 && (await item.getAttribute('href')) === './sleep.html', 'home shows the saved page');
+  const box = await sleep.page.locator('#start-here .eua-saved').boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the saved block stays inside the viewport');
+  await sleep.page.locator('#start-here .eua-saved li button').click();
+  check(where, (await sleep.page.locator('#start-here .eua-saved').count()) === 0, 'removing the last item hides the block');
+  check(where, sleep.seen.pageErrors.length === 0, 'no page errors with the saved list');
+  await sleep.context.close();
+  // Term hints: marked in reading text, opened by click, closed by Escape, kept inside the viewport.
+  const fat = await open(browser, origin, viewport, '/fat-burning.html');
+  const terms = fat.page.locator('.fb-main .eua-term');
+  await terms.first().waitFor({state: 'attached'});
+  check(where, (await terms.count()) >= 1, 'Fat Burning Lab marks its terms');
+  const first = terms.first();
+  await first.scrollIntoViewIfNeeded();
+  const label = await first.innerText();
+  await first.click();
+  const pop = fat.page.locator('.eua-term-pop');
+  check(where, (await pop.count()) === 1 && await pop.isVisible(), 'clicking a term opens the hint');
+  const pbox = await pop.boundingBox();
+  check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the hint stays inside the viewport');
+  check(where, (await pop.locator('a').getAttribute('rel')).includes('noopener') && (await pop.locator('a').getAttribute('href')).startsWith('https://'), 'the source link is safe');
+  check(where, (await first.getAttribute('aria-expanded')) === 'true', 'the term button reports it is expanded');
+  await fat.page.keyboard.press('Escape');
+  check(where, (await fat.page.locator('.eua-term-pop').count()) === 0 && (await first.evaluate(n => n === document.activeElement)), 'Escape closes the hint and returns focus');
+  check(where, label.length > 2, 'the visible wording stays the same as the page text');
+  check(where, (await fat.page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with term hints');
+  check(where, fat.seen.pageErrors.length === 0, 'no page errors with term hints');
+  await fat.context.close();
+  const home = await open(browser, origin, viewport, '/index.html');
+  await home.page.locator('.evidence-guide').waitFor({state: 'attached'});
+  check(where, (await home.page.locator('.evidence-guide .eua-term').count()) >= 1, 'the evidence guide marks its terms');
+  await home.context.close();
+}
+
 async function supplementsFlow(browser, origin, viewport) {
   const where = `supplements @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
@@ -702,6 +750,7 @@ try {
   for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
   for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
   for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

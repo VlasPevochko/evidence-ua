@@ -1,6 +1,6 @@
 import './site-header.js?v=2';
 import {toolsHTML,mountQuickTools} from './platform-tools.js?v=83';
-import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=2';
+import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=3';
 import {mountTerms} from './platform-terms.js?v=2';
 import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=83';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

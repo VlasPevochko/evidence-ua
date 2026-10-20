@@ -266,13 +266,14 @@ async function trainerFlow(browser, origin, viewport) {
   check(where, (await options.evaluateAll(nodes => nodes.every(n => n.disabled))), 'options lock after an answer');
   const link = trainer.locator('.eua-trainer-source');
   check(where, (await link.getAttribute('href')).startsWith('https://pubmed.ncbi.nlm.nih.gov/') && (await link.getAttribute('rel')).includes('noopener'), 'the source is a safe PubMed link');
-  for (let i = 0; i < 3; i++) {
+  const cards = await trainer.evaluate(() => 7);
+  for (let i = 0; i < cards; i++) {
     const next = trainer.locator('.eua-trainer-feedback .eua-trainer-btn');
     check(where, await next.isVisible(), 'the next button must be reachable');
     const box = await next.boundingBox();
     check(where, box && box.height >= 44 && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'next button must be a tap target inside the viewport');
     await next.click();
-    if (i < 2) await trainer.locator('.eua-trainer-option').first().click();
+    if (i < cards - 1) await trainer.locator('.eua-trainer-option').first().click();
   }
   check(where, (await trainer.locator('.eua-trainer-done').count()) === 1, 'finishing shows the closing note');
   check(where, (await trainer.locator('.eua-trainer-note').innerText()).includes('не порада приймати добавки'), 'the safety note stays visible');

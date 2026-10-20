@@ -4,7 +4,8 @@ import {entityRegistry} from './evidence/entities.js?v=59';
 // Navigation metadata only. No new scientific statements, assessments or sources.
 const guides=[
  {id:'guide-evidence',title:'Як читати докази',href:'./index.html#evidence-guide-title',areaId:'supplements',kind:'guide'},
- {id:'guide-protein-meta',title:'Розбір метааналізу білка',href:'./protein-meta.html',areaId:'supplements',kind:'guide'}
+ {id:'guide-protein-meta',title:'Розбір метааналізу білка',href:'./protein-meta.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-glossary',title:'Словник термінів',href:'./glossary.html',areaId:'supplements',kind:'guide'}
 ];
 export const materialKinds={interactive:'Інтерактив',dossier:'Досьє',guide:'Розбір',section:'Матеріал'};
 const listedMaterials=catalog.areas.filter(a=>a.available).flatMap(area=>{
@@ -22,6 +23,7 @@ const searchTerms={
  'supplements-protein':'білок білка білки білкові протеїнові protein',
  'nutrition-protein-absorption':'білок білка білки білкові засвоєння білка',
  'guide-protein-meta':'білок білка білки білкові',
+ 'guide-glossary':'словник терміни глосарій значення слів що означає ДІ РКД GRADE інтервал',
  'cell-mitochondrion':'енергія енергії енергетичний атф ATP мітохондрії',
  'supplements-atp-pcr':'енергія енергії енергетичний атф ATP фосфокреатин',
  'nutrition-glucose':'вуглеводи вуглеводів цукор цукру засвоєння',

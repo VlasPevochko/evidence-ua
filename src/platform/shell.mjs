@@ -1,5 +1,6 @@
 import './site-header.mjs';
 import {toolsHTML,mountQuickTools} from './quick-tools.mjs';
+import {mountNextSteps} from './next-steps.mjs';
 import {catalog,learningHref,learningLocation} from './catalog.mjs';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
@@ -63,6 +64,7 @@ export function mountPlatformNavigation(root=document){
     if(start&&!start.querySelector('.eua-atlas-teaser')){const teaser=root.createElement('div');teaser.innerHTML=atlasTeaserHTML();const atlas=teaser.firstElementChild;if(atlas)start.append(atlas);}
   }
   rememberVisit(root,selected);
+  mountNextSteps(root);
   mountQuickTools(root);
   const renderLearning=()=>{
     root.querySelector('.eua-learning-nav')?.remove();

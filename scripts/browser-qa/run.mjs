@@ -414,6 +414,30 @@ async function glossaryFlow(browser, origin, viewport) {
   await fat.context.close();
 }
 
+async function compareFlow(browser, origin, viewport) {
+  const where = `compare @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
+  const cards = page.locator('.cp-card');
+  await cards.first().waitFor({state: 'attached'});
+  check(where, (await cards.count()) === 2, 'two supplements side by side');
+  check(where, (await cards.nth(0).locator('h2').innerText()) === 'Креатин' && (await cards.nth(1).locator('h2').innerText()) === 'Кофеїн', 'the addresses choose the pair');
+  check(where, (await cards.first().locator('dt').count()) === 4, 'four comparable rows per card');
+  await page.selectOption('#cp-b', 'supplement-magnesium');
+  check(where, (await cards.nth(1).locator('h2').innerText()) === 'Магній' && page.url().includes('b=supplement-magnesium'), 'the second choice changes the card and the shareable address');
+  await page.selectOption('#cp-b', 'creatine');
+  check(where, (await cards.nth(0).locator('h2').innerText()) !== (await cards.nth(1).locator('h2').innerText()), 'the same supplement is never compared with itself');
+  await page.click('#cp-swap');
+  const names = await cards.locator('h2').allInnerTexts();
+  check(where, names.length === 2 && names[0] !== names[1], 'swap keeps two different supplements');
+  check(where, (await page.locator('.cp-open').first().getAttribute('href')).startsWith('./index.html#'), 'each card opens its dossier');
+  const box = await cards.nth(1).boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'cards stay inside the viewport');
+  if (viewport.width > 900) { const b0 = await cards.nth(0).boundingBox(); check(where, box && b0 && Math.abs(box.y - b0.y) < 4, 'on a wide screen the cards are side by side'); }
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in the comparison');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors in the comparison');
+  await context.close();
+}
+
 async function supplementsFlow(browser, origin, viewport) {
   const where = `supplements @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/supplements.html');
@@ -784,6 +808,7 @@ try {
   for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
   for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
   for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
+  for (const viewport of viewports) await compareFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

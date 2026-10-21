@@ -1,0 +1,79 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {classify,youtubeId,suggestionLink,cardModel,sendProposal,validEndpoint,FORM_ENDPOINT,ISSUES_NEW,MAX_URL} from '../dist/videos-page.js';
+import {VIDEOS} from '../dist/videos-data.js';
+import {findMaterials} from '../src/platform/materials.mjs';
+
+// Відео від читачів (рішення власника 2026-10-21): людина вставляє посилання, ми дивимось і публікуємо самі.
+const html=fs.readFileSync('dist/videos.html','utf8'),js=fs.readFileSync('dist/videos-page.js','utf8'),css=fs.readFileSync('dist/videos-page.css','utf8');
+assert.equal((html.match(/<h1\b/g)||[]).length,1);
+assert(html.includes('data-pine')&&html.includes('data-motif="ajiro"')&&fs.readFileSync('dist/page-pine.css','utf8').includes('.pb[data-motif="ajiro"]'),'pine band with its own motif');
+for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='videos.html'))assert(!fs.readFileSync('dist/'+f,'utf8').includes('data-motif="ajiro"'),`${f} must not reuse ajiro`);
+assert.equal((html.match(/<header\b/g)||[]).length,1,'only the fallback header');
+// The invitation speaks to trainers and rehabilitation specialists, and promises review, not publication.
+assert(html.includes('Ви тренер, реабілітолог або просто хочете поділитися своїми відео')&&html.includes('Скидайте сюди посилання на відео')&&html.includes('Ми подивимось і, якщо воно підходить'),'the invitation names its audience and promises only a review');
+// The field says plainly what to paste.
+assert(html.includes('for="vd-url"')&&html.includes('Посилання на відео (URL)'),'a labelled URL field');
+assert(html.includes('type="url"')&&html.includes('placeholder="https://www.youtube.com/watch?v=…"'),'URL input with an example');
+assert(html.includes('Вставте повну адресу сторінки з відео')&&html.includes('Копіювати посилання')&&html.includes('<b>https://</b>'),'the hint explains where to copy the address from');
+assert(html.includes('>Запропонувати відео</button>'),'one clear button');
+// Validation.
+assert.equal(classify('').reason,'empty');
+for(const [bad,reason] of [['hello','format'],['http://youtube.com/watch?v=aaaaaaaaaaa','scheme'],['https://a b.com','space'],['https://user:pw@youtube.com/x','creds'],['https://localhost/x','host'],['javascript:alert(1)','scheme'],['https://x.com/'+'a'.repeat(MAX_URL),'long']])assert.equal(classify(bad).reason,reason,bad);
+assert.equal(classify('https://www.youtube.com/watch?v=dQw4w9WgXcQ').platform,'YouTube');
+assert.equal(classify('https://youtu.be/dQw4w9WgXcQ').youtube,'dQw4w9WgXcQ');
+assert.equal(classify('https://www.instagram.com/reel/abc/').platform,'Instagram');
+assert.equal(classify('https://vm.tiktok.com/ZM123/').platform,'TikTok');
+assert.equal(classify('https://vimeo.com/123').platform,'Vimeo');
+assert.equal(classify('https://example.org/video').platform,'Інша платформа','other platforms are accepted for manual review');
+assert.equal(youtubeId('https://www.youtube.com/shorts/dQw4w9WgXcQ'),'dQw4w9WgXcQ');
+assert.equal(youtubeId('https://www.youtube.com/watch?v=short'),null,'a malformed id is not embedded');
+assert.equal(youtubeId('https://evil.example/watch?v=dQw4w9WgXcQ'),null,'only YouTube hosts are embedded');
+// The proposal link: GitHub new-issue page, prefilled, no personal data, no e-mail.
+const info=classify('https://youtu.be/dQw4w9WgXcQ');
+const link=suggestionLink(info,'  техніка   присіду ');
+assert(link.startsWith(ISSUES_NEW+'?title='));
+const q=new URL(link).searchParams;
+assert(q.get('body').includes('Посилання: https://youtu.be/dQw4w9WgXcQ')&&q.get('body').includes('Чим корисне: техніка присіду'));
+assert(!/@/.test(js+html),'no e-mail address anywhere');
+assert(suggestionLink(info,'x'.repeat(500)).length<1800,'the prefilled link stays short');
+// Library: empty until the owner approves something; every entry is checked.
+assert(Array.isArray(VIDEOS));
+for(const v of VIDEOS){assert(cardModel(v),`${v.title}: valid https link`);assert(v.title&&v.author&&v.added,`${v.title}: title, author and date`);}
+assert.equal(cardModel({title:'t',url:'http://x.org'}),null);
+assert.equal(cardModel({title:'t',url:'https://youtu.be/dQw4w9WgXcQ'}).embedId,'dQw4w9WgXcQ');
+assert.equal(cardModel({title:'t',url:'https://www.tiktok.com/@a/video/1'}).embedId,null,'only YouTube is shown on the page');
+// Privacy: the player is created only inside the click handler; the label is shown; nothing is requested on load.
+assert(js.includes("play.addEventListener('click'")&&js.indexOf('youtube-nocookie')>js.indexOf("play.addEventListener('click'"),'the YouTube frame appears only after a click');
+assert(js.includes('Матеріал від читача: не наукове джерело')&&js.includes('Після кліку відео завантажиться з YouTube'));
+// Changed 2026-10-21: the owner asked for a form connected to his mailbox (without showing the address), so one network call exists.
+// It lives only inside sendProposal (called from the submit handler, i.e. after a click) and only to a Formspree form address.
+assert(!/XMLHttpRequest|sendBeacon|localStorage|sessionStorage/.test(js),'the page stores nothing');
+assert.equal((js.match(/fetchImpl\(/g)||[]).length,1,'a single request site');
+assert(FORM_ENDPOINT===''||validEndpoint(FORM_ENDPOINT),'the configured form address is empty or a Formspree form');
+assert(validEndpoint('https://formspree.io/f/xyzabcde')&&!validEndpoint('https://evil.example/f/xyzabcde')&&!validEndpoint('http://formspree.io/f/xyzabcde')&&!validEndpoint('https://formspree.io/f/'),'only Formspree form addresses are accepted');
+{
+  const calls=[],info=classify('https://youtu.be/dQw4w9WgXcQ');
+  const ok=await sendProposal('https://formspree.io/f/xyzabcde',info,{note:' корисно ',author:'Олена',profile:'https://www.instagram.com/olena',trap:''},async(u,o)=>{calls.push([u,o]);return {ok:true};});
+  assert.equal(ok.ok,true);
+  const [u,o]=calls[0];
+  assert.equal(u,'https://formspree.io/f/xyzabcde');assert.equal(o.method,'POST');assert.equal(o.credentials,'omit');assert.equal(o.referrerPolicy,'no-referrer');
+  assert.deepEqual(JSON.parse(o.body),{url:'https://youtu.be/dQw4w9WgXcQ',platform:'YouTube',profile:'https://www.instagram.com/olena',author:'Олена',note:'корисно'});
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{trap:'bot',profile:'https://x.org/a'},async()=>{throw Error('must not be called');})).skipped,true,'the honeypot stops bots without a request');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'не посилання'},async()=>{throw Error('profile is required');})).reason,'profile','a proposal without a valid social page is not sent');
+  assert.equal((await sendProposal('',info,{},async()=>{throw Error('no endpoint');})).reason,'endpoint','no request without a configured form');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'https://x.org/a'},async()=>({ok:false,status:422}))).reason,'status');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'https://x.org/a'},async()=>{throw Error('offline');})).reason,'network');
+}
+assert(/id="vd-trap"[^>]*aria-label="[^"]+"/.test(html),'the bot trap still has an accessible name (smoke check requires it)');
+assert(html.includes('id="vd-trap"')&&html.includes('id="vd-author"')&&html.includes('id="vd-via"')&&html.includes('Formspree'),'honeypot, author field and the disclosure exist');
+assert(html.includes('for="vd-profile"')&&html.includes('id="vd-profile"')&&html.includes('Ваша сторінка в соцмережі')&&/id="vd-profile"[^>]*required/.test(html),'the social page field is labelled and required');
+assert(suggestionLink(info,'x','Олена','https://www.instagram.com/olena').includes(encodeURIComponent('Сторінка в соцмережі: https://www.instagram.com/olena')),'the GitHub draft carries the social page');
+assert(suggestionLink(info,'x','Олена').includes(encodeURIComponent('Автор відео: Олена')),'the GitHub draft carries the author');
+assert(js.includes("'noopener,noreferrer'")&&js.includes('rel=\'noopener noreferrer\'')||js.includes("a.rel='noopener noreferrer'"),'outgoing links are safe');
+assert(css.includes('.vd-send')&&!/https?:\/\//.test(css),'no third-party requests in styles');
+assert(html.includes('Не приймаємо')&&html.includes('Submit new issue')&&html.includes('буде публічною й пов’язаною з вашим акаунтом GitHub')&&html.includes('разом із указаною вами сторінкою в соцмережі'),'moderation rules and the public nature (incl. the social page) are stated');
+assert(findMaterials('відео').some(m=>m.href==='./videos.html'),'searchable');
+assert(fs.readFileSync('dist/index.html','utf8').includes('<a href="./videos.html">Відео від читачів →</a>'),'linked from home');
+assert(fs.existsSync('dist/og/videos.jpg'),'own share card');
+console.log('Reader videos: URL field and hint, validation, GitHub proposal link, click-to-load player, honest rules passed.');

@@ -470,6 +470,44 @@ async function changesFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function videosFlow(browser, origin, viewport) {
+  const where = `videos @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/videos.html');
+  await page.addInitScript(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
+  await page.reload({waitUntil: 'load'});
+  const url = page.locator('#vd-url');
+  check(where, (await page.locator('label[for="vd-url"]').innerText()).includes('URL'), 'the field is labelled as a URL');
+  check(where, (await url.getAttribute('placeholder')).startsWith('https://'), 'the field shows an example address');
+  check(where, (await page.locator('#vd-help').innerText()).includes('Копіювати посилання'), 'the hint says where to copy the address');
+  const send = page.locator('.vd-send');
+  const box = await send.boundingBox();
+  check(where, box && box.height >= 44 && box.x + box.width <= viewport.width + 1, 'the button is a 44px target inside the viewport');
+  await send.click();
+  check(where, (await page.locator('#vd-state').innerText()).includes('Вставте посилання'), 'an empty submit asks for the link');
+  check(where, (await page.evaluate(() => window.__opened.length)) === 0, 'nothing opens for an empty field');
+  await url.fill('привіт');
+  check(where, (await page.locator('#vd-state').innerText()).includes('https://'), 'a wrong value explains the format');
+  check(where, (await url.getAttribute('aria-invalid')) === 'true', 'the field is marked invalid');
+  await url.fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  check(where, (await page.locator('#vd-state').innerText()).includes('YouTube'), 'a valid link names its platform');
+  await page.fill('#vd-note', 'техніка присіду');
+  await send.click();
+  check(where, (await page.locator('#vd-state').innerText()).includes('сторінку в соцмережі'), 'a missing social page is asked for');
+  check(where, (await page.evaluate(() => window.__opened.length)) === 0, 'nothing opens without the social page');
+  await page.fill('#vd-profile', 'https://www.instagram.com/olena');
+  await send.click();
+  const opened = await page.evaluate(() => window.__opened);
+  check(where, opened.length === 1 && opened[0].startsWith('https://github.com/VlasPevochko/evidence-ua/issues/new?title='), 'the proposal opens a prefilled GitHub page');
+  check(where, decodeURIComponent(opened[0]).includes('dQw4w9WgXcQ') && decodeURIComponent(opened[0]).includes('техніка присіду'), 'the link and the note travel in the draft');
+  check(where, await page.locator('#vd-after').isVisible(), 'the next step is explained after the click');
+  check(where, (await page.locator('.vd-empty').count()) === 1, 'the empty library says so');
+  await page.locator('#vd-rules summary').click();
+  check(where, await page.locator('#vd-rules li').first().isVisible(), 'the rules unfold');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the video page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the video page raises no errors');
+  await context.close();
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -896,6 +934,7 @@ try {
   for (const viewport of viewports) await mapFlow(browser, origin, viewport);
   for (const viewport of viewports) await searchFlow(browser, origin, viewport);
   for (const viewport of viewports) await changesFlow(browser, origin, viewport);
+  for (const viewport of viewports) await videosFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

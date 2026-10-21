@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {proteinBase, proteinModule} from '../src/evidence/supplements/protein/module.mjs';
-import {ClaimCard, SourceCard, escapeHTML as e} from '../src/evidence/core/components.mjs';
+import {ConfidenceBadge, SourceCard, claimButton, escapeHTML as e} from '../src/evidence/core/components.mjs';
 
 const root = process.cwd();
 const indexPath = path.join(root, 'dist/index.html');
@@ -25,14 +25,21 @@ const scale = [
 const plateau = record('EVR-000104').result, noTraining = record('EVR-000106').result;
 const sign = x => (x < 0 ? '−' : '') + num(Math.abs(x));
 
+// Compact Claim cards (owner request 2026-10-21: improve the card, shorter on phones): statement, status and
+// the evidence drawer; full summaries, context and limitations open in the drawer, as in the other dossiers.
+function CompactClaim(id) {
+  const c = proteinBase.claims.find(x => x.id === id);
+  return `<article class="eua-claim bc-claim" data-claim-id="${e(c.id)}"><div class="eua-kicker">Ефект · люди</div><h3>${e(proteinBase.presentation.labels[id])}</h3><p class="eua-statement">${e(c.shortStatement)}</p>${ConfidenceBadge(c)}${claimButton(id, 'Докази й межі')}</article>`;
+}
+
 export function ProteinCard() {
-  const cards = proteinModule.claimIds.map(id => ClaimCard(id, proteinBase)).join('');
+  const cards = proteinModule.claimIds.map(CompactClaim).join('');
   const sources = proteinBase.sources.map(s => SourceCard(s, proteinBase.records.filter(r => r.sourceId === s.id), true, 'protein-source', 3)).join('');
-  return `<div class="eua-module pc" data-protein-card>
+  return `<div class="eua-module pc bc" data-protein-card>
 <div class="base-intro"><div class="base-copy"><h2 class="pc-headline">Працює разом із тренуваннями</h2><p class="base-definition">Протеїн — це білок, який ми отримуємо з їжі: молочних продуктів, яєць, риби, м’яса, бобових. Протеїновий порошок — лише зручне додаткове джерело білка.</p><p class="pc-lead">Додатковий білок трохи збільшує приріст сили й безжирової маси, але тільки тоді, коли є силові тренування. Головний результат дають самі тренування.</p></div><div class="base-art" style="--base-x:25%;--base-y:0%" aria-hidden="true"></div></div>
 <section class="pc-scale" aria-labelledby="pc-scale-title"><h2 id="pc-scale-title">Масштаб ефекту</h2><p class="pc-sub">Середній приріст за 6–52 тижні силових тренувань (метааналіз Morton, 49 РКД).</p><div class="pc-bars">${scale.map(s => `<div class="pc-bar-group"><h3>${e(s.title)}</h3><div class="pc-row"><span>Тренування</span><div class="pc-track"><i style="width:100%"></i></div><b>≈ +${num(s.training)} ${s.unit}</b></div><div class="pc-row pc-p"><span>+ білок</span><div class="pc-track"><i style="width:${(s.protein / s.training * 100).toFixed(1)}%"></i></div><b>+${num(s.protein)} ${s.unit}</b></div></div>`).join('')}</div><p class="pc-foot">Ширина смуги — частка від приросту лише від тренувань. Середні значення, не прогноз для конкретної людини.</p></section>
 <div class="pc-facts"><div><span>Орієнтир</span><strong>≈ ${num(1.6)} г/кг/добу</strong><small>загального білка з їжею. Межа невизначена: ${num(plateau.lowerCI)}–${num(plateau.upperCI)}</small></div><div><span>Без тренувань</span><strong>ефекту не виявлено</strong><small>на силу: +${num(noTraining.estimate)}% (ДІ від ${sign(noTraining.lowerCI)} до ${sign(noTraining.upperCI)})</small></div><div><span>Рівень впевненості</span><strong>не оцінено</strong><small>формального наукового перегляду ще не було</small></div></div>
-<h2 class="pc-h2">Що показують дослідження</h2><div class="eua-claim-grid">${cards}</div>
+<h2 class="pc-h2">Твердження й докази</h2><div class="eua-claim-grid bc-claims">${cards}</div>
 <section class="pc-not" aria-labelledby="pc-not-title"><h2 id="pc-not-title">Чого ми не стверджуємо</h2>${proteinModule.notClaimed.map(n => `<article><h3>${e(n.topic)}</h3><p>${e(n.reason)}</p></article>`).join('')}</section>
 <details class="pc-more"><summary>Практично: чи потрібна добавка</summary><ul><li><strong>Білка в раціоні вистачає?</strong> Порошок може бути необов’язковим. Звичайна їжа теж постачає білок.</li><li><strong>Незручно добирати білок їжею?</strong> Добавка може допомогти закрити цю прогалину.</li><li><strong>На упаковці написано «protein»?</strong> Подивися, скільки грамів білка містить порція і який склад. Сам напис не показує, чи потрібна покупка.</li><li><strong>Хочеш витратити розумно?</strong> Порівняй вартість однакової кількості білка у звичайних продуктах і добавках.</li></ul><p class="pc-note">Це практичні орієнтири редакції, а не результат досліджень: метааналізи не порівнювали ціни й продукти.</p></details>
 <details class="pc-more"><summary>Джерела (${proteinBase.sources.length})</summary><div class="eua-source-grid">${sources}</div><p class="pc-links"><a href="protein-meta.html">Простою мовою: як читати метааналіз Morton</a><a href="https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/" target="_blank" rel="noopener noreferrer">NIH ODS — білок і спортивні добавки ↗</a></p></details>

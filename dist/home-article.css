@@ -1,0 +1,17 @@
+/* Home article view (dossiers): the shared site header stays on top; the hero and home content are hidden.
+   The router sets .page[data-article-mode]; without JavaScript the :target rules in index.html still apply. */
+.page[data-article-mode]{min-height:0!important;height:auto!important;padding:0!important;background:#0b0d0f}
+.page[data-article-mode]>:not(.eua-site-header){display:none!important}
+.page[data-article-mode]::before,.page[data-article-mode]::after{display:none!important}
+body[data-route-view="article"]>section[id^="supplement-"]>.d-top{display:none!important}
+body[data-route-view="article"]>section[id^="supplement-"]>.d-kicker{margin-top:8px}
+.eua-article-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:0 0 14px;border-bottom:1px solid #ffffff14;margin:0 0 4px}
+.eua-article-bar .eua-article-back{display:inline-flex;align-items:center;min-height:44px;color:#e7bd46;text-decoration:none;font-weight:600}
+.eua-article-bar .eua-article-back:hover{text-decoration:underline;text-underline-offset:4px}
+.eua-article-bar .eua-tools{display:flex;flex-wrap:nowrap;gap:8px;width:auto;margin:0}
+.eua-article-bar .eua-tools>*{display:inline-flex;white-space:nowrap;align-items:center;min-height:40px;padding:6px 14px;border:1px solid #ffffff26;border-radius:999px;background:transparent;color:#d4dbdd;font:500 13px/1.2 Inter,system-ui,sans-serif;text-decoration:none;cursor:pointer}
+.eua-article-bar .eua-tools>*:hover{border-color:#e7bd46;color:#f3e6c2}
+.eua-article-bar .eua-tool-status{flex-basis:100%;margin:0;font-size:12px;color:#a9d7e7}
+.eua-article-bar .eua-tool-status:empty{display:none}
+.eua-article-bar :focus-visible{outline:2px solid #96e7ff;outline-offset:3px}
+@media(max-width:520px){.eua-article-bar .eua-tools>*{min-height:44px;font-size:12px;padding:6px 12px}.eua-article-bar .eua-tools>a{display:none}}

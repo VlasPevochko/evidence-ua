@@ -508,6 +508,33 @@ async function videosFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function dietsFlow(browser, origin, viewport) {
+  const where = `diets @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/nutrition.html');
+  const rec = page.locator('#nd-recommend');
+  await rec.waitFor({state: 'attached'});
+  await rec.scrollIntoViewIfNeeded();
+  check(where, await rec.isVisible(), 'the editorial position is visible without opening anything');
+  check(where, (await rec.innerText()).includes('не лікарська порада'), 'the position says it is not medical advice');
+  check(where, (await rec.innerText()).includes('не обіцяє'), 'the position states the limits');
+  await page.locator('#nd-recommend a[href="#diet-mediterranean"]').click();
+  await page.locator('#diet-mediterranean').evaluate(el => { el.open = true; });
+  const evidence = page.locator('#diet-mediterranean .nd-evidence');
+  await evidence.waitFor({state: 'visible'});
+  check(where, (await evidence.locator('.nd-findings a[href^="https://doi.org/"]').count()) >= 3, 'findings link to their sources');
+  check(where, (await evidence.innerText()).includes('ПОКАЗИ') && (await evidence.innerText()).includes('ПРОТИПОКАЗИ'), 'indications and contraindications are both shown');
+  check(where, (await evidence.locator('a[target="_blank"]:not([rel~="noopener"])').count()) === 0, 'all outgoing links are safe');
+  const cols = await evidence.locator('.nd-fit').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  check(where, viewport.width <= 760 ? cols === 1 : cols === 2, `indications and cautions use ${viewport.width <= 760 ? 'one column on the phone' : 'two columns on the desktop'}`);
+  const box = await evidence.boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the evidence block stays inside the viewport');
+  await page.locator('#diet-ketogenic').evaluate(el => { el.open = true; });
+  check(where, (await page.locator('#diet-ketogenic .nd-caution').innerText()).includes('панкреатит'), 'the keto card lists its contraindications');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the nutrition page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the diet cards raise no errors');
+  await context.close();
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -935,6 +962,7 @@ try {
   for (const viewport of viewports) await searchFlow(browser, origin, viewport);
   for (const viewport of viewports) await changesFlow(browser, origin, viewport);
   for (const viewport of viewports) await videosFlow(browser, origin, viewport);
+  for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

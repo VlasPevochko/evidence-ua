@@ -54,21 +54,24 @@ assert(FORM_ENDPOINT===''||validEndpoint(FORM_ENDPOINT),'the configured form add
 assert(validEndpoint('https://formspree.io/f/xyzabcde')&&!validEndpoint('https://evil.example/f/xyzabcde')&&!validEndpoint('http://formspree.io/f/xyzabcde')&&!validEndpoint('https://formspree.io/f/'),'only Formspree form addresses are accepted');
 {
   const calls=[],info=classify('https://youtu.be/dQw4w9WgXcQ');
-  const ok=await sendProposal('https://formspree.io/f/xyzabcde',info,{note:' корисно ',author:'Олена',trap:''},async(u,o)=>{calls.push([u,o]);return {ok:true};});
+  const ok=await sendProposal('https://formspree.io/f/xyzabcde',info,{note:' корисно ',author:'Олена',profile:'https://www.instagram.com/olena',trap:''},async(u,o)=>{calls.push([u,o]);return {ok:true};});
   assert.equal(ok.ok,true);
   const [u,o]=calls[0];
   assert.equal(u,'https://formspree.io/f/xyzabcde');assert.equal(o.method,'POST');assert.equal(o.credentials,'omit');assert.equal(o.referrerPolicy,'no-referrer');
-  assert.deepEqual(JSON.parse(o.body),{url:'https://youtu.be/dQw4w9WgXcQ',platform:'YouTube',author:'Олена',note:'корисно'});
-  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{trap:'bot'},async()=>{throw Error('must not be called');})).skipped,true,'the honeypot stops bots without a request');
+  assert.deepEqual(JSON.parse(o.body),{url:'https://youtu.be/dQw4w9WgXcQ',platform:'YouTube',profile:'https://www.instagram.com/olena',author:'Олена',note:'корисно'});
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{trap:'bot',profile:'https://x.org/a'},async()=>{throw Error('must not be called');})).skipped,true,'the honeypot stops bots without a request');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'не посилання'},async()=>{throw Error('profile is required');})).reason,'profile','a proposal without a valid social page is not sent');
   assert.equal((await sendProposal('',info,{},async()=>{throw Error('no endpoint');})).reason,'endpoint','no request without a configured form');
-  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{},async()=>({ok:false,status:422}))).reason,'status');
-  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{},async()=>{throw Error('offline');})).reason,'network');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'https://x.org/a'},async()=>({ok:false,status:422}))).reason,'status');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'https://x.org/a'},async()=>{throw Error('offline');})).reason,'network');
 }
 assert(html.includes('id="vd-trap"')&&html.includes('id="vd-author"')&&html.includes('id="vd-via"')&&html.includes('Formspree'),'honeypot, author field and the disclosure exist');
+assert(html.includes('for="vd-profile"')&&html.includes('id="vd-profile"')&&html.includes('Ваша сторінка в соцмережі')&&/id="vd-profile"[^>]*required/.test(html),'the social page field is labelled and required');
+assert(suggestionLink(info,'x','Олена','https://www.instagram.com/olena').includes(encodeURIComponent('Сторінка в соцмережі: https://www.instagram.com/olena')),'the GitHub draft carries the social page');
 assert(suggestionLink(info,'x','Олена').includes(encodeURIComponent('Автор відео: Олена')),'the GitHub draft carries the author');
 assert(js.includes("'noopener,noreferrer'")&&js.includes('rel=\'noopener noreferrer\'')||js.includes("a.rel='noopener noreferrer'"),'outgoing links are safe');
 assert(css.includes('.vd-send')&&!/https?:\/\//.test(css),'no third-party requests in styles');
-assert(html.includes('Не приймаємо')&&html.includes('Submit new issue')&&html.includes('Пропозиція буде публічною'),'moderation rules and the public nature are stated');
+assert(html.includes('Не приймаємо')&&html.includes('Submit new issue')&&html.includes('буде публічною й пов’язаною з вашим акаунтом GitHub')&&html.includes('разом із указаною вами сторінкою в соцмережі'),'moderation rules and the public nature (incl. the social page) are stated');
 assert(findMaterials('відео').some(m=>m.href==='./videos.html'),'searchable');
 assert(fs.readFileSync('dist/index.html','utf8').includes('<a href="./videos.html">Відео від читачів →</a>'),'linked from home');
 assert(fs.existsSync('dist/og/videos.jpg'),'own share card');

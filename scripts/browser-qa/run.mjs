@@ -492,6 +492,10 @@ async function videosFlow(browser, origin, viewport) {
   check(where, (await page.locator('#vd-state').innerText()).includes('YouTube'), 'a valid link names its platform');
   await page.fill('#vd-note', 'техніка присіду');
   await send.click();
+  check(where, (await page.locator('#vd-state').innerText()).includes('сторінку в соцмережі'), 'a missing social page is asked for');
+  check(where, (await page.evaluate(() => window.__opened.length)) === 0, 'nothing opens without the social page');
+  await page.fill('#vd-profile', 'https://www.instagram.com/olena');
+  await send.click();
   const opened = await page.evaluate(() => window.__opened);
   check(where, opened.length === 1 && opened[0].startsWith('https://github.com/VlasPevochko/evidence-ua/issues/new?title='), 'the proposal opens a prefilled GitHub page');
   check(where, decodeURIComponent(opened[0]).includes('dQw4w9WgXcQ') && decodeURIComponent(opened[0]).includes('техніка присіду'), 'the link and the note travel in the draft');

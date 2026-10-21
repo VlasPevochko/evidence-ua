@@ -37,17 +37,19 @@ export function classify(raw){
   return {ok:true,url:u.href,host:u.hostname,platform:known?known[0]:'Інша платформа',youtube:youtubeId(u.href)};
 }
 // Текст заявки. Особистих даних тут немає: лише те, що людина сама вставила.
-export function suggestionLink(info,note='',author=''){
+export function suggestionLink(info,note='',author='',profile=''){
   const cleanNote=tidy(note,MAX_NOTE),cleanAuthor=tidy(author,MAX_AUTHOR);
   const title=`Відео від читача: ${info.platform}`;
-  const body=[`Посилання: ${info.url}`,`Платформа: ${info.platform}`,`Автор відео: ${cleanAuthor||'не вказано'}`,cleanNote?`Чим корисне: ${cleanNote}`:'Чим корисне: не вказано','','Пропозиція з сторінки «Відео від читачів». Особистих даних тут не вказуйте.'].join('\n');
+  const body=[`Посилання: ${info.url}`,`Платформа: ${info.platform}`,`Автор відео: ${cleanAuthor||'не вказано'}`,`Сторінка в соцмережі: ${tidy(profile,MAX_URL)||'не вказано'}`,cleanNote?`Чим корисне: ${cleanNote}`:'Чим корисне: не вказано','','Пропозиція з сторінки «Відео від читачів». Особистих даних тут не вказуйте.'].join('\n');
   return ISSUES_NEW+'?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body);
 }
 // Надсилання через форму-посередника. Викликається лише після кліку; «_gotcha» — пастка для ботів (людина її не бачить).
 export async function sendProposal(endpoint,info,fields,fetchImpl=globalThis.fetch){
   if(!validEndpoint(endpoint))return {ok:false,reason:'endpoint'};
   if(fields.trap)return {ok:true,skipped:true};
-  const body={url:info.url,platform:info.platform,author:tidy(fields.author,MAX_AUTHOR),note:tidy(fields.note,MAX_NOTE)};
+  const profile=classify(fields.profile);
+  if(!profile.ok)return {ok:false,reason:'profile'};
+  const body={url:info.url,platform:info.platform,profile:profile.url,author:tidy(fields.author,MAX_AUTHOR),note:tidy(fields.note,MAX_NOTE)};
   try{
     const res=await fetchImpl(endpoint,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body),referrerPolicy:'no-referrer',credentials:'omit'});
     return res.ok?{ok:true}:{ok:false,reason:'status',status:res.status};
@@ -62,7 +64,7 @@ export function cardModel(video){
 
 export function mountForm(root=document){
   const form=root.getElementById('vd-form');if(!form)return;
-  const url=root.getElementById('vd-url'),note=root.getElementById('vd-note'),author=root.getElementById('vd-author'),trap=root.getElementById('vd-trap'),state=root.getElementById('vd-state'),after=root.getElementById('vd-after'),send=form.querySelector('.vd-send');
+  const url=root.getElementById('vd-url'),profile=root.getElementById('vd-profile'),note=root.getElementById('vd-note'),author=root.getElementById('vd-author'),trap=root.getElementById('vd-trap'),state=root.getElementById('vd-state'),after=root.getElementById('vd-after'),send=form.querySelector('.vd-send');
   const viaForm=validEndpoint(FORM_ENDPOINT);
   const via=root.getElementById('vd-via'),privForm=root.getElementById('vd-priv-form'),privGit=root.getElementById('vd-priv-git');
   if(via)via.hidden=!viaForm;if(privForm)privForm.hidden=!viaForm;if(privGit)privGit.hidden=viaForm;
@@ -73,22 +75,25 @@ export function mountForm(root=document){
     state.textContent=info.ok?`Посилання виглядає правильно: ${info.platform}.`:info.reason==='empty'?'':info.message;
     return info;
   };
-  const githubLink=(info)=>{const a=root.createElement('a');a.href=suggestionLink(info,note.value,author.value);a.target='_blank';a.rel='noopener noreferrer';a.textContent='запропонувати через GitHub';return a;};
+  const githubLink=(info)=>{const a=root.createElement('a');a.href=suggestionLink(info,note.value,author.value,profile.value);a.target='_blank';a.rel='noopener noreferrer';a.textContent='запропонувати через GitHub';return a;};
   url.addEventListener('input',()=>{after.hidden=true;show();});
+  profile.addEventListener('input',()=>{profile.setAttribute('aria-invalid','false');after.hidden=true;});
   form.addEventListener('submit',async e=>{
     e.preventDefault();
     const info=show();
     if(!info.ok){if(info.reason==='empty'){state.className='vd-state is-bad';state.textContent='Вставте посилання на відео в поле вище.';}url.focus();return;}
+    const who=classify(profile.value);
+    if(!who.ok){profile.setAttribute('aria-invalid','true');state.className='vd-state is-bad';state.textContent='Вкажіть вашу сторінку в соцмережі: посилання на профіль чи канал, що починається з https://';profile.focus();return;}
     after.hidden=false;after.textContent='';
     if(viaForm){
       send.disabled=true;after.textContent='Надсилаємо…';
-      const res=await sendProposal(FORM_ENDPOINT,info,{note:note.value,author:author.value,trap:trap?.value},root.defaultView?.fetch?.bind(root.defaultView));
+      const res=await sendProposal(FORM_ENDPOINT,info,{note:note.value,author:author.value,profile:profile.value,trap:trap?.value},root.defaultView?.fetch?.bind(root.defaultView));
       send.disabled=false;
       if(res.ok){after.textContent='Дякуємо! Посилання надійшло. Ми подивимось і, якщо відео підходить, додамо його в бібліотеку.';url.value='';note.value='';if(author)author.value='';state.textContent='';state.className='vd-state';}
       else{after.textContent='Не вдалося надіслати. Спробуйте ще раз або ';after.append(githubLink(info),'.');}
       return;
     }
-    const href=suggestionLink(info,note.value,author.value);
+    const href=suggestionLink(info,note.value,author.value,profile.value);
     const view=root.defaultView;
     if(view&&typeof view.open==='function')view.open(href,'_blank','noopener,noreferrer');
     const a=root.createElement('a');a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.textContent='відкрийте сторінку вручну';

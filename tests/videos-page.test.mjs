@@ -65,6 +65,7 @@ assert(validEndpoint('https://formspree.io/f/xyzabcde')&&!validEndpoint('https:/
   assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'https://x.org/a'},async()=>({ok:false,status:422}))).reason,'status');
   assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{profile:'https://x.org/a'},async()=>{throw Error('offline');})).reason,'network');
 }
+assert(/id="vd-trap"[^>]*aria-label="[^"]+"/.test(html),'the bot trap still has an accessible name (smoke check requires it)');
 assert(html.includes('id="vd-trap"')&&html.includes('id="vd-author"')&&html.includes('id="vd-via"')&&html.includes('Formspree'),'honeypot, author field and the disclosure exist');
 assert(html.includes('for="vd-profile"')&&html.includes('id="vd-profile"')&&html.includes('Ваша сторінка в соцмережі')&&/id="vd-profile"[^>]*required/.test(html),'the social page field is labelled and required');
 assert(suggestionLink(info,'x','Олена','https://www.instagram.com/olena').includes(encodeURIComponent('Сторінка в соцмережі: https://www.instagram.com/olena')),'the GitHub draft carries the social page');

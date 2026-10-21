@@ -10,6 +10,8 @@ assert.equal((html.match(/<h1\b/g)||[]).length,1);
 assert(html.includes('data-pine')&&html.includes('data-motif="ajiro"')&&fs.readFileSync('dist/page-pine.css','utf8').includes('.pb[data-motif="ajiro"]'),'pine band with its own motif');
 for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='videos.html'))assert(!fs.readFileSync('dist/'+f,'utf8').includes('data-motif="ajiro"'),`${f} must not reuse ajiro`);
 assert.equal((html.match(/<header\b/g)||[]).length,1,'only the fallback header');
+// The invitation speaks to trainers and rehabilitation specialists, and promises review, not publication.
+assert(html.includes('Ви тренер, реабілітолог або просто хочете поділитися своїми відео')&&html.includes('Скидайте сюди посилання на відео')&&html.includes('Ми подивимось і, якщо воно підходить'),'the invitation names its audience and promises only a review');
 // The field says plainly what to paste.
 assert(html.includes('for="vd-url"')&&html.includes('Посилання на відео (URL)'),'a labelled URL field');
 assert(html.includes('type="url"')&&html.includes('placeholder="https://www.youtube.com/watch?v=…"'),'URL input with an example');

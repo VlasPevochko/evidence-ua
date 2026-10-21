@@ -5,7 +5,9 @@ import {entityRegistry} from './evidence/entities.js?v=59';
 const guides=[
  {id:'guide-evidence',title:'Як читати докази',href:'./index.html#evidence-guide-title',areaId:'supplements',kind:'guide'},
  {id:'guide-protein-meta',title:'Розбір метааналізу білка',href:'./protein-meta.html',areaId:'supplements',kind:'guide'},
- {id:'guide-glossary',title:'Словник термінів',href:'./glossary.html',areaId:'supplements',kind:'guide'}
+ {id:'guide-glossary',title:'Словник термінів',href:'./glossary.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-compare',title:'Порівняння добавок',href:'./compare.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-map',title:'Карта знань',href:'./map.html',areaId:'supplements',kind:'guide'}
 ];
 export const materialKinds={interactive:'Інтерактив',dossier:'Досьє',guide:'Розбір',section:'Матеріал'};
 const listedMaterials=catalog.areas.filter(a=>a.available).flatMap(area=>{
@@ -24,6 +26,8 @@ const searchTerms={
  'supplements-berberine':'берберин берберину berberine цукор глюкоза діабет холестерин ліпіди',
  'nutrition-protein-absorption':'білок білка білки білкові засвоєння білка',
  'guide-protein-meta':'білок білка білки білкові',
+ 'guide-map':'карта знань схема зв’язки між темами навігація як пов’язані матеріали',
+ 'guide-compare':'порівняння порівняти добавки поруч два досьє кофеїн креатин магній різниця',
  'guide-glossary':'словник терміни глосарій значення слів що означає ДІ РКД GRADE інтервал',
  'cell-mitochondrion':'енергія енергії енергетичний атф ATP мітохондрії',
  'supplements-atp-pcr':'енергія енергії енергетичний атф ATP фосфокреатин',

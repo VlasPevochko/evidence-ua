@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 // The pine theme: every themed page opts in with data-pine, opens with a patterned title band and keeps its own motif.
 const css=fs.readFileSync('dist/page-pine.css','utf8');
-const motifs=['shippo','yagasuri','asanoha','kumiko','nami','take','kikko','seigaiha','kasumi','enso','uroko','ichimatsu','kagome','tatewaku'];
+const motifs=['shippo','yagasuri','asanoha','kumiko','nami','take','kikko','seigaiha','kasumi','enso','uroko','ichimatsu','kagome','tatewaku','hishi'];
 for(const m of motifs)assert(css.includes(`.pb[data-motif="${m}"]`),`CSS defines the ${m} motif`);
 for(const key of ['body[data-pine]','prefers-reduced-motion','max-width:760px','source-serif-4-cyrillic-wght-normal.woff2','.pb-inner','.pb h1'])assert(css.includes(key),`CSS missing ${key}`);
 assert(!/https?:\/\//.test(css.replaceAll('http://www.w3.org/2000/svg','').replaceAll("http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg",'')),'No third-party requests');

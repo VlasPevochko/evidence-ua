@@ -4,6 +4,7 @@ import {proteinModule} from '../src/evidence/supplements/protein/module.mjs';
 import {buildProtein} from './build-protein.mjs';
 import {buildBerberine} from './build-berberine.mjs';
 import {buildSupplementCards} from './build-supplement-cards.mjs';
+import {buildCreatineMore} from './build-creatine-more.mjs';
 import {omegaModule} from '../src/evidence/supplements/omega/module.mjs';
 import {vitdModule} from '../src/evidence/supplements/vitd/module.mjs';
 // Dossiers whose route now shows an approved evidence module are not rendered as preliminary panels.
@@ -23,4 +24,5 @@ fs.writeFileSync(file,html);
 buildProtein();
 buildBerberine();
 buildSupplementCards();
+await buildCreatineMore();
 console.log('Structured preliminary dossiers: '+dossiers.length+'; creatine retained unchanged.');

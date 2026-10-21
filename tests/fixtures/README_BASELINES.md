@@ -35,3 +35,7 @@ By explicit decision of the site owner («Давай по новій добав�
 ## Deliberate revision — 2026-10-21, omega-3 and vitamin D cards (owner-approved)
 
 By explicit decision of the site owner (chose «Омега-3 і вітамін D», wording approved «Ок»), only the `supplement-omega` and `supplement-vitd` digests were refreshed (all other digests verified unchanged). Both sections now render approved modules (`src/evidence/supplements/omega/`, `src/evidence/supplements/vitd/`, confidence not assessed) through `scripts/build-supplement-cards.mjs`; the preliminary `DOS-OMEGA` and `DOS-VITD` panels and the old study blocks are no longer rendered there. Protected by `tests/omega-vitd-cards.test.mjs`.
+
+## Deliberate revision — 2026-10-21, protein card layout and dossier header (owner-approved)
+
+Owner request: «протеїн треба картку покращити, там в цих картках ще стара шапка дивна з самого верху». Only the `supplement-protein` digest was refreshed: its five Claims now use the compact card + evidence drawer layout of the newer dossiers (statements, numbers, sources and status are unchanged). The header change is runtime/CSS only (shared site header kept in article view, slim «← Усі добавки» bar instead of the retired tools block), so no other digest changed. Protected by `tests/article-header.test.mjs` and `tests/protein-card.test.mjs`.

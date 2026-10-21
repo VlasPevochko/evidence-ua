@@ -38,6 +38,7 @@ function mountContinue(root,start){
 }
 export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a>${atlasLink(current)}${exercisesLink(current)}<details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}
 export function learningNavigationHTML(location){const {path,index}=location;return `<p><strong>${esc(path.title)}</strong><span>Крок ${index+1} із ${path.steps.length}</span></p><div>${index>0?`<a href="${esc(learningHref(path.id,index-1))}">← Попередній матеріал</a>`:''}${index<path.steps.length-1?`<a href="${esc(learningHref(path.id,index+1))}">Наступний матеріал →</a>`:'<a href="./directions.html#learning-paths">До маршрутів →</a>'}<a href="./index.html#home-learning-paths">Обрати інший маршрут</a></div>`;}
+export function articleBarHTML(){return '<a class="eua-article-back" href="./supplements.html">← Усі добавки</a><div class="eua-tools"><button type="button" data-eua-tool="share">Скопіювати посилання</button><a href="./index.html#home-feedback">Поділитися враженням</a></div><p class="eua-tool-status" role="status" aria-live="polite"></p>';}
 export function mountPlatformNavigation(root=document){
   if(root.defaultView&&root.defaultView.self!==root.defaultView.top)return;
   const head=root.head??root.document?.head;
@@ -54,7 +55,11 @@ export function mountPlatformNavigation(root=document){
   const supplementCatalogue=selected==='supplements'&&root.querySelector('.sp-page');
   const headers=[...root.querySelectorAll('header')].filter(h=>selected!=='home'&&!supplementCatalogue&&!h.closest('dialog'));
   const targets=[...headers.map(header=>({element:header,current:selected})),...catalog.getArea('supplements').units.filter(u=>u.id!=='atp-pcr').map(u=>({element:root.getElementById(u.id==='creatine'?'creatine':'supplement-'+u.id),current:'supplements',prepend:true})).filter(t=>t.element)];
-  for(const target of targets){if(target.prepend&&target.element.querySelector(':scope > .eua-platform-nav'))continue;if(!target.prepend&&target.element.nextElementSibling?.classList.contains('eua-platform-nav'))continue;
+  // Dossier articles on the home page sit under the shared site header (kept visible by the home router),
+  // so they get one slim bar back to the catalogue instead of the retired tools block (owner decision 2026-10-21).
+  for(const target of targets.filter(t=>t.prepend)){if(target.element.querySelector(':scope > .eua-article-bar'))continue;
+    const bar=root.createElement('nav');bar.className='eua-article-bar';bar.setAttribute('aria-label','Розділ «Добавки»');bar.innerHTML=articleBarHTML();target.element.prepend(bar);}
+  for(const target of targets.filter(t=>!t.prepend)){if(target.prepend&&target.element.querySelector(':scope > .eua-platform-nav'))continue;if(!target.prepend&&target.element.nextElementSibling?.classList.contains('eua-platform-nav'))continue;
     const nav=root.createElement('nav');nav.className='eua-platform-nav';nav.setAttribute('aria-label','Напрями платформи');const contents=navigationHTML(target.current)+toolsHTML(target.current);nav.innerHTML=(['movement','sleep','practice','atlas'].includes(target.current)||(root.body.dataset.pine!==undefined&&root.body.dataset.studyUi===undefined&&root.body.dataset.pineTools===undefined))?'<details class="eua-module-menu"><summary>Навігація й інструменти</summary><div class="eua-module-menu-content">'+contents+'</div></details>':contents;
     if(target.prepend)target.element.prepend(nav);else target.element.after(nav);
   }

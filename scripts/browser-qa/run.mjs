@@ -534,10 +534,10 @@ async function supplementsFlow(browser, origin, viewport) {
   const pattern = await page.locator('.sp-shippo').boundingBox();
   check(where, hero && hero.x <= 1 && hero.width >= viewport.width - 1, 'the title band must span the viewport');
   check(where, pattern && pattern.width >= viewport.width - 1, 'shippo pattern must span the viewport');
-  check(where, (await page.locator('.sp-row').count()) === 10, 'expected ten supplements');
+  check(where, (await page.locator('.sp-row').count()) === 11, 'expected eleven supplements');
   // Every entry has a photo, a folded limit and a link to its existing dossier.
   const links = await page.locator('.sp-go').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
-  check(where, links.length === 10 && links.every(h => h.startsWith('./index.html#')), 'every row must link to its dossier');
+  check(where, links.length === 11 && links.every(h => h.startsWith('./index.html#')), 'every row must link to its dossier');
   check(where, (await page.locator('.sp-limit[open]').count()) === 0, 'limits must start folded');
   await page.locator('.sp-limit summary').first().click();
   check(where, (await page.locator('.sp-limit[open] p').first().isVisible()), 'opening the limit must show its text');
@@ -545,11 +545,11 @@ async function supplementsFlow(browser, origin, viewport) {
   check(where, photo && photo.width >= (phone ? 80 : 120), `photo too small: ${photo && photo.width}`);
   // Filter and search.
   await page.locator('[data-sp-filter="health"]').click();
-  check(where, (await page.locator('.sp-row').count()) === 3, 'the health filter must show three rows');
+  check(where, (await page.locator('.sp-row').count()) === 4, 'the health filter must show four rows (berberine added 2026-10-21)');
   check(where, (await page.locator('[data-sp-filter="health"]').getAttribute('aria-pressed')) === 'true', 'the filter is not marked pressed');
   await page.locator('[data-sp-filter="all"]').click();
   await page.locator('#sp-q').fill('креа');
-  check(where, (await page.locator('.sp-row').count()) === 1 && (await page.locator('#sp-count').innerText()).includes('1 з 10'), 'search by name failed');
+  check(where, (await page.locator('.sp-row').count()) === 1 && (await page.locator('#sp-count').innerText()).includes('1 з 11'), 'search by name failed');
   await page.locator('#sp-q').fill('qwerty');
   check(where, await page.locator('#sp-empty').isVisible(), 'the empty state must show for no results');
   await page.locator('#sp-q').fill('');
@@ -804,7 +804,7 @@ async function homeLowerFlow(browser, origin, viewport) {
   check(where,await page.locator('#supplement-carousel, .supplement-rail, #supplement-search').count()===0,'the retired supplement carousel is back on the home page');
   check(where,(await page.locator('.supplement-entry .se-cta').getAttribute('href'))==='./supplements.html','the entry must lead to the catalogue');
   const entryLinks=await page.locator('.supplement-entry .se-list a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
-  check(where,entryLinks.length===10&&entryLinks.every(h=>h.startsWith('#')),'ten entry chips must link to the existing dossiers');
+  check(where,entryLinks.length===11&&entryLinks.every(h=>h.startsWith('#')),'eleven entry chips must link to the existing dossiers');
   check(where,(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth))<=1,'horizontal overflow in the supplement entry');
   // The three explainer blocks now live inside the folded «Про сайт» group (owner decision 2026-10-19).
   check(where,!(await page.locator('#home-overview').isVisible()),'the group must start folded');

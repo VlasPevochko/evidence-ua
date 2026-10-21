@@ -62,8 +62,8 @@ export function BerberineCard() {
 </div>`;
 }
 
-const S = '#supplement-berberine';
-const css = `${S} .bc-art{background-image:url('./supplement-berberine-v1.webp');background-size:cover;background-position:center}
+const S = ':is(#supplement-berberine,#supplement-omega,#supplement-vitd)';
+const css = `#supplement-berberine .bc-art{background-image:url('./supplement-berberine-v1.webp');background-size:cover;background-position:center}
 ${S} .bc-forest{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:18px}
 ${S} .bc-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) 132px;align-items:center;gap:6px 18px}
 ${S} .bc-label{display:flex;flex-direction:column;gap:2px;min-width:0}

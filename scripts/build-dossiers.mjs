@@ -3,8 +3,11 @@ import {DossierPanel,validateDossiers} from '../src/evidence/core/dossier.mjs';
 import {proteinModule} from '../src/evidence/supplements/protein/module.mjs';
 import {buildProtein} from './build-protein.mjs';
 import {buildBerberine} from './build-berberine.mjs';
+import {buildSupplementCards} from './build-supplement-cards.mjs';
+import {omegaModule} from '../src/evidence/supplements/omega/module.mjs';
+import {vitdModule} from '../src/evidence/supplements/vitd/module.mjs';
 // Dossiers whose route now shows an approved evidence module are not rendered as preliminary panels.
-export const replacedDossiers=new Set([proteinModule.replacesDossier]);
+export const replacedDossiers=new Set([proteinModule.replacesDossier,omegaModule.replacesDossier,vitdModule.replacesDossier]);
 const file='dist/index.html';
 const dossiers=validateDossiers(JSON.parse(fs.readFileSync('src/evidence/supplements/dossiers.json','utf8')));
 let html=fs.readFileSync(file,'utf8').replace(/<!-- DOSSIER:[^>]+ -->[\s\S]*?<!-- \/DOSSIER -->/g,'').replace(/<style data-dossier-style>[\s\S]*?<\/style>/g,'');
@@ -19,4 +22,5 @@ html=html.replace('</head>','<style data-dossier-style>'+css+'</style></head>');
 fs.writeFileSync(file,html);
 buildProtein();
 buildBerberine();
+buildSupplementCards();
 console.log('Structured preliminary dossiers: '+dossiers.length+'; creatine retained unchanged.');

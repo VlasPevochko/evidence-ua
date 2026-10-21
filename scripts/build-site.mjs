@@ -23,7 +23,8 @@ const generated = new Set([
   'sleep.html', 'platform-glossary.js', 'platform-glossary-data.js',
   'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js',
   'evidence/protein-data.js', 'evidence/protein-ui.js',
-  'evidence/berberine-data.js', 'evidence/berberine-ui.js'
+  'evidence/berberine-data.js', 'evidence/berberine-ui.js',
+  'evidence/omega-data.js', 'evidence/vitd-data.js', 'evidence/supplement-cards-ui.js'
 ]);
 
 function inventory(directory, relative = '') {

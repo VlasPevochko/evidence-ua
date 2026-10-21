@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 // Everything else in dist is authored source and must retain its exact bytes.
 const generated = new Set([
   // Fat Burning Lab is an authored page; build-platform only injects shared appearance assets.
-  'site-header.js', 'site-header.css', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',
+  'site-header.js', 'site-header.css', 'platform-search.js', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',
   'muscle-lab.html', 'nutrition-digestion.html', 'nutrition.html', 'protein-meta.html',
   'evidence/registry.js', 'evidence/entities.js', 'evidence/components.js',
   'evidence/public-text.js', 'evidence/module-composer.js', 'evidence/muscle-fiber-v1.webp',

@@ -414,6 +414,62 @@ async function glossaryFlow(browser, origin, viewport) {
   await fat.context.close();
 }
 
+async function searchFlow(browser, origin, viewport) {
+  const where = `search @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/sleep.html');
+  const button = page.locator('.eua-header-search');
+  await button.waitFor({state: 'attached'});
+  const box = await button.boundingBox();
+  check(where, box && box.width >= 44 && box.height >= 44, 'the search button is a 44px target');
+  check(where, box && box.x + box.width <= viewport.width + 1, 'the search button stays inside the viewport');
+  await button.click();
+  const dialog = page.locator('dialog.eua-search');
+  await dialog.waitFor({state: 'visible'});
+  check(where, await page.evaluate(() => document.activeElement?.id === 'eua-search-q'), 'the field is focused on open');
+  check(where, (await page.locator('.eua-search-chips button').count()) >= 3, 'suggestions show before typing');
+  await page.fill('#eua-search-q', 'інтервал');
+  await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+  check(where, (await page.locator('.eua-search-results a[href^="./glossary.html#term-"]').count()) >= 1, 'a term result links to the dictionary');
+  await page.fill('#eua-search-q', 'білок');
+  await page.locator('.eua-search-results a[href$=".html"]').first().waitFor({state: 'visible'});
+  const dbox = await dialog.boundingBox();
+  check(where, dbox && dbox.x >= 0 && dbox.x + dbox.width <= viewport.width + 1 && dbox.y + dbox.height <= viewport.height + 1, 'the dialog fits the viewport');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with search open');
+  await page.keyboard.press('ArrowDown');
+  check(where, await page.evaluate(() => !!document.activeElement?.closest('.eua-search-results a')), 'ArrowDown moves into the results');
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({state: 'hidden'});
+  check(where, await page.evaluate(() => document.activeElement?.classList.contains('eua-header-search')), 'focus returns to the button');
+  // The / shortcut opens it again, but not while typing in a field.
+  await page.keyboard.press('/');
+  await dialog.waitFor({state: 'visible'});
+  await page.keyboard.press('Escape');
+  await page.fill('#eua-search-q', '');
+  await page.fill('#eua-search-q', 'цццццц');
+  check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайдено'), 'an empty result says so');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'search raises no errors');
+  await context.close();
+}
+
+async function changesFlow(browser, origin, viewport) {
+  const where = `changes @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/changes.html');
+  await page.locator('.ch-day').first().waitFor({state: 'attached'});
+  const days = await page.locator('.ch-day').count();
+  check(where, days >= 4, 'the log lists several days');
+  check(where, (await page.locator('.ch-day[open]').count()) === 1, 'only the newest day is open');
+  const links = await page.locator('.ch-day[open] .ch-title').count();
+  check(where, links >= 3, 'the open day lists its records');
+  check(where, (await page.locator('.ch-science').first().innerText()).length > 10, 'every record states whether the science changed');
+  await page.locator('.ch-day').nth(1).locator('summary').click();
+  check(where, (await page.locator('.ch-day[open]').count()) === 2, 'another day opens on tap');
+  await page.locator('#ch-how summary').click();
+  check(where, await page.locator('.ch-limits').isVisible(), 'the limits are readable once unfolded');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in the log');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the log raises no errors');
+  await context.close();
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -838,6 +894,8 @@ try {
   for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
   for (const viewport of viewports) await compareFlow(browser, origin, viewport);
   for (const viewport of viewports) await mapFlow(browser, origin, viewport);
+  for (const viewport of viewports) await searchFlow(browser, origin, viewport);
+  for (const viewport of viewports) await changesFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

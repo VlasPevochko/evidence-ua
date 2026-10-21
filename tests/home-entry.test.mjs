@@ -49,7 +49,7 @@ execFileSync('python',['-c',`from pathlib import Path
 from lxml import html
 import json,hashlib
 expected=json.loads(Path('tests/fixtures/home-v56-science-digests.json').read_text())
-assert len(expected)==10
+assert len(expected)==11  # berberine dossier added 2026-10-21 (owner decision)
 root=html.fromstring(Path('dist/index.html').read_text())
 for heading in root.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
     heading.tag='h4'
@@ -64,4 +64,4 @@ assert directions[0].xpath('./a/@data-area')==['muscle','cell','nutrition','supp
 start=root.xpath('//*[@id="start-here"]')[0]
 assert list(start).index(directions[0]) < list(start).index(start.xpath('./div[@class="start-choices"]')[0]), 'Directions must precede example questions'
 `]);
-console.log('Home entry: six actual catalog pages, CTA flow, real cards, feedback handlers, no sending/storage/tracking, copy success/fallback, sanitized URLs and ten unchanged article subtrees passed.');
+console.log('Home entry: six actual catalog pages, CTA flow, real cards, feedback handlers, no sending/storage/tracking, copy success/fallback, sanitized URLs and eleven article subtrees (berberine added) passed.');

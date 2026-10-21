@@ -9,14 +9,17 @@ body[data-platform-area="videos"]{margin:0;font-family:Inter,system-ui,-apple-sy
 .vd-form label span{font-weight:500;color:var(--pine-muted,#9db1a7)}
 .vd-help{margin:0;font-size:14px;line-height:1.55;color:var(--pine-muted,#9db1a7)}
 .vd-help b{color:var(--pine-accent,#e3bd6b)}
-.vd-form input,.vd-form textarea{box-sizing:border-box;width:100%;padding:12px 16px;border:1px solid var(--pine-line,#26403a);border-radius:14px;background:var(--pine-bg,#0d1916);color:var(--pine-text,#e9efe9);font:inherit;font-size:17px}
-.vd-form input{min-height:52px}
+.vd-form input:not(.vd-trap),.vd-form textarea{box-sizing:border-box;width:100%;padding:12px 16px;border:1px solid var(--pine-line,#26403a);border-radius:14px;background:var(--pine-bg,#0d1916);color:var(--pine-text,#e9efe9);font:inherit;font-size:17px}
+.vd-form input:not(.vd-trap){min-height:52px}
 .vd-form textarea{resize:vertical;min-height:84px}
 .vd-form input::placeholder,.vd-form textarea::placeholder{color:#7f948b}
 .vd-form input[aria-invalid="true"]{border-color:#e08a7a}
 .vd-form :is(input,textarea,button):focus-visible,.vd-rules>summary:focus-visible,.vd-play:focus-visible,.vd-open:focus-visible{outline:2px solid var(--pine-accent,#e3bd6b);outline-offset:2px}
 .vd-state{min-height:1.5em;margin:0;font-size:14px;color:var(--pine-muted,#9db1a7)}
 .vd-state.is-ok{color:#8fd1a3}.vd-state.is-bad{color:#f0a496}
+.vd-trap{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.vd-via{margin:0;font-size:13px;color:var(--pine-muted,#9db1a7)}
+.vd-send:disabled{opacity:.6;cursor:progress}
 .vd-send{min-height:52px;padding:12px 22px;border:0;border-radius:14px;background:var(--pine-accent,#e3bd6b);color:#1a1a12;font:700 17px/1.2 Inter,system-ui,sans-serif;cursor:pointer}
 .vd-send:hover{filter:brightness(1.06)}
 .vd-after{margin:0;padding:12px 14px;border:1px solid var(--pine-line,#26403a);border-radius:12px;font-size:14px;color:var(--pine-text,#e9efe9)}

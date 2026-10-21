@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {classify,youtubeId,suggestionLink,cardModel,ISSUES_NEW,MAX_URL} from '../dist/videos-page.js';
+import {classify,youtubeId,suggestionLink,cardModel,sendProposal,validEndpoint,FORM_ENDPOINT,ISSUES_NEW,MAX_URL} from '../dist/videos-page.js';
 import {VIDEOS} from '../dist/videos-data.js';
 import {findMaterials} from '../src/platform/materials.mjs';
 
@@ -46,7 +46,26 @@ assert.equal(cardModel({title:'t',url:'https://www.tiktok.com/@a/video/1'}).embe
 // Privacy: the player is created only inside the click handler; the label is shown; nothing is requested on load.
 assert(js.includes("play.addEventListener('click'")&&js.indexOf('youtube-nocookie')>js.indexOf("play.addEventListener('click'"),'the YouTube frame appears only after a click');
 assert(js.includes('Матеріал від читача: не наукове джерело')&&js.includes('Після кліку відео завантажиться з YouTube'));
-assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage/.test(js),'the page stores and sends nothing');
+// Changed 2026-10-21: the owner asked for a form connected to his mailbox (without showing the address), so one network call exists.
+// It lives only inside sendProposal (called from the submit handler, i.e. after a click) and only to a Formspree form address.
+assert(!/XMLHttpRequest|sendBeacon|localStorage|sessionStorage/.test(js),'the page stores nothing');
+assert.equal((js.match(/fetchImpl\(/g)||[]).length,1,'a single request site');
+assert(FORM_ENDPOINT===''||validEndpoint(FORM_ENDPOINT),'the configured form address is empty or a Formspree form');
+assert(validEndpoint('https://formspree.io/f/xyzabcde')&&!validEndpoint('https://evil.example/f/xyzabcde')&&!validEndpoint('http://formspree.io/f/xyzabcde')&&!validEndpoint('https://formspree.io/f/'),'only Formspree form addresses are accepted');
+{
+  const calls=[],info=classify('https://youtu.be/dQw4w9WgXcQ');
+  const ok=await sendProposal('https://formspree.io/f/xyzabcde',info,{note:' корисно ',author:'Олена',trap:''},async(u,o)=>{calls.push([u,o]);return {ok:true};});
+  assert.equal(ok.ok,true);
+  const [u,o]=calls[0];
+  assert.equal(u,'https://formspree.io/f/xyzabcde');assert.equal(o.method,'POST');assert.equal(o.credentials,'omit');assert.equal(o.referrerPolicy,'no-referrer');
+  assert.deepEqual(JSON.parse(o.body),{url:'https://youtu.be/dQw4w9WgXcQ',platform:'YouTube',author:'Олена',note:'корисно'});
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{trap:'bot'},async()=>{throw Error('must not be called');})).skipped,true,'the honeypot stops bots without a request');
+  assert.equal((await sendProposal('',info,{},async()=>{throw Error('no endpoint');})).reason,'endpoint','no request without a configured form');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{},async()=>({ok:false,status:422}))).reason,'status');
+  assert.equal((await sendProposal('https://formspree.io/f/xyzabcde',info,{},async()=>{throw Error('offline');})).reason,'network');
+}
+assert(html.includes('id="vd-trap"')&&html.includes('id="vd-author"')&&html.includes('id="vd-via"')&&html.includes('Formspree'),'honeypot, author field and the disclosure exist');
+assert(suggestionLink(info,'x','Олена').includes(encodeURIComponent('Автор відео: Олена')),'the GitHub draft carries the author');
 assert(js.includes("'noopener,noreferrer'")&&js.includes('rel=\'noopener noreferrer\'')||js.includes("a.rel='noopener noreferrer'"),'outgoing links are safe');
 assert(css.includes('.vd-send')&&!/https?:\/\//.test(css),'no third-party requests in styles');
 assert(html.includes('Не приймаємо')&&html.includes('Submit new issue')&&html.includes('Пропозиція буде публічною'),'moderation rules and the public nature are stated');

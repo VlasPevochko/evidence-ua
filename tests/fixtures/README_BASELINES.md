@@ -31,3 +31,7 @@ By explicit decision of the site owner («Картку протеїн конкр
 ## Deliberate addition — 2026-10-21, berberine dossier (owner-approved)
 
 By explicit decision of the site owner («Давай по новій добавці — Берберин», wording approved «Погоджую»), a new article section `supplement-berberine` was added after `supplement-electrolytes`. Its digest was **added** to `home-v56-science-digests.json` and `first-visit-v59-science-digests.json`; the ten existing digests are unchanged (verified before adding). Both retention tests now expect eleven sections. Content comes from `src/evidence/supplements/berberine/module.mjs` (six Claims, confidence not assessed) via `scripts/build-berberine.mjs` and is protected by `tests/berberine-card.test.mjs`.
+
+## Deliberate revision — 2026-10-21, omega-3 and vitamin D cards (owner-approved)
+
+By explicit decision of the site owner (chose «Омега-3 і вітамін D», wording approved «Ок»), only the `supplement-omega` and `supplement-vitd` digests were refreshed (all other digests verified unchanged). Both sections now render approved modules (`src/evidence/supplements/omega/`, `src/evidence/supplements/vitd/`, confidence not assessed) through `scripts/build-supplement-cards.mjs`; the preliminary `DOS-OMEGA` and `DOS-VITD` panels and the old study blocks are no longer rendered there. Protected by `tests/omega-vitd-cards.test.mjs`.

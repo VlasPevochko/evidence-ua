@@ -24,7 +24,14 @@ export const materials=listedMaterials.concat(structureMaterials,guides.map(g=>(
 export const normalizeSearch=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
 // Alternative topic names for discovery only; scientific content is not changed.
 const searchTerms={
- 'supplements-protein':'білок білка білки білкові протеїнові protein',
+ 'supplements-protein':'білок білка білки білкові протеїнові protein сила безжирова маса',
+ 'supplements-creatine':'креатину сила силу безжирова маса нирки креатинін витривалість пам’ять',
+ 'supplements-caffeine':'кофеїну кава енергетики витривалість сила сон тиск вагітність',
+ 'supplements-magnesium':'магнію судоми судом тиск сон безсоння діарея',
+ 'supplements-collagen':'колагену суглоби коліна остеоартрит сухожилля шкіра',
+ 'supplements-beta-alanine':'бета аланін карнозин поколювання витривалість',
+ 'supplements-citrulline':'цитруліну біль у м’язах витривалість сила',
+ 'supplements-electrolytes':'електролітів натрій вода рідина зневоднення спортивний напій гіпонатріємія',
  'supplements-berberine':'берберин берберину berberine цукор глюкоза діабет холестерин ліпіди',
  'nutrition-protein-absorption':'білок білка білки білкові засвоєння білка',
  'guide-protein-meta':'білок білка білки білкові',
@@ -39,8 +46,8 @@ const searchTerms={
  'nutrition-lipids':'жир жири жирів ліпіди засвоєння',
  'muscle-growth':'гіпертрофія гіпертрофії ріст м’язів збільшення м’язів',
  'muscle-atrophy':'втрата м’язів зменшення м’язів',
- 'supplements-omega':'омега 3 omega-3',
- 'supplements-vitd':'вітамін д vitamin d',
+ 'supplements-omega':'омега 3 omega-3 риб’ячий жир тригліцериди серце фібриляція',
+ 'supplements-vitd':'вітамін д vitamin d переломи кістки падіння інфекції застуда',
  'nutrition-digestion':'травлення їжі перетравлення засвоєння',
  'nutrition-fat-loss':'жироспалення спалювання жиру fat burning fat loss схуднення жир жирів ліполіз окиснення жирової маси',
  'movement-elbow':'лікоть ліктя біцепс згинання розгинання',

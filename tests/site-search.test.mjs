@@ -1,3 +1,4 @@
+// 2026-10-22: search finds supplements by topic (new keywords in platform-materials) → cascade: materials v84, search v2, header v4, tools v85, shell v97.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {searchSite,SUGGESTIONS} from '../src/platform/search.mjs';
@@ -29,5 +30,13 @@ assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|https?:\/
 assert(src.includes("e.key!=='/'")&&src.includes('isContentEditable'),'the / shortcut ignores typing fields');
 assert(fs.readFileSync('src/platform/site-header.css','utf8').includes('.eua-search::backdrop'),'the dialog is styled');
 assert.equal(fs.readFileSync('dist/platform-search.js','utf8'),src,'the built copy equals the source');
-assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=1')"),'the header loads search lazily');
+assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=2')"),'the header loads search lazily');
 console.log('Site search: ranking, terms, suggestions, accessible button and no-network source passed.');
+
+// 2026-10-22: supplement cards are found by the topics of their approved Claims, not only by name.
+{
+  const {findMaterials} = await import('../dist/platform-materials.js');
+  const first = q => findMaterials(q).map(m => m.title);
+  for (const [q, title] of [['судоми', 'Магній'], ['колаген суглоби', 'Колаген'], ['зневоднення', 'Електроліти'], ['риб’ячий жир', 'Омега-3'], ['переломи', 'Вітамін D'], ['креатинін', 'Креатин'], ['поколювання', 'Бета-аланін'], ['кава', 'Кофеїн']])
+    assert(first(q).includes(title), `${q} → ${title}`);
+}

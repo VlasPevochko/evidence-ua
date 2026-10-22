@@ -1,3 +1,4 @@
+// 2026-10-22: search finds supplements by topic (new keywords in platform-materials) → cascade: materials v84, search v2, header v4, tools v85, shell v97.
 // Cache expectations updated for the scoped shared-header geometry fix.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -212,7 +213,7 @@ for (const shell of [shellSource, shellBuilt]) {
 assert.equal(
   shellBuilt,
   // The shared header import is rewritten by the platform builder as well.
-  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=3'").replace("'./terms.mjs'", "'./platform-terms.js?v=2'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=84'").replace("'./site-header.mjs'", "'./site-header.js?v=3'"),
+  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=3'").replace("'./terms.mjs'", "'./platform-terms.js?v=2'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=85'").replace("'./site-header.mjs'", "'./site-header.js?v=4'"),
   'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
 );
 assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');

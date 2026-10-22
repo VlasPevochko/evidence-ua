@@ -17,7 +17,7 @@ export function searchSite({materials=[],terms=[],findMaterials=null},query,limi
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Loaded from dist/, where the generated copies of the catalogue modules live.
 const defaultLoader=async()=>{
-  const [mat,terms,gl]=await Promise.all([import('./platform-materials.js?v=83'),import('./platform-terms.js?v=2'),import('./platform-glossary-data.js')]);
+  const [mat,terms,gl]=await Promise.all([import('./platform-materials.js?v=84'),import('./platform-terms.js?v=2'),import('./platform-glossary-data.js')]);
   const extra=[...(gl.glossary?.movement||[]),...(gl.glossary?.sleep||[])];
   return {materials:mat.materials,findMaterials:mat.findMaterials,kinds:mat.materialKinds,terms:[...terms.TERMS,...extra]};
 };

@@ -48,3 +48,8 @@ assert(fs.readFileSync('dist/platform-materials.js', 'utf8').includes("'suppleme
 assert(fs.readFileSync('dist/evidence/berberine-ui.js', 'utf8').includes("dialogSelector: '[data-berberine-dialog]'"));
 assert(fs.readFileSync('dist/evidence/berberine-data.js', 'utf8').includes("from './registry.js'"));
 console.log('Berberine card: 6 approved Claims, confidence not assessed, null results shown as null, safety first, entry points wired passed.');
+
+// Owner request 2026-10-22: berberine is reachable from every supplement switcher, as the last item.
+const navs = [...html.matchAll(/<div aria-label="Перемикання добавок" class="d-nav">([\s\S]*?)<\/div>/g)].map(m => m[1]);
+assert.equal(navs.length, 10);
+for (const nav of navs) assert(nav.endsWith('<a href="#supplement-electrolytes">Електроліти</a><a href="#supplement-berberine">Берберин</a>'));

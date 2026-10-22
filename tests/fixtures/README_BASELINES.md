@@ -47,3 +47,7 @@ Owner request: «Після виконуємо картку креатин» (wi
 ## Deliberate revision — 2026-10-21, caffeine card (owner-approved)
 
 By explicit decision of the site owner (chose «Кофеїн», eight Claims approved «Так»), only the `supplement-caffeine` digest was refreshed in `home-v56-science-digests.json` and `first-visit-v59-science-digests.json` (all ten other digests verified unchanged). The section now renders the approved module `src/evidence/supplements/caffeine/module.mjs` (eight Claims, confidence not assessed; numbers from PubMed abstracts, EFSA 2015 checked via the EUFIC summary and labelled so) through `scripts/build-supplement-cards.mjs` (new `scale: 'linear'` rows). The preliminary `DOS-CAFFEINE` panel, the old study block and the old practice/limits block are no longer rendered; `dossiers.json` is unchanged. Protected by `tests/caffeine-card.test.mjs` and the shared checks in `tests/omega-vitd-cards.test.mjs`.
+
+## Deliberate revision — 2026-10-22, berberine in the supplement switcher (owner-approved)
+
+Owner answer «1-2» to «Додати Берберин у перемикач добавок унизу інших карток?». A link `<a href="#supplement-berberine">Берберин</a>` was appended after «Електроліти» in every `.d-nav` supplement switcher (ten sections). The ten `supplement-*` digests were refreshed in both fixtures; before refreshing, removing exactly that link from the current HTML was verified to reproduce all previous digests, so no other content changed. `creatine` is unchanged (it has no `.d-nav`). Protected by `tests/berberine-card.test.mjs`.

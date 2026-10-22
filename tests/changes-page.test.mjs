@@ -25,7 +25,8 @@ for(const day of CHANGES){
 }
 // «Новий зміст» only where the owner added content with sources on the page itself.
 const withNew=CHANGES.flatMap(d=>d.items).filter(i=>i.science==='new');
-assert(withNew.every(i=>i.href==='./fat-burning.html'),'only the Fat Burning Lab is marked as new content');
+// 2026-10-21/22: supplement cards and confidence levels are new owner-approved content with sources on the cards.
+assert(withNew.every(i=>i.href==='./fat-burning.html'||/^\.\/index\.html#(creatine|supplement-[a-z-]+)$/.test(i.href)),'new content only for the Fat Burning Lab and approved supplement cards');
 // No promises about results or health in the log.
 const text=CHANGES.flatMap(d=>d.items).map(i=>i.title+' '+i.text).join(' ');
 assert(!/гарантує|лікує|допоможе|слід приймати|схуднеш/i.test(text),'no health promises in the log');

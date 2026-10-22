@@ -9,11 +9,11 @@
     "supplement-caffeine": "80639f28c77129ca73f4e1ef74aaf75e168c6742e6d2fa5e533d1d9bce350ca4",
     "supplement-omega": "2a60ac8aba1eb2ec01a86e8113aac30db7a57c1fdc1449669e94747ea2ca2e2b",
     "supplement-vitd": "f0e4816dc565d6b56f9e3618aada5f379790f14ee4a3105b389eec5b3c0cc682",
-    "supplement-magnesium": "79b613e897be4965b8acfaa7af68ee4ff7bc0d0b36fb22ddd6b86951deba31da",
-    "supplement-collagen": "52836ffbd5f7f9b164af47ea9cc7f057002b6b7b269c8ac917241293b20c8a2a",
-    "supplement-beta-alanine": "71624b20ce1486de73d040d7c1180e853a672d097e96ed16997c07716681d124",
-    "supplement-citrulline": "063cb3d123a4c626a2ec7c06649ec763794528d62853c5db6a9890421e376707",
-    "supplement-electrolytes": "ef30450743dc54d79a656d9cfc321116863025966f9a07e3c71980121a36a26d",
+    "supplement-magnesium": "d3cdd2cd02d973388a340e521994f36725973a8bbc90c7510adde4a2c6acc631",
+    "supplement-collagen": "356d1f96ee3f3e95fbe1c593222578999dfb56a515fe74a6f22a5c9e40d8ef1c",
+    "supplement-beta-alanine": "4d0470adb21f9a771780b4d670a0a172e62f73ca692a4846cfe35a6550ad0196",
+    "supplement-citrulline": "9c492919e0c1293d039a275392d6c6a50fc6a1fc8c29045db1298cbfb7f9f425",
+    "supplement-electrolytes": "75931dd507a45de8f0d6c168a1d76a623c3bc145cfba3bab2467b2917a4148f6",
     "supplement-berberine": "09fd3f6c0a3ff94ab13af68751fed0161bfc5569ee1f98d129723e1607c8eaea"
   },
   "revision": "Deliberately revised 2026-10-18 with owner approval: dossier sources/PubMed studies, Ukrainian case fixes, creatine confidence re-ratings. Original provenance fields retained."

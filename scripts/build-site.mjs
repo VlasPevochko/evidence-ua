@@ -25,7 +25,7 @@ const generated = new Set([
   'evidence/protein-data.js', 'evidence/protein-ui.js',
   'evidence/berberine-data.js', 'evidence/berberine-ui.js',
   'evidence/omega-data.js', 'evidence/vitd-data.js', 'evidence/supplement-cards-ui.js',
-  'evidence/creatine-more-data.js', 'evidence/caffeine-data.js', 'evidence/creatine-more-ui.js'
+  'evidence/creatine-more-data.js', 'evidence/caffeine-data.js', 'evidence/magnesium-data.js', 'evidence/collagen-data.js', 'evidence/beta-alanine-data.js', 'evidence/citrulline-data.js', 'evidence/electrolytes-data.js', 'evidence/creatine-more-ui.js'
 ]);
 
 function inventory(directory, relative = '') {

@@ -100,6 +100,14 @@ const claims = [
   })
 ];
 
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000056': ['low', 'Результати досліджень дуже різняться (I² до ≈ 90%).'], 'CLM-000057': ['low', 'Висока неоднорідність досліджень (I² 81–89%).'], 'CLM-000058': ['low', 'Ефект малий і зникає після виключення досліджень низької якості.'], 'CLM-000059': ['low', 'Короткі дослідження; широкі інтервали для побічних ефектів.'], 'CLM-000060': ['low', 'Одне невелике фармакокінетичне дослідження на здорових чоловіках.'], 'CLM-000061': ['very_low', 'Дані лише з пробірки й досліджень на щурах.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
+
 const source = (id, o) => ({
   id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked,
   publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',

@@ -19,7 +19,7 @@ export const citrullineModule = {
     {topic: 'Цитрулін знижує тиск', reason: 'Метааналіз на цю тему (Mahboobi, Journal of Human Hypertension) відкликано в 2021 році, тому висновку не робимо.'},
     {topic: 'Цитрулін «спалює жир»', reason: 'У метааналізі Ashtary-Larky 2025 (21 РКД) загального впливу на склад тіла не виявлено.'}
   ],
-  commonLimits: ['Склад добавок цитрулін-малату не завжди перевіряли.', 'Невеликі дослідження, переважно молоді чоловіки.', 'Оцінки певності — авторів оглядів, а не Evidence UA. Прочитано анотації в PubMed, не повні тексти.']
+  commonLimits: ['Склад добавок цитрулін-малату не завжди перевіряли.', 'Невеликі дослідження, переважно молоді чоловіки.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів. Прочитано анотації в PubMed, не повні тексти.']
 };
 
 const notAssessed = {evidenceConfidence: null, confidenceFramework: 'not_assessed', confidenceRationale: {summary: 'Рівень впевненості Evidence UA для цього твердження не оцінено. Погодження формулювання не є завершеним науковим переглядом.'}};
@@ -58,6 +58,14 @@ const claims = [
     limitations: ['Величини ефектів в анотації не наведено.', 'Суперечність у тексті анотації щодо 48 годин.']
   })
 ];
+
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000097': ['low', 'Низька або дуже низька певність за авторами.'], 'CLM-000098': ['low', '9 невеликих досліджень.'], 'CLM-000099': ['low', 'Лише 4 дослідження.'], 'CLM-000100': ['very_low', 'Величини ефектів не наведено; суперечність в анотації.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
 
 const source = (id, o) => ({id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid, pmcid: o.pmcid || null}, url: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', accessLevel: 'abstract', funding: null, conflicts: null, methodsSummary: 'Прочитано анотацію в PubMed.', ...o});

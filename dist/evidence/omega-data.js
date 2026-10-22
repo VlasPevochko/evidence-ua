@@ -20,7 +20,7 @@ export const omegaModule = {
     {topic: 'Рецептурний EPA — те саме, що добавка', reason: 'В огляді Yan 2022 (15 РКД) невелике зниження великих серцевих подій було пов’язане переважно з рецептурним препаратом EPA (етиловий ефір). Добавка з магазину — інший продукт, і цей результат на неї не переносимо.'},
     {topic: 'Допомагає мозку, від депресії чи для суглобів', reason: 'Ці питання тут не розбирали; висновків про них не робимо.'}
   ],
-  commonLimits: ['Пошук огляду Cochrane завершено в лютому 2019 року; новіші дослідження частково враховані в оглядах Gencer 2021 і Yan 2022.', 'Більшість досліджень — капсули EPA/DHA у дорослих із різним серцево-судинним ризиком, переважно в країнах з високим доходом.', 'Оцінки певності — авторів оглядів, а не Evidence UA.']
+  commonLimits: ['Пошук огляду Cochrane завершено в лютому 2019 року; новіші дослідження частково враховані в оглядах Gencer 2021 і Yan 2022.', 'Більшість досліджень — капсули EPA/DHA у дорослих із різним серцево-судинним ризиком, переважно в країнах з високим доходом.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів.']
 };
 
 const notAssessed = {evidenceConfidence: null, confidenceFramework: 'not_assessed', confidenceRationale: {summary: 'Рівень впевненості Evidence UA для цього твердження не оцінено. Погодження формулювання не є завершеним науковим переглядом.'}};
@@ -62,6 +62,14 @@ const claims = [
     limitations: ['Лише 5 досліджень, приблизно 19 тисяч учасників.']
   })
 ];
+
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000011': ['high', 'Огляд Cochrane: висока певність за авторами для серцево-судинних подій і смертності.'], 'CLM-000062': ['high', 'Огляд Cochrane: висока певність за авторами; підтверджено дозозалежним метааналізом.'], 'CLM-000063': ['moderate', 'Великі РКД, але фібриляцію не завжди оцінювали як головний результат.'], 'CLM-000064': ['low', 'Лише 5 РКД; для серцево-судинних подій певність за авторами низька.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
 
 const source = (id, o) => ({id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid, pmcid: o.pmcid || null}, url: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', accessLevel: 'abstract', funding: null, conflicts: null, ...o});

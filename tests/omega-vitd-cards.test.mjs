@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {assertApprovedLevel} from './approved-confidence-levels.mjs';
+// 2026-10-22: the owner approved provisional confidence levels («Погоджую»); levels now follow tests/approved-confidence-levels.mjs.
 import fs from 'node:fs';
 import {cards, SupplementCard} from '../scripts/build-supplement-cards.mjs';
 
@@ -10,14 +12,14 @@ for (const card of cards) {
   // Rendered output matches the module; the preliminary dossier panel is gone from this section only.
   assert(section.includes(`<!-- CARD:${card.key}:START -->` + SupplementCard(card) + `<!-- CARD:${card.key}:END -->`), sid + ' card is stale; run the build');
   assert(!html.includes(`<!-- DOSSIER:${card.module.replacesDossier} -->`));
-  // Science: approved wording, confidence not assessed, every Claim opens the drawer.
+  // Science: approved wording, approved provisional confidence, every Claim opens the drawer.
   for (const id of card.module.claimIds) {
     const c = card.base.claims.find(x => x.id === id);
-    assert.equal(c.evidenceConfidence, null);
+    assertApprovedLevel(c);
     assert.equal(c.publicationAcceptance.formalScientificReview, false);
     assert(section.includes(`data-claim-open="${id}"`));
   }
-  assert(!/class="eua-confidence/.test(section));
+  assert.equal((section.match(/class="eua-confidence /g) || []).length, card.module.claimIds.filter(id => card.base.claims.find(x => x.id === id).evidenceConfidence).length, 'levels shown exactly for assessed Claims');
   // Safety block title comes from the card config (electrolytes: «Перш ніж пити», 2026-10-22); it must precede the Claims.
   assert(section.includes(card.safetyTitle) && section.indexOf(card.safetyTitle) < section.indexOf('Твердження й докази'));
   assert(section.includes('Чого ми не стверджуємо'));
@@ -45,4 +47,4 @@ assert(vitdHtml.includes('Переломи, 500 000 МО раз на рік</b><
 assert(vitdHtml.includes('Переломи, лише вітамін D</b><span>1,00 · різниці не виявлено'));
 assert(fs.readFileSync('dist/evidence/supplement-cards-ui.js', 'utf8').includes('[data-supplement-dialog="'));
 for (const k of ['omega', 'vitd']) assert(fs.readFileSync(`dist/evidence/${k}-data.js`, 'utf8').includes("from './registry.js'"));
-console.log('Omega-3 and vitamin D cards: approved Claims, confidence not assessed, null and harmful results drawn honestly passed.');
+console.log('Omega-3 and vitamin D cards: approved Claims, approved provisional confidence, null and harmful results drawn honestly passed.');

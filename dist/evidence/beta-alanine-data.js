@@ -20,7 +20,7 @@ export const betaAlanineModule = {
     {topic: 'Бета-аланін знижує цукор у крові', reason: 'Ці дослідження стосуються людей з діабетом і переддіабетом (часто разом із карнозином), а не спортсменів.'},
     {topic: 'Разом із креатином діє сильніше', reason: 'У мережевому метааналізі Bai 2026 поєднання не дало додаткової користі порівняно з самим креатином.'}
   ],
-  commonLimits: ['Ефект накопичується тижнями: дослідження — це щоденний прийом, а не разова доза.', 'Більшість досліджень — молоді треновані чоловіки.', 'Оцінки певності — авторів оглядів, а не Evidence UA. Прочитано анотації в PubMed, не повні тексти.'],
+  commonLimits: ['Ефект накопичується тижнями: дослідження — це щоденний прийом, а не разова доза.', 'Більшість досліджень — молоді треновані чоловіки.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів. Прочитано анотації в PubMed, не повні тексти.'],
   guidance: {title: 'Практичний орієнтир — з позиційного документа ISSN 2015, не окреме твердження', dose: '4–6 г на добу щонайменше 2–4 тижні', note: 'Поколювання менше, якщо ділити дозу на прийоми по 1,6 г або брати форму з повільним вивільненням.'}
 };
 
@@ -59,6 +59,14 @@ const claims = [
     limitations: ['Байєсівські інтервали вірогідності, а не довірчі інтервали.', 'Безпеку оцінено в межах доз із досліджень.']
   })
 ];
+
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000093': ['moderate', '40 подвійно сліпих досліджень; ефект малий, залежить від тривалості зусилля.'], 'CLM-000094': ['low', '18 невеликих досліджень, лише чоловіки; широкі інтервали.'], 'CLM-000095': ['moderate', '20 РКД без неоднорідності; низька–помірна певність за авторами.'], 'CLM-000096': ['moderate', 'Узгоджений сильний сигнал у великому масиві досліджень.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
 
 const source = (id, o) => ({id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid, pmcid: o.pmcid || null}, url: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', accessLevel: 'abstract', funding: null, conflicts: null, methodsSummary: 'Прочитано анотацію в PubMed.', ...o});

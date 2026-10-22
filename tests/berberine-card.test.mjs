@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {assertApprovedLevel} from './approved-confidence-levels.mjs';
+// 2026-10-22: the owner approved provisional confidence levels («Погоджую»); levels now follow tests/approved-confidence-levels.mjs.
 import fs from 'node:fs';
 import {berberineBase, berberineModule} from '../src/evidence/supplements/berberine/module.mjs';
 import {BerberineCard} from '../scripts/build-berberine.mjs';
@@ -19,11 +21,11 @@ assert(html.includes('#supplement-electrolytes,#supplement-berberine)'), 'Shares
 assert.equal(berberineModule.claimIds.length, 6);
 for (const id of berberineModule.claimIds) {
   const c = berberineBase.claims.find(x => x.id === id);
-  assert.equal(c.evidenceConfidence, null);
+  assertApprovedLevel(c);
   assert.equal(c.publicationAcceptance.formalScientificReview, false);
   assert(section.includes(`data-claim-open="${id}"`));
 }
-assert(!/class="eua-confidence/.test(section));
+assert.equal((section.match(/class="eua-confidence /g) || []).length, 6, 'every Claim shows its approved level');
 const r = id => berberineBase.records.find(x => x.id === id).result;
 assert.deepEqual([r('EVR-000111').estimate, r('EVR-000111').lowerCI, r('EVR-000111').upperCI], [-0.52, -0.72, -0.33]);
 assert.deepEqual([r('EVR-000115').estimate, r('EVR-000116').estimate, r('EVR-000119').estimate], [-0.367, -0.495, -0.88]);
@@ -47,7 +49,7 @@ assert(fs.readFileSync('dist/platform-catalog.js', 'utf8').includes("['berberine
 assert(fs.readFileSync('dist/platform-materials.js', 'utf8').includes("'supplements-berberine':"));
 assert(fs.readFileSync('dist/evidence/berberine-ui.js', 'utf8').includes("dialogSelector: '[data-berberine-dialog]'"));
 assert(fs.readFileSync('dist/evidence/berberine-data.js', 'utf8').includes("from './registry.js'"));
-console.log('Berberine card: 6 approved Claims, confidence not assessed, null results shown as null, safety first, entry points wired passed.');
+console.log('Berberine card: 6 approved Claims, approved provisional confidence, null results shown as null, safety first, entry points wired passed.');
 
 // Owner request 2026-10-22: berberine is reachable from every supplement switcher, as the last item.
 const navs = [...html.matchAll(/<div aria-label="Перемикання добавок" class="d-nav">([\s\S]*?)<\/div>/g)].map(m => m[1]);

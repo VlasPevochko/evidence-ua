@@ -19,7 +19,7 @@ export const collagenModule = {
     {topic: 'Колаген лікує травми сухожиль чи зв’язок', reason: 'Дані про будову сухожиль мають дуже низьку певність і стосуються здорових людей, які тренуються.'},
     {topic: 'Колаген від болю в суглобах у всіх', reason: 'Дані про біль — у людей з остеоартритом колін, з дуже різними результатами між дослідженнями.'}
   ],
-  commonLimits: ['Дослідження використовують різні види колагену (гідролізовані пептиди, неденатурований тип II) і різні дози.', 'Частина досліджень фінансувалася виробниками; автори оглядів відзначають упередження.', 'Оцінки певності — авторів оглядів, а не Evidence UA. Прочитано анотації в PubMed, не повні тексти.']
+  commonLimits: ['Дослідження використовують різні види колагену (гідролізовані пептиди, неденатурований тип II) і різні дози.', 'Частина досліджень фінансувалася виробниками; автори оглядів відзначають упередження.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів. Прочитано анотації в PubMed, не повні тексти.']
 };
 
 const notAssessed = {evidenceConfidence: null, confidenceFramework: 'not_assessed', confidenceRationale: {summary: 'Рівень впевненості Evidence UA для цього твердження не оцінено. Погодження формулювання не є завершеним науковим переглядом.'}};
@@ -59,6 +59,14 @@ const claims = [
     limitations: ['Величину ефекту в анотації не наведено.', 'Частина досліджень мала ризики упередженості.']
   })
 ];
+
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000089': ['low', 'Для сили певність за авторами низька; частину досліджень фінансували виробники.'], 'CLM-000090': ['very_low', 'Дуже низька певність за авторами.'], 'CLM-000091': ['low', 'Дуже висока неоднорідність (I² = 88%); шкала не названа.'], 'CLM-000092': ['low', 'Автори огляду знайшли упередження в дослідженнях.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
 
 const source = (id, o) => ({id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid, pmcid: o.pmcid || null}, url: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', accessLevel: 'abstract', funding: null, conflicts: null, methodsSummary: 'Прочитано анотацію в PubMed.', ...o});

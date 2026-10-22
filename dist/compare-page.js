@@ -1,5 +1,5 @@
 // Порівняння двох добавок: ті самі короткі висновки й межі, що в каталозі «Добавки» (тексти не змінено).
-import {supplements} from './supplements.js?v=1';
+import {supplements} from './supplements.js?v=2';
 
 export const REVIEW={
   creatine:'Попередні оцінки окремих тверджень; науковий перегляд триває.',

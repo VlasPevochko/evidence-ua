@@ -8,8 +8,13 @@ import {buildCreatineMore} from './build-creatine-more.mjs';
 import {omegaModule} from '../src/evidence/supplements/omega/module.mjs';
 import {vitdModule} from '../src/evidence/supplements/vitd/module.mjs';
 import {caffeineModule} from '../src/evidence/supplements/caffeine/module.mjs';
+import {magnesiumModule} from '../src/evidence/supplements/magnesium/module.mjs';
+import {collagenModule} from '../src/evidence/supplements/collagen/module.mjs';
+import {betaAlanineModule} from '../src/evidence/supplements/beta-alanine/module.mjs';
+import {citrullineModule} from '../src/evidence/supplements/citrulline/module.mjs';
+import {electrolytesModule} from '../src/evidence/supplements/electrolytes/module.mjs';
 // Dossiers whose route now shows an approved evidence module are not rendered as preliminary panels.
-export const replacedDossiers=new Set([proteinModule.replacesDossier,omegaModule.replacesDossier,vitdModule.replacesDossier,caffeineModule.replacesDossier]);
+export const replacedDossiers=new Set([proteinModule.replacesDossier,omegaModule.replacesDossier,vitdModule.replacesDossier,caffeineModule.replacesDossier,magnesiumModule.replacesDossier,collagenModule.replacesDossier,betaAlanineModule.replacesDossier,citrullineModule.replacesDossier,electrolytesModule.replacesDossier]);
 const file='dist/index.html';
 const dossiers=validateDossiers(JSON.parse(fs.readFileSync('src/evidence/supplements/dossiers.json','utf8')));
 let html=fs.readFileSync(file,'utf8').replace(/<!-- DOSSIER:[^>]+ -->[\s\S]*?<!-- \/DOSSIER -->/g,'').replace(/<style data-dossier-style>[\s\S]*?<\/style>/g,'');

@@ -18,7 +18,8 @@ for (const card of cards) {
     assert(section.includes(`data-claim-open="${id}"`));
   }
   assert(!/class="eua-confidence/.test(section));
-  assert(section.includes('Перш ніж приймати') && section.indexOf('Перш ніж приймати') < section.indexOf('Твердження й докази'));
+  // Safety block title comes from the card config (electrolytes: «Перш ніж пити», 2026-10-22); it must precede the Claims.
+  assert(section.includes(card.safetyTitle) && section.indexOf(card.safetyTitle) < section.indexOf('Твердження й докази'));
   assert(section.includes('Чого ми не стверджуємо'));
 }
 assert.equal((html.match(/data-supplement-cards-script/g) || []).length, 1);

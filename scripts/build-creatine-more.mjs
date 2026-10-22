@@ -14,7 +14,8 @@ const indexPath = path.join(root, 'dist/index.html');
 const out = path.join(root, 'dist/evidence');
 
 for (const c of more.claims) {
-  if (c.evidenceConfidence !== null) throw Error('Additional creatine Claims must stay unassessed: ' + c.id);
+  // Since 2026-10-22 a level is allowed only with the owner's confidence approval (provisional, with a stated reason).
+  if (c.evidenceConfidence !== null && (c.confidenceAcceptance?.kind !== 'user_confidence_approval' || !c.provisional || !c.confidenceRationale?.summary)) throw Error('Confidence level without owner approval: ' + c.id);
   if (!c.publicationApproved || c.publicationAcceptance?.kind !== 'user_wording_approval') throw Error('Wording not approved: ' + c.id);
 }
 

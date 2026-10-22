@@ -19,7 +19,7 @@ export const electrolytesModule = {
     {topic: 'Електроліти потрібні на кожному тренуванні', reason: 'Досліджені переваги стосуються тривалих навантажень, спеки й відновлення після зневоднення.'},
     {topic: 'Електроліти запобігають судомам', reason: 'Ми це питання не розбирали; висновків не робимо.'}
   ],
-  commonLimits: ['Досліджень мало, вони невеликі й різні за протоколами; певність часто низька або дуже низька.', 'Майже всі учасники — чоловіки.', 'Оцінки певності — авторів оглядів, а не Evidence UA. Прочитано анотації в PubMed, не повні тексти.']
+  commonLimits: ['Досліджень мало, вони невеликі й різні за протоколами; певність часто низька або дуже низька.', 'Майже всі учасники — чоловіки.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів. Прочитано анотації в PubMed, не повні тексти.']
 };
 
 const notAssessed = {evidenceConfidence: null, confidenceFramework: 'not_assessed', confidenceRationale: {summary: 'Рівень впевненості Evidence UA для цього твердження не оцінено. Погодження формулювання не є завершеним науковим переглядом.'}};
@@ -59,6 +59,14 @@ const claims = [
     limitations: ['Частина досліджень мала низьку інтенсивність, за якої і самі вуглеводи не давали переваги.']
   })
 ];
+
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000101': ['low', 'Огляд без метааналізу; різні протоколи досліджень.'], 'CLM-000102': ['low', 'Проміжний показник (об’єм плазми), а не спортивний результат.'], 'CLM-000104': ['low', 'Невеликі дослідження; частина — з низькою інтенсивністю навантаження.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
 
 const source = (id, o) => ({id, publicationType: 'systematic_review', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid, pmcid: o.pmcid || null}, url: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', accessLevel: 'abstract', funding: null, conflicts: null, methodsSummary: 'Прочитано анотацію в PubMed.', ...o});

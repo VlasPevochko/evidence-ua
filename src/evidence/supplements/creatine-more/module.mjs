@@ -21,7 +21,7 @@ export const creatineMoreModule = {
     {topic: '«Покращені» форми кращі за моногідрат', reason: 'Переваги інших форм над моногідратом не встановлено (див. твердження про форми).'},
     {topic: 'Креатин спалює жир або підвищує витривалість', reason: 'Ефекту на витривалість у тренованих людей не виявлено; прямого «жироспалювання» дослідження не показують.'}
   ],
-  commonLimits: ['Більшість досліджень — молоді чоловіки; для жінок, людей похилого віку й підлітків даних менше.', 'Багато результатів — стандартизовані ефекти (SMD, g): вони показують силу ефекту, а не кілограми чи бали.', 'Оцінки певності — авторів оглядів, а не Evidence UA.']
+  commonLimits: ['Більшість досліджень — молоді чоловіки; для жінок, людей похилого віку й підлітків даних менше.', 'Багато результатів — стандартизовані ефекти (SMD, g): вони показують силу ефекту, а не кілограми чи бали.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів.']
 };
 
 const notAssessed = {evidenceConfidence: null, confidenceFramework: 'not_assessed', confidenceRationale: {summary: 'Рівень впевненості Evidence UA для цього твердження не оцінено. Погодження формулювання не є завершеним науковим переглядом.'}};
@@ -94,6 +94,14 @@ const claims = [
 ];
 
 const pub = pmid => 'https://pubmed.ncbi.nlm.nih.gov/' + pmid + '/';
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000068': ['low', '13 невеликих досліджень; помірна неоднорідність.'], 'CLM-000069': ['moderate', 'Помірна певність за авторами.'], 'CLM-000070': ['low', 'Ефект зосереджений у літніх людей; результати між віковими групами різняться.'], 'CLM-000071': ['moderate', 'Одне велике РКД, зупинене через марність.'], 'CLM-000072': ['moderate', 'Дуже великий масив даних, але побічні ефекти в дослідженнях фіксували неоднаково.'], 'CLM-000073': ['low', '951 жінка; широкі інтервали.'], 'CLM-000074': ['low', 'Низька або дуже низька певність за авторами.'], 'CLM-000075': ['very_low', 'Дуже мало досліджень на підлітках; для вагітності — переважно дані на тваринах.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
+
 const source = (id, o) => ({id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid || null, pmcid: o.pmcid || null}, url: o.pmid ? pub(o.pmid) : o.url, pubmedUrl: o.pmid ? pub(o.pmid) : null, accessLevel: 'abstract', funding: null, conflicts: null, ...o});
 const sources = [

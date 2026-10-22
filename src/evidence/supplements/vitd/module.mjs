@@ -19,7 +19,7 @@ export const vitdModule = {
     {topic: 'Як лікувати дефіцит', reason: 'Підтверджений дефіцит і стани, що його спричиняють, — окрема медична тема: потрібні аналіз крові й лікар. Тут ідеться про прийом без відбору за дефіцитом.'},
     {topic: 'Що більше — то краще', reason: 'Навпаки: дуже великі разові дози в дослідженні Sanders 2010 підвищили ризик падінь і переломів.'}
   ],
-  commonLimits: ['Більшість учасників досліджень жили вдома й не мали високого ризику переломів чи дефіциту.', 'Підгрупи (щоденний прийом, вихідний рівень вітаміну D) — менш надійні, ніж головні результати.', 'Оцінки певності — авторів оглядів, а не Evidence UA.']
+  commonLimits: ['Більшість учасників досліджень жили вдома й не мали високого ризику переломів чи дефіциту.', 'Підгрупи (щоденний прийом, вихідний рівень вітаміну D) — менш надійні, ніж головні результати.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів.']
 };
 
 const notAssessed = {evidenceConfidence: null, confidenceFramework: 'not_assessed', confidenceRationale: {summary: 'Рівень впевненості Evidence UA для цього твердження не оцінено. Погодження формулювання не є завершеним науковим переглядом.'}};
@@ -62,6 +62,14 @@ const claims = [
     limitations: ['Результат для смертності від раку залежить від набору досліджень і схеми прийому.', 'Підгрупа щоденного прийому — не головний аналіз.']
   })
 ];
+
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000012': ['high', 'Висока певність за авторами найновішого метааналізу (69 РКД).'], 'CLM-000065': ['moderate', 'Одне велике рандомізоване дослідження.'], 'CLM-000066': ['moderate', 'Велика кількість РКД; ефект малий, залежить від режиму прийому.'], 'CLM-000067': ['high', '52 РКД без неоднорідності (I² = 0%); узгоджується з аналізом індивідуальних даних.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
 
 const source = (id, o) => ({id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid, pmcid: o.pmcid || null}, url: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', accessLevel: 'abstract', funding: null, conflicts: null, ...o});

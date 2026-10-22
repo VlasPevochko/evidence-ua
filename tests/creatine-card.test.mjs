@@ -1,5 +1,7 @@
 // Creatine card (owner request 2026-10-21 «Після виконуємо картку креатин», eight additional Claims approved «Погоджую»).
 import assert from 'node:assert/strict';
+import {assertApprovedLevel} from './approved-confidence-levels.mjs';
+// 2026-10-22: the owner approved provisional confidence levels («Погоджую»); levels now follow tests/approved-confidence-levels.mjs.
 import fs from 'node:fs';
 import {creatineMoreBase as more, creatineMoreModule as moreModule} from '../src/evidence/supplements/creatine-more/module.mjs';
 import {creatineMoreParts} from '../scripts/build-creatine-more.mjs';
@@ -38,13 +40,13 @@ for (const c of base.claims) {
 assert.equal(moreModule.claimIds.length, 8);
 for (const id of moreModule.claimIds) {
   const c = more.claims.find(x => x.id === id);
-  assert.equal(c.evidenceConfidence, null);
+  assertApprovedLevel(c);
   assert.equal(c.publicationAcceptance.kind, 'user_wording_approval');
   assert.equal(c.publicationAcceptance.formalScientificReview, false);
   assert(parts.claims.includes(`data-claim-open="${id}"`));
   assert(!base.claims.some(x => x.id === id), 'IDs do not collide with the existing base');
 }
-assert(parts.claims.includes('Рівень впевненості не оцінено'));
+assert(!parts.claims.includes('Рівень впевненості не оцінено') && parts.claims.includes('eua-confidence eua-very_low'));
 const r = (b, id) => b.records.find(x => x.id === id).result;
 assert.deepEqual([r(more, 'EVR-000149').estimate, r(more, 'EVR-000149').lowerCI, r(more, 'EVR-000149').upperCI], [-0.07, -0.32, 0.18]);
 assert.deepEqual([r(more, 'EVR-000150').estimate, r(more, 'EVR-000150').lowerCI, r(more, 'EVR-000150').upperCI], [0.31, 0.18, 0.45]);

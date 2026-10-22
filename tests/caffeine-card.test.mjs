@@ -1,5 +1,7 @@
 // Caffeine card (owner chose «Кофеїн» 21.10.2026, eight Claims approved «Так»). Shared card checks live in omega-vitd-cards.test.mjs.
 import assert from 'node:assert/strict';
+import {assertApprovedLevel} from './approved-confidence-levels.mjs';
+// 2026-10-22: the owner approved provisional confidence levels («Погоджую»); levels now follow tests/approved-confidence-levels.mjs.
 import fs from 'node:fs';
 import {cards, SupplementCard} from '../scripts/build-supplement-cards.mjs';
 import {caffeineBase, caffeineModule} from '../src/evidence/supplements/caffeine/module.mjs';
@@ -21,7 +23,7 @@ assert.equal(caffeineModule.claimIds.length, 8);
 assert.equal(caffeineModule.replacesDossier, 'DOS-CAFFEINE');
 for (const id of caffeineModule.claimIds) {
   const c = caffeineBase.claims.find(x => x.id === id);
-  assert.equal(c.evidenceConfidence, null);
+  assertApprovedLevel(c);
   assert.equal(c.publicationAcceptance.kind, 'user_wording_approval');
 }
 for (const other of cards.filter(c => c.key !== 'caffeine')) for (const c of other.base.claims) assert(!caffeineModule.claimIds.includes(c.id));

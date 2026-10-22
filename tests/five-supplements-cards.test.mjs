@@ -59,3 +59,14 @@ assert(elSec.includes('90% інтервал (так подано в джерел
 assert(elSec.indexOf('Не перепивай') < elSec.indexOf('Твердження й докази'));
 
 console.log('Five supplement cards: 21 approved Claims, honest null rows, no invented intervals, provenance notes passed.');
+
+// 2026-10-22: every published supplement Claim carries exactly the owner-approved level (or stays «не оцінено» for norms).
+import {approvedLevels, assertApprovedLevel} from './approved-confidence-levels.mjs';
+import {creatineMoreBase} from '../src/evidence/supplements/creatine-more/module.mjs';
+import {proteinBase} from '../src/evidence/supplements/protein/module.mjs';
+import {berberineBase} from '../src/evidence/supplements/berberine/module.mjs';
+const published = [...cards.flatMap(c => c.base.claims), ...creatineMoreBase.claims, ...proteinBase.claims, ...berberineBase.claims];
+assert.deepEqual(published.map(c => c.id).sort(), Object.keys(approvedLevels).sort(), 'the approved table covers exactly the published Claims');
+published.forEach(assertApprovedLevel);
+for (const id of ['CLM-000081', 'CLM-000088', 'CLM-000103']) assert.equal(approvedLevels[id], null, id + ' is a norm or position statement and stays unassessed');
+console.log('Confidence levels: 56 Claims match the approved table (53 provisional levels, 3 norms unassessed).');

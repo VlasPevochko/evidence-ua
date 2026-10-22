@@ -20,7 +20,7 @@ export const magnesiumModule = {
     {topic: 'Магній допомагає від судом під час тренувань', reason: 'Рандомізованих досліджень про судоми, пов’язані з навантаженням, в огляді Cochrane не знайшли.'},
     {topic: 'Магній покращує спортивні результати', reason: 'Ми це питання не розбирали; висновків не робимо.'}
   ],
-  commonLimits: ['Дослідження тиску об’єднують людей з нормальним і підвищеним тиском, з різними дозами й формами магнію.', 'Про сон — лише три невеликі дослідження в літніх людей з безсонням.', 'Оцінки певності — авторів оглядів, а не Evidence UA. Прочитано анотації в PubMed, не повні тексти.']
+  commonLimits: ['Дослідження тиску об’єднують людей з нормальним і підвищеним тиском, з різними дозами й формами магнію.', 'Про сон — лише три невеликі дослідження в літніх людей з безсонням.', 'Рівні впевненості — попередня оцінка Evidence UA (22.10.2026), що спирається на оцінки певності авторів оглядів. Прочитано анотації в PubMed, не повні тексти.']
 };
 
 const notAssessed = {evidenceConfidence: null, confidenceFramework: 'not_assessed', confidenceRationale: {summary: 'Рівень впевненості Evidence UA для цього твердження не оцінено. Погодження формулювання не є завершеним науковим переглядом.'}};
@@ -67,6 +67,14 @@ const claims = [
     limitations: ['Межу взято з анотації огляду Costello 2023; сторінку NIH ODS із робочого середовища відкрити не вдалося.', 'Огляд Costello — думка авторів, а не новий норматив.']
   })
 ];
+
+
+// Рівні впевненості погоджено власником 22.10.2026 («Погоджую»): GRADE-informed v1, попередні (лише анотації),
+// формального наукового перегляду не було. Твердження поза мапою (нормативи) лишаються «не оцінено».
+export const confidenceAcceptance = {kind: 'user_confidence_approval', at: '2026-10-22T18:04:00+03:00', framework: 'evidenceua_grade_informed_v1', provisional: true, formalScientificReview: false};
+const approvedLevels = {'CLM-000084': ['moderate', 'Огляд Cochrane: помірна й висока певність за авторами.'], 'CLM-000085': ['moderate', '34 подвійно сліпі РКД; залишкова неоднорідність.'], 'CLM-000086': ['very_low', 'Лише 3 невеликі РКД; низька або дуже низька якість за авторами.'], 'CLM-000087': ['low', 'Низька певність за авторами.']};
+for (const c of claims) if (approvedLevels[c.id]) Object.assign(c, {evidenceConfidence: approvedLevels[c.id][0], confidenceFramework: 'evidenceua_grade_informed_v1', provisional: true, confidenceAcceptance,
+  confidenceRationale: {summary: approvedLevels[c.id][1], uncertaintyNotes: ['Попередня оцінка за анотаціями оглядів; формального наукового перегляду Evidence UA не було.']}});
 
 const source = (id, o) => ({id, publicationType: 'systematic_review_meta_analysis', metadataStatus: 'checked', lastChecked: checked, publicationStatus: null, publicationStatusCheck: 'pending', sourceStatus: 'not_checked',
   identifiers: {doi: o.doi, pmid: o.pmid, pmcid: o.pmcid || null}, url: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', pubmedUrl: 'https://pubmed.ncbi.nlm.nih.gov/' + o.pmid + '/', accessLevel: 'abstract', funding: null, conflicts: null, methodsSummary: 'Прочитано анотацію в PubMed.', ...o});

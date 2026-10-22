@@ -4,19 +4,19 @@ import {supplements,groups,filterSupplements,renderRow} from '../dist/supplement
 
 const html=fs.readFileSync('dist/supplements.html','utf8'),css=fs.readFileSync('dist/supplements.css','utf8'),home=fs.readFileSync('dist/index.html','utf8');
 
-// The catalogue repeats the wording of the former home carousel word for word (frozen; captured from it
-// before the carousel was retired on 2026-10-19). Science is not rewritten here.
+// 2026-10-22 (owner decision «1» — align the catalogue with the new cards): tags, summaries and limits were rewritten from
+// the approved Claims of each card; no new scientific conclusions. The rows below freeze that wording; order and ids unchanged.
 const frozen=[
-  {"id": "creatine", "tag": "Сила · безжирова маса", "summary": "Силові тренування та повторні інтенсивні зусилля — найкраще вивчені напрями.", "limit": "Безжирова маса включає воду; результат не гарантований."},
-  {"id": "supplement-protein", "tag": "Білок · гіпертрофія", "summary": "У розборі — роль білка в адаптації до силових тренувань.", "limit": "Важливий загальний білок у раціоні, а не лише добавка."},
-  {"id": "supplement-caffeine", "tag": "Працездатність · сон", "summary": "Може покращувати окремі показники спортивної працездатності.", "limit": "Враховуй індивідуальну реакцію та вплив на сон."},
-  {"id": "supplement-omega", "tag": "EPA · DHA", "summary": "Розглядаємо серцево-судинні результати окремо для різних показань.", "limit": "Ефект залежить від складу, дози та досліджуваної групи."},
-  {"id": "supplement-vitd", "tag": "Кістки · дефіцит", "summary": "У розборі — кісткове здоров’я та межі користі додаткового прийому.", "limit": "Не переносимо висновки для дефіциту на всіх людей."},
-  {"id": "supplement-magnesium", "tag": "Мінерал · дефіцит", "summary": "Необхідний для нервової та м’язової функції; важливе достатнє споживання.", "limit": "Фізіологічна роль не доводить користь додаткової дози для кожного."},
-  {"id": "supplement-collagen", "tag": "Сухожилля · навантаження", "summary": "Досліджують як доповнення до тренувань для опорно-рухового апарату.", "limit": "Для багатьох результатів певність доказів низька або дуже низька."},
-  {"id": "supplement-beta-alanine", "tag": "Карнозин · інтенсивність", "summary": "Може допомагати в окремих видах інтенсивної роботи після регулярного прийому.", "limit": "Ефект залежить від тривалості та типу зусилля."},
-  {"id": "supplement-citrulline", "tag": "Зусилля · відновлення", "summary": "Досліджують вплив на сприйняття навантаження та біль після тренування.", "limit": "Зміна самопочуття не означає доведений приріст м’язів."},
-  {"id": "supplement-electrolytes", "tag": "Гідратація · потовиділення", "summary": "Відновлення рідини й натрію залежить від тривалості, спеки та втрат із потом.", "limit": "Спортивний напій не усуває ризик надмірного пиття."}
+  {"id": "creatine", "tag": "Сила · безжирова маса", "summary": "Разом із силовими тренуваннями — більше сили й безжирової маси. Витривалість не покращує.", "limit": "Креатинін у крові може трохи зрости без шкоди ниркам — скажи лікарю перед аналізами."},
+  {"id": "supplement-protein", "tag": "Білок · гіпертрофія", "summary": "З тренуваннями білок трохи додає сили й безжирової маси. Без тренувань силу не збільшує.", "limit": "Орієнтир близько 1,6 г на кг на добу — не точна норма; головне — самі тренування."},
+  {"id": "supplement-caffeine", "tag": "Працездатність · сон", "summary": "Допомагає швидше пройти дистанцію й трохи додає сили.", "limit": "Увечері скорочує сон; енергетики підвищують тиск. Дорослим — до 400 мг на добу."},
+  {"id": "supplement-omega", "tag": "EPA · DHA", "summary": "Знижує тригліцериди приблизно на 15%. На серце й смертність майже не впливає.", "limit": "Підвищує ризик фібриляції передсердь, особливо понад 1 г на добу."},
+  {"id": "supplement-vitd", "tag": "Кістки · дефіцит", "summary": "Без дефіциту переломів не зменшує; застуд і подібних інфекцій трохи менше.", "limit": "Великі разові дози підвищують ризик падінь і переломів."},
+  {"id": "supplement-magnesium", "tag": "Тиск · сон · судоми", "summary": "Трохи знижує тиск. Нічних судом у літніх людей не зменшує.", "limit": "Найчастіший побічний ефект — діарея; з добавок не більше 350 мг на добу."},
+  {"id": "supplement-collagen", "tag": "Сухожилля · суглоби", "summary": "Разом із тренуваннями — трохи більше безжирової маси й сили.", "limit": "Певність доказів здебільшого низька; дослідження дуже різні, частина — упереджена."},
+  {"id": "supplement-beta-alanine", "tag": "Карнозин · інтенсивність", "summary": "Малий ефект у виснажливих зусиллях на 0,5–10 хв після тижнів щоденного прийому.", "limit": "Склад тіла не змінює; єдиний побічний ефект — поколювання шкіри."},
+  {"id": "supplement-citrulline", "tag": "Зусилля · відновлення", "summary": "Ефект малий або відсутній: витривалість і силу не покращує.", "limit": "Певність доказів низька або дуже низька; надійної дози не встановлено."},
+  {"id": "supplement-electrolytes", "tag": "Гідратація · потовиділення", "summary": "Після зневоднення спортивний напій відновлює рідину краще за воду.", "limit": "Користь — для довгих навантажень і спеки; пити забагато небезпечно."}
 ];
 // Berberine was added as the 11th entry on 2026-10-21 (owner decision); the ten frozen rows stay unchanged.
 assert.equal(supplements.length,11);
@@ -64,4 +64,4 @@ for(const file of ['source-serif-4-cyrillic-wght-normal.woff2','source-serif-4-l
 // The other pages point to the new page.
 for(const file of ['dist/atlas.html','dist/exercises.html'])assert(fs.readFileSync(file,'utf8').includes('<a href="./supplements.html">Добавки</a>'),`${file} links to the catalogue`);
 assert(fs.readFileSync('dist/platform-catalog.js','utf8').includes("href:'./supplements.html'"));
-console.log('Supplements page: ten entries with unchanged home texts, links to existing dossiers, filter and search, folded limits, one header and no third-party requests passed. Browser verification is in Browser QA.');
+console.log('Supplements page: ten entries with card-aligned texts, links to existing dossiers, filter and search, folded limits, one header and no third-party requests passed. Browser verification is in Browser QA.');

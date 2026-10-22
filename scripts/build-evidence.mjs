@@ -42,7 +42,7 @@ html=html.replace(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g,(tag,body)=>body.i
 // Place CSS last in head to isolate current module overrides; load JS after legacy route initialization.
 html=html.replace(/<link[^>]*data-evidence-style[^>]*>/g,'').replace(/<script[^>]*data-evidence-script[^>]*><\/script>/g,'');
 html=html.replace('</head>','<link rel="stylesheet" href="./evidence/evidence.css?v=1.9" data-evidence-style></head>');
-html=html.replace('</body>','<script type="module" src="./evidence/ui.js?v=2.0" data-evidence-script></script></body>');
+html=html.replace('</body>','<script type="module" src="./evidence/ui.js?v=2.1" data-evidence-script></script></body>');
 // Only visible text: do not localize code, URLs, attributes, scientific values or article titles.
 html=html.split(/(<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>)/gi).map((part,i)=>i%2?part:part.replace(/>([^<>]+)</g,(all,text)=>'>'+publicText(text)+'<')).join('');
 html=html.replace('<a href="#categories">Практика</a>','').replace('07 СВІТІВ ЗНАНЬ','НАПРЯМИ ЗНАНЬ').replace('Ця демонстрація не містить медичних рекомендацій.','Матеріал освітній і не є персональною медичною рекомендацією.');

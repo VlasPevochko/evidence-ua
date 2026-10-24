@@ -266,7 +266,8 @@ async function trainerFlow(browser, origin, viewport) {
   check(where, (await options.evaluateAll(nodes => nodes.every(n => n.disabled))), 'options lock after an answer');
   const link = trainer.locator('.eua-trainer-source');
   check(where, (await link.getAttribute('href')).startsWith('https://pubmed.ncbi.nlm.nih.gov/') && (await link.getAttribute('rel')).includes('noopener'), 'the source is a safe PubMed link');
-  const cards = await trainer.evaluate(() => 7);
+  // 12 cards since 2026-10-22 (five cards from the new supplement cards).
+  const cards = await trainer.evaluate(() => 12);
   for (let i = 0; i < cards; i++) {
     const next = trainer.locator('.eua-trainer-feedback .eua-trainer-btn');
     check(where, await next.isVisible(), 'the next button must be reachable');

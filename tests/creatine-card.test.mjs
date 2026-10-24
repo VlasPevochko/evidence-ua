@@ -94,3 +94,14 @@ outer.click(target(oldOpener, null)); inner.click(target(oldOpener, null));
 assert.equal(outerDialog.opened, 1); assert.equal(innerDialog.opened, 1);
 
 console.log('Creatine card: order, folded blocks, 8+8 Claims, honest chart, safety and nested drawer checks passed.');
+
+// 2026-10-22 «креатин коротше»: the simple regimen and a one-line kidney summary stay visible; details are folded, nothing removed.
+{
+  const dosing = section.slice(section.indexOf('id="creatine-dosing"'), section.indexOf('id="creatine-kidney"'));
+  assert(dosing.indexOf('Простий режим') < dosing.indexOf('<details class="cr-notes"><summary>Завантаження, час прийому й джерело</summary>'));
+  assert(dosing.includes('Фаза завантаження') && dosing.includes('data-claim-open="CLM-000007"'));
+  assert.equal((dosing.match(/data-claim-open="CLM-000006"/g) || []).length, 1, 'one control per action');
+  const kidney = section.slice(section.indexOf('id="creatine-kidney"'), section.indexOf('CREATINE-MORE:NOT:START'));
+  assert(kidney.indexOf('не те саме, що шкода ниркам') < kidney.indexOf('<details class="cr-notes"><summary>Як це працює й докази</summary>'));
+  for (const id of ['CLM-000003', 'CLM-000004']) assert(kidney.includes(`data-claim-open="${id}"`));
+}

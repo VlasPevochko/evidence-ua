@@ -70,3 +70,7 @@ assert.deepEqual(published.map(c => c.id).sort(), Object.keys(approvedLevels).so
 published.forEach(assertApprovedLevel);
 for (const id of ['CLM-000081', 'CLM-000088', 'CLM-000103']) assert.equal(approvedLevels[id], null, id + ' is a norm or position statement and stays unassessed');
 console.log('Confidence levels: 56 Claims match the approved table (53 provisional levels, 3 norms unassessed).');
+
+// Accessibility audit 2026-10-22: DOI links and stand-alone source links in the dossiers keep 44 px touch targets.
+assert(html.includes(':is(#creatine,[id^="supplement-"]) .eua-source-links a{min-width:44px'));
+assert(html.includes('#creatine p>a:only-child,#creatine .eua-structure-panel>a{display:inline-flex;align-items:center;min-height:44px}'));

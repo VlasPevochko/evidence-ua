@@ -1,3 +1,4 @@
+// 2026-10-22: search finds supplements by topic (new keywords in platform-materials) → cascade: materials v84, search v2, header v4, tools v85, shell v97.
 // Cache expectations updated for the scoped shared-header geometry fix.
 // Shared header release bumps the shell cache version to 84; science contracts are unchanged.
 import assert from 'node:assert/strict';
@@ -60,7 +61,7 @@ assert.equal(directory.querySelector('#search-empty').hidden,true);
 assert(!/<a[\s>]/.test(directory.querySelector('#planned-list').innerHTML));
 const muscle=root('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE');mountMuscle(muscle);assert.equal(muscle.querySelector('#structure-title').textContent,'М’язове волокно');
 const cell=root('https://evidence.invalid/cell-lab.html?organelle=ORG-RIBOSOME');mountCell(cell);assert.equal(cell.querySelector('#organelle-title').textContent,'Рибосома');assert(cell.querySelector('#cell-canvas').innerHTML.includes('data-organelle="ORG-RIBOSOME" role="button" tabindex="0" aria-pressed="true"'));
-for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=96'));
+for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=97'));
 console.log('Platform: registry, links/anchors, planned states, search/reset, learning routes and actual selected-entity initialization passed. Browser visual QA not performed.');
 
 const created=[],header={nextElementSibling:null,closest(){return null;},after(element){this.nextElementSibling=element;}};

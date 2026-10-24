@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import {readBase} from './site-url.mjs';
+const SITE_BASE=readBase();
 import {learningNotesHTML} from '../src/platform/learning-notes.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 import {homeLearningHTML} from '../src/platform/learning-ui.mjs';
@@ -116,7 +118,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,page=name.replace('.html',''),old=fs.readFileSync(file,'utf8');let next=old;
   if(fs.existsSync(`dist/og/${page}.jpg`)){
-    next=next.replaceAll('https://vlaspevochko.github.io/evidence-ua/og-image.png',`https://vlaspevochko.github.io/evidence-ua/og/${page}.jpg`);
+    next=next.replaceAll(SITE_BASE+'og-image.png',`${SITE_BASE}og/${page}.jpg`);
     const title=(next.match(/<title>([^<]+)<\/title>/)||[])[1];
     if(title)next=next.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1Картка сторінки: ${title.replaceAll('"','&quot;')}$2`);
   }

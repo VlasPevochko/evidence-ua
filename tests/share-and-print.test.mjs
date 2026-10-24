@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {readBase} from '../scripts/site-url.mjs';
 
 // Картки для поширення й друк (рішення власника 2026-10-20).
 const pages=fs.readdirSync('dist').filter(f=>f.endsWith('.html')).map(f=>f.replace('.html',''));
@@ -9,7 +10,7 @@ for(const p of pages){
   assert.deepEqual(jpegSize(file),[1200,630],`${p}: card is 1200x630`);
   assert(fs.statSync(file).size<350_000,`${p}: card stays light for messengers`);
   const html=fs.readFileSync(`dist/${p}.html`,'utf8');
-  assert(html.includes(`https://vlaspevochko.github.io/evidence-ua/og/${p}.jpg`),`${p}: og:image points to its card`);
+  assert(html.includes(`${readBase()}og/${p}.jpg`),`${p}: og:image points to its card`);
   assert(/property="og:image:alt" content="Картка сторінки: /.test(html),`${p}: the card has its own alt text`);
   assert(html.includes('print.css')&&html.includes('media="print"'),`${p}: loads the print style`);
 }

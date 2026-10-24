@@ -4,7 +4,9 @@ import path from 'node:path';
 
 // Every page must carry icons, a canonical address and Open Graph data so that links shared in
 // messengers show a preview and browsers stop requesting a missing favicon.
-const BASE = 'https://vlaspevochko.github.io/evidence-ua/';
+import {readBase} from '../scripts/site-url.mjs';
+// The site address lives in site.json, so these checks keep working after a move to its own domain.
+const BASE = readBase();
 const pages = fs.readdirSync('dist').filter(f => f.endsWith('.html')).sort();
 assert(pages.length >= 11, 'Expected the full set of site pages');
 

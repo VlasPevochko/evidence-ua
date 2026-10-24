@@ -84,3 +84,15 @@ Owner setup, once:
 3. Merge to `main` or run the workflow manually (Actions → Run workflow on `main`). The address appears in the `github-pages` environment and the job summary; it will be under `https://<owner>.github.io/evidence-ua/`.
 
 All links in `dist/` are relative, so the site works under the `/evidence-ua/` sub-path. A custom domain can be added later in the Pages settings. To turn it off, delete the variable or set it to anything but `true`. Rollback: revert on `main` through a PR; the next successful run republishes that state.
+
+## Moving to a custom domain (e.g. `evidenceua.com`)
+
+The site address lives in one place, `site.json`. Canonical links, share cards (`og:*`), `sitemap.xml` and `robots.txt` all follow it.
+
+Do these in order. Do not run step 4 before the new domain opens the site over HTTPS, or canonical and share links will point at a dead address.
+
+1. **Buy the domain** at a registrar (owner).
+2. **DNS at the registrar** (owner): four `A` records for the apex (`@`) to GitHub Pages: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`; optionally the matching `AAAA` records; and a `CNAME` record for `www` pointing to `vlaspevochko.github.io`. Confirm the current values in GitHub's "Managing a custom domain for your GitHub Pages site" before entering them.
+3. **Repository Settings → Pages → Custom domain** (owner): enter the domain, wait for the DNS check, then tick **Enforce HTTPS** when it becomes available. With the Actions deployment used here no `CNAME` file is needed.
+4. **Switch the address in the code:** `node scripts/set-site-url.mjs https://evidenceua.com/`, run the tests, open a PR. The old GitHub address keeps redirecting to the new domain.
+5. **Search engines (optional):** verify the domain in Google Search Console with a DNS record (adds nothing to the pages) and submit `https://evidenceua.com/sitemap.xml`.

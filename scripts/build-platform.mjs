@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import {readBase} from './site-url.mjs';
+const SITE_BASE=readBase();
 import {learningNotesHTML} from '../src/platform/learning-notes.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 import {homeLearningHTML} from '../src/platform/learning-ui.mjs';
@@ -13,12 +15,14 @@ const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.t
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const homeDirectionsHTML='<div class="label"><span>'+homeTopics.length+' напрямів Evidence UA</span><span>Обери тему · статус указано на картці</span></div><div class="cards" id="cards" aria-label="Тематичні напрями Evidence UA">'+homeTopics.map(topic=>`<a class="topic-card" data-area="${escapeHTML(topic.id)}" href="${escapeHTML(topic.href)}" style="--topic-x:${escapeHTML(topic.position)}"><strong>${escapeHTML(topic.title)}</strong><small>${escapeHTML(topic.subtitle)}</small><span class="topic-state">${escapeHTML(topic.state)} · Відкрити →</span></a>`).join('')+'</div>';
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
-fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=83'"));
+fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=84'"));
 fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
-fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=83'"));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'").replace("'./site-header.mjs'","'./site-header.js?v=2'"));
+fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=84'"));
+fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
+fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=3'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=85'").replace("'./site-header.mjs'","'./site-header.js?v=4'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./materials.mjs'","'./platform-materials.js?v=83'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=83'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=83'").replace("'./site-header.mjs'","'./site-header.js?v=2'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=83'").replace("'./materials.mjs'","'./platform-materials.js?v=84'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=85'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=83'").replace("'./site-header.mjs'","'./site-header.js?v=4'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -67,8 +71,69 @@ for(const area of ['movement','sleep']){
 
 // Shared header assets and explicit cache versions on every document.
 fs.copyFileSync('src/platform/site-header.mjs','dist/site-header.js');
+fs.copyFileSync('src/platform/search.mjs','dist/platform-search.js');
 fs.copyFileSync('src/platform/site-header.css','dist/site-header.css');
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=83','platform-shell.js?v=84').replaceAll('directions.js?v=83','directions.js?v=84');if(next!==old)fs.writeFileSync(file,next);}
 
 // Geometry fix must reach returning visitors as well as fresh loads.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=84','platform-shell.js?v=85').replaceAll('./directions.js?v=84','./directions.js?v=85');if(next!==old)fs.writeFileSync(file,next);}
+
+// The tools block folds into the one-line disclosure on the Atlas and Exercises pages too (pine theme rollout).
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=85','platform-shell.js?v=86');if(next!==old)fs.writeFileSync(file,next);}
+
+// Every page with the pine theme (data-pine) folds the tools line, whatever its area.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=86','platform-shell.js?v=87');if(next!==old)fs.writeFileSync(file,next);}
+
+// Study-UI pages (Nutrition, Cell Lab) keep their own compact tools row; only other pine pages fold it.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=87','platform-shell.js?v=88');if(next!==old)fs.writeFileSync(file,next);}
+
+// Pages that keep their own compact tools row opt out of the fold with data-pine-tools (Muscle Lab).
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=88','platform-shell.js?v=89');if(next!==old)fs.writeFileSync(file,next);}
+
+// Home: the share tool joins the folded «Про сайт» group (owner decision 2026-10-19), so the shell mounts it there.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=89','platform-shell.js?v=90');if(next!==old)fs.writeFileSync(file,next);}
+
+// Home: «Продовжити з місця» (останній відкритий матеріал, лише в браузері відвідувача).
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=90','platform-shell.js?v=91');if(next!==old)fs.writeFileSync(file,next);}
+
+// Вигляд сайту (тема й розмір тексту): модуль, стилі й ранній скрипт у <head> кожної сторінки (без мигання теми).
+fs.copyFileSync('src/platform/appearance.mjs','dist/appearance.js');
+const {earlyScript}=await import('../src/platform/appearance.mjs');
+const appearanceHead=`<link rel="stylesheet" href="./appearance.css?v=1"><script>${earlyScript}</script><script type="module" src="./appearance.js?v=1"></script></head>`;
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');if(old.includes('eua-appearance-v1'))continue;const next=old.replace('</head>',appearanceHead);if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=1','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=2','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=3','appearance.css?v=4');if(next!==old)fs.writeFileSync(file,next);}
+
+// «Куди далі» внизу сторінок (модуль підключає shell): нова версія оболонки.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=91','platform-shell.js?v=92');if(next!==old)fs.writeFileSync(file,next);}
+
+// «Мій список» і підказки до термінів: нова версія оболонки та модуля «Куди далі».
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=92','platform-shell.js?v=93').replaceAll('platform-next-steps.js?v=1','platform-next-steps.js?v=3');if(next!==old)fs.writeFileSync(file,next);}
+
+// Словник термінів: підказки отримали посилання «У словнику», тож модуль термінів і оболонка змінили версії.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=93','platform-shell.js?v=94').replaceAll('platform-terms.js?v=1','platform-terms.js?v=2');if(next!==old)fs.writeFileSync(file,next);}
+
+// Картки для поширення й друк: у кожної сторінки своє превʼю (dist/og/<назва>.jpg, див. scripts/make-og-cards.mjs) і print.css.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,page=name.replace('.html',''),old=fs.readFileSync(file,'utf8');let next=old;
+  if(fs.existsSync(`dist/og/${page}.jpg`)){
+    next=next.replaceAll(SITE_BASE+'og-image.png',`${SITE_BASE}og/${page}.jpg`);
+    const title=(next.match(/<title>([^<]+)<\/title>/)||[])[1];
+    if(title)next=next.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1Картка сторінки: ${title.replaceAll('"','&quot;')}$2`);
+  }
+  if(!next.includes('print.css'))next=next.replace('</head>','<link rel="stylesheet" href="./print.css?v=1" media="print"></head>');
+  if(next!==old)fs.writeFileSync(file,next);
+}
+
+// Модуль «Куди далі» отримав кнопку друку: нова версія модуля й оболонки.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-next-steps.js?v=2','platform-next-steps.js?v=3').replaceAll('platform-shell.js?v=94','platform-shell.js?v=95');if(next!==old)fs.writeFileSync(file,next);}
+
+// Шапка отримала кнопку пошуку: нова версія модуля шапки.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('site-header.js?v=2','site-header.js?v=3');if(next!==old)fs.writeFileSync(file,next);}
+
+// Досьє на головній: тонка смуга «← Усі добавки» замість старого блоку інструментів (рішення власника 21.10.2026).
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=95','platform-shell.js?v=96');if(next!==old)fs.writeFileSync(file,next);}
+
+// Пошук знаходить добавки за темами (судоми, тиск, сон…) — нові ключові слова в platform-materials (22.10.2026). Каскад версій.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('site-header.js?v=3','site-header.js?v=4').replaceAll('platform-shell.js?v=96','platform-shell.js?v=97').replaceAll('home-feedback.js?v=83','home-feedback.js?v=84').replaceAll('directions.js?v=85','directions.js?v=86').replaceAll('directions.js?v=84','directions.js?v=86').replaceAll('fat-burning.js?v=3','fat-burning.js?v=4');if(next!==old)fs.writeFileSync(file,next);}

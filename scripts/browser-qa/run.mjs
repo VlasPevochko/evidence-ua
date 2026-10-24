@@ -173,6 +173,13 @@ async function nutritionFlow(browser, origin, viewport) {
   check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once');
   check(where, (await page.locator('[data-nl-depth]').count()) === 0, 'the retired depth switcher is back');
   check(where, (await page.locator('.nl-page-nav').count()) === 1, 'expected a single page navigation');
+  // User discovery: the Fat Burning Lab must be prominent within Nutrition, not only in the global catalogue.
+  const featured=page.locator('#nutrition-fat-burning');
+  check(where,await featured.isVisible(),'the Fat Burning Lab entry must be visible without expanding a disclosure');
+  check(where,(await page.locator('.nl-page-nav .nf-nav').getAttribute('href'))==='#nutrition-fat-burning','top menu must point to the featured entry');
+  check(where,(await featured.locator('.nf-open').getAttribute('href'))==='./fat-burning.html','featured CTA must open the Lab directly');
+  check(where,await page.evaluate(()=>{const e=document.querySelector('#nutrition-fat-burning'),d=document.querySelector('#nutrition-diets');return e&&d&&e.getBoundingClientRect().top+scrollY<d.getBoundingClientRect().top+scrollY}),'featured entry must precede diet cards');
+  check(where,(await featured.locator('.nf-open').count())===1,'one clear featured action');
   // Folds are collapsed by default; the shared context paragraph is not repeated per card.
   check(where, (await page.locator('details.nl-fold[open]').count()) === 0, 'evidence folds must start collapsed');
   const routes = page.locator('[data-nl-nutrient]');
@@ -219,7 +226,365 @@ async function nutritionFlow(browser, origin, viewport) {
   }
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
-  check(where, height < (phone ? 8000 : 6500), `page is too long again (${height}px)`);
+  check(where, height < (phone ? 8350 : 6800), `page is too long again (${height}px)`);
+  await featured.locator('.nf-open').click();
+  await page.waitForURL(/\/fat-burning\.html$/);
+  check(where,(await page.locator('#fb-title').innerText()).includes('зникає жир'),'featured link opens the real Fat Burning Lab');
+  await context.close();
+}
+
+async function continueFlow(browser, origin, viewport) {
+  const where = `continue @${viewport.name}`;
+  // A fresh visitor sees no card; after opening a material the home page offers to continue there.
+  const first = await open(browser, origin, viewport, '/index.html');
+  check(where, (await first.page.locator('.eua-continue').count()) === 0, 'a first-time visitor must not see «Продовжити»');
+  await first.page.goto(origin + '/nutrition.html', {waitUntil: 'load'});
+  await first.page.goto(origin + '/index.html', {waitUntil: 'load'});
+  const card = first.page.locator('#start-here .eua-continue');
+  check(where, (await card.count()) === 1, 'home must offer to continue after a material was opened');
+  check(where, (await card.getAttribute('href')).startsWith('./nutrition.html'), 'the card must lead back to the last material (Nutrition keeps its own step in the URL)');
+  check(where, !/Evidence UA/.test(await card.locator('strong').innerText()), 'the card names the material without the site suffix');
+  const box = await card.boundingBox();
+  check(where, box && box.height >= 44 && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the card must be a comfortable tap target inside the viewport');
+  check(where, (await first.page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the continue card');
+  await first.context.close();
+}
+
+async function trainerFlow(browser, origin, viewport) {
+  const where = `trainer @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const trainer = page.locator('.evidence-guide .eua-trainer');
+  await trainer.waitFor({state: 'attached'});
+  await trainer.scrollIntoViewIfNeeded();
+  check(where, (await trainer.locator('.eua-trainer-option').count()) === 3, 'a card offers three readings');
+  // Wrong answer first: it must be explained, not just marked.
+  const options = trainer.locator('.eua-trainer-option');
+  // On the first card the right reading is the second one, so the first option is a wrong answer.
+  await options.nth(0).click();
+  check(where, (await trainer.locator('.eua-trainer-why').count()) === 3, 'every reading is explained after an answer');
+  check(where, (await trainer.locator('.eua-trainer-mark').count()) === 2, 'the right and the chosen option carry a text mark, not only colour');
+  check(where, (await options.evaluateAll(nodes => nodes.every(n => n.disabled))), 'options lock after an answer');
+  const link = trainer.locator('.eua-trainer-source');
+  check(where, (await link.getAttribute('href')).startsWith('https://pubmed.ncbi.nlm.nih.gov/') && (await link.getAttribute('rel')).includes('noopener'), 'the source is a safe PubMed link');
+  // 12 cards since 2026-10-22 (five cards from the new supplement cards).
+  const cards = await trainer.evaluate(() => 12);
+  for (let i = 0; i < cards; i++) {
+    const next = trainer.locator('.eua-trainer-feedback .eua-trainer-btn');
+    check(where, await next.isVisible(), 'the next button must be reachable');
+    const box = await next.boundingBox();
+    check(where, box && box.height >= 44 && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'next button must be a tap target inside the viewport');
+    await next.click();
+    if (i < cards - 1) await trainer.locator('.eua-trainer-option').first().click();
+  }
+  check(where, (await trainer.locator('.eua-trainer-done').count()) === 1, 'finishing shows the closing note');
+  check(where, (await trainer.locator('.eua-trainer-note').innerText()).includes('не порада приймати добавки'), 'the safety note stays visible');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the trainer');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the trainer must not raise errors');
+  await context.close();
+}
+
+async function appearanceFlow(browser, origin, viewport) {
+  const where = `appearance @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const html = page.locator('html');
+  check(where, (await html.getAttribute('data-theme')) === null && (await html.getAttribute('data-text')) === null, 'first visit keeps the current dark look');
+  const toggle = page.locator('.eua-appearance-toggle');
+  check(where, (await toggle.count()) === 1 && (await toggle.getAttribute('aria-expanded')) === 'false', 'one appearance button in the header');
+  const tbox = await toggle.boundingBox();
+  check(where, tbox && tbox.width >= 44 && tbox.height >= 44 && tbox.x + tbox.width <= viewport.width + 1, 'the button must be a tap target inside the viewport');
+  await toggle.click();
+  const panel = page.locator('.eua-appearance-panel');
+  check(where, await panel.isVisible(), 'the panel opens');
+  const pbox = await panel.boundingBox();
+  check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the panel must stay inside the viewport');
+  await panel.getByRole('radio', {name: 'Світла'}).click();
+  check(where, (await html.getAttribute('data-theme')) === 'light', 'choosing «Світла» turns the light theme on');
+  await panel.getByRole('radio', {name: 'Більший'}).click();
+  check(where, (await html.getAttribute('data-text')) === 'lg', 'choosing «Більший» enlarges the text');
+  await page.keyboard.press('Escape');
+  check(where, !(await panel.isVisible()) && (await toggle.evaluate(n => n === document.activeElement)), 'Escape closes the panel and returns focus to the button');
+  // The choice survives a reload and is applied before the page is shown.
+  await page.reload({waitUntil: 'load'});
+  check(where, (await html.getAttribute('data-theme')) === 'light' && (await html.getAttribute('data-text')) === 'lg', 'the choice must persist after reload');
+  const nav = await open(browser, origin, viewport, '/nutrition.html');
+  await nav.context.close();
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in light theme with larger text');
+  await page.locator('.eua-appearance-toggle').click();
+  await page.locator('.eua-appearance-panel').getByRole('radio', {name: 'Темна'}).click();
+  await page.locator('.eua-appearance-panel').getByRole('radio', {name: 'Звичайний'}).click();
+  check(where, (await html.getAttribute('data-theme')) === null && (await html.getAttribute('data-text')) === null, 'switching back restores the default look');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'appearance must not raise errors');
+  await context.close();
+}
+
+async function nextStepsFlow(browser, origin, viewport) {
+  const files = ['nutrition', 'nutrition-digestion', 'fat-burning', 'muscle-lab', 'cell-lab', 'movement', 'sleep', 'atlas', 'exercises', 'supplements', 'protein-meta'];
+  for (const name of files) {
+    const where = `next @${viewport.name} ${name}`;
+    const {context, page, seen} = await open(browser, origin, viewport, `/${name}.html`);
+    const block = page.locator('.eua-next');
+    await block.waitFor({state: 'attached'});
+    check(where, (await block.count()) === 1 && (await block.locator('a').count()) === 3, 'three next steps, mounted once');
+    const hrefs = await block.locator('a').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
+    check(where, !hrefs.some(h => h.includes(`${name}.html`)), 'no self-link');
+    await block.scrollIntoViewIfNeeded();
+    const boxes = await block.locator('a').evaluateAll(nodes => nodes.map(n => { const r = n.getBoundingClientRect(); return [r.x, r.width, r.height]; }));
+    check(where, boxes.every(([x, w, h]) => x >= 0 && x + w <= viewport.width + 1 && h >= 44), 'cards are tap targets inside the viewport');
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the next-steps block');
+    check(where, seen.pageErrors.length === 0, 'no page errors');
+    await context.close();
+  }
+}
+
+async function savedAndTermsFlow(browser, origin, viewport) {
+  const where = `list+terms @${viewport.name}`;
+  // Saved list: save a page, see it on the home page, remove it.
+  const sleep = await open(browser, origin, viewport, '/sleep.html');
+  const save = sleep.page.locator('.eua-save');
+  await save.waitFor({state: 'attached'});
+  await save.scrollIntoViewIfNeeded();
+  check(where, (await save.getAttribute('aria-pressed')) === 'false', 'a page starts unsaved');
+  await save.click();
+  check(where, (await save.getAttribute('aria-pressed')) === 'true', 'saving marks the button pressed');
+  await sleep.page.reload({waitUntil: 'load'});
+  check(where, (await sleep.page.locator('.eua-save').getAttribute('aria-pressed')) === 'true', 'the saved state survives reload');
+  await sleep.page.goto(origin + '/index.html', {waitUntil: 'load'});
+  const item = sleep.page.locator('#start-here .eua-saved li a');
+  check(where, (await item.count()) === 1 && (await item.getAttribute('href')) === './sleep.html', 'home shows the saved page');
+  const box = await sleep.page.locator('#start-here .eua-saved').boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the saved block stays inside the viewport');
+  await sleep.page.locator('#start-here .eua-saved li button').click();
+  check(where, (await sleep.page.locator('#start-here .eua-saved').count()) === 0, 'removing the last item hides the block');
+  check(where, sleep.seen.pageErrors.length === 0, 'no page errors with the saved list');
+  await sleep.context.close();
+  // Term hints: marked in reading text, opened by click, closed by Escape, kept inside the viewport.
+  const fat = await open(browser, origin, viewport, '/fat-burning.html');
+  const terms = fat.page.locator('.fb-main .eua-term');
+  await terms.first().waitFor({state: 'attached'});
+  check(where, (await terms.count()) >= 1, 'Fat Burning Lab marks its terms');
+  const first = terms.first();
+  await first.scrollIntoViewIfNeeded();
+  const label = await first.innerText();
+  await first.click();
+  const pop = fat.page.locator('.eua-term-pop');
+  check(where, (await pop.count()) === 1 && await pop.isVisible(), 'clicking a term opens the hint');
+  const pbox = await pop.boundingBox();
+  check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the hint stays inside the viewport');
+  check(where, (await pop.locator('a').first().getAttribute('rel')).includes('noopener') && (await pop.locator('a').first().getAttribute('href')).startsWith('https://'), 'the source link is safe');
+  check(where, (await first.getAttribute('aria-expanded')) === 'true', 'the term button reports it is expanded');
+  await fat.page.keyboard.press('Escape');
+  check(where, (await fat.page.locator('.eua-term-pop').count()) === 0 && (await first.evaluate(n => n === document.activeElement)), 'Escape closes the hint and returns focus');
+  check(where, label.length > 2, 'the visible wording stays the same as the page text');
+  check(where, (await fat.page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with term hints');
+  check(where, fat.seen.pageErrors.length === 0, 'no page errors with term hints');
+  await fat.context.close();
+  const home = await open(browser, origin, viewport, '/index.html');
+  await home.page.locator('.evidence-guide').waitFor({state: 'attached'});
+  check(where, (await home.page.locator('.evidence-guide .eua-term').count()) >= 1, 'the evidence guide marks its terms');
+  await home.context.close();
+}
+
+async function glossaryFlow(browser, origin, viewport) {
+  const where = `glossary @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/glossary.html');
+  const items = page.locator('.gl-term');
+  await items.first().waitFor({state: 'attached'});
+  const total = await items.count();
+  check(where, total >= 17, 'the dictionary lists every hint, movement and sleep term');
+  check(where, (await page.locator('.gl-term .gl-source[rel~="noopener"]').count()) === total, 'every entry has a safe source link');
+  await page.fill('#gl-q', 'інтервал');
+  const shown = await page.locator('.gl-term:not([hidden])').count();
+  check(where, shown >= 1 && shown < total, 'search narrows the list');
+  check(where, (await page.locator('#gl-count').innerText()).includes('Знайдено'), 'the count reports the result');
+  await page.fill('#gl-q', 'цццццц');
+  check(where, await page.locator('.gl-empty').isVisible(), 'an empty search says so');
+  await page.fill('#gl-q', '');
+  // A link from a hint lands on and highlights the entry.
+  await page.goto(origin + '/glossary.html#term-ci', {waitUntil: 'load'});
+  await page.locator('#term-ci.is-target').waitFor({state: 'attached'});
+  const box = await page.locator('#term-ci').boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'entries stay inside the viewport');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in the dictionary');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the dictionary raises no errors');
+  await context.close();
+  // The hint in a text links to the matching entry.
+  const fat = await open(browser, origin, viewport, '/fat-burning.html');
+  await fat.page.locator('.fb-main .eua-term').first().click();
+  const href = await fat.page.locator('.eua-term-pop a', {hasText: 'У словнику'}).getAttribute('href');
+  check(where, /^\.\/glossary\.html#term-[a-z0-9-]+$/.test(href), 'the hint links to its dictionary entry');
+  await fat.context.close();
+}
+
+async function searchFlow(browser, origin, viewport) {
+  const where = `search @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/sleep.html');
+  const button = page.locator('.eua-header-search');
+  await button.waitFor({state: 'attached'});
+  const box = await button.boundingBox();
+  check(where, box && box.width >= 44 && box.height >= 44, 'the search button is a 44px target');
+  check(where, box && box.x + box.width <= viewport.width + 1, 'the search button stays inside the viewport');
+  await button.click();
+  const dialog = page.locator('dialog.eua-search');
+  await dialog.waitFor({state: 'visible'});
+  check(where, await page.evaluate(() => document.activeElement?.id === 'eua-search-q'), 'the field is focused on open');
+  check(where, (await page.locator('.eua-search-chips button').count()) >= 3, 'suggestions show before typing');
+  await page.fill('#eua-search-q', 'інтервал');
+  await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+  check(where, (await page.locator('.eua-search-results a[href^="./glossary.html#term-"]').count()) >= 1, 'a term result links to the dictionary');
+  await page.fill('#eua-search-q', 'білок');
+  await page.locator('.eua-search-results a[href$=".html"]').first().waitFor({state: 'visible'});
+  const dbox = await dialog.boundingBox();
+  check(where, dbox && dbox.x >= 0 && dbox.x + dbox.width <= viewport.width + 1 && dbox.y + dbox.height <= viewport.height + 1, 'the dialog fits the viewport');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with search open');
+  await page.keyboard.press('ArrowDown');
+  check(where, await page.evaluate(() => !!document.activeElement?.closest('.eua-search-results a')), 'ArrowDown moves into the results');
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({state: 'hidden'});
+  check(where, await page.evaluate(() => document.activeElement?.classList.contains('eua-header-search')), 'focus returns to the button');
+  // The / shortcut opens it again, but not while typing in a field.
+  await page.keyboard.press('/');
+  await dialog.waitFor({state: 'visible'});
+  await page.keyboard.press('Escape');
+  await page.fill('#eua-search-q', '');
+  await page.fill('#eua-search-q', 'цццццц');
+  check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайдено'), 'an empty result says so');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'search raises no errors');
+  await context.close();
+}
+
+async function changesFlow(browser, origin, viewport) {
+  const where = `changes @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/changes.html');
+  await page.locator('.ch-day').first().waitFor({state: 'attached'});
+  const days = await page.locator('.ch-day').count();
+  check(where, days >= 4, 'the log lists several days');
+  check(where, (await page.locator('.ch-day[open]').count()) === 1, 'only the newest day is open');
+  const links = await page.locator('.ch-day[open] .ch-title').count();
+  check(where, links >= 3, 'the open day lists its records');
+  check(where, (await page.locator('.ch-science').first().innerText()).length > 10, 'every record states whether the science changed');
+  await page.locator('.ch-day').nth(1).locator('summary').click();
+  check(where, (await page.locator('.ch-day[open]').count()) === 2, 'another day opens on tap');
+  await page.locator('#ch-how summary').click();
+  check(where, await page.locator('.ch-limits').isVisible(), 'the limits are readable once unfolded');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in the log');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the log raises no errors');
+  await context.close();
+}
+
+async function videosFlow(browser, origin, viewport) {
+  const where = `videos @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/videos.html');
+  await page.addInitScript(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
+  await page.reload({waitUntil: 'load'});
+  const url = page.locator('#vd-url');
+  check(where, (await page.locator('label[for="vd-url"]').innerText()).includes('URL'), 'the field is labelled as a URL');
+  check(where, (await url.getAttribute('placeholder')).startsWith('https://'), 'the field shows an example address');
+  check(where, (await page.locator('#vd-help').innerText()).includes('Копіювати посилання'), 'the hint says where to copy the address');
+  const send = page.locator('.vd-send');
+  const box = await send.boundingBox();
+  check(where, box && box.height >= 44 && box.x + box.width <= viewport.width + 1, 'the button is a 44px target inside the viewport');
+  await send.click();
+  check(where, (await page.locator('#vd-state').innerText()).includes('Вставте посилання'), 'an empty submit asks for the link');
+  check(where, (await page.evaluate(() => window.__opened.length)) === 0, 'nothing opens for an empty field');
+  await url.fill('привіт');
+  check(where, (await page.locator('#vd-state').innerText()).includes('https://'), 'a wrong value explains the format');
+  check(where, (await url.getAttribute('aria-invalid')) === 'true', 'the field is marked invalid');
+  await url.fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  check(where, (await page.locator('#vd-state').innerText()).includes('YouTube'), 'a valid link names its platform');
+  await page.fill('#vd-note', 'техніка присіду');
+  await send.click();
+  check(where, (await page.locator('#vd-state').innerText()).includes('сторінку в соцмережі'), 'a missing social page is asked for');
+  check(where, (await page.evaluate(() => window.__opened.length)) === 0, 'nothing opens without the social page');
+  await page.fill('#vd-profile', 'https://www.instagram.com/olena');
+  await send.click();
+  const opened = await page.evaluate(() => window.__opened);
+  check(where, opened.length === 1 && opened[0].startsWith('https://github.com/VlasPevochko/evidence-ua/issues/new?title='), 'the proposal opens a prefilled GitHub page');
+  check(where, decodeURIComponent(opened[0]).includes('dQw4w9WgXcQ') && decodeURIComponent(opened[0]).includes('техніка присіду'), 'the link and the note travel in the draft');
+  check(where, await page.locator('#vd-after').isVisible(), 'the next step is explained after the click');
+  check(where, (await page.locator('.vd-empty').count()) === 1, 'the empty library says so');
+  await page.locator('#vd-rules summary').click();
+  check(where, await page.locator('#vd-rules li').first().isVisible(), 'the rules unfold');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the video page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the video page raises no errors');
+  await context.close();
+}
+
+async function dietsFlow(browser, origin, viewport) {
+  const where = `diets @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/nutrition.html');
+  const rec = page.locator('#nd-recommend');
+  await rec.waitFor({state: 'attached'});
+  await rec.scrollIntoViewIfNeeded();
+  check(where, await rec.isVisible(), 'the editorial position is visible without opening anything');
+  check(where, (await rec.innerText()).includes('не лікарська порада'), 'the position says it is not medical advice');
+  check(where, (await rec.innerText()).includes('не обіцяє'), 'the position states the limits');
+  await page.locator('#nd-recommend a[href="#diet-mediterranean"]').click();
+  await page.locator('#diet-mediterranean').evaluate(el => { el.open = true; });
+  const evidence = page.locator('#diet-mediterranean .nd-evidence');
+  await evidence.waitFor({state: 'visible'});
+  check(where, (await evidence.locator('.nd-findings a[href^="https://doi.org/"]').count()) >= 3, 'findings link to their sources');
+  check(where, (await evidence.innerText()).includes('ПОКАЗИ') && (await evidence.innerText()).includes('ПРОТИПОКАЗИ'), 'indications and contraindications are both shown');
+  check(where, (await evidence.locator('a[target="_blank"]:not([rel~="noopener"])').count()) === 0, 'all outgoing links are safe');
+  const cols = await evidence.locator('.nd-fit').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+  check(where, viewport.width <= 760 ? cols === 1 : cols === 2, `indications and cautions use ${viewport.width <= 760 ? 'one column on the phone' : 'two columns on the desktop'}`);
+  const box = await evidence.boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the evidence block stays inside the viewport');
+  await page.locator('#diet-ketogenic').evaluate(el => { el.open = true; });
+  check(where, (await page.locator('#diet-ketogenic .nd-caution').innerText()).includes('панкреатит'), 'the keto card lists its contraindications');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the nutrition page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the diet cards raise no errors');
+  await context.close();
+}
+
+async function compareFlow(browser, origin, viewport) {
+  const where = `compare @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
+  const cards = page.locator('.cp-card');
+  await cards.first().waitFor({state: 'attached'});
+  check(where, (await cards.count()) === 2, 'two supplements side by side');
+  check(where, (await cards.nth(0).locator('h2').innerText()) === 'Креатин' && (await cards.nth(1).locator('h2').innerText()) === 'Кофеїн', 'the addresses choose the pair');
+  check(where, (await cards.first().locator('dt').count()) === 4, 'four comparable rows per card');
+  await page.selectOption('#cp-b', 'supplement-magnesium');
+  check(where, (await cards.nth(1).locator('h2').innerText()) === 'Магній' && page.url().includes('b=supplement-magnesium'), 'the second choice changes the card and the shareable address');
+  await page.selectOption('#cp-b', 'creatine');
+  check(where, (await cards.nth(0).locator('h2').innerText()) !== (await cards.nth(1).locator('h2').innerText()), 'the same supplement is never compared with itself');
+  await page.click('#cp-swap');
+  const names = await cards.locator('h2').allInnerTexts();
+  check(where, names.length === 2 && names[0] !== names[1], 'swap keeps two different supplements');
+  check(where, (await page.locator('.cp-open').first().getAttribute('href')).startsWith('./index.html#'), 'each card opens its dossier');
+  const box = await cards.nth(1).boundingBox();
+  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'cards stay inside the viewport');
+  if (viewport.width > 900) { const b0 = await cards.nth(0).boundingBox(); check(where, box && b0 && Math.abs(box.y - b0.y) < 4, 'on a wide screen the cards are side by side'); }
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in the comparison');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors in the comparison');
+  await context.close();
+}
+
+async function mapFlow(browser, origin, viewport) {
+  const where = `map @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/map.html');
+  await page.locator('.km-list li').first().waitFor({state: 'attached'});
+  check(where, (await page.locator('.km-list li').count()) === 11, 'every page appears in the list');
+  check(where, (await page.locator('.km-list li p').first().innerText()).startsWith('Поруч:'), 'every item names its neighbours');
+  if (viewport.width > 820) {
+    check(where, (await page.locator('.km-node').count()) === 11, 'eleven nodes on the map');
+    await page.locator('.km-node[data-file="nutrition.html"]').focus();
+    check(where, await page.locator('.km-stage.has-focus').count() === 1, 'focusing a node highlights its neighbours');
+    check(where, (await page.locator('#km-caption').innerText()).includes('поруч'), 'the caption names the neighbours');
+    check(where, (await page.locator('.km-node.is-on').count()) >= 2 && (await page.locator('.km-node.is-on').count()) < 11, 'only related nodes stay lit');
+    const lit = await page.locator('g.is-on').count();
+    check(where, lit >= 2, 'the connected lines are highlighted');
+    const boxes = await page.locator('.km-node').evaluateAll(nodes => nodes.map(n => { const r = n.getBoundingClientRect(); return [r.x, r.width, r.height]; }));
+    check(where, boxes.every(([x, w, h]) => x >= 0 && x + w <= viewport.width + 1 && h >= 40), 'nodes stay inside the viewport and are tappable');
+    const stage = await page.locator('.km-stage').boundingBox();
+    check(where, boxes.every(([x, w]) => x >= stage.x - 1 && x + w <= stage.x + stage.width + 1), 'nodes stay inside the map');
+    await page.locator('.km-node[data-file="nutrition.html"]').blur();
+    check(where, (await page.locator('.km-stage.has-focus').count()) === 0, 'leaving a node resets the map');
+  } else {
+    check(where, !(await page.locator('.km-stage').isVisible()), 'the graph is replaced by a list on phones');
+  }
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the map');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors on the map');
   await context.close();
 }
 
@@ -235,10 +600,10 @@ async function supplementsFlow(browser, origin, viewport) {
   const pattern = await page.locator('.sp-shippo').boundingBox();
   check(where, hero && hero.x <= 1 && hero.width >= viewport.width - 1, 'the title band must span the viewport');
   check(where, pattern && pattern.width >= viewport.width - 1, 'shippo pattern must span the viewport');
-  check(where, (await page.locator('.sp-row').count()) === 10, 'expected ten supplements');
+  check(where, (await page.locator('.sp-row').count()) === 11, 'expected eleven supplements');
   // Every entry has a photo, a folded limit and a link to its existing dossier.
   const links = await page.locator('.sp-go').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
-  check(where, links.length === 10 && links.every(h => h.startsWith('./index.html#')), 'every row must link to its dossier');
+  check(where, links.length === 11 && links.every(h => h.startsWith('./index.html#')), 'every row must link to its dossier');
   check(where, (await page.locator('.sp-limit[open]').count()) === 0, 'limits must start folded');
   await page.locator('.sp-limit summary').first().click();
   check(where, (await page.locator('.sp-limit[open] p').first().isVisible()), 'opening the limit must show its text');
@@ -246,11 +611,11 @@ async function supplementsFlow(browser, origin, viewport) {
   check(where, photo && photo.width >= (phone ? 80 : 120), `photo too small: ${photo && photo.width}`);
   // Filter and search.
   await page.locator('[data-sp-filter="health"]').click();
-  check(where, (await page.locator('.sp-row').count()) === 3, 'the health filter must show three rows');
+  check(where, (await page.locator('.sp-row').count()) === 4, 'the health filter must show four rows (berberine added 2026-10-21)');
   check(where, (await page.locator('[data-sp-filter="health"]').getAttribute('aria-pressed')) === 'true', 'the filter is not marked pressed');
   await page.locator('[data-sp-filter="all"]').click();
   await page.locator('#sp-q').fill('креа');
-  check(where, (await page.locator('.sp-row').count()) === 1 && (await page.locator('#sp-count').innerText()).includes('1 з 10'), 'search by name failed');
+  check(where, (await page.locator('.sp-row').count()) === 1 && (await page.locator('#sp-count').innerText()).includes('1 з 11'), 'search by name failed');
   await page.locator('#sp-q').fill('qwerty');
   check(where, await page.locator('#sp-empty').isVisible(), 'the empty state must show for no results');
   await page.locator('#sp-q').fill('');
@@ -264,6 +629,27 @@ async function supplementsFlow(browser, origin, viewport) {
   // The photo strip is the real sprite, not an empty box.
   check(where, (await page.locator('.sp-photo').first().evaluate(n => getComputedStyle(n).backgroundImage)).includes('supplement-backgrounds'), 'photo sprite not applied');
   await context.close();
+}
+
+async function pineFlow(browser, origin, viewport) {
+  // Pages that adopted the pine theme: patterned band, serif heading, folded tools line, no overflow, motif visible.
+  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['atlas.html', 'asanoha'], ['directions.html', 'kumiko'], ['nutrition.html', 'nami'], ['muscle-lab.html', 'take'], ['cell-lab.html', 'kikko'], ['movement.html', 'seigaiha'], ['sleep.html', 'kasumi'], ['nutrition-digestion.html', 'enso'], ['protein-meta.html', 'shippo']]) {
+    const where = `pine ${file} @${viewport.name}`;
+    const {context, page} = await open(browser, origin, viewport, '/' + file);
+    await page.waitForSelector('.pb h1');
+    check(where, (await page.locator('.pb').getAttribute('data-motif')) === motif, 'motif attribute');
+    check(where, (await page.locator('.pb h1').evaluate(n => getComputedStyle(n).fontFamily)).includes('Source Serif 4'), 'heading font is not the site serif');
+    const band = await page.locator('.pb').boundingBox();
+    check(where, band && Math.abs(band.width - viewport.width) <= 1, `the band must span the full width (${band && band.width})`);
+    check(where, (await page.locator('.pb').evaluate(n => getComputedStyle(n, '::before').backgroundImage)).includes('data:image/svg+xml'), 'the motif is not drawn');
+    const toolsLines = (await page.locator('body[data-study-ui], body[data-pine-tools]').count()) ? 0 : await page.locator('body > .eua-platform-nav').count();
+    check(where, toolsLines === 0 || (await page.locator('body > .eua-platform-nav details.eua-module-menu').count()) === 1, 'the tools line must be one folded disclosure');
+    check(where, (await page.locator('body > .eua-platform-nav details[open]').count()) === 0, 'the tools line must start folded');
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).map(Number));
+    check(where, bg[1] > bg[2] && bg[0] < 30, `the page background is not pine-green: ${bg}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+    await context.close();
+  }
 }
 
 async function muscleLabFlow(browser, origin, viewport) {
@@ -480,10 +866,15 @@ async function homeLowerFlow(browser, origin, viewport) {
     check(where,fragment.pointer==='none'&&fragment.opacity>0&&fragment.opacity<=.35,'decorations must stay quiet and noninteractive');
     check(where,fragment.width<=viewport.width*.7,'shippo must be fragmented, not a full-width stripe');
   }
-  await page.locator('#supplement-search').fill('креатин');
-  check(where,await page.locator('#supplement-carousel .preview-tile:visible').count()===1,'home supplement search must still filter');
-  await page.locator('#supplement-search').fill('');
-  check(where,await page.locator('#supplement-carousel .preview-tile:visible').count()===10,'clearing search must restore all ten previews');
+  // The carousel is gone: one short entry leads to the catalogue and to every existing dossier.
+  check(where,await page.locator('#supplement-carousel, .supplement-rail, #supplement-search').count()===0,'the retired supplement carousel is back on the home page');
+  check(where,(await page.locator('.supplement-entry .se-cta').getAttribute('href'))==='./supplements.html','the entry must lead to the catalogue');
+  const entryLinks=await page.locator('.supplement-entry .se-list a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
+  check(where,entryLinks.length===11&&entryLinks.every(h=>h.startsWith('#')),'eleven entry chips must link to the existing dossiers');
+  check(where,(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth))<=1,'horizontal overflow in the supplement entry');
+  // The three explainer blocks now live inside the folded «Про сайт» group (owner decision 2026-10-19).
+  check(where,!(await page.locator('#home-overview').isVisible()),'the group must start folded');
+  await page.locator('#home-about>summary').click();
   await page.locator('#home-overview>summary').click();
   // Details content expands over 280 ms; wait for actual visibility instead of
   // sampling during the first, clipped animation frame.
@@ -492,9 +883,43 @@ async function homeLowerFlow(browser, origin, viewport) {
   await page.locator('.evidence-guide>details').nth(1).locator('summary').first().click();
   check(where,await visibleAfterDisclosureTransition(page.locator('.guide-example')),'evidence example must open');
   check(where,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'opened home content must not overflow horizontally');
+  // Deep links from other pages (#home-feedback) must open the folded group together with the block.
+  const feedbackPage=await context.newPage();
+  await feedbackPage.goto(page.url().split('#')[0]+'#home-feedback',{waitUntil:'load'});
+  check(where,await feedbackPage.evaluate(()=>document.getElementById('home-about').open&&document.getElementById('home-feedback').open),'#home-feedback must open «Про сайт» and the feedback form');
+  await feedbackPage.close();
   await page.emulateMedia({reducedMotion:'reduce'});
   check(where,await page.locator('#categories').evaluate(e=>getComputedStyle(e,'::before').animationName)==='none','reduced motion must disable shippo movement');
   check(where,seen.pageErrors.length===0&&seen.console.length===0,'home interactions must remain error-free');
+  await context.close();
+}
+
+// Fat Burning Lab: verify actual controls, not only presence of labels in static HTML.
+async function fatBurningFlow(browser, origin, viewport) {
+  const where = "fat burning @" + viewport.name;
+  const {context, page, seen} = await open(browser, origin, viewport, "/fat-burning.html");
+  await page.waitForSelector("#fb-step-title");
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Енергія у запасі"), "initial stage");
+  await page.locator('[data-fb-step="1"]').click();
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Мобілізація"), "click selects lipolysis");
+  check(where, await page.locator('[data-visual="1"]').evaluate(el => el.classList.contains("is-active")), "stage visual does not change");
+  check(where, (await page.locator('[data-fb-step="1"]').getAttribute("aria-pressed")) === "true", "stage button state");
+  await page.locator("#fb-step-next").click();
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Окиснення"), "next stage");
+  await page.locator('[data-fb-step="3"]').click();
+  await page.locator("#fb-step-next").click();
+  check(where, (await page.locator("#fb-step-title").innerText()).includes("Енергія у запасі"), "last stage wraps to start");
+  await page.locator('[data-fb-balance="surplus"]').click();
+  check(where, (await page.locator(".fb-balance").getAttribute("data-balance")) === "surplus", "surplus chart state");
+  check(where, (await page.locator("#fb-balance-title").innerText()).includes("більше"), "surplus explanation state");
+  await page.locator('[data-fb-balance="equal"]').click();
+  check(where, (await page.locator('[data-fb-balance="equal"]').getAttribute("aria-pressed")) === "true", "energy balance button state");
+  await page.locator(".fb-myth-list summary").first().click();
+  check(where, await page.locator(".fb-myth-list details").first().evaluate(el => el.open), "myth explanation disclosure");
+  await page.emulateMedia({reducedMotion:"reduce"});
+  check(where, await page.locator(".fb-trace").evaluate(el => getComputedStyle(el).animationName === "none"), "reduced motion must stop diagram animation");
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, "interactive console or runtime error");
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, "interaction causes horizontal overflow");
   await context.close();
 }
 
@@ -527,11 +952,25 @@ try {
   for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
   for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
   for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await continueFlow(browser, origin, viewport);
+  for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
+  for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
+  for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
+  for (const viewport of viewports) await compareFlow(browser, origin, viewport);
+  for (const viewport of viewports) await mapFlow(browser, origin, viewport);
+  for (const viewport of viewports) await searchFlow(browser, origin, viewport);
+  for (const viewport of viewports) await changesFlow(browser, origin, viewport);
+  for (const viewport of viewports) await videosFlow(browser, origin, viewport);
+  for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await pineFlow(browser, origin, viewport);
   for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
   for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
   await homeMenuFlow(browser, origin);
   for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
+  for (const viewport of viewports) await fatBurningFlow(browser, origin, viewport);
 } finally {
   await browser.close();
   server.close();

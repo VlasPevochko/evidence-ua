@@ -977,11 +977,6 @@ export const creatineModule                 = {
       claimIds: ["CLM-000001", "CLM-000002", "CLM-000006", "CLM-000007", "CLM-000004"]
     },
     {
-      id: "mechanism",
-      type: "mechanism",
-      title: "Як працює система креатин — фосфокреатин — ATP"
-    },
-    {
       id: "evidence-grid",
       type: "evidence_grid",
       title: "Що показують дані",
@@ -1007,6 +1002,11 @@ export const creatineModule                 = {
       type: "kidney",
       title: "Креатин, креатинін і нирки",
       claimIds: ["CLM-000003", "CLM-000004"]
+    },
+    {
+      id: "mechanism",
+      type: "mechanism",
+      title: "Як працює система креатин — фосфокреатин — ATP"
     },
     {
       id: "myths",

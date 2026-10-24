@@ -83,18 +83,18 @@
     var glow = Math.max(0, Math.sin(cx * 0.002 - cy * 0.0027 + t * 0.22 + k * 0.9) - 0.88) * 8;
     var side = Math.min(1, cx / W);
     ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.closePath();
-    ctx.fillStyle = 'hsl(' + (196 + n * 12) + ' ' + (48 + side * 10) + '% ' + (10 + n * 16 + side * 10) + '%)';
+    ctx.fillStyle = 'hsl(' + (158 + n * 14) + ' ' + (34 + side * 8) + '% ' + (7 + n * 11 + side * 7) + '%)';
     ctx.fill();
     if (glow > 0.05) {
-      ctx.fillStyle = 'rgba(255,211,103,' + Math.min(0.55, glow * 0.6) + ')';
+      ctx.fillStyle = 'rgba(227,189,107,' + Math.min(0.55, glow * 0.6) + ')';
       ctx.fill();
     }
     var light = kaleidoscope(cx, cy);
     if (light > 0.025) {
-      ctx.fillStyle = 'rgba(255,211,103,' + (light * 0.64) + ')';
+      ctx.fillStyle = 'rgba(227,189,107,' + (light * 0.64) + ')';
       ctx.fill();
     }
-    ctx.strokeStyle = 'rgba(105,217,245,' + (0.07 + n * 0.1) + ')';
+    ctx.strokeStyle = 'rgba(157,205,185,' + (0.06 + n * 0.08) + ')';
     ctx.lineWidth = 1; ctx.stroke();
   }
 

@@ -1,3 +1,5 @@
+// ui.js bumped 2.0 -> 2.1: creatine dosing details and kidney explanation folded (owner «креатин коротше», 2026-10-22).
+// ui.js bumped 1.9 -> 2.0: the creatine article was rebuilt as a compact card (claims first, mechanism/myths/sources folded).
 // evidence.css bumped 1.8 -> 1.9: accent colours snapped to the shared gold/cyan set (cache busting).
 // evidence.css version bumped 1.7 -> 1.8 because its border-radius values moved to the 8/16/30 scale (cache busting).
 import assert from 'node:assert/strict';
@@ -24,7 +26,7 @@ check('mechanism has controls, chemistry, provenance and no auto-play',()=>{cons
 check('legacy source discovery preserved, not auto-claimed as evidence',()=>{assert(legacySources.some(s=>s.url.includes('39519498')));assert(legacySources.some(s=>s.url.includes('40944139')));assert(legacySources.every(s=>s.reviewStatus.includes('перевірки')));});
 check('HTML safe interpolation',()=>assert.equal(escapeHTML('<script>"&'), '&lt;script&gt;&quot;&amp;'));
 const html=fs.readFileSync('dist/index.html','utf8');
-check('new module assets and existing routes / PubMed controls present',()=>{for(const id of ['creatine','supplement-protein','supplement-caffeine','research-load','pubmed-live','research-topic','research-results','eua-evidence-dialog'])assert(html.includes(`id="${id}"`));for(const file of ['movement.html','nutrition.html','protein-meta.html'])assert(fs.existsSync('dist/'+file));assert(html.includes('evidence/ui.js?v=1.9'));assert(html.includes('evidence/evidence.css?v=1.9'));});
+check('new module assets and existing routes / PubMed controls present',()=>{for(const id of ['creatine','supplement-protein','supplement-caffeine','research-load','pubmed-live','research-topic','research-results','eua-evidence-dialog'])assert(html.includes(`id="${id}"`));for(const file of ['movement.html','nutrition.html','protein-meta.html'])assert(fs.existsSync('dist/'+file));assert(html.includes('evidence/ui.js?v=2.1'));assert(html.includes('evidence/evidence.css?v=1.9'));});
 check('module IDs unique; full-width mobile / dialog / reduced-motion CSS',()=>{const start=html.indexOf('<section id="creatine"'),end=html.indexOf('</dialog>',start);const module=html.slice(start,end);const ids=[...module.matchAll(/(?:^|\s)id="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);const css=fs.readFileSync('dist/evidence/evidence.css','utf8');assert(css.includes('grid-template-columns:minmax(0,1fr)'));assert(css.includes('height:100dvh'));assert(css.includes('prefers-reduced-motion:reduce'));assert(css.includes(':focus-visible'));});
 check('legacy inline scripts remain syntactically valid',()=>{for(const m of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){if(m[1].trim())new vm.Script(m[1]);}});
 check('hero cannot inherit legacy 88px header; module layout is explicitly in flow',()=>{
@@ -140,7 +142,8 @@ check('production module order and configured Claim lists actually drive renderi
  }finally{creatineModule.sections=original;}
 });
 check('movement has one header entry and retains its page link',()=>{
- const nav=fs.readFileSync('dist/navigation-v17.js','utf8');assert(nav.includes("movement.href = './movement.html'"));assert(!nav.includes("['Рух', './movement.html']"));assert(nav.includes("['Харчування', './nutrition.html']"));assert(html.includes('navigation-v17.js?v=74'));
+// navigation-v17.js 74 -> 75: the home supplement carousel was replaced by a catalogue entry (the guide now follows .supplement-entry).
+ const nav=fs.readFileSync('dist/navigation-v17.js','utf8');assert(nav.includes("movement.href = './movement.html'"));assert(!nav.includes("['Рух', './movement.html']"));assert(nav.includes("['Харчування', './nutrition.html']"));assert(html.includes('navigation-v17.js?v=75'));
 });
 check('mobile structure explanation shares a compact frame with its controls',()=>{
  const css=fs.readFileSync('src/evidence/evidence.css','utf8');const mobile=css.slice(css.lastIndexOf('@media(max-width:760px)'));

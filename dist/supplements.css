@@ -57,3 +57,5 @@ body[data-platform-area="supplements"]{--sp-bg:#0d1916;--sp-surface:#142520;--sp
  .sp-photo::after{inset:4px;border-radius:5px}
 }
 @media (prefers-reduced-motion:reduce){.sp-chip,.sp-go{transition:none}html{scroll-behavior:auto}}
+
+.sp-compare{margin:0 0 6px}.sp-compare a{display:inline-flex;align-items:center;min-height:44px;color:var(--pine-accent,#e3bd6b);font-weight:600;text-underline-offset:3px}

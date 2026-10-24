@@ -1,0 +1,19 @@
+/* Home: маршрути, зміст і відгук зібрані в один згорнутий блок «Про сайт».
+   Внутрішні блоки зберігають свої id та посилання; home-about.js розкриває групу, коли відкривається вкладений блок. */
+body[data-platform-area="home"] #start-here>.home-about{margin:16px 0 0;padding:0;border:1px solid var(--jp-line,#26403a);border-radius:16px;background:var(--jp-surface,#142520);overflow:hidden}
+body[data-platform-area="home"] #start-here>.home-about>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:60px;padding:16px 20px;list-style:none;cursor:pointer;color:var(--jp-text,#e9efe9);font-size:16px;font-weight:600;line-height:1.4}
+body[data-platform-area="home"] #start-here>.home-about>summary::-webkit-details-marker{display:none}
+body[data-platform-area="home"] #start-here>.home-about>summary::after{content:'⌄';flex:none;font-size:20px;color:var(--jp-accent,#e3bd6b);transition:transform .24s}
+body[data-platform-area="home"] #start-here>.home-about[open]>summary::after{transform:rotate(180deg)}
+body[data-platform-area="home"] #start-here>.home-about>summary:focus-visible{outline:2px solid var(--jp-accent,#e3bd6b);outline-offset:-4px;border-radius:16px}
+.home-about-body{display:grid;gap:10px;padding:0 14px 14px}
+body[data-platform-area="home"] #start-here .home-about-body>details{margin:0;background:var(--jp-bg,#0d1916)}
+@media(prefers-reduced-motion:reduce){body[data-platform-area="home"] #start-here>.home-about>summary::after{transition:none}}
+/* The feedback block gets the same chevron as its siblings instead of the browser triangle. */
+body[data-platform-area="home"] .home-about-body>#home-feedback>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;list-style:none}
+body[data-platform-area="home"] .home-about-body>#home-feedback>summary::-webkit-details-marker{display:none}
+body[data-platform-area="home"] .home-about-body>#home-feedback>summary::after{content:'⌄';flex:none;font-size:20px;color:var(--jp-accent,#e3bd6b);transition:transform .24s}
+body[data-platform-area="home"] .home-about-body>#home-feedback[open]>summary::after{transform:rotate(180deg)}
+/* The share tool lives inside the group now: no divider of its own, one line of text. */
+body[data-platform-area="home"] #start-here .home-about-body>.eua-home-tools{margin:0;padding:0;border:0}
+body[data-platform-area="home"] #start-here .home-about-body .eua-tools button{white-space:nowrap}

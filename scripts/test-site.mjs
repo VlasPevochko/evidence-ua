@@ -16,6 +16,8 @@ export function runSiteTests(root, {quiet = false} = {}) {
           fs.cpSync(path.join(root,directory), path.join(isolated,directory), {recursive:true});
         }
       }
+      // site.json holds the site address that the build and several tests read.
+      if (fs.existsSync(path.join(root,'site.json'))) fs.copyFileSync(path.join(root,'site.json'), path.join(isolated,'site.json'));
       // nutrition-proposal checks the tracked source list. No historical commits
       // or credentials are needed: old baselines are independent fixtures.
       execFileSync('git', ['init','--quiet'], {cwd:isolated,stdio:'pipe'});

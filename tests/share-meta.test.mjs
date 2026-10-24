@@ -4,7 +4,9 @@ import path from 'node:path';
 
 // Every page must carry icons, a canonical address and Open Graph data so that links shared in
 // messengers show a preview and browsers stop requesting a missing favicon.
-const BASE = 'https://vlaspevochko.github.io/evidence-ua/';
+import {readBase} from '../scripts/site-url.mjs';
+// The site address lives in site.json, so these checks keep working after a move to its own domain.
+const BASE = readBase();
 const pages = fs.readdirSync('dist').filter(f => f.endsWith('.html')).sort();
 assert(pages.length >= 11, 'Expected the full set of site pages');
 
@@ -62,7 +64,8 @@ for (const page of pages) {
   assert.equal(meta('og:type'), 'website');
   assert.equal(meta('og:site_name'), 'Evidence UA');
   assert.equal(meta('og:locale'), 'uk_UA');
-  assert.equal(meta('og:image'), BASE + 'og-image.png', `${page}: og:image must be absolute`);
+  // Since 2026-10-20 every page has its own 1200x630 card (scripts/make-og-cards.mjs); og-image.png stays as the brand default.
+  assert.equal(meta('og:image'), BASE + 'og/' + page.replace('.html', '.jpg'), `${page}: og:image must be its own absolute card`);
   assert.equal(meta('og:image:width'), '1200'); assert.equal(meta('og:image:height'), '630');
   assert(meta('og:image:alt'), `${page}: og:image:alt is missing`);
   assert.equal(meta('twitter:card'), 'summary_large_image');

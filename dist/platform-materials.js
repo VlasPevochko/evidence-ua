@@ -4,7 +4,12 @@ import {entityRegistry} from './evidence/entities.js?v=59';
 // Navigation metadata only. No new scientific statements, assessments or sources.
 const guides=[
  {id:'guide-evidence',title:'Як читати докази',href:'./index.html#evidence-guide-title',areaId:'supplements',kind:'guide'},
- {id:'guide-protein-meta',title:'Розбір метааналізу білка',href:'./protein-meta.html',areaId:'supplements',kind:'guide'}
+ {id:'guide-protein-meta',title:'Розбір метааналізу білка',href:'./protein-meta.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-glossary',title:'Словник термінів',href:'./glossary.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-compare',title:'Порівняння добавок',href:'./compare.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-map',title:'Карта знань',href:'./map.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-videos',title:'Відео від читачів',href:'./videos.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-changes',title:'Що нового й що перевірено',href:'./changes.html',areaId:'supplements',kind:'guide'}
 ];
 export const materialKinds={interactive:'Інтерактив',dossier:'Досьє',guide:'Розбір',section:'Матеріал'};
 const listedMaterials=catalog.areas.filter(a=>a.available).flatMap(area=>{
@@ -19,18 +24,32 @@ export const materials=listedMaterials.concat(structureMaterials,guides.map(g=>(
 export const normalizeSearch=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
 // Alternative topic names for discovery only; scientific content is not changed.
 const searchTerms={
- 'supplements-protein':'білок білка білки білкові протеїнові protein',
+ 'supplements-protein':'білок білка білки білкові протеїнові protein сила безжирова маса',
+ 'supplements-creatine':'креатину сила силу безжирова маса нирки креатинін витривалість пам’ять',
+ 'supplements-caffeine':'кофеїну кава енергетики витривалість сила сон тиск вагітність',
+ 'supplements-magnesium':'магнію судоми судом тиск сон безсоння діарея',
+ 'supplements-collagen':'колагену суглоби коліна остеоартрит сухожилля шкіра',
+ 'supplements-beta-alanine':'бета аланін карнозин поколювання витривалість',
+ 'supplements-citrulline':'цитруліну біль у м’язах витривалість сила',
+ 'supplements-electrolytes':'електролітів натрій вода рідина зневоднення спортивний напій гіпонатріємія',
+ 'supplements-berberine':'берберин берберину berberine цукор глюкоза діабет холестерин ліпіди',
  'nutrition-protein-absorption':'білок білка білки білкові засвоєння білка',
  'guide-protein-meta':'білок білка білки білкові',
+ 'guide-videos':'відео ролик youtube ютуб instagram tiktok запропонувати надіслати посилання бібліотека відео',
+ 'guide-changes':'оновлення зміни новини журнал що нового історія перевірки як ми перевіряємо',
+ 'guide-map':'карта знань схема зв’язки між темами навігація як пов’язані матеріали',
+ 'guide-compare':'порівняння порівняти добавки поруч два досьє кофеїн креатин магній різниця',
+ 'guide-glossary':'словник терміни глосарій значення слів що означає ДІ РКД GRADE інтервал',
  'cell-mitochondrion':'енергія енергії енергетичний атф ATP мітохондрії',
  'supplements-atp-pcr':'енергія енергії енергетичний атф ATP фосфокреатин',
  'nutrition-glucose':'вуглеводи вуглеводів цукор цукру засвоєння',
  'nutrition-lipids':'жир жири жирів ліпіди засвоєння',
  'muscle-growth':'гіпертрофія гіпертрофії ріст м’язів збільшення м’язів',
  'muscle-atrophy':'втрата м’язів зменшення м’язів',
- 'supplements-omega':'омега 3 omega-3',
- 'supplements-vitd':'вітамін д vitamin d',
+ 'supplements-omega':'омега 3 omega-3 риб’ячий жир тригліцериди серце фібриляція',
+ 'supplements-vitd':'вітамін д vitamin d переломи кістки падіння інфекції застуда',
  'nutrition-digestion':'травлення їжі перетравлення засвоєння',
+ 'nutrition-fat-loss':'жироспалення спалювання жиру fat burning fat loss схуднення жир жирів ліполіз окиснення жирової маси',
  'movement-elbow':'лікоть ліктя біцепс згинання розгинання',
  'movement-shoulder':'плече плеча рука відведення приведення',
  'movement-walk':'крок крокування ходьба суглоби коліно',

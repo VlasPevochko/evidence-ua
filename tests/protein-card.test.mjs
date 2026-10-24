@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {assertApprovedLevel} from './approved-confidence-levels.mjs';
+// 2026-10-22: the owner approved provisional confidence levels («Погоджую»); levels now follow tests/approved-confidence-levels.mjs.
 import fs from 'node:fs';
 import {proteinBase, proteinModule} from '../src/evidence/supplements/protein/module.mjs';
 import {ProteinCard} from '../scripts/build-protein.mjs';
@@ -18,13 +20,13 @@ assert.equal((html.match(/<style data-protein-style>/g) || []).length, 1);
 assert.equal(proteinModule.claimIds.length, 5);
 for (const id of proteinModule.claimIds) {
   const c = proteinBase.claims.find(x => x.id === id);
-  assert.equal(c.evidenceConfidence, null);
+  assertApprovedLevel(c);
   assert.equal(c.publicationAcceptance.formalScientificReview, false);
   assert(section.includes(`data-claim-id="${id}"`));
   assert(section.includes(`data-claim-open="${id}"`));
 }
-assert(!/class="eua-confidence/.test(section), 'No confidence badge before assessment');
-assert(section.includes('Рівень впевненості не оцінено'));
+assert.equal((section.match(/class="eua-confidence /g) || []).length, 5, 'approved levels are shown');
+assert(!section.includes('Рівень впевненості не оцінено'));
 
 // Key numbers trace to Evidence Records extracted from Morton 2018 / Tagawa 2022.
 const r = id => proteinBase.records.find(x => x.id === id).result;
@@ -43,4 +45,4 @@ for (const link of ['href="protein-meta.html"', 'href="#creatine"', 'href="#top"
 assert.equal(fs.readFileSync('dist/evidence/protein-ui.js', 'utf8').includes("dialogSelector: '[data-protein-dialog]'"), true);
 assert(fs.readFileSync('dist/evidence/protein-data.js', 'utf8').includes("from './registry.js'"));
 
-console.log('Protein card: 5 approved Claims, confidence not assessed, traceable numbers, retained navigation, idempotent markers passed.');
+console.log('Protein card: 5 approved Claims, approved provisional confidence, traceable numbers, retained navigation, idempotent markers passed.');

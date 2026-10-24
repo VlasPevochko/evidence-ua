@@ -14,6 +14,8 @@ try {
   fs.writeFileSync(path.join(temp, 'dist/.well-known/example'), 'retained hidden asset');
   fs.writeFileSync(path.join(temp, 'scripts/build-evidence.mjs'), `import fs from 'node:fs';fs.writeFileSync('dist/index.html','<html>Authored home + generated section</html>');`);
   fs.writeFileSync(path.join(temp, 'scripts/build-knowledge.mjs'), '');
+  // build-site now also runs build-seo (sitemap and robots.txt); the contract fixture only needs a no-op stand-in for it.
+  fs.writeFileSync(path.join(temp, 'scripts/build-seo.mjs'), '');
   const result = buildSite(temp, 'a'.repeat(40));
   assert.equal(result.files['authored.css'].sha256.length, 64);
   assert(result.files['.well-known/example'], 'Complete dist includes hidden assets');

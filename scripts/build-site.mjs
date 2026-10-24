@@ -7,13 +7,14 @@ import {fileURLToPath} from 'node:url';
 // These are the outputs of the two existing builders, including HTML fragments.
 // Everything else in dist is authored source and must retain its exact bytes.
 const generated = new Set([
-  'site-header.js', 'site-header.css', 'index.html', 'cell-lab.html', 'directions.html', 'movement.html',
+  // Fat Burning Lab is an authored page; build-platform only injects shared appearance assets.
+  'sitemap.xml', 'robots.txt', 'site-header.js', 'site-header.css', 'platform-search.js', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',
   'muscle-lab.html', 'nutrition-digestion.html', 'nutrition.html', 'protein-meta.html',
   'evidence/registry.js', 'evidence/entities.js', 'evidence/components.js',
   'evidence/public-text.js', 'evidence/module-composer.js', 'evidence/muscle-fiber-v1.webp',
   'evidence/data.js', 'evidence/ui.js', 'evidence/evidence.css',
   'platform-catalog.js', 'home-catalog.js', 'home-feedback.js', 'platform-materials.js',
-  'platform-tools.js', 'platform-shell.js', 'platform-learning.js', 'directions.js',
+  'platform-tools.js', 'platform-shell.js', 'platform-next-steps.js', 'platform-terms.js', 'appearance.js', 'platform-learning.js', 'directions.js',
   'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',
@@ -21,7 +22,10 @@ const generated = new Set([
   'movement.js', 'movement-model.js', 'movement-learning.js', 'sleep.js',
   'sleep.html', 'platform-glossary.js', 'platform-glossary-data.js',
   'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js',
-  'evidence/protein-data.js', 'evidence/protein-ui.js'
+  'evidence/protein-data.js', 'evidence/protein-ui.js',
+  'evidence/berberine-data.js', 'evidence/berberine-ui.js',
+  'evidence/omega-data.js', 'evidence/vitd-data.js', 'evidence/supplement-cards-ui.js',
+  'evidence/creatine-more-data.js', 'evidence/caffeine-data.js', 'evidence/magnesium-data.js', 'evidence/collagen-data.js', 'evidence/beta-alanine-data.js', 'evidence/citrulline-data.js', 'evidence/electrolytes-data.js', 'evidence/creatine-more-ui.js'
 ]);
 
 function inventory(directory, relative = '') {
@@ -46,7 +50,7 @@ export function buildSite(root, commit) {
   const dist = path.join(root, 'dist');
   const before = inventory(dist);
   if (!before['index.html']) throw Error('The complete authored dist snapshot, including index.html, is required');
-  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-knowledge.mjs']) {
+  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-seo.mjs']) {
     execFileSync(process.execPath, [script], {cwd:root, stdio:'inherit'});
   }
   const after = inventory(dist);

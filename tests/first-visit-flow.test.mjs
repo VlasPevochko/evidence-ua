@@ -80,7 +80,7 @@ import json,hashlib
 baseline=json.loads(Path('tests/fixtures/first-visit-v59-science-digests.json').read_text(encoding='utf-8'))
 assert baseline['sourceCommit']=='9d174ef146c09936be2c615e1a663b7e4f7dbd29'
 expected=baseline['sections']
-assert len(expected)==10
+assert len(expected)==11  # berberine dossier added 2026-10-21 (owner decision)
 after=html.fromstring(Path('dist/index.html').read_text())
 # PR #26 fixes source-card heading hierarchy; compare the unchanged content at its historical heading level.
 for heading in after.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):

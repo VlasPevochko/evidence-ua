@@ -1,0 +1,19 @@
+/* Друк і PDF: світла сторінка, лише читальний текст. Шапка, кнопки, підказки й навігація не друкуються;
+   адреси джерел показуються поруч із посиланнями, щоб на папері було видно, куди вони ведуть. */
+@media print{
+  html,html[data-theme="light"]{filter:none!important;background:#fff!important;zoom:1!important}
+  body,body[data-pine],body[data-platform-area]{background:#fff!important;color:#111!important}
+  *{box-shadow:none!important;text-shadow:none!important;animation:none!important;transition:none!important}
+  .eua-site-header,.eua-platform-nav,.eua-appearance,.eua-next,.eua-save,.eua-print,.eua-learning-nav,.eua-term-pop,.km-stage,.fb-skip,
+  header.lab-header,.fb-jumps,canvas,[class*="skip"],#term-dialog,dialog{display:none!important}
+  .pb{background:#fff!important;border-bottom:1px solid #999!important}
+  .pb::before{display:none!important}
+  .pb h1,.pb .pb-lead,.pb .pb-eyebrow,h1,h2,h3,h4,p,li,dt,dd,summary,strong,span,a,td,th{color:#111!important}
+  .pb h1::after{background:#555!important}
+  article,section,.gl-term,.cp-card,.fb-practice-card,.sp-row{break-inside:avoid;background:#fff!important;border-color:#bbb!important}
+  main{width:auto!important;max-width:none!important;padding:0!important}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:.82em;color:#444!important;word-break:break-all}
+  .eua-term{border-bottom:0!important}
+  details>summary{list-style:none}
+  @page{margin:16mm}
+}

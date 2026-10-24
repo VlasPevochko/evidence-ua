@@ -41,7 +41,10 @@ for name,tree in documents.items():
         count+=1
 print(json.dumps({'internalLinkOccurrences':count,'htmlPages':len(documents),'missingTargets':0}))
 `],{input:JSON.stringify(generated),encoding:'utf8'}));
-assert.equal(result.missingTargets,0);assert.equal(result.htmlPages,12); // 12 since the Добавки catalogue page (supplements.html) was added; every internal link and anchor in it is checked above
+// New educational pages belong to the same complete local-link and anchor audit.
+assert.equal(result.missingTargets,0);
+assert.equal(result.htmlPages,fs.readdirSync('dist').filter(file=>file.endsWith('.html')).length);
+assert(result.htmlPages>=13,'Fat Burning Lab adds the 13th available HTML page');
 for(const area of catalog.areas.filter(a=>a.available)){
  const url=new URL(area.href,'https://evidence.invalid/');assert(fs.existsSync(path.join('dist',url.pathname)));
 }
@@ -58,12 +61,14 @@ assert(home.includes('./home-vcard.css?v=78'));
 assert(layoutCSS.includes('--home-layout:grid'));assert(layoutCSS.includes('--home-layout:flex'));
 const start=home.indexOf('(()=>{\n const page='),end=home.indexOf('</script>',start);assert(start>=0&&end>start);
 const nodes=new Map(),callbacks=new Map(),articles=[];
-const make=(id,tagName='DIV')=>{const n={id,tagName,style:{setProperty(k,v){this[k]=v;}},classList:{toggle(){}},contains(child){return child?.article===this;},querySelector(){return {textContent:id};},scrollIntoView(){this.scrolled=true;}};nodes.set(id,n);return n;};
+const make=(id,tagName='DIV')=>{const n={id,tagName,attrs:{},toggleAttribute(name,on){this.attrs[name]=!!on;},style:{setProperty(k,v){this[k]=v;}},classList:{toggle(){}},contains(child){return child?.article===this;},querySelector(){return {textContent:id};},scrollIntoView(){this.scrolled=true;}};nodes.set(id,n);return n;};
 const page=make('page');for(const id of ['creatine','supplement-protein','supplement-magnesium'])articles.push(make(id,'SECTION'));
 for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback'])make(id);
 make('evidence-card').article=articles[0];
 const doc={body:{dataset:{}},querySelector(){return page;},getElementById:id=>nodes.get(id)||null,querySelectorAll(selector){return selector.startsWith('body>section')?articles.slice(1):[];}};
-const location={hash:'#top'},sandbox={document:doc,location,window:{addEventListener(k,fn){callbacks.set(k,fn);}},requestAnimationFrame(fn){fn();}};vm.runInNewContext(home.slice(start,end),sandbox);
-for(const id of ['creatine','evidence-card','supplement-protein','supplement-magnesium']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'none');assert.equal(doc.body.dataset.routeView,'article');assert(nodes.get(id).scrolled);}
-for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback','missing-target']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'var(--home-layout, block)');assert.equal(doc.body.dataset.routeView,'home');assert(articles.every(a=>a.style.display==='none'));}
+const location={hash:'#top'},win={scrolledTop:0,addEventListener(k,fn){callbacks.set(k,fn);},scrollTo(){this.scrolledTop++;}},sandbox={document:doc,location,window:win,requestAnimationFrame(fn){fn();}};vm.runInNewContext(home.slice(start,end),sandbox);
+// 2026-10-21 (owner request): in article view the page stays visible in article mode so the shared site header
+// remains on top (CSS hides the rest of the home page). A whole dossier opens at the top; inner anchors still scroll to themselves.
+for(const id of ['creatine','evidence-card','supplement-protein','supplement-magnesium']){const before=win.scrolledTop;location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'block');assert.equal(page.attrs['data-article-mode'],true);assert.equal(doc.body.dataset.routeView,'article');if(id==='evidence-card')assert(nodes.get(id).scrolled);else assert.equal(win.scrolledTop,before+1);}
+for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback','missing-target']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'var(--home-layout, block)');assert.equal(page.attrs['data-article-mode'],false);assert.equal(doc.body.dataset.routeView,'home');assert(articles.every(a=>a.style.display==='none'));}
 console.log('Navigation target audit:',result,'All available catalog, Atlas and teaching routes resolve. This validates code/targets, not live clicks or layout.');

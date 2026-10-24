@@ -1,3 +1,4 @@
+// 2026-10-22: search finds supplements by topic (new keywords in platform-materials) → cascade: materials v84, search v2, header v4, tools v85, shell v97.
 // Cache expectations updated for the scoped shared-header geometry fix.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -194,7 +195,7 @@ assert(cardLinks.length >= 1 && cardLinks.every(a => a.textContent.length));
 // --- Page and Atlas wiring ------------------------------------------------------
 const html = fs.readFileSync('dist/exercises.html', 'utf8');
 assert(html.includes('<html lang="uk">') && html.includes('<title>') && html.includes('id="exercise-app"'));
-assert(html.includes('src="./exercises.js?v=8"') && html.includes('href="./exercises.css?v=6"'));
+assert(html.includes('src="./exercises.js?v=8"') && html.includes('href="./exercises.css?v=8"')); // v7: pine recolour of the stylesheet
 assert(!/<iframe/i.test(html) && !/youtube/i.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '')), 'No YouTube resource in the static page');
 for (const file of ['dist/exercises.css', 'dist/exercises.js', 'dist/exercises-data.js']) assert(fs.existsSync(file));
 const atlasJs = fs.readFileSync('dist/atlas.js', 'utf8');
@@ -212,7 +213,7 @@ for (const shell of [shellSource, shellBuilt]) {
 assert.equal(
   shellBuilt,
   // The shared header import is rewritten by the platform builder as well.
-  shellSource.replace("'./catalog.mjs'", "'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=83'").replace("'./site-header.mjs'", "'./site-header.js?v=2'"),
+  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=3'").replace("'./terms.mjs'", "'./platform-terms.js?v=2'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=85'").replace("'./site-header.mjs'", "'./site-header.js?v=4'"),
   'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
 );
 assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');

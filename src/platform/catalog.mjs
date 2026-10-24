@@ -23,12 +23,13 @@ export const areas = [
     {id:'protein-absorption',title:'Амінокислоти й пептиди',href:'./nutrition.html?nutrient=protein#nutrition-lab',entityIds:['TRN-PEPT1']},
     {id:'lipids',title:'Довголанцюгові жири',href:'./nutrition.html?nutrient=lipids#nutrition-lab',entityIds:['PTH-LIPID-ABSORPTION']},
     {id:'timeline',title:'Нутрієнти у часі',href:'./nutrition.html#nutrient-time',entityIds:[]},
-    {id:'digestion',title:'Травлення та всмоктування',href:'./nutrition-digestion.html',entityIds:[]}
+    {id:'digestion',title:'Травлення та всмоктування',href:'./nutrition-digestion.html',entityIds:[]},
+    {id:'fat-loss',title:'Жироспалення: куди зникає жир?',href:'./fat-burning.html',kind:'guide',entityIds:[]}
   ]},
   {id:'supplements',title:'Добавки',lab:'Досьє та докази',href:'./supplements.html',group:'evidence',available:true,state:'Креатин і попередні досьє',review:'Креатин: попередні оцінки; інші досьє: рівні впевненості не оцінено',description:'Наукові пояснення, джерела, практичні орієнтири та обмеження.',units:[
     {id:'creatine',title:'Креатин',href:'./index.html#creatine',entityIds:['MOL-CREATINE']},
     {id:'atp-pcr',title:'Механізм ATP–PCr',href:'./index.html#creatine-mechanism',entityIds:['PTH-ATP-PCR','MOL-ATP','MOL-PHOSPHOCREATINE']},
-    ...[['protein','Протеїн'],['caffeine','Кофеїн'],['omega','Омега-3'],['vitd','Вітамін D'],['magnesium','Магній'],['collagen','Колаген'],['beta-alanine','Бета-аланін'],['citrulline','Цитрулін'],['electrolytes','Електроліти']].map(([id,title])=>({id,title,href:`./index.html#supplement-${id}`,entityIds:[]}))
+    ...[['protein','Протеїн'],['caffeine','Кофеїн'],['omega','Омега-3'],['vitd','Вітамін D'],['magnesium','Магній'],['collagen','Колаген'],['beta-alanine','Бета-аланін'],['citrulline','Цитрулін'],['electrolytes','Електроліти'],['berberine','Берберин']].map(([id,title])=>({id,title,href:`./index.html#supplement-${id}`,entityIds:[]}))
   ]},
   {id:'movement',title:'Рух і біомеханіка',lab:'Movement Lab',href:'./movement.html',group:'movement',available:true,state:'Вступний навчальний модуль',review:'Підручникові пояснення; науковий перегляд не завершено',description:'Модель руху, зупинки кроку, важелі та спільна робота м’язів.',units:[
     {id:'elbow',title:'Лікоть: згинання й розгинання',href:'./movement.html#lesson-elbow',entityIds:[]},

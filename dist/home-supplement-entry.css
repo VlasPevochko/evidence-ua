@@ -5,7 +5,7 @@
 .supplement-entry .se-cta{grid-column:2;grid-row:1;display:inline-flex;align-items:center;min-height:48px;padding:0 24px;border-radius:30px;background:var(--jp-accent,#e3bd6b);color:#1b1608;font-weight:700;text-decoration:none;white-space:nowrap}
 .supplement-entry .se-cta:hover{filter:brightness(1.06)}
 .supplement-entry .se-list{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 0;padding:0;list-style:none}
-.supplement-entry .se-list a{display:inline-flex;align-items:center;gap:12px;min-height:60px;padding:6px 20px 6px 6px;border:1px solid var(--jp-line,#26403a);border-radius:34px;color:var(--jp-text,#e9efe9);font-size:15px;font-weight:500;text-decoration:none;background:transparent}
+.supplement-entry .se-list a{display:inline-flex;align-items:center;gap:12px;min-height:60px;padding:6px 20px 6px 6px;border:1px solid var(--jp-line,#26403a);border-radius:30px;color:var(--jp-text,#e9efe9);font-size:15px;font-weight:500;text-decoration:none;background:transparent}
 .supplement-entry .se-list a:hover{border-color:var(--jp-accent,#e3bd6b)}
 .supplement-entry .se-thumb{display:block;flex:0 0 48px;width:48px;height:48px;border-radius:50%;box-shadow:0 0 0 1px var(--jp-line,#26403a);background:#0b1210 url("./supplement-backgrounds-v10.webp") no-repeat;background-size:500% 200%}
 .supplement-entry a:focus-visible{outline:2px solid var(--jp-accent,#e3bd6b);outline-offset:3px}

@@ -5,10 +5,10 @@
 .eua-trainer-progress{margin:0;font-size:14px;color:var(--jp-accent,#e3bd6b);font-weight:600}
 .eua-trainer-claim{margin:0 0 10px;font:700 19px/1.3 var(--jp-serif,Georgia,serif)}
 .eua-trainer-facts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;list-style:none}
-.eua-trainer-facts li{padding:6px 12px;border:1px solid var(--jp-line,#26403a);border-radius:20px;background:var(--jp-bg,#0d1916);font-size:14px;line-height:1.4;color:var(--jp-muted,#9db1a7)}
+.eua-trainer-facts li{padding:6px 12px;border:1px solid var(--jp-line,#26403a);border-radius:16px;background:var(--jp-bg,#0d1916);font-size:14px;line-height:1.4;color:var(--jp-muted,#9db1a7)}
 .eua-trainer-question{margin:0 0 10px;font-size:17px;line-height:1.5;font-weight:600}
 .eua-trainer-options{display:grid;gap:10px}
-.eua-trainer-option{display:block;width:100%;min-height:56px;padding:14px 16px;text-align:left;font:inherit;font-size:16px;line-height:1.5;color:var(--jp-text,#e9efe9);background:var(--jp-bg,#0d1916);border:1px solid var(--jp-line,#26403a);border-radius:14px;cursor:pointer}
+.eua-trainer-option{display:block;width:100%;min-height:56px;padding:14px 16px;text-align:left;font:inherit;font-size:16px;line-height:1.5;color:var(--jp-text,#e9efe9);background:var(--jp-bg,#0d1916);border:1px solid var(--jp-line,#26403a);border-radius:16px;cursor:pointer}
 .eua-trainer-option:hover:not(:disabled){border-color:var(--jp-accent,#e3bd6b)}
 .eua-trainer-option:focus-visible,.eua-trainer-btn:focus-visible,.eua-trainer-source:focus-visible{outline:2px solid var(--jp-accent,#e3bd6b);outline-offset:3px}
 .eua-trainer-option:disabled{cursor:default;opacity:1}
@@ -17,7 +17,7 @@
 .eua-trainer-option{display:flex;gap:12px;align-items:flex-start}
 .eua-trainer-letter{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--jp-line,#26403a);border-radius:50%;font-size:14px;font-weight:700;color:var(--jp-accent,#e3bd6b)}
 .eua-trainer-text{flex:1;min-width:0}
-.eua-trainer-mark{display:inline-block;margin:0 10px 4px 0;padding:2px 10px;border-radius:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;background:var(--jp-accent,#e3bd6b);color:#1b1608}
+.eua-trainer-mark{display:inline-block;margin:0 10px 4px 0;padding:2px 10px;border-radius:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;background:var(--jp-accent,#e3bd6b);color:#1b1608}
 .is-wrong .eua-trainer-mark{background:#b98a6b}
 .eua-trainer-feedback{margin-top:14px}
 .eua-trainer-feedback:empty{display:none}

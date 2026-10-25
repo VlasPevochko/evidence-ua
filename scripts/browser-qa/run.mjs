@@ -180,7 +180,8 @@ async function nutritionFlow(browser, origin, viewport) {
   check(where,!(await utilities.evaluate(n=>n.open)),'Escape closes the utilities');
   check(where,await utilities.locator(':scope > summary').evaluate(n=>n===document.activeElement),'Escape returns focus');
   await utilities.locator(':scope > summary').click();
-  await page.locator('#nutrition-title').click();
+  // On a phone the popup covers the heading; the page gutter is actually outside it.
+  await page.mouse.click(4,Math.min(200,viewport.height-1));
   check(where,!(await utilities.evaluate(n=>n.open)),'outside click closes the utilities');
   if(viewport.width<=760){
     const strip=await page.locator('.nd-grid').evaluate(n=>({scroll:n.scrollWidth,client:n.clientWidth,overflow:getComputedStyle(n).overflowX}));

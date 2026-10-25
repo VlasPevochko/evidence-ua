@@ -629,6 +629,33 @@ async function compactBannerFlow(browser, origin, viewport) {
   }
 }
 
+async function visitCounterFlow(browser, origin, viewport) {
+  // Рішення власника 2026-10-25: лічильник вимкнений за замовчуванням; після увімкнення питає до будь-якого стороннього запиту.
+  const where = `visit counter @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const outside = [];
+  page.on('request', r => { if (/goatcounter|zgo\.at/.test(r.url())) outside.push(r.url()); });
+  await page.waitForLoadState('load');
+  await page.waitForTimeout(500);
+  check(where, (await page.locator('.eua-counter-ask').count()) === 0 && outside.length === 0, 'switched off by default: no question and no third-party request');
+  const result = await page.evaluate(async () => {
+    const m = await import('./visit-counter.js?v=1'), loads = [], mem = {v: null, getItem() { return this.v; }, setItem(k, x) { this.v = x; }};
+    m.mountVisitCounter(document, {code: 'qa-test', store: mem, load: u => loads.push(u)});
+    const bar = document.querySelector('.eua-counter-ask'), r = bar.getBoundingClientRect();
+    const info = {shown: !!bar, inView: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, tall: [...bar.querySelectorAll('button')].every(b => b.getBoundingClientRect().height >= 44), before: loads.length};
+    window.__qaCounter = {loads, mem};
+    return info;
+  });
+  check(where, result.shown && result.inView && result.tall, 'the question bar fits the screen and its buttons are tappable');
+  check(where, result.before === 0 && outside.length === 0, 'nothing third-party before the visitor answers');
+  await page.locator('.eua-counter-ask button[data-counter="no"]').click();
+  const after = await page.evaluate(() => ({bar: document.querySelectorAll('.eua-counter-ask').length, loads: window.__qaCounter.loads.length, saved: window.__qaCounter.mem.v}));
+  check(where, after.bar === 0 && after.loads === 0 && after.saved === 'no' && outside.length === 0, 'declining removes the bar and loads nothing');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors');
+  await context.close();
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -1061,6 +1088,7 @@ try {
   for (const viewport of viewports) await changesFlow(browser, origin, viewport);
   for (const viewport of viewports) await cardArtFlow(browser, origin, viewport);
   for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
+  for (const viewport of viewports) await visitCounterFlow(browser, origin, viewport);
   for (const viewport of viewports) await videosFlow(browser, origin, viewport);
   for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);

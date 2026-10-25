@@ -73,3 +73,11 @@ body[data-platform-area="home"] .hero .copy>.eyebrow{display:none}
 .eua-search-chips button{min-height:44px;padding:8px 16px;border:1px solid #ffffff45;border-radius:99px;background:#0a2a37;color:#f5f5ed;font:inherit;cursor:pointer}
 @media print{.eua-search,.eua-header-search{display:none!important}}
 .eua-search-bar input::-webkit-search-cancel-button{display:none}
+/* Запит про лічильник відвідувань: тонка смуга внизу, з'являється лише коли власник увімкнув лічильник. */
+.eua-counter-ask{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;max-width:760px;margin:0 auto;padding:12px 16px;border:1px solid #2f4a43;border-radius:14px;background:#0f1c18;color:#e9efe9;box-shadow:0 12px 32px #0009;font-size:14px;line-height:1.45}
+.eua-counter-ask p{margin:0;flex:1 1 280px;color:#c9ddd2}
+.eua-counter-ask div{display:flex;gap:8px}
+.eua-counter-ask button{min-height:44px;padding:8px 16px;border:1px solid #2f4a43;border-radius:10px;background:#162622;color:#e9efe9;font:inherit;font-weight:600;cursor:pointer}
+.eua-counter-ask button[data-counter="yes"]{background:#e3bd6b;border-color:#e3bd6b;color:#1b1608}
+.eua-counter-ask button:focus-visible{outline:2px solid #e3bd6b;outline-offset:2px}
+@media print{.eua-counter-ask{display:none}}

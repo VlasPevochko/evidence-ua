@@ -67,3 +67,21 @@ body[data-pine] .pb-byline{margin-top:8px;font-size:14px}
 }
 /* Cell Lab: the intro card uses the same surface as the cards inside it. */
 body[data-pine][data-platform-area="cell"] .intro{background:#142520;border-color:#26403a}
+/* Рішення власника 2026-10-25 («компактні банери на інших сторінках»), той самий підхід, що на «Харчуванні»:
+   смуга «Навігація й інструменти» над банером була майже порожньою і з’їдала 45–65 px. На широких екранах кнопка живе в банері (праворуч угорі),
+   смуга не займає місця, список відкривається панеллю поверх сторінки, банер нижчий. На телефоні все як було.
+   Лише сторінки, де в смузі єдиний елемент (details.eua-module-menu); «М’язи» і «Клітини» мають у смузі посилання й інструменти, тож їх не чіпаємо. */
+@media(min-width:761px){
+ body[data-pine]>.eua-platform-nav:has(>.eua-module-menu:only-child){position:relative;z-index:12;height:0;min-height:0;max-width:none;margin:0;padding:0!important;border:0!important;background:none!important;overflow:visible}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child{position:absolute;top:18px;right:max(16px,calc((100% - 1180px)/2));width:auto;margin:0}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 16px;border:1px solid var(--pine-line);border-radius:8px;background:#13261e;color:var(--pine-text);font-size:14px;cursor:pointer;list-style:none}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::-webkit-details-marker{display:none}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::marker{content:''}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::after{content:'＋';font-size:18px}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child[open]>summary::after{content:'−'}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>.eua-module-menu-content{position:absolute;inset:calc(100% + 8px) 0 auto auto;width:340px;max-width:calc(100vw - 32px);max-height:70dvh;overflow:auto;padding:12px;border:1px solid var(--pine-line);border-radius:12px;background:#0f1c18;box-shadow:0 18px 40px #0008;display:flex;flex-direction:column;align-items:stretch;gap:6px}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child .eua-module-menu-content>:is(a,button,details>summary){display:flex;align-items:center;min-height:44px;margin:0}
+ body[data-pine] .pb-inner{padding:34px 0 30px}
+ /* Кнопка стоїть праворуч угорі, тож картинка в банері зі «Сном» не має починатися вище за неї. */
+ body[data-pine] .pb-split{padding-top:70px}
+}

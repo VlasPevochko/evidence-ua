@@ -37,7 +37,8 @@ test('moved mechanisms, scientific SVGs and source disclosures retain their exac
   if(next)end=html.indexOf(next,html.indexOf(b.start));
   assert.equal(sha(html.slice(html.indexOf(b.start),end).trim()),b.sha256,name+' must be moved without rewriting');
  }
- for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?fs.readFileSync(file,'utf8').replaceAll('platform-shell.js?v=98','platform-shell.js?v=97').replaceAll('site-header.js?v=5','site-header.js?v=4').replaceAll('digestion-viewer.js?v=2','digestion-viewer.js?v=1').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
+ // page-pine.css v16 -> v17 (компактні банери, рішення власника 2026-10-25): лише версія в query-рядку, зміст сторінок той самий.
+ for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?fs.readFileSync(file,'utf8').replaceAll('platform-shell.js?v=98','platform-shell.js?v=97').replaceAll('site-header.js?v=5','site-header.js?v=4').replaceAll('digestion-viewer.js?v=2','digestion-viewer.js?v=1').replaceAll('page-pine.css?v=17','page-pine.css?v=16').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
  assert(!html.includes('id="nutrition-diets"'));
 });
 

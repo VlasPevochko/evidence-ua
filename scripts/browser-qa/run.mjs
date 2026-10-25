@@ -167,7 +167,11 @@ async function exerciseFlow(browser, origin, viewport) {
 
 async function nutritionFlow(browser, origin, viewport) {
   const where = `nutrition @${viewport.name}`;
-  const {context, page} = await open(browser, origin, viewport, '/nutrition.html');
+  const {context, page} = await open(browser, origin, viewport, '/index.html');
+  // Regression: the visible general Nutrition CTA must not bypass the hub into physiology.
+  await page.getByRole('link',{name:/Розібрати харчування/}).click();
+  await page.waitForURL('**/nutrition.html');
+  await page.locator('[data-nutrition-menu]').waitFor({state:'attached'});
   // Owner-approved 2026-10-25: Nutrition is the entry; all mechanisms live in its physiology branch.
   check(where,(await page.locator('.nutrition-branch').count())===2,'two clear Nutrition branches');
   check(where,(await page.locator('#nutrition-lab').count())===0,'the entry must not contain the lab');

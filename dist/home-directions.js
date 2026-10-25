@@ -10,7 +10,7 @@
     visual.className = 'home-picker-visual'; visual.setAttribute('aria-hidden', 'true');
     const brief = document.createElement('span');
     brief.className = 'home-picker-description';
-    brief.textContent = ({"muscle":"Будова, скорочення та адаптація м’язів.","cell":"Зазирни всередину клітини та її органел.","nutrition":"Травлення, всмоктування й обмін речовин.","supplements":"Добавки, ефекти та наукові докази.","movement":"Рухові патерни, суглоби й навантаження.","sleep":"Фізіологія сну та процеси відновлення."})[card.dataset.area] || '';
+    brief.textContent = ({"muscle":"Будова, скорочення та адаптація м’язів.","cell":"Зазирни всередину клітини та її органел.","nutrition":"Дієти й режими, фізіологія та біохімія.","supplements":"Добавки, ефекти та наукові докази.","movement":"Рухові патерни, суглоби й навантаження.","sleep":"Фізіологія сну та процеси відновлення."})[card.dataset.area] || '';
     copy.append(visual, brief); list.append(copy);
   }
   if (!list.children.length) return;

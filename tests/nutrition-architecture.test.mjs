@@ -2,10 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 
 const sha=s=>createHash('sha256').update(s).digest('hex');
 const baseline=JSON.parse(fs.readFileSync('tests/fixtures/nutrition-architecture-preservation.json','utf8'));
 const hub=()=>fs.readFileSync('dist/nutrition.html','utf8');
+
+test('the home Nutrition entry opens the hub rather than bypassing it into physiology',()=>{
+ const links=JSON.parse(execFileSync('python',['-c',`from pathlib import Path
+from lxml import html
+import json
+root=html.fromstring(Path('dist/index.html').read_text(encoding='utf-8'))
+print(json.dumps(root.xpath('//a[strong[normalize-space(.)="Розібрати харчування"]]/@href')))
+`],{encoding:'utf8'}));
+ assert.deepEqual(links,['./nutrition.html'],'general Nutrition choices must let the visitor choose a branch');
+});
 
 test('Nutrition retains the diets and offers the physiology branch without loading its models',()=>{
  const html=hub();

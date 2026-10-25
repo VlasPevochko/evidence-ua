@@ -538,6 +538,19 @@ async function videosFlow(browser, origin, viewport) {
 async function dietsFlow(browser, origin, viewport) {
   const where = `diets @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/nutrition.html');
+  if (viewport.width > 760) {
+    const geo = await page.evaluate(() => {
+      const nav = document.querySelector('.eua-platform-nav').getBoundingClientRect(), hero = document.querySelector('.pb').getBoundingClientRect(), btn = document.querySelector('.eua-nutrition-menu > summary').getBoundingClientRect();
+      return {nav: nav.height, heroH: hero.height, inHero: btn.top >= hero.top && btn.bottom <= hero.bottom && btn.right <= innerWidth};
+    });
+    check(where, geo.nav === 0, 'the tools strip takes no space under the header on wide screens');
+    check(where, geo.heroH < 260, 'the banner is compact');
+    check(where, geo.inHero, 'the tools button sits inside the banner');
+    await page.locator('.eua-nutrition-menu > summary').click();
+    const panel = await page.locator('.eua-nutrition-menu-content').boundingBox();
+    check(where, panel && panel.x >= 0 && panel.x + panel.width <= viewport.width + 1 && panel.y + panel.height <= viewport.height + 1, 'the tools panel opens fully inside the window');
+    await page.locator('.eua-nutrition-menu > summary').click();
+  }
   const rec = page.locator('#nd-recommend');
   await rec.waitFor({state: 'attached'});
   await rec.scrollIntoViewIfNeeded();

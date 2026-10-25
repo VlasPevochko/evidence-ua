@@ -10,7 +10,7 @@ export function mountSiteHeader(doc=document){
   const previous=doc.querySelector('header');
   if(!previous)return;
   if(!doc.querySelector('link[data-site-header-style]')){
-    const css=doc.createElement('link');css.rel='stylesheet';css.href='./site-header.css?v=5';css.dataset.siteHeaderStyle='';doc.head.append(css);
+    const css=doc.createElement('link');css.rel='stylesheet';css.href='./site-header.css?v=6';css.dataset.siteHeaderStyle='';doc.head.append(css);
   }
   const holder=doc.createElement('div');holder.innerHTML=headerHTML();
   const header=holder.firstElementChild;
@@ -48,6 +48,8 @@ export function mountSiteHeader(doc=document){
   searchButton.addEventListener('click',async e=>{if(searchButton.dataset.searchMounted)return;e.stopImmediatePropagation();const s=await withSearch();s?.open();},{once:false});
   doc.addEventListener('keydown',async e=>{if(e.key==='/'&&!searchButton.dataset.searchMounted&&!e.ctrlKey&&!e.metaKey&&!e.altKey){const t=e.target,tag=t?.tagName;if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||t?.isContentEditable)return;e.preventDefault();const s=await withSearch();s?.open();}});
 }
+// The visit counter is off until the owner sets a site code; it then asks the visitor before any third-party request.
+if(typeof document!=='undefined'){const startCounter=()=>import('./visit-counter.js?v=1').then(m=>m.mountVisitCounter(document)).catch(()=>{});if(document.readyState==='complete')startCounter();else document.defaultView.addEventListener('load',startCounter,{once:true});}
 if(typeof document!=='undefined'){
   if(document.readyState==='complete')mountSiteHeader(document);
   else document.defaultView.addEventListener('load',()=>mountSiteHeader(document),{once:true});

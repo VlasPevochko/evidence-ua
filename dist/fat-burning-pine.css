@@ -33,3 +33,23 @@ body[data-platform-area="fat-burning"]{background:var(--pine-bg,#0d1916);color:v
   .fb-hero-art{min-height:240px}
   .fb-sources-fold .fb-sources article{padding:16px}
 }
+
+/* Рішення власника 2026-10-25 («зменши»): верхній банер займав 559 px на комп'ютері і 829 px на телефоні (майже весь екран).
+   Тепер картинка клітини менша і не штовхає текст униз, відступи менші. Наукові тексти, кнопки й застереження ті самі. */
+.fb-band .fb-hero{padding:36px 32px 32px;gap:36px}
+.fb-hero h1{font-size:clamp(38px,4.6vw,62px);margin:14px 0}
+.fb-hero-actions{margin:22px 0 14px}
+.fb-hero-art{min-height:300px}
+.fb-cell{width:min(60%,236px)}
+@media(max-width:1050px){.fb-hero-art{min-height:260px}}
+@media(max-width:760px){
+  .fb-band .fb-hero{padding:24px 20px 20px;gap:18px}
+  .fb-hero h1{font-size:clamp(36px,10.5vw,48px);margin:12px 0}
+  .fb-hero-actions{margin:18px 0 12px}
+  .fb-hero-actions{flex-wrap:nowrap;gap:8px}
+  .fb-hero-actions .fb-button{flex:1 1 0;min-width:0;justify-content:center;padding-left:12px;padding-right:12px}
+  .fb-kicker{letter-spacing:.06em}
+  .fb-hero-art{min-height:120px;border-radius:18px}
+  .fb-cell{width:min(30%,92px)}
+  .fb-art-tag{display:none}
+}

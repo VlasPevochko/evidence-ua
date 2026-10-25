@@ -992,6 +992,10 @@ async function fatBurningFlow(browser, origin, viewport) {
   const where = "fat burning @" + viewport.name;
   const {context, page, seen} = await open(browser, origin, viewport, "/fat-burning.html");
   await page.waitForSelector("#fb-step-title");
+  // Рішення власника 2026-10-25: верхній банер компактний (було 559 px на комп'ютері і 829 px на телефоні).
+  const bandH = await page.locator(".fb-band").evaluate(el => el.getBoundingClientRect().height);
+  check(where, bandH < (viewport.width > 760 ? 460 : 640), "the top banner is compact");
+  check(where, await page.locator(".fb-hero-actions .fb-button").evaluateAll(els => els.every(e => e.getBoundingClientRect().right <= innerWidth && e.getBoundingClientRect().height >= 40)), "the banner buttons fit the screen and stay tappable");
   check(where, (await page.locator("#fb-step-title").innerText()).includes("Енергія у запасі"), "initial stage");
   await page.locator('[data-fb-step="1"]').click();
   check(where, (await page.locator("#fb-step-title").innerText()).includes("Мобілізація"), "click selects lipolysis");

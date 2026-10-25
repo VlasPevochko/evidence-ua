@@ -602,6 +602,33 @@ async function cardArtFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function compactBannerFlow(browser, origin, viewport) {
+  // Рішення власника 2026-10-25: на сторінках зі смугою «Навігація й інструменти» кнопка живе в банері (широкі екрани), на телефоні смуга лишається.
+  for (const route of ['/atlas.html', '/sleep.html', '/movement.html', '/exercises.html', '/protein-meta.html', '/nutrition-digestion.html']) {
+    const where = `compact banner ${route} @${viewport.name}`;
+    const {context, page, seen} = await open(browser, origin, viewport, route);
+    // The strip is built by the platform shell script after load.
+    await page.waitForSelector('body > .eua-platform-nav > .eua-module-menu > summary', {state: 'attached'});
+    const geo = await page.evaluate(() => {
+      const nav = document.querySelector('body > .eua-platform-nav'), hero = document.querySelector('.pb').getBoundingClientRect(), btn = nav.querySelector('.eua-module-menu > summary').getBoundingClientRect();
+      return {nav: nav.getBoundingClientRect().height, inHero: btn.top >= hero.top && btn.bottom <= hero.bottom && btn.right <= innerWidth, heroTop: hero.top};
+    });
+    if (viewport.width > 760) {
+      check(where, geo.nav === 0, 'the tools strip takes no space on wide screens');
+      check(where, geo.inHero, 'the tools button sits inside the banner');
+      check(where, geo.heroTop < 130, 'the banner starts right under the header');
+      await page.locator('body > .eua-platform-nav > .eua-module-menu > summary').click();
+      const panel = await page.locator('body > .eua-platform-nav > .eua-module-menu > .eua-module-menu-content').boundingBox();
+      check(where, panel && panel.x >= 0 && panel.x + panel.width <= viewport.width + 1 && panel.y + panel.height <= viewport.height + 1, 'the tools panel opens fully inside the window');
+    } else {
+      check(where, geo.nav > 30, 'on the phone the strip is kept');
+    }
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors');
+    await context.close();
+  }
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -1029,6 +1056,7 @@ try {
   for (const viewport of viewports) await searchFlow(browser, origin, viewport);
   for (const viewport of viewports) await changesFlow(browser, origin, viewport);
   for (const viewport of viewports) await cardArtFlow(browser, origin, viewport);
+  for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
   for (const viewport of viewports) await videosFlow(browser, origin, viewport);
   for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);

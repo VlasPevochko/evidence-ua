@@ -230,5 +230,5 @@ body[data-platform-area="home"] .home-picker-cards [data-area="muscle"]>.home-pi
 body[data-platform-area="home"] .home-picker-cards [data-area="cell"]>.home-picker-visual{background-image:url('./card-art-cell-v1.webp')}
 body[data-platform-area="home"] .home-picker-cards [data-area="nutrition"]>.home-picker-visual{background-image:url('./card-art-nutrition-v1.webp');background-position:50% 62%}
 body[data-platform-area="home"] .home-picker-cards [data-area="supplements"]>.home-picker-visual{background-image:url('./card-art-supplements-v1.webp')}
-body[data-platform-area="home"] .home-picker-cards [data-area="movement"]>.home-picker-visual{background-image:url('./card-art-movement-v1.webp')}
-body[data-platform-area="home"] .home-picker-cards [data-area="sleep"]>.home-picker-visual{background-image:url('./card-art-sleep-v1.webp')}
+body[data-platform-area="home"] .home-picker-cards [data-area="movement"]>.home-picker-visual{background-image:url('./card-art-movement-v2.webp')}
+body[data-platform-area="home"] .home-picker-cards [data-area="sleep"]>.home-picker-visual{background-image:url('./card-art-sleep-v2.webp')}

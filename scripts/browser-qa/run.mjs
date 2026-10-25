@@ -593,7 +593,7 @@ async function cardArtFlow(browser, origin, viewport) {
     return out;
   });
   check(where, cards.length === 6, 'six direction cards have a picture');
-  check(where, cards.every(c => /^card-art-[a-z]+-v1\.webp$/.test(c.file)), 'every card uses its card-art file');
+  check(where, cards.every(c => /^card-art-[a-z]+-v[12]\.webp$/.test(c.file)), 'every card uses its card-art file');
   check(where, new Set(cards.map(c => c.file)).size === 6, 'six different pictures');
   check(where, cards.every(c => c.ok), 'every picture loads');
   check(where, cards.every(c => c.w >= 80 && c.h >= 80), 'pictures are big enough to read');

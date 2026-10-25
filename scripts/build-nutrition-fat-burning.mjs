@@ -5,7 +5,7 @@ import {fatBurningEntryHTML} from '../src/nutrition-fat-burning/entry.mjs';
 
 // Regenerate only this single marked educational entry; diet and lab markup stay intact.
 export function buildNutritionFatBurning(root){
- const file=path.join(root,'dist/nutrition.html');
+ const file=path.join(root,'dist/nutrition-inside.html');
  const before=fs.readFileSync(file,'utf8');
  const start='<!-- EUA_NUTRITION_FAT_BURNING_START -->', end='<!-- EUA_NUTRITION_FAT_BURNING_END -->';
  const first=before.indexOf(start),last=before.indexOf(end);

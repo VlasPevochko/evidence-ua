@@ -15,7 +15,7 @@ const generated = new Set([
   'evidence/data.js', 'evidence/ui.js', 'evidence/evidence.css',
   'platform-catalog.js', 'home-catalog.js', 'home-feedback.js', 'platform-materials.js',
   'platform-tools.js', 'platform-shell.js', 'platform-next-steps.js', 'platform-terms.js', 'appearance.js', 'platform-learning.js', 'directions.js',
-  'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
+  'nutrition-inside.html', 'nutrition-navigation.js', 'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',
   'muscle-scale-art.js', 'muscle-sarcomere.js',

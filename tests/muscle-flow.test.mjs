@@ -184,7 +184,8 @@ import json,re,hashlib,collections
 baseline=json.loads(Path('tests/fixtures/v69-study-presentation-baseline.json').read_text(encoding='utf-8'))
 assert set(baseline['pages'])=={'cell-lab.html','nutrition.html'}
 for name,expected in baseline['pages'].items():
-    raw=Path('dist',name).read_bytes()
+    # Owner-approved 2026-10-25 move: validate the same frozen science at its new address.
+    raw=Path('dist','nutrition-inside.html' if name=='nutrition.html' else name).read_bytes()
     root=html.fromstring(raw)
     actual={
         'paragraphs':collections.Counter(' '.join(''.join(p.itertext()).split()) for p in root.xpath('//p')),
@@ -192,7 +193,10 @@ for name,expected in baseline['pages'].items():
         'inlineSvgHashes':collections.Counter(hashlib.sha256(svg.replace(b'\\r\\n',b'\\n')).hexdigest() for svg in re.findall(rb'<svg\\b[\\s\\S]*?</svg\\s*>',raw,re.I))
     }
     for category in ['paragraphs','externalHrefs']:
-        missing=collections.Counter(expected[category])-actual[category]
+        # The owner renamed the presentation band; scientific paragraphs remain frozen.
+        wanted=collections.Counter(expected[category])
+        if name=='nutrition.html' and category=='paragraphs': wanted['ХАРЧУВАННЯ / NUTRITION LAB']-=1
+        missing=wanted-actual[category]
         assert not missing, f'{name}: retained {category} changed or removed: {dict(missing)}'
     assert actual['inlineSvgHashes']==collections.Counter(expected['inlineSvgHashes']), f'{name}: inline scientific SVG bytes changed'
 `]);
@@ -206,7 +210,7 @@ for(const [file,hash] of Object.entries(pageHashes)){
  if(file==='muscle-lab.html')continue; // Replaced by the owner-approved redesign (one scale control, own drawings, animated contraction, mirrored growth/atrophy). Frozen science (structures, topics, sources) is still checked above; see muscle-lab.test.mjs for the page.
  if(file==='protein-meta.html')continue; // Pine redesign (title band, recoloured inline CSS, version of the shared stylesheet): the article text is pinned in page-pine.test.mjs instead of by a whole-file hash.
  if(file==='cell-lab.html'||file==='nutrition.html')continue; // Exact retained semantics checked against the independent v69 fixture above.
- let html=fs.readFileSync('dist/'+file,'utf8') .replaceAll('platform-shell.js?v=97','platform-shell.js?v=54').replaceAll('platform-shell.js?v=96','platform-shell.js?v=54').replaceAll('platform-shell.js?v=95','platform-shell.js?v=54').replaceAll('platform-shell.js?v=94','platform-shell.js?v=54').replaceAll('platform-shell.js?v=93','platform-shell.js?v=54').replaceAll('platform-shell.js?v=92','platform-shell.js?v=54').replaceAll('platform-shell.js?v=91','platform-shell.js?v=54').replaceAll('platform-shell.js?v=90','platform-shell.js?v=54').replaceAll('platform-shell.js?v=89','platform-shell.js?v=54').replaceAll('platform-shell.js?v=88','platform-shell.js?v=54').replaceAll('platform-shell.js?v=87','platform-shell.js?v=54').replaceAll('platform-shell.js?v=86','platform-shell.js?v=54').replaceAll('platform-shell.js?v=85','platform-shell.js?v=54').replaceAll('platform-shell.js?v=83','platform-shell.js?v=54').replaceAll('platform-shell.js?v=82','platform-shell.js?v=54').replaceAll('platform-shell.js?v=63','platform-shell.js?v=54').replaceAll('platform-shell.js?v=60','platform-shell.js?v=54').replaceAll('nutrition-lab.js?v=59','nutrition-lab.js?v=55').replaceAll('cell-lab.js?v=59','cell-lab.js?v=56').replaceAll('home-feedback.js?v=60','home-feedback.js?v=57').replaceAll('supplement-backgrounds-v10.webp','supplement-backgrounds-v10.png'); // PNG->WebP asset format change only; pixels/layout reference unchanged
+ let html=fs.readFileSync('dist/'+file,'utf8') .replaceAll('platform-shell.js?v=98','platform-shell.js?v=54').replaceAll('platform-shell.js?v=97','platform-shell.js?v=54').replaceAll('platform-shell.js?v=96','platform-shell.js?v=54').replaceAll('platform-shell.js?v=95','platform-shell.js?v=54').replaceAll('platform-shell.js?v=94','platform-shell.js?v=54').replaceAll('platform-shell.js?v=93','platform-shell.js?v=54').replaceAll('platform-shell.js?v=92','platform-shell.js?v=54').replaceAll('platform-shell.js?v=91','platform-shell.js?v=54').replaceAll('platform-shell.js?v=90','platform-shell.js?v=54').replaceAll('platform-shell.js?v=89','platform-shell.js?v=54').replaceAll('platform-shell.js?v=88','platform-shell.js?v=54').replaceAll('platform-shell.js?v=87','platform-shell.js?v=54').replaceAll('platform-shell.js?v=86','platform-shell.js?v=54').replaceAll('platform-shell.js?v=85','platform-shell.js?v=54').replaceAll('platform-shell.js?v=83','platform-shell.js?v=54').replaceAll('platform-shell.js?v=82','platform-shell.js?v=54').replaceAll('platform-shell.js?v=63','platform-shell.js?v=54').replaceAll('platform-shell.js?v=60','platform-shell.js?v=54').replaceAll('nutrition-lab.js?v=59','nutrition-lab.js?v=55').replaceAll('cell-lab.js?v=59','cell-lab.js?v=56').replaceAll('home-feedback.js?v=60','home-feedback.js?v=57').replaceAll('supplement-backgrounds-v10.webp','supplement-backgrounds-v10.png'); // PNG->WebP asset format change only; pixels/layout reference unchanged
  if(file==='index.html'){
   // Only these explicit v60 additions may differ. All other bytes retain the frozen hash.
   assert.equal((html.match(/<!-- EUA_HOME_LEARNING_START -->/g)||[]).length,1);

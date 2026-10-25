@@ -11,3 +11,6 @@ buildNutritionDiets(process.cwd());
 buildNutritionFatBurning(process.cwd());
 
 import './build-digestion.mjs';
+
+// Routing/disclosure only; the authored lab controller remains unchanged.
+fs.copyFileSync('src/nutrition/navigation.mjs','dist/nutrition-navigation.js');

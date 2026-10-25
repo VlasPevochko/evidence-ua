@@ -1,4 +1,4 @@
-import {materials,findMaterials,materialKinds,contextLink,materialContext} from './platform-materials.js?v=84';
+import {materials,findMaterials,materialKinds,contextLink,materialContext} from './platform-materials.js?v=98';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function materialCard(m){return `<a class="eua-material" href="${esc(m.href)}"><span>${esc(m.areaTitle)} · ${esc(materialKinds[m.kind])}</span><strong>${esc(m.title)} →</strong><small>${esc(m.review)}</small></a>`;}
 export function toolsHTML(area){return `<div class="eua-tools"><button type="button" data-eua-tool="search">Знайти матеріал</button>${['cell','nutrition'].includes(area)?'<button type="button" data-eua-tool="focus" aria-pressed="false">Режим заняття</button>':''}<button type="button" data-eua-tool="share">Скопіювати посилання</button>${area==='home'?'':'<a href="./index.html#home-feedback">Поділитися враженням</a>'}</div><p class="eua-tool-status" role="status" aria-live="polite"></p>`;}
@@ -21,7 +21,7 @@ export function mountQuickTools(root=document){
   if(b.dataset.euaTool==='focus'){
    if(root.body.dataset.euaFocus){exitFocus();return;}
    focusOpener=b;root.body.dataset.euaFocus='true';focusButtons().forEach(x=>{x.setAttribute('aria-pressed','true');x.textContent='Вийти з режиму заняття';});
-   const target=root.getElementById(root.body.dataset.platformArea==='cell'?'explorer':'nutrition-lab');target?.scrollIntoView({block:'start'});
+   const target=root.getElementById(root.body.dataset.focusTarget||(root.body.dataset.platformArea==='cell'?'explorer':'nutrition-lab'));target?.scrollIntoView({block:'start'});
   }
   if(b.dataset.euaTool==='share'){
    const status=statusFor(b),link=contextLink(root.defaultView.location.href);b.disabled=true;

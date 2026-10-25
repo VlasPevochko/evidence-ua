@@ -17,5 +17,5 @@ fs.writeFileSync('dist/digestion-viewer.js',swap(fs.readFileSync('src/evidence/n
  ["from 'three/addons/controls/OrbitControls.js'","from './vendor/three/addons/controls/OrbitControls.js'"],
  ["from 'three/addons/loaders/GLTFLoader.js'","from './vendor/three/addons/loaders/GLTFLoader.js'"],
  ["from 'three'","from './vendor/three/three.module.js'"],
- ["'../../core/components.mjs'","'./evidence/components.js?v=55'"],["'./module.mjs'","'./digestion-data.js?v=1'"],["'./steps.mjs'","'./digestion-steps.js?v=1'"]]));
+ ["'../../core/components.mjs'","'./evidence/components.js?v=55'"],["'./module.mjs'","'./digestion-data.js?v=1'"],["'./steps.mjs'","'./digestion-steps.js?v=2'"]]));
 console.log('Food path module:',{claims:digestionBase.claims.length,records:digestionBase.records.length,sources:digestionBase.sources.length,steps:foodPathSteps.length,confidence:'not assessed'});

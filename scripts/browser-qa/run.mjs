@@ -168,7 +168,29 @@ async function exerciseFlow(browser, origin, viewport) {
 async function nutritionFlow(browser, origin, viewport) {
   const where = `nutrition @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/nutrition.html');
+  // Owner-approved 2026-10-25: Nutrition is the entry; all mechanisms live in its physiology branch.
+  check(where,(await page.locator('.nutrition-branch').count())===2,'two clear Nutrition branches');
+  check(where,(await page.locator('#nutrition-lab').count())===0,'the entry must not contain the lab');
+  check(where,(await page.locator('.nd-card').count())===8,'all diets remain on the entry');
+  const utilities=page.locator('[data-nutrition-menu]');
+  check(where,!(await utilities.evaluate(n=>n.open)),'utilities start closed');
+  await utilities.locator(':scope > summary').click();
+  check(where,await utilities.locator('[data-eua-tool="share"]').isVisible(),'share action remains available');
+  await page.keyboard.press('Escape');
+  check(where,!(await utilities.evaluate(n=>n.open)),'Escape closes the utilities');
+  check(where,await utilities.locator(':scope > summary').evaluate(n=>n===document.activeElement),'Escape returns focus');
+  await utilities.locator(':scope > summary').click();
+  // On a phone the popup covers the heading; the page gutter is actually outside it.
+  await page.mouse.click(4,Math.min(200,viewport.height-1));
+  check(where,!(await utilities.evaluate(n=>n.open)),'outside click closes the utilities');
+  if(viewport.width<=760){
+    const strip=await page.locator('.nd-grid').evaluate(n=>({scroll:n.scrollWidth,client:n.clientWidth,overflow:getComputedStyle(n).overflowX}));
+    check(where,strip.overflow==='auto'&&strip.scroll>strip.client+50,'diets keep their phone strip');
+  }
+  await page.locator('.nutrition-branch[href="./nutrition-inside.html"]').click();
   await page.waitForSelector('#nl-cell');
+  // The model SVG is authored HTML; wait for the deferred shared shell as well.
+  await page.locator('.eua-platform-nav').waitFor({state:'attached'});
   const phone = viewport.width <= 760;
   check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once');
   check(where, (await page.locator('[data-nl-depth]').count()) === 0, 'the retired depth switcher is back');
@@ -178,7 +200,7 @@ async function nutritionFlow(browser, origin, viewport) {
   check(where,await featured.isVisible(),'the Fat Burning Lab entry must be visible without expanding a disclosure');
   check(where,(await page.locator('.nl-page-nav .nf-nav').getAttribute('href'))==='#nutrition-fat-burning','top menu must point to the featured entry');
   check(where,(await featured.locator('.nf-open').getAttribute('href'))==='./fat-burning.html','featured CTA must open the Lab directly');
-  check(where,await page.evaluate(()=>{const e=document.querySelector('#nutrition-fat-burning'),d=document.querySelector('#nutrition-diets');return e&&d&&e.getBoundingClientRect().top+scrollY<d.getBoundingClientRect().top+scrollY}),'featured entry must precede diet cards');
+  check(where,(await page.locator('#nutrition-diets').count())===0,'diets stay on the entry');
   check(where,(await featured.locator('.nf-open').count())===1,'one clear featured action');
   // Folds are collapsed by default; the shared context paragraph is not repeated per card.
   check(where, (await page.locator('details.nl-fold[open]').count()) === 0, 'evidence folds must start collapsed');
@@ -218,18 +240,18 @@ async function nutritionFlow(browser, origin, viewport) {
   const order = await page.evaluate(() => ['nutrition-lab', 'nutrient-time', 'nutrition-evidence'].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
   check(where, order[0] < order[1] && order[1] < order[2], 'timeline must follow the lab and precede the evidence');
   check(where, (await page.locator('#nutrient-time').evaluate(n => getComputedStyle(n).backgroundColor)).match(/\d+/g).slice(0, 3).every(v => Number(v) < 80), 'the timeline is not dark');
-  // Diets: horizontal strip on phones.
-  if (phone) {
-    const grid = page.locator('.nd-grid').first();
-    const strip = await grid.evaluate(n => ({scroll: n.scrollWidth, client: n.clientWidth, overflowX: getComputedStyle(n).overflowX}));
-    check(where, strip.overflowX === 'auto' && strip.scroll > strip.client + 50, 'diets must be a swipeable strip on phones');
-  }
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
   check(where, height < (phone ? 8350 : 6800), `page is too long again (${height}px)`);
   await featured.locator('.nf-open').click();
   await page.waitForURL(/\/fat-burning\.html$/);
   check(where,(await page.locator('#fb-title').innerText()).includes('зникає жир'),'featured link opens the real Fat Burning Lab');
+  await page.goto(origin+'/nutrition.html?nutrient=protein&step=2&scale=cell#nutrition-lab');
+  await page.waitForURL(/nutrition-inside\.html/);
+  check(where,(await page.locator('[data-nl-nutrient="protein"]').getAttribute('aria-pressed'))==='true','legacy nutrient remains selected');
+  check(where,(await page.locator('#nl-counter').innerText()).includes('3 / 4'),'legacy step remains selected');
+  await page.goto(origin+'/nutrition.html#diet-vegan');
+  check(where,(await page.locator('#diet-vegan').count())===1&&(await page.locator('#nutrition-lab').count())===0,'diet bookmark stays on Nutrition');
   await context.close();
 }
 
@@ -306,7 +328,7 @@ async function appearanceFlow(browser, origin, viewport) {
   // The choice survives a reload and is applied before the page is shown.
   await page.reload({waitUntil: 'load'});
   check(where, (await html.getAttribute('data-theme')) === 'light' && (await html.getAttribute('data-text')) === 'lg', 'the choice must persist after reload');
-  const nav = await open(browser, origin, viewport, '/nutrition.html');
+  const nav = await open(browser, origin, viewport, '/nutrition-inside.html');
   await nav.context.close();
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow in light theme with larger text');
   await page.locator('.eua-appearance-toggle').click();
@@ -318,7 +340,7 @@ async function appearanceFlow(browser, origin, viewport) {
 }
 
 async function nextStepsFlow(browser, origin, viewport) {
-  const files = ['nutrition', 'nutrition-digestion', 'fat-burning', 'muscle-lab', 'cell-lab', 'movement', 'sleep', 'atlas', 'exercises', 'supplements', 'protein-meta'];
+  const files = ['nutrition', 'nutrition-inside', 'nutrition-digestion', 'fat-burning', 'muscle-lab', 'cell-lab', 'movement', 'sleep', 'atlas', 'exercises', 'supplements', 'protein-meta'];
   for (const name of files) {
     const where = `next @${viewport.name} ${name}`;
     const {context, page, seen} = await open(browser, origin, viewport, `/${name}.html`);
@@ -564,10 +586,10 @@ async function mapFlow(browser, origin, viewport) {
   const where = `map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/map.html');
   await page.locator('.km-list li').first().waitFor({state: 'attached'});
-  check(where, (await page.locator('.km-list li').count()) === 11, 'every page appears in the list');
+  check(where, (await page.locator('.km-list li').count()) === 12, 'every page appears in the list');
   check(where, (await page.locator('.km-list li p').first().innerText()).startsWith('Поруч:'), 'every item names its neighbours');
   if (viewport.width > 820) {
-    check(where, (await page.locator('.km-node').count()) === 11, 'eleven nodes on the map');
+    check(where, (await page.locator('.km-node').count()) === 12, 'twelve nodes on the map');
     await page.locator('.km-node[data-file="nutrition.html"]').focus();
     check(where, await page.locator('.km-stage.has-focus').count() === 1, 'focusing a node highlights its neighbours');
     check(where, (await page.locator('#km-caption').innerText()).includes('поруч'), 'the caption names the neighbours');

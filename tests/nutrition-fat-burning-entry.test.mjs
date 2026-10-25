@@ -9,10 +9,12 @@ import {fatBurningEntryHTML} from '../src/nutrition-fat-burning/entry.mjs';
 const start='<!-- EUA_NUTRITION_FAT_BURNING_START -->',end='<!-- EUA_NUTRITION_FAT_BURNING_END -->';
 
 test('featured Fat Burning Lab is prominent in Nutrition and directly navigable',()=>{
- const html=fs.readFileSync('dist/nutrition.html','utf8');
+ const html=fs.readFileSync('dist/nutrition-inside.html','utf8');
  const markup=fatBurningEntryHTML();
  assert(html.includes(start+markup+end),'published HTML must match the canonical generated entry');
- assert(html.indexOf('id="nutrition-fat-burning"')<html.indexOf('id="nutrition-diets"'),'feature must be before diets');
+ // Owner-approved architecture: mechanisms move together, diets remain on the Nutrition entry.
+ assert(html.indexOf('id="nutrition-fat-burning"')<html.indexOf('id="nutrition-lab"'),'fat entry must precede the lab');
+ assert(!html.includes('id="nutrition-diets"'));
  assert(html.includes('href="#nutrition-fat-burning" class="nf-nav"'),'direct nutrition anchor is present');
  assert.equal((markup.match(/href="\.\/fat-burning\.html"/g)||[]).length,1,'featured card has one real CTA');
  assert(html.includes('href="./nutrition-fat-burning.css?v=1"'),'cache-busted styling');
@@ -26,7 +28,7 @@ test('entry generator is idempotent and never alters neighboring science content
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'eua-feature-entry-'));
  try{
   fs.mkdirSync(path.join(root,'dist'));
-  const file=path.join(root,'dist/nutrition.html');
+  const file=path.join(root,'dist/nutrition-inside.html');
   const before='<div>Авторське пояснення</div>'+start+'placeholder'+end+'<section>Джерела й Claims</section>';
   fs.writeFileSync(file,before);
   buildNutritionFatBurning(root);

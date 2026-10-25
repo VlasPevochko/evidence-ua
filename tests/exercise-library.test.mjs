@@ -213,7 +213,7 @@ for (const shell of [shellSource, shellBuilt]) {
 assert.equal(
   shellBuilt,
   // The shared header import is rewritten by the platform builder as well.
-  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=3'").replace("'./terms.mjs'", "'./platform-terms.js?v=2'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=83'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=85'").replace("'./site-header.mjs'", "'./site-header.js?v=4'"),
+  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=4'").replace("'./terms.mjs'", "'./platform-terms.js?v=2'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=98'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=98'").replace("'./site-header.mjs'", "'./site-header.js?v=5'"),
   'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
 );
 assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');

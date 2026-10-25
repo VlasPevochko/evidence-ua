@@ -1,3 +1,4 @@
+// Shared shell cache version includes the Nutrition route migration.
 // 2026-10-22: search finds supplements by topic (new keywords in platform-materials) → cascade: materials v84, search v2, header v4, tools v85, shell v97.
 // Cache expectations updated for the scoped shared-header geometry fix.
 // Shared header release bumps the shell cache version to 84; science contracts are unchanged.
@@ -48,7 +49,7 @@ assert.equal(new Set(steps.map(s=>s.id)).size,steps.length);assert(foodPathTract
 
 // Page: retained share metadata, shell, reading section and attribution; no third-party scripts.
 const html=fs.readFileSync('dist/nutrition-digestion.html','utf8');
-for(const piece of [`<link rel="canonical" href="${readBase()}nutrition-digestion.html">`,'platform-shell.js?v=97','digestion-viewer.js?v=1','id="eua-evidence-dialog"','data-food-path','Всмоктування ≠ виведення','https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works','https://openstax.org/books/anatomy-and-physiology-2e/pages/23-7-chemical-digestion-and-absorption-a-closer-look','CC BY-SA 4.0','Z-Anatomy','./nutrition.html#nutrition-lab'])assert(html.includes(piece),piece);
+for(const piece of [`<link rel="canonical" href="${readBase()}nutrition-digestion.html">`,'platform-shell.js?v=98','digestion-viewer.js?v=2','id="eua-evidence-dialog"','data-food-path','Всмоктування ≠ виведення','https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works','https://openstax.org/books/anatomy-and-physiology-2e/pages/23-7-chemical-digestion-and-absorption-a-closer-look','CC BY-SA 4.0','Z-Anatomy','./nutrition-inside.html#nutrition-lab'])assert(html.includes(piece),piece);
 assert(!/<script[^>]+src="https?:/.test(html));
 const viewer=fs.readFileSync('dist/digestion-viewer.js','utf8');
 assert(!/from\s*['"]https?:/.test(viewer));assert(!viewer.includes("from 'three'"));

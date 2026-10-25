@@ -5,7 +5,7 @@ import {materials} from '../src/platform/materials.mjs';
 
 // «Куди далі» (рішення власника 2026-10-20): три сусідні матеріали внизу сторінок. Це навігація, наукових тверджень тут немає.
 const pages=Object.keys(NEXT_STEPS);
-assert.equal(pages.length,11,'every content page except home and the catalogue has the block');
+assert.equal(pages.length,12,'every content page except home and the catalogue has the block');
 const known=new Set(materials.map(m=>m.href.split('#')[0].split('?')[0]).concat(['./fat-burning.html','./supplements.html','./protein-meta.html','./nutrition-digestion.html','./exercises.html','./atlas.html']));
 for(const [file,items] of Object.entries(NEXT_STEPS)){
   assert(fs.existsSync('dist/'+file),`${file} exists`);

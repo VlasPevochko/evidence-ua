@@ -21,7 +21,7 @@ export function mountQuickTools(root=document){
   if(b.dataset.euaTool==='focus'){
    if(root.body.dataset.euaFocus){exitFocus();return;}
    focusOpener=b;root.body.dataset.euaFocus='true';focusButtons().forEach(x=>{x.setAttribute('aria-pressed','true');x.textContent='Вийти з режиму заняття';});
-   const target=root.getElementById(root.body.dataset.platformArea==='cell'?'explorer':'nutrition-lab');target?.scrollIntoView({block:'start'});
+   const target=root.getElementById(root.body.dataset.focusTarget||(root.body.dataset.platformArea==='cell'?'explorer':'nutrition-lab'));target?.scrollIntoView({block:'start'});
   }
   if(b.dataset.euaTool==='share'){
    const status=statusFor(b),link=contextLink(root.defaultView.location.href);b.disabled=true;

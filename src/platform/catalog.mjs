@@ -17,12 +17,14 @@ export const areas = [
     {id:'membrane',title:'Плазматична мембрана',href:'./cell-lab.html?organelle=STRUCT-PLASMA-MEMBRANE#cell-canvas',entityIds:['STRUCT-PLASMA-MEMBRANE']},
     {id:'sources',title:'Підручникові джерела',href:'./cell-lab.html#sources',entityIds:[]}
   ]},
-  {id:'nutrition',title:'Харчування',lab:'Nutrition Lab',href:'./nutrition.html',group:'nutrition',available:true,state:'Перша навчальна версія',review:'Рівні впевненості не оцінено; науковий перегляд не завершено',description:'Від їжі до клітини: модель організму, ентероцит, три маршрути всмоктування й часові оцінки нутрієнтів.',units:[
-    {id:'enterocyte',title:'Від їжі до клітини',href:'./nutrition.html#nutrition-lab',entityIds:['CELL-ENTEROCYTE']},
-    {id:'glucose',title:'Усмоктування глюкози',href:'./nutrition.html?nutrient=glucose#nutrition-lab',entityIds:['TRN-SGLT1','TRN-GLUT2','PRT-NAK-ATPASE']},
-    {id:'protein-absorption',title:'Амінокислоти й пептиди',href:'./nutrition.html?nutrient=protein#nutrition-lab',entityIds:['TRN-PEPT1']},
-    {id:'lipids',title:'Довголанцюгові жири',href:'./nutrition.html?nutrient=lipids#nutrition-lab',entityIds:['PTH-LIPID-ABSORPTION']},
-    {id:'timeline',title:'Нутрієнти у часі',href:'./nutrition.html#nutrient-time',entityIds:[]},
+  {id:'nutrition',title:'Харчування',lab:'Nutrition Lab',href:'./nutrition.html',group:'nutrition',available:true,state:'Перша навчальна версія',review:'Рівні впевненості не оцінено; науковий перегляд не завершено',description:'Дієти й режими та окремий розділ «Харчування зсередини»: фізіологія й біохімія.',units:[
+    {id:'diets',title:'Дієти й режими',href:'./nutrition.html#nutrition-diets',kind:'section',entityIds:[]},
+    {id:'inside',title:'Харчування зсередини: фізіологія та біохімія',href:'./nutrition-inside.html',kind:'section',entityIds:[]},
+    {id:'enterocyte',title:'Від їжі до клітини',href:'./nutrition-inside.html#nutrition-lab',entityIds:['CELL-ENTEROCYTE']},
+    {id:'glucose',title:'Усмоктування глюкози',href:'./nutrition-inside.html?nutrient=glucose#nutrition-lab',entityIds:['TRN-SGLT1','TRN-GLUT2','PRT-NAK-ATPASE']},
+    {id:'protein-absorption',title:'Амінокислоти й пептиди',href:'./nutrition-inside.html?nutrient=protein#nutrition-lab',entityIds:['TRN-PEPT1']},
+    {id:'lipids',title:'Довголанцюгові жири',href:'./nutrition-inside.html?nutrient=lipids#nutrition-lab',entityIds:['PTH-LIPID-ABSORPTION']},
+    {id:'timeline',title:'Нутрієнти у часі',href:'./nutrition-inside.html#nutrient-time',entityIds:[]},
     {id:'digestion',title:'Травлення та всмоктування',href:'./nutrition-digestion.html',entityIds:[]},
     {id:'fat-loss',title:'Жироспалення: куди зникає жир?',href:'./fat-burning.html',kind:'guide',entityIds:[]}
   ]},

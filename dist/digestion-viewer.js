@@ -4,7 +4,7 @@ import {OrbitControls} from './vendor/three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from './vendor/three/addons/loaders/GLTFLoader.js';
 import {ClaimCard, mountEvidenceDrawer, escapeHTML} from './evidence/components.js?v=55';
 import {digestionBase, digestionModule} from './digestion-data.js?v=1';
-import {foodPathSteps as STEPS, foodPathTract as TRACT, organNamesUA as NAMES} from './digestion-steps.js?v=1';
+import {foodPathSteps as STEPS, foodPathTract as TRACT, organNamesUA as NAMES} from './digestion-steps.js?v=2';
 
 const e = escapeHTML;
 const pad = n => String(n).padStart(2, '0');

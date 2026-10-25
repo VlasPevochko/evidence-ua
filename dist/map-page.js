@@ -1,5 +1,5 @@
 // Карта знань: вузли — сторінки сайту, лінії — ті самі сусідні матеріали, що в блоці «Куди далі».
-import {NEXT_STEPS} from './platform-next-steps.js?v=3';
+import {NEXT_STEPS} from './platform-next-steps.js?v=4';
 
 export const NODES={
   'cell-lab.html':{label:'Клітина',tag:'Cell Lab',x:11,y:30},
@@ -9,7 +9,8 @@ export const NODES={
   'exercises.html':{label:'Вправи',tag:'Практика',x:57,y:70},
   'sleep.html':{label:'Сон',tag:'Відновлення',x:78,y:80},
   'nutrition-digestion.html':{label:'Травлення',tag:'Харчування',x:28,y:12},
-  'nutrition.html':{label:'Від їжі до клітини',tag:'Харчування',x:52,y:24},
+  'nutrition.html':{label:'Харчування',tag:'Дієти й режими',x:52,y:12},
+  'nutrition-inside.html':{label:'Харчування зсередини',tag:'Фізіологія та біохімія',x:52,y:34},
   'fat-burning.html':{label:'Куди зникає жир?',tag:'Харчування',x:77,y:34},
   'supplements.html':{label:'Добавки',tag:'Докази',x:90,y:14},
   'protein-meta.html':{label:'Розбір білка',tag:'Докази',x:90,y:56}

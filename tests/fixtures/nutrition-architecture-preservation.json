@@ -1,0 +1,47 @@
+{
+  "baseCommit": "bbd85b2d1e97d084e4fcd4ecbbfaa5e6e1c438e5",
+  "blocks": {
+    "diets": {
+      "start": "<!-- EUA_NUTRITION_DIETS_START -->",
+      "end": "<!-- EUA_NUTRITION_DIETS_END -->",
+      "sha256": "96a2a6f341e91dd19b76db312d09bc7e2496def050fcf0456e98f3a160be0d7a"
+    },
+    "fat": {
+      "start": "<!-- EUA_NUTRITION_FAT_BURNING_START -->",
+      "end": "<!-- EUA_NUTRITION_FAT_BURNING_END -->",
+      "sha256": "5d83253411b5ad7f8088e04cffd79b686c27db00ea2850483ba235918a061dca"
+    },
+    "lab": {
+      "start": "<section id=\"nutrition-lab\"",
+      "end": "</section>",
+      "sha256": "fa426552e42b6a3779ff2b7273fe2b510eb5c86714006e066d1c24f74e0e34ca"
+    },
+    "timeline": {
+      "start": "<section class=\"nl-timeline\"",
+      "end": "</section>",
+      "sha256": "621d3e8c623367c620b24415f6f62da38f9a04b8f72c413757cc3d55ba41cdca"
+    },
+    "evidence": {
+      "start": "<section id=\"nutrition-evidence\"",
+      "end": "</section>",
+      "sha256": "e6e2e82ec43c720e610a03aff90d5db73eb454827ec7d4851dfece983715d82d"
+    },
+    "sources": {
+      "start": "<section id=\"nutrition-sources\"",
+      "end": "</section>",
+      "sha256": "57e96a63b9c919951285140d855b239dcf56900f65b60fbe98b6eee13f2331d1"
+    }
+  },
+  "files": {
+    "src/evidence/nutrition/module.mjs": "923e2788d9fa5f56fab903f65e02d2877cacb0de7b8c59580826d683e2b44a85",
+    "src/evidence/nutrition/module-proposal.mjs": "5591f774e890400dcb40035689a59b44600f2eb380646e2352278d741a7cb449",
+    "src/evidence/nutrition/player.mjs": "0d7c7f88257c217c01bcc93d7eda814af47bfc8b4876a357a9917cfcc4a250c1",
+    "dist/nutrition-lab.js": "c963d94c4e42f0cb959a9c06ff965aa8b662cc632a5a322f8b0ea2d794d0692b",
+    "dist/nutrition-timeline.js": "ad28b8bc52089ea786bf61e3df512213702659bdc19ae6a1da353ff25bda0bfd",
+    "dist/nutrition-digestion.html": "b07c1f313952a121c86263b369cea02de601d6862b326655e3de5eedc3dcbb3e",
+    "src/nutrition-diets/catalog.mjs": "9998edf47371f676a6461316da9b244ccf943ea3f99a58effa40409d62e0f46e",
+    "src/nutrition-diets/evidence.mjs": "b06c3ac135bd7b6e79947afa27afb8f8f5e96bb1ed3b6dfb35bfa3c9b1051f52",
+    "src/nutrition-diets/render.mjs": "c6d0ce1d09da01195e717ca8005118ea5cd22f1887d48cdcb1d8aa3cbe55a5a9",
+    "dist/fat-burning.html": "a5ae3543ac1ca7391d471044344c9f5a2f7771ad24edd1c484a6d1a8f342fd32"
+  }
+}

@@ -70,7 +70,7 @@ export const foodPathSteps = [
     context: ['small-intestine-duodenum'],
     path: ['duodenum', 'jejunum'],
     claimId: 'CLM-000022',
-    zoom: {label: 'Зазирнути в ентероцит', href: './nutrition.html?nutrient=glucose#nutrition-lab'}
+    zoom: {label: 'Зазирнути в ентероцит', href: './nutrition-inside.html?nutrient=glucose#nutrition-lab'}
   },
   {
     id: 'colon',

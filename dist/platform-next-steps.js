@@ -1,17 +1,18 @@
 // «Куди далі»: три сусідні матеріали внизу кожної сторінки. Це навігація, а не наукові твердження:
 // назви беруться з каталогу, жодних нових пояснень чи обіцянок тут немає.
 export const NEXT_STEPS={
-  'nutrition.html':[['./nutrition-digestion.html','Травлення та всмоктування','Харчування'],['./fat-burning.html','Куди зникає жир?','Харчування'],['./supplements.html','Що відомо про добавки','Докази']],
-  'nutrition-digestion.html':[['./nutrition.html','Від їжі до клітини','Харчування'],['./fat-burning.html','Куди зникає жир?','Харчування'],['./cell-lab.html','Клітина людини','Cell Lab']],
-  'fat-burning.html':[['./nutrition.html','Від їжі до клітини','Харчування'],['./exercises.html','Бібліотека вправ','Практика'],['./sleep.html','Сон і відновлення','Відновлення']],
+  'nutrition-inside.html':[['./nutrition.html#nutrition-diets','Дієти й режими','Харчування'],['./nutrition-digestion.html','Травлення та всмоктування','Харчування'],['./fat-burning.html','Куди зникає жир?','Харчування']],
+  'nutrition.html':[['./nutrition-inside.html','Харчування зсередини','Фізіологія та біохімія'],['./supplements.html','Що відомо про добавки','Докази'],['./protein-meta.html','Розбір метааналізу білка','Докази']],
+  'nutrition-digestion.html':[['./nutrition-inside.html','Харчування зсередини','Харчування'],['./fat-burning.html','Куди зникає жир?','Харчування'],['./cell-lab.html','Клітина людини','Cell Lab']],
+  'fat-burning.html':[['./nutrition-inside.html','Харчування зсередини','Харчування'],['./exercises.html','Бібліотека вправ','Практика'],['./sleep.html','Сон і відновлення','Відновлення']],
   'muscle-lab.html':[['./movement.html','Рух і біомеханіка','Movement Lab'],['./exercises.html','Бібліотека вправ','Практика'],['./cell-lab.html','Клітина людини','Cell Lab']],
-  'cell-lab.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./nutrition.html','Від їжі до клітини','Харчування'],['./atlas.html','Атлас людського тіла','Атлас']],
+  'cell-lab.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./atlas.html','Атлас людського тіла','Атлас']],
   'movement.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./exercises.html','Бібліотека вправ','Практика'],['./atlas.html','Атлас людського тіла','Атлас']],
-  'sleep.html':[['./movement.html','Рух і біомеханіка','Movement Lab'],['./nutrition.html','Від їжі до клітини','Харчування'],['./fat-burning.html','Куди зникає жир?','Харчування']],
+  'sleep.html':[['./movement.html','Рух і біомеханіка','Movement Lab'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./fat-burning.html','Куди зникає жир?','Харчування']],
   'atlas.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./movement.html','Рух і біомеханіка','Movement Lab'],['./exercises.html','Бібліотека вправ','Практика']],
   'exercises.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./movement.html','Рух і біомеханіка','Movement Lab'],['./atlas.html','Атлас людського тіла','Атлас']],
-  'supplements.html':[['./protein-meta.html','Розбір метааналізу білка','Докази'],['./nutrition.html','Від їжі до клітини','Харчування'],['./index.html#evidence-guide-title','Як читати докази','Докази']],
-  'protein-meta.html':[['./supplements.html','Що відомо про добавки','Докази'],['./nutrition.html','Від їжі до клітини','Харчування'],['./exercises.html','Бібліотека вправ','Практика']]
+  'supplements.html':[['./protein-meta.html','Розбір метааналізу білка','Докази'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./index.html#evidence-guide-title','Як читати докази','Докази']],
+  'protein-meta.html':[['./supplements.html','Що відомо про добавки','Докази'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./exercises.html','Бібліотека вправ','Практика']]
 };
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function nextStepsHTML(file){

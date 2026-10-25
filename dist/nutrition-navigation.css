@@ -42,3 +42,10 @@ body[data-nutrition-tools] :is(a,button,summary):focus-visible{outline:2px solid
  .nutrition-breadcrumb{padding:8px 16px 0}
 }
 @media(prefers-reduced-motion:reduce){.nutrition-branch{transition:none}.nutrition-branch:hover{transform:none}}
+/* Рішення власника 2026-10-25: смуга «Інструменти» під шапкою мала шви по краях і була майже порожньою.
+   На широких екранах кнопка живе в банері (праворуч угорі), а сама смуга не займає місця; банер став нижчим. На телефоні лишається як було. */
+@media(min-width:761px){
+ body[data-pine][data-nutrition-tools]>.eua-platform-nav{height:0;min-height:0;max-width:none;margin:0;padding:0;border:0!important;background:none!important;overflow:visible}
+ body[data-pine][data-nutrition-tools]>.eua-platform-nav>.eua-nutrition-menu{position:absolute;top:18px;right:max(16px,calc((100% - 1180px)/2))}
+ body[data-pine][data-nutrition-tools] .pb-inner{padding:34px 0 30px}
+}

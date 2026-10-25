@@ -1,4 +1,7 @@
 /* Nutrition entry and contextual utilities; all existing lab artwork stays in its own stylesheet. */
+/* The hub no longer loads the timeline stylesheet, which used to supply this base reset. */
+body[data-nutrition-tools]{margin:0;line-height:1.6}
+body[data-nutrition-tools],body[data-nutrition-tools] *{box-sizing:border-box}
 body[data-nutrition-tools] .eua-platform-nav{display:flex;justify-content:flex-end;position:relative;z-index:12;max-width:1240px;margin:0 auto;padding:12px 28px;border:0;background:transparent}
 body[data-nutrition-tools] .eua-nutrition-menu{position:relative;margin:0}
 /* The existing study UI hides generic navigation disclosures; this scoped one replaces the visible tools row. */

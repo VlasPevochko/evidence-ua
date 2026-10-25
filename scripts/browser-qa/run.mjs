@@ -189,6 +189,8 @@ async function nutritionFlow(browser, origin, viewport) {
   }
   await page.locator('.nutrition-branch[href="./nutrition-inside.html"]').click();
   await page.waitForSelector('#nl-cell');
+  // The model SVG is authored HTML; wait for the deferred shared shell as well.
+  await page.locator('.eua-platform-nav').waitFor({state:'attached'});
   const phone = viewport.width <= 760;
   check(where, (await page.locator('.eua-platform-nav').count()) === 1, 'shared navigation must be injected exactly once');
   check(where, (await page.locator('[data-nl-depth]').count()) === 0, 'the retired depth switcher is back');
@@ -584,10 +586,10 @@ async function mapFlow(browser, origin, viewport) {
   const where = `map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/map.html');
   await page.locator('.km-list li').first().waitFor({state: 'attached'});
-  check(where, (await page.locator('.km-list li').count()) === 11, 'every page appears in the list');
+  check(where, (await page.locator('.km-list li').count()) === 12, 'every page appears in the list');
   check(where, (await page.locator('.km-list li p').first().innerText()).startsWith('Поруч:'), 'every item names its neighbours');
   if (viewport.width > 820) {
-    check(where, (await page.locator('.km-node').count()) === 11, 'eleven nodes on the map');
+    check(where, (await page.locator('.km-node').count()) === 12, 'twelve nodes on the map');
     await page.locator('.km-node[data-file="nutrition.html"]').focus();
     check(where, await page.locator('.km-stage.has-focus').count() === 1, 'focusing a node highlights its neighbours');
     check(where, (await page.locator('#km-caption').innerText()).includes('поруч'), 'the caption names the neighbours');

@@ -575,6 +575,33 @@ async function dietsFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function cardArtFlow(browser, origin, viewport) {
+  const where = `card art @${viewport.name}`;
+  // The picture cards belong to the «З чого почнемо?» section, which is laid out when opened through its anchor.
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html#start-here');
+  await page.locator('.home-picker-visual').first().waitFor({state: 'attached'});
+  // The cards are built by a script after load: wait until they have a real size before measuring.
+  await page.waitForFunction(() => [...document.querySelectorAll('.home-picker-visual')].length === 6 && [...document.querySelectorAll('.home-picker-visual')].every(e => e.getBoundingClientRect().width > 60));
+  const cards = await page.evaluate(async () => {
+    const out = [];
+    for (const el of document.querySelectorAll('.home-picker-visual')) {
+      const url = (getComputedStyle(el).backgroundImage.match(/url\("?([^")]+)"?\)/) || [])[1];
+      const ok = url ? await new Promise(r => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = url; }) : false;
+      const b = el.getBoundingClientRect();
+      out.push({area: el.parentElement.dataset.area, file: (url || '').split('/').pop(), ok, w: Math.round(b.width), h: Math.round(b.height)});
+    }
+    return out;
+  });
+  check(where, cards.length === 6, 'six direction cards have a picture');
+  check(where, cards.every(c => /^card-art-[a-z]+-v1\.webp$/.test(c.file)), 'every card uses its card-art file');
+  check(where, new Set(cards.map(c => c.file)).size === 6, 'six different pictures');
+  check(where, cards.every(c => c.ok), 'every picture loads');
+  check(where, cards.every(c => c.w >= 80 && c.h >= 80), 'pictures are big enough to read');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the home page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the cards raise no errors');
+  await context.close();
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -1001,6 +1028,7 @@ try {
   for (const viewport of viewports) await mapFlow(browser, origin, viewport);
   for (const viewport of viewports) await searchFlow(browser, origin, viewport);
   for (const viewport of viewports) await changesFlow(browser, origin, viewport);
+  for (const viewport of viewports) await cardArtFlow(browser, origin, viewport);
   for (const viewport of viewports) await videosFlow(browser, origin, viewport);
   for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
   for (const viewport of viewports) await pineFlow(browser, origin, viewport);

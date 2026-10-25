@@ -223,3 +223,12 @@ body[data-platform-area="home"] .page .home-picker-close:focus-visible{
   }
 }
 @keyframes home-brand-clockwise{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Нові картини для шести карток «З чого почнемо?» (власник, 2026-10-26): одна на напрям, однаково обрізаються під картку. */
+body[data-platform-area="home"] .home-picker-cards [data-area]>.home-picker-visual{background-color:#10252c;background-size:cover;background-repeat:no-repeat;background-position:50% 50%}
+body[data-platform-area="home"] .home-picker-cards [data-area="muscle"]>.home-picker-visual{background-image:url('./card-art-muscle-v1.webp');background-position:62% 50%}
+body[data-platform-area="home"] .home-picker-cards [data-area="cell"]>.home-picker-visual{background-image:url('./card-art-cell-v1.webp')}
+body[data-platform-area="home"] .home-picker-cards [data-area="nutrition"]>.home-picker-visual{background-image:url('./card-art-nutrition-v1.webp');background-position:50% 62%}
+body[data-platform-area="home"] .home-picker-cards [data-area="supplements"]>.home-picker-visual{background-image:url('./card-art-supplements-v1.webp')}
+body[data-platform-area="home"] .home-picker-cards [data-area="movement"]>.home-picker-visual{background-image:url('./card-art-movement-v1.webp')}
+body[data-platform-area="home"] .home-picker-cards [data-area="sleep"]>.home-picker-visual{background-image:url('./card-art-sleep-v1.webp')}

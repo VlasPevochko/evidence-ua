@@ -1,5 +1,9 @@
 # Historical baseline provenance
 
+## Technical correction: absent confidence intervals
+
+The review correction fixes a shared renderer that converted four `null` confidence intervals to `95% ДІ 0–0` (collagen EVR-000191–193 and citrulline EVR-000206). Scientific source data, confidence levels and every digest value remain unchanged. The two historical HTML comparisons call `tests/helpers/science_html_baseline.py` to restore only those four exact historical source-card tails in the comparison tree. The helper requires the exact source ID, outcome label, estimate and corrected missing-interval text; it cannot normalize other results. `science-baseline-normalization.test.mjs` verifies the historical hashes still match, a real zero-bound interval remains intact, and changed estimates, intervals or scientific text remain detectable.
+
 The import omitted original Sites history. Two tests previously used `git show` against missing commits. These fixtures were derived from those **actual historical Git objects**, retrieved read-only from the original Sites source repository on 2026-10-14. They were not generated from current GitHub source or current production files.
 
 - `first-visit-v59-science-digests.json`: source commit `9d174ef146c09936be2c615e1a663b7e4f7dbd29`, `dist/index.html`, original whole-file SHA-256 `6c3c2821ab78583e79b92fed898c4d85cffc6daba6c0c2842ad315d88f25a959`. The ten direct-body article sections are serialized with `lxml.html.tostring(section, encoding='utf-8')` and hashed with SHA-256. The test retains both article order and byte-content equality checks through their digests. These historical digests independently match the already-imported v56 article fixture.

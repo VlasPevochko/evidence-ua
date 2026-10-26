@@ -1,7 +1,7 @@
 import { evidenceBase, creatineSources, creatineEvidenceRecords, creatineModule, presentation, legacySources, muscleVisual } from './data.js?v=1.8';
 
-import {bindEvidenceUI,date,link,mountEvidenceDrawer} from './components.js?v=2.0';
-import {renderEvidenceModule} from './module-composer.js?v=1.8';
+import {bindEvidenceUI,date,link,mountEvidenceDrawer} from './components.js?v=2.1';
+import {renderEvidenceModule} from './module-composer.js?v=1.9';
 import {publicText} from './public-text.js';
 const {confidenceLabels,escapeHTML,ConfidenceBadge,ScientificNote,EvidenceGap,claimButton,SourceCard,getClaim,recordsFor,ClaimCard,EvidenceDrawer,ReviewDetails}=bindEvidenceUI(evidenceBase);
 export {evidenceBase,confidenceLabels,escapeHTML,ConfidenceBadge,ScientificNote,EvidenceGap,claimButton,SourceCard,getClaim,recordsFor,ClaimCard,EvidenceDrawer,ReviewDetails};

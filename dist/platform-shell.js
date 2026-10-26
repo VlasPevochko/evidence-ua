@@ -1,8 +1,8 @@
-import './site-header.js?v=6';
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=99';
+import './site-header.js?v=7';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=100';
 import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=4';
 import {mountTerms} from './platform-terms.js?v=2';
-import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=99';
+import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=100';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
 const atlasLink=current=>`<a class="eua-atlas-link" href="./atlas.html"${current==='atlas'?' aria-current="page"':''}>Атлас</a>`;
@@ -47,7 +47,7 @@ export function mountPlatformNavigation(root=document){
   // Keep the existing home hero height: compact header entries only.
   if(selected==='home'){
     const homeNav=root.querySelector('.page > header nav');
-    if(homeNav&&!homeNav.querySelector('.eua-home-catalog-entry')){const link=root.createElement('a');link.href='./directions.html';link.className='eua-home-catalog-entry';link.textContent='Каталог';link.setAttribute('aria-label','Усі матеріали Evidence UA');homeNav.append(link);}
+    if(homeNav&&!homeNav.querySelector('a[href="./directions.html"]')){const link=root.createElement('a');link.href='./directions.html';link.className='eua-home-catalog-entry';link.textContent='Напрями';link.setAttribute('aria-label','Усі матеріали Evidence UA');homeNav.append(link);}
     if(homeNav&&!homeNav.querySelector('.eua-home-atlas-entry')){const link=root.createElement('a');link.href='./atlas.html';link.className='eua-home-atlas-entry';link.textContent='Атлас';link.setAttribute('aria-label','Інтерактивний Атлас Evidence');homeNav.append(link);}
     if(homeNav&&!homeNav.querySelector('.eua-home-exercises-entry')){const link=root.createElement('a');link.href='./exercises.html';link.className='eua-home-exercises-entry';link.textContent='Вправи';link.setAttribute('aria-label','Бібліотека вправ Evidence UA');homeNav.append(link);}
   }

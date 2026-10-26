@@ -17,6 +17,7 @@ assert.equal(result.navs,1);
 assert.equal(result.menu,1);
 assert.equal(result.nestedLinks,0);
 for(const text of ['Evidence','UA','НАУКА','ЗДОРОВ’Я','РУХ'])assert(result.brandText.includes(text));
-assert.deepEqual(result.links,['./index.html#start-here','./nutrition.html','./directions.html','./index.html#pubmed-live','./atlas.html','./exercises.html','./supplements.html']);
+// Owner-requested correction: one catalog entry named «Напрями», with all topic destinations retained.
+assert.deepEqual(result.links,['./directions.html','./nutrition.html','./index.html#pubmed-live','./atlas.html','./exercises.html','./supplements.html']);
 assert(!/https?:\/\//.test(html),'the shared header uses local destinations only');
 console.log('shared header: one brand, one menu, local destinations and supplements entry verified');

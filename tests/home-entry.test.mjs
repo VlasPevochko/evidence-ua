@@ -9,7 +9,7 @@ const sandbox={window:{}};vm.runInNewContext(fs.readFileSync('dist/home-catalog.
 const topics=JSON.parse(JSON.stringify(sandbox.window.EvidenceUAHomeTopics));
 assert.deepEqual(topics.map(t=>t.id),catalog.areas.filter(a=>a.available).map(a=>a.id));
 for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,area.state);assert.equal(t.href,t.id==='supplements'?'#supplement-library':area.href);}
-assert(index.includes('<a class="cta" href="#start-here">'));assert(nav.includes("document.querySelector('.copy .cta').href = '#start-here'"));assert(index.indexOf('home-catalog.js?v=57')<index.indexOf('navigation-v17.js?v=75'));
+assert(index.includes('<a class="cta" href="#start-here">'));assert(nav.includes("document.querySelector('.copy .cta').href = '#start-here'"));const catalogScript=index.indexOf('home-catalog.js?v=83'),navigationScript=index.indexOf('navigation-v17.js?v=76');assert(catalogScript>=0&&navigationScript>catalogScript,'The real catalog script must load before navigation');
 for(const id of ['start-here','start-here-title','home-feedback','home-feedback-form','feedback-useful','feedback-stuck','feedback-change','home-feedback-output','home-feedback-status'])assert(index.includes(`id="${id}"`));
 assert(index.includes('id="feedback-generate" disabled'));assert(index.includes('не вказуйте персональних'.replace(/^н/,'Н')));assert(index.includes('Форма нічого не надсилає'));
 assert(css.includes('min-height:44px'));assert(css.includes('grid-template-columns:minmax(0,1fr)'));assert(css.includes('font-size:16px'));
@@ -48,11 +48,16 @@ const feedbackSource=fs.readFileSync('src/platform/home-feedback.mjs','utf8');fo
 execFileSync('python',['-c',`from pathlib import Path
 from lxml import html
 import json,hashlib
+import sys
+sys.path.insert(0, 'tests/helpers')
+from science_html_baseline import restore_historical_missing_ci
 expected=json.loads(Path('tests/fixtures/home-v56-science-digests.json').read_text())
 assert len(expected)==11  # berberine dossier added 2026-10-21 (owner decision)
 root=html.fromstring(Path('dist/index.html').read_text())
 for heading in root.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
     heading.tag='h4'
+# Technical renderer correction: retain the original digests, normalize only four absent CI tails.
+restore_historical_missing_ci(root)
 actual={n.get('id'):hashlib.sha256(html.tostring(n,encoding='utf-8')).hexdigest() for n in root.xpath('//body/section[@id="creatine" or starts-with(@id,"supplement-")]')}
 assert expected==actual, 'Scientific article HTML changed'
 ids=[n.get('id') for n in root.xpath('//*[@id]')]

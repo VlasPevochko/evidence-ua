@@ -7,7 +7,7 @@ import {collagenBase as collagenBase} from './collagen-data.js?v=1';
 import {betaAlanineBase as betaAlanineBase} from './beta-alanine-data.js?v=1';
 import {citrullineBase as citrullineBase} from './citrulline-data.js?v=1';
 import {electrolytesBase as electrolytesBase} from './electrolytes-data.js?v=1';
-import {mountEvidenceDrawer} from './components.js?v=2.0';
+import {mountEvidenceDrawer} from './components.js?v=2.1';
 if (typeof document !== 'undefined') for (const [id, key, base] of [['supplement-omega', 'omega', omegaBase], ['supplement-vitd', 'vitd', vitdBase], ['supplement-caffeine', 'caffeine', caffeineBase], ['supplement-magnesium', 'magnesium', magnesiumBase], ['supplement-collagen', 'collagen', collagenBase], ['supplement-beta-alanine', 'beta-alanine', betaAlanineBase], ['supplement-citrulline', 'citrulline', citrullineBase], ['supplement-electrolytes', 'electrolytes', electrolytesBase]]) {
   const root = document.getElementById(id);
   if (root) mountEvidenceDrawer(root, base, {dialogSelector: '[data-supplement-dialog="' + key + '"]'});

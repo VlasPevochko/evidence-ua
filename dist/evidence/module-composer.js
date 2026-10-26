@@ -1,4 +1,4 @@
-import {bindEvidenceUI,escapeHTML as e,date,mountEvidenceDrawer} from './components.js?v=2.0';
+import {bindEvidenceUI,escapeHTML as e,date,mountEvidenceDrawer} from './components.js?v=2.1';
 
 // Scientific IDs and section order belong to module data; topic scenes are hooks.
 export function renderEvidenceModule(module,base,{renderers={},view={},shell}={}){

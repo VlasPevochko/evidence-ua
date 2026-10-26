@@ -44,7 +44,7 @@ shell.dispatch('popstate');assert.equal(shell.getNav(),null);
 mountPlatformNavigation(shell.root);assert.equal(shell.handlers.get('popstate').length,1);assert.equal(shell.handlers.get('hashchange').length,1);
 shell.window.location.href='https://evidence.invalid/#home-learning-paths';shell.dispatch('hashchange');assert(shell.routes.open);
 const main=shellFixture('home');main.window.location.href='https://evidence.invalid/#top';mountPlatformNavigation(main.root);
-assert.equal(main.getEntry().textContent,'Каталог');assert.equal(main.getEntry().href,'./directions.html');
+assert.equal(main.getEntry().textContent,'Напрями');assert.equal(main.getEntry().href,'./directions.html');
 const entry=main.getEntry();mountPlatformNavigation(main.root);assert.equal(main.getEntry(),entry);
 
 const href='https://evidence.invalid/?feedbackFor=supplements-protein&token=secret#home-feedback';
@@ -77,6 +77,9 @@ feedback.submit();assert(feedback.node('#home-feedback-output').hidden);feedback
 execFileSync('python',['-c',`from pathlib import Path
 from lxml import html
 import json,hashlib
+import sys
+sys.path.insert(0, 'tests/helpers')
+from science_html_baseline import restore_historical_missing_ci
 baseline=json.loads(Path('tests/fixtures/first-visit-v59-science-digests.json').read_text(encoding='utf-8'))
 assert baseline['sourceCommit']=='9d174ef146c09936be2c615e1a663b7e4f7dbd29'
 expected=baseline['sections']
@@ -85,6 +88,8 @@ after=html.fromstring(Path('dist/index.html').read_text())
 # PR #26 fixes source-card heading hierarchy; compare the unchanged content at its historical heading level.
 for heading in after.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
     heading.tag='h4'
+# Technical renderer correction: retain the original digests, normalize only four absent CI tails.
+restore_historical_missing_ci(after)
 for expression in ['//body/section[@id="creatine" or starts-with(@id,"supplement-")]']:
     sections=after.xpath(expression)
     assert list(expected)==[n.get('id') for n in sections], 'Scientific article order changed'

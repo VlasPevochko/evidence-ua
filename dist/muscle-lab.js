@@ -3,7 +3,7 @@ import {sceneFrame} from './muscle-lab-scenes.js?v=59';
 import {structureLearningCopy} from './muscle-learning-copy.js?v=68';
 import {scaleArt,scaleLegend} from './muscle-scale-art.js?v=1';
 import {sarcomereSVG,sarcomereState} from './muscle-sarcomere.js?v=1';
-import {ClaimCard,SourceCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=61';
+import {ClaimCard,SourceCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=2.1';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // The reading-level switcher is removed from the page; the full (university) wording is always shown.

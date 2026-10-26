@@ -56,4 +56,6 @@ Files: `tests/smoke-check.test.mjs`, documentation of the corrective review and 
 - [x] Run `npm run check`; inspect failures and resolve setup or implementation causes.
 - [x] Rebuild and verify generated output is identical; check source/fixtures diffs.
 - [x] Have an independent reviewer inspect the complete branch; address material findings and revalidate affected checks.
-- [ ] Commit, push a dedicated branch and create a PR where access permits. Report exactly which steps succeeded; leave merge to the owner.
+- [x] Commit, push a dedicated branch and create a PR where access permits. Report exactly which steps succeeded; leave merge to the owner.
+
+Delivery: branch pushed and draft PR created: https://github.com/VlasPevochko/evidence-ua/pull/123. Merge remains with the owner; CI status is reported separately.

@@ -1,3 +1,12 @@
+# Muscle Lab — «Від нерва до росту» (2026-10-26, owner: «м’язи та тренування» from the PDF)
+
+- Content of the owner's PDF «Від м’яза до молекул…», rewritten in plain words, lives in `guide.mjs`; `scripts/build-muscle.mjs` renders it into the marked blocks `MUSCLE-GUIDE:QUICK|GUIDE|SOURCES` of `dist/muscle-lab.html`. Behaviour (signal chain player, disorder map, deep links into folded chapters) is `guide-ui.mjs` → `dist/muscle-guide.js`.
+- Page order: «М’яз за 30 секунд» (visible) → existing model → existing scenes → ten folded chapters → existing evidence → related → sources (+ 28 guide sources, folded).
+- Every number was checked against the PubMed abstract of its source (PMID + DOI in `guideSources`). These are **sourced explanations, not Claims**: no confidence level; the page says so. The nine frozen Claims (CLM-000040–048) are untouched.
+- Own visuals only (no Wikimedia/OpenStax figures the PDF suggested). Labels are HTML; SVG has no text. Forest rows: intervals crossing zero are grey «різниці не виявлено», a row without a reported CI has no bar.
+- The disorder map is educational and sends to a doctor; protein advice names kidney disease.
+- Tests: `tests/muscle-guide.test.mjs`; Browser QA: `muscleGuideFlow`.
+
 # Muscle Lab — redesign of 2026-10-18 (owner-approved)
 
 This section supersedes the UI notes below; the science (structures, topics, sources, Claims) is unchanged and still frozen by `tests/muscle-flow.test.mjs`.

@@ -8,3 +8,15 @@ fs.copyFileSync('src/muscle-lab/sarcomere.mjs','dist/muscle-sarcomere.js');
 fs.copyFileSync('src/muscle-lab/scenes.mjs','dist/muscle-lab-scenes.js');
 fs.copyFileSync('src/muscle-lab/learning-copy.mjs','dist/muscle-learning-copy.js');
 console.log('Muscle Lab:',{scales:structures.length,topics:topics.length,claims:muscleKnowledge.claims.length,contextRecords:muscleKnowledge.records.length,confidence:'not assessed'});
+// 2026-10-26 «Від нерва до росту» (owner's PDF): rendered from src/muscle-lab/guide.mjs into marked blocks of the authored page.
+{
+ const {guideParts}=await import('../src/muscle-lab/guide.mjs');
+ const page='dist/muscle-lab.html';let html=fs.readFileSync(page,'utf8');
+ for(const [key,content] of Object.entries(guideParts())){
+  const re=new RegExp(`<!-- MUSCLE-GUIDE:${key}:START -->[\\s\\S]*?<!-- MUSCLE-GUIDE:${key}:END -->`);
+  if(!re.test(html))throw Error('Missing MUSCLE-GUIDE marker '+key);
+  html=html.replace(re,()=>`<!-- MUSCLE-GUIDE:${key}:START -->${content}<!-- MUSCLE-GUIDE:${key}:END -->`);
+ }
+ fs.writeFileSync(page,html);
+ fs.copyFileSync('src/muscle-lab/guide-ui.mjs','dist/muscle-guide.js');
+}

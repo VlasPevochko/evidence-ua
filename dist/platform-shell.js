@@ -1,8 +1,8 @@
-import './site-header.js?v=5';
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=98';
+import './site-header.js?v=6';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=99';
 import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=4';
 import {mountTerms} from './platform-terms.js?v=2';
-import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=98';
+import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=99';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
 const atlasLink=current=>`<a class="eua-atlas-link" href="./atlas.html"${current==='atlas'?' aria-current="page"':''}>Атлас</a>`;

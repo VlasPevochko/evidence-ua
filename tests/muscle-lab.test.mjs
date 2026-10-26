@@ -1,3 +1,4 @@
+// muscle-lab.css 72 -> 73 (2026-10-26): styles for the «Від нерва до росту» chapters (tests/muscle-guide.test.mjs); on a phone the related links are two columns to keep the page short.
 // muscle-lab.css 71 -> 72: pine surfaces and the take title band (page-pine.css).
 // muscle-lab.css bumped 70 -> 71: accent colours snapped to the shared gold/cyan set (cache busting).
 import assert from 'node:assert/strict';
@@ -23,7 +24,7 @@ for(const gone of ['data-level','reading-level','art-hotspots','art-key','viewer
 assert.equal((html.match(/<h1\b/g)||[]).length,1);
 assert.equal((html.match(/<header\b/g)||[]).length,1,'The shared shell injects navigation after every <header>: only the page header may use that tag');
 assert(html.includes('Механістичні пояснення не встановлюють величину ефекту у людей'));
-assert(html.includes('muscle-lab.js?v=70')&&html.includes('muscle-lab.css?v=72'));
+assert(html.includes('muscle-lab.js?v=70')&&html.includes('muscle-lab.css?v=73'));
 const rendered=renderTopics('university');
 assert(!/<header\b/.test(rendered),'Topic markup must not use <header> (the shell would inject duplicate navigation)');
 assert(!/data-level|reading-level/.test(rendered));

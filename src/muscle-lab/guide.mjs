@@ -356,7 +356,7 @@ export function renderGuide(){
  return `<section id="guide" class="mg-guide" aria-labelledby="guide-title">
 <h2 id="guide-title">Від нерва до росту</h2>
 <p class="mg-guide-lead">Глибше по шарах. Відкривайте лише те, що цікаво.</p>
-${chapters.map((c,i)=>`<details class="mg-chapter" id="${c.id}"><summary><span class="mg-num" aria-hidden="true">${i+1}</span><span class="mg-ch-text"><strong>${esc(c.title)}</strong><small>${esc(c.hint)}</small></span></summary><div class="mg-chapter-body">${c.render()}</div></details>`).join('\n')}
+${chapters.map((c,i)=>`<details class="mg-chapter" id="${c.id}"><summary><span class="mg-num" aria-hidden="true">${i+1}</span><span class="mg-ch-text"><h3 class="mg-ch-title">${esc(c.title)}</h3><small>${esc(c.hint)}</small></span></summary><div class="mg-chapter-body">${c.render()}</div></details>`).join('\n')}
 </section>`;
 }
 

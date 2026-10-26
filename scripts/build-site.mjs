@@ -18,7 +18,7 @@ const generated = new Set([
   'nutrition-inside.html', 'nutrition-navigation.js', 'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',
-  'muscle-scale-art.js', 'muscle-sarcomere.js', 'muscle-guide.js',
+  'muscle-scale-art.js', 'muscle-sarcomere.js', 'muscle-guide.js', 'muscle-practice-data.js',
   'movement.js', 'movement-model.js', 'movement-learning.js', 'sleep.js',
   'sleep.html', 'platform-glossary.js', 'platform-glossary-data.js',
   'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js',

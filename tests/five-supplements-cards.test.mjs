@@ -65,11 +65,13 @@ import {approvedLevels, assertApprovedLevel} from './approved-confidence-levels.
 import {creatineMoreBase} from '../src/evidence/supplements/creatine-more/module.mjs';
 import {proteinBase} from '../src/evidence/supplements/protein/module.mjs';
 import {berberineBase} from '../src/evidence/supplements/berberine/module.mjs';
-const published = [...cards.flatMap(c => c.base.claims), ...creatineMoreBase.claims, ...proteinBase.claims, ...berberineBase.claims];
+// 2026-10-26: the table also covers the nine Muscle Lab outcome Claims (owner «1 так / 2 так»).
+import {practiceClaims} from '../src/muscle-lab/practice.mjs';
+const published = [...cards.flatMap(c => c.base.claims), ...creatineMoreBase.claims, ...proteinBase.claims, ...berberineBase.claims, ...practiceClaims];
 assert.deepEqual(published.map(c => c.id).sort(), Object.keys(approvedLevels).sort(), 'the approved table covers exactly the published Claims');
 published.forEach(assertApprovedLevel);
 for (const id of ['CLM-000081', 'CLM-000088', 'CLM-000103']) assert.equal(approvedLevels[id], null, id + ' is a norm or position statement and stays unassessed');
-console.log('Confidence levels: 56 Claims match the approved table (53 provisional levels, 3 norms unassessed).');
+console.log('Confidence levels: 65 Claims match the approved table (62 provisional levels, 3 norms unassessed).');
 
 // Accessibility audit 2026-10-22: DOI links and stand-alone source links in the dossiers keep 44 px touch targets.
 assert(html.includes(':is(#creatine,[id^="supplement-"]) .eua-source-links a{min-width:44px'));

@@ -1,8 +1,12 @@
 // «Від нерва до росту» — the owner's material (PDF «Від м’яза до молекул…», 26.10.2026) rewritten in plain words.
 // Every number below was checked against the PubMed abstract of its source (see guideSources).
-// These are sourced explanations, not Claims: no confidence level is assigned (owner decision pending).
+// Mechanisms are sourced explanations without a confidence level. Outcome statements in humans are Claims
+// (practice.mjs, approved 26.10.2026 «1 так / 2 так») rendered here with their level and evidence drawer.
 // Markup rules: no <header> (the shell injects navigation after every header), labels are HTML (not SVG text),
 // external links only (no request before a click), one control per action.
+
+import {practiceBase} from './practice.mjs';
+import {ConfidenceBadge,claimButton,getClaim} from '../evidence/core/components.mjs';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -42,6 +46,10 @@ const doiUrl=s=>'https://doi.org/'+s.doi;
 const cite=(...ids)=>`<p class="mg-src">Джерела: ${ids.map(id=>{const s=src(id);return `<a href="${esc(doiUrl(s))}" rel="noopener noreferrer">${esc(s.short)}</a>`;}).join(' · ')}</p>`;
 const fold=(title,body,id='')=>`<details class="mg-fold"${id?` id="${id}"`:''}><summary>${esc(title)}</summary><div class="mg-fold-body">${body}</div></details>`;
 const table=(head,rows,caption)=>`<div class="mg-table-wrap"><table class="mg-table">${caption?`<caption>${esc(caption)}</caption>`:''}<thead><tr>${head.map(h=>`<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>i===0?`<th scope="row">${esc(c)}</th>`:`<td data-label="${esc(head[i])}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+
+// Outcome Claims: statement, approved level and one evidence button each (drawer: #muscle-practice-dialog).
+export const claimsByChapter={strength:['CLM-000112'],training:['CLM-000105','CLM-000106','CLM-000107','CLM-000108','CLM-000109','CLM-000110','CLM-000113'],nutrition:['CLM-000010','CLM-000009','CLM-000053','CLM-000054','CLM-000055'],ageing:['CLM-000111']};
+const claimsList=(ids,title='Твердження й докази')=>`<section class="mg-claims" aria-label="${esc(title)}"><p class="mg-claims-title">${esc(title)}</p><ul class="mg-claim-list">${ids.map(id=>{const c=getClaim(id,practiceBase);return `<li class="mg-claim" data-claim-id="${id}"><p class="mg-claim-text">${esc(c.statement)}</p>${ConfidenceBadge(c)}${claimButton(id)}</li>`;}).join('')}</ul></section>`;
 
 // ── «М’яз за 30 секунд» (visible) ───────────────────────────────────────────
 export const molecules=[
@@ -140,6 +148,7 @@ function chapterStrength(){
 <div class="mg-formula" role="img" aria-label="Сила — це добуток нервової активації, архітектури м’яза, скоротливого апарату, сухожилків і техніки руху">${factors.map(f=>`<span>${esc(f)}</span>`).join('<b aria-hidden="true">×</b>')}<b aria-hidden="true">=</b><span class="mg-formula-out">Сила</span></div>
 <p><strong>Моторна одиниця</strong> — один мотонейрон і всі волокна, які він керує. Щоб дати більше сили, мозок (1) вмикає більше одиниць — від «легких» до «важких» — і (2) змушує їх стріляти частіше, щоб окремі поштовхи зливалися.</p>
 <p>У контрольованому дослідженні (14 людей тренувалися, 14 — ні) вже після <strong>4 тижнів</strong> силових тренувань мотонейрони розряджалися в середньому на <strong>3,3 імпульсу за секунду</strong> частіше, а вмикалися раніше. Тому «+20% сили» не означає «+20% м’язів».</p>
+${claimsList(claimsByChapter.strength)}
 ${cite('delvecchio')}`;
 }
 
@@ -244,14 +253,8 @@ const practical=[
 ];
 function chapterTraining(){
  return `<p class="mg-lead">Найнадійніша формула для здорових дорослих: <strong>прогресивне силове навантаження + достатньо білка й енергії + сон + контроль втоми</strong>.</p>
-<p class="mg-note">Це огляд джерел, а не окремі перевірені твердження (Claims): рівень впевненості для цих висновків не оцінено. Цифри взято з анотацій досліджень.</p>
-<ul class="mg-keys">
-<li><strong>≈10 підходів на тиждень</strong><span>на м’язову групу — з цього обсягу гіпертрофія була більшою (ACSM 2026, 137 систематичних оглядів, понад 30 000 людей). Також допомагало ексцентричне перевантаження.</span></li>
-<li><strong>Відмова не обов’язкова</strong><span>У позиції ACSM тренування до відмови, періодизація, тип тренажерів і час під навантаженням не давали стабільної різниці.</span></li>
-<li><strong>Легка вага теж ростить</strong><span>21 дослідження: м’язи росли однаково з легкими й важкими вагами (якщо підходи до відмови), а 1ПМ — більше з важкими.</span></li>
-<li><strong>Кардіо не «вбиває» м’язи</strong><span>43 дослідження: розмір і максимальна сила — без різниці; вибухова сила трохи менша, особливо коли кардіо в тому самому тренуванні.</span></li>
-</ul>
-${cite('acsm','schoenfeld','schumann')}
+${claimsList(claimsByChapter.training)}
+<p class="small">Рівні впевненості попередні: оцінено за анотаціями, формального наукового перегляду ще не було. Таблиця й схема нижче — огляд тих самих джерел.</p>
 ${evidenceChart()}
 ${fold('Силові й витривалісні: різні акценти',`<div class="mg-adapt" role="img" aria-label="Концептуальна схема: силові тренування сильніше розвивають силу, гіпертрофію, нервову адаптацію і скоротливий апарат; витривалісні — мітохондрії та окисну витривалість">
 <p class="mg-adapt-legend small"><span class="mg-k mg-k-s"></span>Силові <span class="mg-k mg-k-e"></span>Витривалісні</p>
@@ -259,6 +262,7 @@ ${adaptBars.map(([t,s,e])=>`<div class="mg-adapt-row"><span>${esc(t)}</span><i c
 <p class="small">Концептуальна шкала, не розмір ефекту з дослідження. Адаптації перекриваються, а реальна відповідь залежить від режиму, обсягу, стажу й харчування.</p>
 ${cite('egan','granata')}`)}
 ${fold('Білок, вуглеводи, рослинне харчування',`<p><strong>Білок.</strong> Метааналіз 49 рандомізованих досліджень (1863 людини): додатковий білок під час тривалих силових тренувань трохи збільшував приріст безжирової маси — у середньому на 0,30 кг (95% ДІ 0,09…0,52). Понад ≈1,62 г/кг на добу додаткового приросту безжирової маси в середньому не було. Це орієнтир для групи, а не «стеля» для кожного. За хвороб нирок кількість білка треба узгоджувати з лікарем. Детальніше — у розділі <a href="./index.html#supplement-protein">Протеїн</a>.</p>
+${claimsList(claimsByChapter.nutrition,'Твердження про білок (з картки протеїну)')}
 <p><strong>Рослинне харчування.</strong> У 10-тижневому дослідженні (22 молоді дорослі, ≈2 г білка/кг) веганська й змішана високобілкові дієти дали однаковий приріст: безжирова маса +2,6 і +3,1 кг, об’єм стегна +8,3% в обох групах.</p>
 <p><strong>Вуглеводи</strong> потрібні для глікогену й працездатності, але метааналіз 11 досліджень не виявив, що самі по собі більше вуглеводів (за однакового білка) додають росту: SMD 0,15, p = 0,23, впевненість низька.</p>
 ${cite('morton','monteyne','henselmans')}`)}
@@ -274,7 +278,7 @@ function chapterAgeing(){
 <p>Вікова слабкість — не лише «менше тестостерону» чи «повільніший обмін». Тут і втрата моторних одиниць, і зміни нервово-м’язового синапсу, і вразливість швидких волокон, і слабша відповідь на білок, і робота мітохондрій, і запалення, і гірше «прибирання» в клітині.</p>
 ${fold('Нерв слабне раніше за м’яз',`<p>Систематичний огляд 53 статей: з віком нестабільною стає передача в синапсі, моторні одиниці гинуть і частково «перепідключаються», а нервова активація погіршується ще до явної атрофії. Тому в літньої людини сила може падати швидше, ніж маса.</p>${cite('cui')}`)}
 ${fold('Контроль якості білків',`<p>Один із видів «прибирання» в клітині — шаперон-опосередкована аутофагія (CMA) — з віком знижується і в м’язах людини. У мишей її втрата вела до слабкості, змін мітохондрій і порушеного обміну кальцію (білок SERCA виявився її «клієнтом»), а відновлення CMA у старих мишей частково покращувало м’язи. Це дослід на тваринах: для людей це поки механізм, а не лікування.</p>${cite('cma')}`)}
-${fold('Чи можна наростити м’язи після 60–70?',`<p>Так. Мережевий метааналіз 151 рандомізованого дослідження (6306 людей від 60 років): навіть <strong>малий</strong> обсяг силових тренувань покращував безжирову масу (SMD 0,25; 95% ДІ 0,10…0,40) і розмір м’язів ніг (SMD 0,40; 0,25…0,54); для більшої сили потрібен більший обсяг. Дані — переважно для фізично здорових людей.</p>${cite('radaelli')}`)}`;
+${fold('Чи можна наростити м’язи після 60–70?',`<p>Так. Мережевий метааналіз 151 рандомізованого дослідження (6306 людей від 60 років): навіть <strong>малий</strong> обсяг силових тренувань покращував безжирову масу (SMD 0,25; 95% ДІ 0,10…0,40) і розмір м’язів ніг (SMD 0,40; 0,25…0,54); для більшої сили потрібен більший обсяг. Дані — переважно для фізично здорових людей.</p>${claimsList(claimsByChapter.ageing)}${cite('radaelli')}`)}`;
 }
 
 // ── Chapter 8: when the chain breaks (interactive map) ──────────────────────
@@ -361,7 +365,7 @@ ${chapters.map((c,i)=>`<details class="mg-chapter" id="${c.id}"><summary><span c
 }
 
 export function renderGuideSources(){
- return `<details class="source-details" id="guide-sources"><summary>Джерела розділу «Від нерва до росту» (${guideSources.length})</summary><ol class="mg-source-list">${guideSources.map(s=>`<li><a href="${esc(doiUrl(s))}" rel="noopener noreferrer">${esc(s.title)}</a><span class="small">${esc(s.journal)}, ${s.year} · ${esc(s.type)} · PMID ${esc(s.pmid)}</span></li>`).join('')}</ol><p class="small">Усі цифри перевірено за анотаціями в PubMed 26.10.2026. Рівень впевненості для цих висновків не оцінено. Зображення на сторінці — власні схеми, без чужих ілюстрацій.</p></details>`;
+ return `<details class="source-details" id="guide-sources"><summary>Джерела розділу «Від нерва до росту» (${guideSources.length})</summary><ol class="mg-source-list">${guideSources.map(s=>`<li><a href="${esc(doiUrl(s))}" rel="noopener noreferrer">${esc(s.title)}</a><span class="small">${esc(s.journal)}, ${s.year} · ${esc(s.type)} · PMID ${esc(s.pmid)}</span></li>`).join('')}</ol><p class="small">Усі цифри перевірено за анотаціями в PubMed 26.10.2026. Рівні впевненості мають лише твердження про результат у людей (попередні, за анотаціями). Зображення на сторінці — власні схеми, без чужих ілюстрацій.</p></details>`;
 }
 
 export const guideParts=()=>({QUICK:renderQuick(),GUIDE:renderGuide(),SOURCES:renderGuideSources()});

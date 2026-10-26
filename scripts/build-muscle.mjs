@@ -18,5 +18,7 @@ console.log('Muscle Lab:',{scales:structures.length,topics:topics.length,claims:
   html=html.replace(re,()=>`<!-- MUSCLE-GUIDE:${key}:START -->${content}<!-- MUSCLE-GUIDE:${key}:END -->`);
  }
  fs.writeFileSync(page,html);
- fs.copyFileSync('src/muscle-lab/guide-ui.mjs','dist/muscle-guide.js');
+ // 2026-10-26: outcome Claims (practice.mjs) with their own drawer; protein Claims come from the published protein data.
+ fs.writeFileSync('dist/muscle-practice-data.js',fs.readFileSync('src/muscle-lab/practice.mjs','utf8').replace("'../evidence/core/registry.mjs'","'./evidence/registry.js?v=58'").replace("'../evidence/supplements/protein/module.mjs'","'./evidence/protein-data.js?v=1'"));
+ fs.writeFileSync('dist/muscle-guide.js',fs.readFileSync('src/muscle-lab/guide-ui.mjs','utf8').replace("'../evidence/core/components.mjs'","'./evidence/components.js?v=61'").replace("'./practice.mjs'","'./muscle-practice-data.js?v=1'"));
 }

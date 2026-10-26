@@ -27,7 +27,7 @@ for(const day of CHANGES){
 const withNew=CHANGES.flatMap(d=>d.items).filter(i=>i.science==='new');
 // 2026-10-21/22: supplement cards and confidence levels are new owner-approved content with sources on the cards.
 // 2026-10-26: the Muscle Lab guide from the owner's PDF is new content with its sources on the page.
-assert(withNew.every(i=>i.href==='./fat-burning.html'||i.href==='./muscle-lab.html#guide'||/^\.\/index\.html#(creatine|supplement-[a-z-]+)$/.test(i.href)),'new content only for the Fat Burning Lab and approved supplement cards');
+assert(withNew.every(i=>i.href==='./fat-burning.html'||/^\.\/muscle-lab\.html#(guide|training)$/.test(i.href)||/^\.\/index\.html#(creatine|supplement-[a-z-]+)$/.test(i.href)),'new content only for the Fat Burning Lab and approved supplement cards');
 // No promises about results or health in the log.
 const text=CHANGES.flatMap(d=>d.items).map(i=>i.title+' '+i.text).join(' ');
 assert(!/гарантує|лікує|допоможе|слід приймати|схуднеш/i.test(text),'no health promises in the log');

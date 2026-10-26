@@ -1,4 +1,4 @@
-import {catalog,learningHref} from './platform-catalog.js?v=98';
+import {catalog,learningHref} from './platform-catalog.js?v=99';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // Curriculum navigation only: reuse existing materials, not scientific conclusions.

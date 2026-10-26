@@ -2,12 +2,17 @@ import {entityRegistry} from '../evidence/core/entities.mjs';
 
 // Navigation and teaching order, not scientific Claims or an efficacy graph.
 export const areas = [
-  {id:'muscle',title:'М’язи та тренування',lab:'Muscle Lab',href:'./muscle-lab.html',group:'atlas',available:true,state:'Навчальний модуль',review:'Науковий перегляд не завершено',description:'Будова м’яза, скорочення, ріст і атрофія.',units:[
+  {id:'muscle',title:'М’язи та тренування',lab:'Muscle Lab',href:'./muscle-lab.html',group:'atlas',available:true,state:'Навчальний модуль',review:'Науковий перегляд не завершено',description:'Будова м’яза, нерв і кальцій, ріст і атрофія, тренування, сон, старіння й хвороби м’язів.',units:[
     {id:'structure',title:'Від м’яза до молекул',href:'./muscle-lab.html#explorer',entityIds:['TISSUE-SKELETAL-MUSCLE','STRUCT-FASCICLE','CELL-MUSCLE','STRUCT-MYOFIBRIL','STRUCT-SARCOMERE','PRT-ACTIN-MYOSIN']},
     {id:'fiber',title:'М’язове волокно',href:'./muscle-lab.html?structure=CELL-MUSCLE#explorer',entityIds:['CELL-MUSCLE']},
     {id:'contraction',title:'Скорочення м’яза',href:'./muscle-lab.html#contraction',entityIds:['PRT-ACTIN-MYOSIN']},
     {id:'growth',title:'Ріст м’яза',href:'./muscle-lab.html#growth',entityIds:[]},
     {id:'atrophy',title:'Атрофія',href:'./muscle-lab.html#atrophy',entityIds:[]},
+    {id:'signal',title:'Нерв → кальцій → скорочення',href:'./muscle-lab.html#signal',entityIds:[]},
+    {id:'training',title:'Тренування, їжа, сон для м’язів',href:'./muscle-lab.html#training',entityIds:[]},
+    {id:'ageing',title:'Старіння м’язів',href:'./muscle-lab.html#ageing',entityIds:[]},
+    {id:'disorders',title:'Хвороби м’язів: де ламається ланцюг',href:'./muscle-lab.html#disorders',entityIds:[]},
+    {id:'faq',title:'М’язи: часті питання',href:'./muscle-lab.html#faq',entityIds:[]},
     {id:'sources',title:'Джерела та межі пояснень',href:'./muscle-lab.html#sources',entityIds:[]}
   ]},
   {id:'cell',title:'Клітини та органели',lab:'Cell Lab',href:'./cell-lab.html',group:'atlas',available:true,state:'Навчальний атлас',review:'Формальний науковий перегляд не завершено',description:'Загальна клітина людини, вибір структури, функції та джерела.',units:[

@@ -1,3 +1,4 @@
+// 2026-10-26 Muscle Lab guide: catalog/materials gained muscle units and search words → versions cascade (catalog/materials/tools/shell/directions/home-feedback 98→99, site-header 5→6, search 3→4).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -38,7 +39,7 @@ test('moved mechanisms, scientific SVGs and source disclosures retain their exac
   assert.equal(sha(html.slice(html.indexOf(b.start),end).trim()),b.sha256,name+' must be moved without rewriting');
  }
  // page-pine.css v16 -> v17 (компактні банери, рішення власника 2026-10-25): лише версія в query-рядку, зміст сторінок той самий. fat-burning-pine.css v2 -> v3 (компактний банер, 2026-10-25): так само лише версія.
- for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?fs.readFileSync(file,'utf8').replaceAll('platform-shell.js?v=98','platform-shell.js?v=97').replaceAll('site-header.js?v=5','site-header.js?v=4').replaceAll('digestion-viewer.js?v=2','digestion-viewer.js?v=1').replaceAll('page-pine.css?v=17','page-pine.css?v=16').replaceAll('fat-burning-pine.css?v=3','fat-burning-pine.css?v=2').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
+ for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?fs.readFileSync(file,'utf8').replaceAll('platform-shell.js?v=99','platform-shell.js?v=97').replaceAll('site-header.js?v=6','site-header.js?v=4').replaceAll('digestion-viewer.js?v=2','digestion-viewer.js?v=1').replaceAll('page-pine.css?v=17','page-pine.css?v=16').replaceAll('fat-burning-pine.css?v=3','fat-burning-pine.css?v=2').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
  assert(!html.includes('id="nutrition-diets"'));
 });
 

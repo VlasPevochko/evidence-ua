@@ -798,7 +798,8 @@ async function muscleLabFlow(browser, origin, viewport) {
     check(where, (await visible('#growth')) && !(await visible('#atrophy')), 'on a phone only growth should show first');
     await page.locator('[data-mirror-show="atrophy"]').click();
     check(where, !(await visible('#growth')) && (await visible('#atrophy')), 'the atrophy tab does not switch the panel');
-    check(where, (await page.evaluate(() => document.documentElement.scrollHeight)) < 7000, 'the phone page is too long again');
+    // 2026-10-26: +10 folded chapters from the owner's PDF (≈1300 px closed); related links went two-column to compensate.
+    check(where, (await page.evaluate(() => document.documentElement.scrollHeight)) < 7500, 'the phone page is too long again');
   } else {
     check(where, (await visible('#growth')) && (await visible('#atrophy')), 'on a desktop both mirrored panels should show');
   }
@@ -806,7 +807,36 @@ async function muscleLabFlow(browser, origin, viewport) {
   await page.locator(`${phone ? '#atrophy' : '#growth'} [data-claim-open]`).click();
   check(where, await page.locator('#eua-evidence-dialog').evaluate(node => node.open), 'the evidence drawer does not open');
   await page.keyboard.press('Escape');
-  check(where, !(await page.locator('.source-details').evaluate(node => node.open)), 'the source list should start collapsed');
+  check(where, (await page.locator('.source-details').evaluateAll(nodes => nodes.every(node => !node.open))), 'the source lists should start collapsed');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party request: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
+async function muscleGuideFlow(browser, origin, viewport) {
+  const where = `muscle guide @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html#training');
+  await page.waitForSelector('#guide');
+  check(where, (await page.locator('.mg-chapter').count()) === 10, 'expected ten chapters');
+  check(where, await page.locator('#training').evaluate(node => node.open), 'a deep link must open its folded chapter');
+  check(where, (await page.locator('.mg-chapter[open]').count()) === 1, 'only the linked chapter opens');
+  check(where, (await page.locator('.mg-ev-row').count()) === 8 && (await page.locator('.mg-ev-noci .mg-ev-ci').count()) === 0, 'forest rows: eight, and none invents an interval');
+  await page.locator('#signal > summary').click();
+  await page.locator('[data-chain-play]').click();
+  await page.waitForTimeout(1300);
+  const step = Number(await page.locator('[data-chain]').getAttribute('data-chain-step'));
+  check(where, step >= 1 && step < 7, `the signal chain is not running (step ${step})`);
+  await page.locator('[data-chain-play]').click();
+  check(where, (await page.locator('[data-chain-play]').getAttribute('aria-pressed')) === 'false', 'the chain did not pause');
+  await page.locator('#disorders > summary').click();
+  await page.locator('[data-condition="mg"]').click();
+  check(where, (await page.locator('.mg-path-levels .is-hit').innerText()).includes('синапс'), 'myasthenia must point to the synapse');
+  check(where, await page.locator('[data-condition-panel="mg"]').isVisible() && !(await page.locator('[data-condition-panel="als"]').isVisible()), 'one disorder text at a time');
+  await page.evaluate(() => document.querySelectorAll('#guide details').forEach(d => { d.open = true; }));
+  const wide = await page.evaluate(() => [...document.querySelectorAll('#guide *')].filter(e => e.getBoundingClientRect().right > document.documentElement.clientWidth + 1).length);
+  check(where, wide === 0 && (await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)), 'guide content overflows the screen');
+  const small = await page.evaluate(() => [...document.querySelectorAll('#guide p, #guide li, #guide td')].filter(e => e.offsetParent && parseFloat(getComputedStyle(e).fontSize) < 12).length);
+  check(where, small === 0, `text smaller than 12 px: ${small}`);
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
   check(where, seen.external.length === 0, `third-party request: ${seen.external.join(', ')}`);
   await context.close();
@@ -1047,6 +1077,7 @@ try {
   for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
   for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
   for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
+  for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
   for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
   for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
   for (const viewport of viewports) await continueFlow(browser, origin, viewport);

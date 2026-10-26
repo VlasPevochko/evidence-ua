@@ -15,14 +15,14 @@ const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.t
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const homeDirectionsHTML='<div class="label"><span>'+homeTopics.length+' напрямів Evidence UA</span><span>Обери тему · статус указано на картці</span></div><div class="cards" id="cards" aria-label="Тематичні напрями Evidence UA">'+homeTopics.map(topic=>`<a class="topic-card" data-area="${escapeHTML(topic.id)}" href="${escapeHTML(topic.href)}" style="--topic-x:${escapeHTML(topic.position)}"><strong>${escapeHTML(topic.title)}</strong><small>${escapeHTML(topic.subtitle)}</small><span class="topic-state">${escapeHTML(topic.state)} · Відкрити →</span></a>`).join('')+'</div>';
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
-fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=98'"));
-fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=98'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
-fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=98'"));
+fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=99'"));
+fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=99'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
+fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=99'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=98'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=98'").replace("'./site-header.mjs'","'./site-header.js?v=5'"));
-fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=98'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=98'").replace("'./materials.mjs'","'./platform-materials.js?v=98'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=98'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=83'").replace("'./site-header.mjs'","'./site-header.js?v=5'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=99'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=99'").replace("'./site-header.mjs'","'./site-header.js?v=6'"));
+fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=99'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=99'").replace("'./materials.mjs'","'./platform-materials.js?v=99'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=99'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=84'").replace("'./site-header.mjs'","'./site-header.js?v=6'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -142,5 +142,12 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
  const next=old.replaceAll('platform-shell.js?v=97','platform-shell.js?v=98').replaceAll('directions.js?v=86','directions.js?v=98').replaceAll('home-feedback.js?v=84','home-feedback.js?v=98').replaceAll('site-header.js?v=4','site-header.js?v=5');
+ if(next!==old)fs.writeFileSync(file,next);
+}
+
+// Muscle Lab guide (2026-10-26): new muscle units and search words in catalog/materials → cascade of versions.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+ const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+ const next=old.replaceAll('platform-shell.js?v=98','platform-shell.js?v=99').replaceAll('directions.js?v=98','directions.js?v=99').replaceAll('home-feedback.js?v=98','home-feedback.js?v=99').replaceAll('site-header.js?v=5','site-header.js?v=6').replaceAll('platform-learning.js?v=83','platform-learning.js?v=84');
  if(next!==old)fs.writeFileSync(file,next);
 }

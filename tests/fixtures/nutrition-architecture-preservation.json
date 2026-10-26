@@ -4,7 +4,7 @@
     "diets": {
       "start": "<!-- EUA_NUTRITION_DIETS_START -->",
       "end": "<!-- EUA_NUTRITION_DIETS_END -->",
-      "sha256": "96a2a6f341e91dd19b76db312d09bc7e2496def050fcf0456e98f3a160be0d7a"
+      "sha256": "bba6c14fff7423679ca7752c2f912dd4faa8d598172c72c8ecebe6e1ebab13b1"
     },
     "fat": {
       "start": "<!-- EUA_NUTRITION_FAT_BURNING_START -->",
@@ -40,8 +40,14 @@
     "dist/nutrition-timeline.js": "ad28b8bc52089ea786bf61e3df512213702659bdc19ae6a1da353ff25bda0bfd",
     "dist/nutrition-digestion.html": "b07c1f313952a121c86263b369cea02de601d6862b326655e3de5eedc3dcbb3e",
     "src/nutrition-diets/catalog.mjs": "9998edf47371f676a6461316da9b244ccf943ea3f99a58effa40409d62e0f46e",
-    "src/nutrition-diets/evidence.mjs": "b06c3ac135bd7b6e79947afa27afb8f8f5e96bb1ed3b6dfb35bfa3c9b1051f52",
+    "src/nutrition-diets/evidence.mjs": "9073d1d9ebfbf73e293a973566fbe1ce317c0ba2dbbe92d1b26da3c7c4e8c283",
     "src/nutrition-diets/render.mjs": "c6d0ce1d09da01195e717ca8005118ea5cd22f1887d48cdcb1d8aa3cbe55a5a9",
     "dist/fat-burning.html": "a5ae3543ac1ca7391d471044344c9f5a2f7771ad24edd1c484a6d1a8f342fd32"
-  }
+  },
+  "updates": [
+    {
+      "date": "2026-10-26",
+      "what": "Дієти: нові застереження (алкоголь, вагітність, варфарин, DASH) за рішенням власника; оновлено хеші блоку дієт і evidence.mjs. Інші перевірки не чіпали."
+    }
+  ]
 }

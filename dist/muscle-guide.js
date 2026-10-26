@@ -1,5 +1,7 @@
 // Behaviour for «Від нерва до росту»: signal chain player, disorder map, deep links into folded chapters.
 // One control per action; reduced motion shows the whole chain at once; everything stops when the page is hidden.
+import {mountEvidenceDrawer} from './evidence/components.js?v=61';
+import {practiceBase} from './muscle-practice-data.js?v=1';
 const STEP_MS=900;
 
 export function mountGuide(root=document){
@@ -52,8 +54,10 @@ export function mountGuide(root=document){
  view?.addEventListener?.('pagehide',halt);view?.addEventListener?.('hashchange',openFromHash);
  root.addEventListener('visibilitychange',()=>{if(root.hidden)halt();});
  motion?.addEventListener?.('change',()=>{if(motion.matches)halt();});
+ // Outcome Claims open in their own drawer; the model's drawer ignores Claims it does not know.
+ const unmountDrawer=$('[data-muscle-practice-dialog]')?mountEvidenceDrawer(root,practiceBase,{dialogSelector:'[data-muscle-practice-dialog]'}):null;
  openFromHash();
- return {state:()=>({step,playing:timer!==null,condition}),pick,destroy(){halt();root.removeEventListener('click',onClick);}};
+ return {state:()=>({step,playing:timer!==null,condition}),pick,destroy(){halt();root.removeEventListener('click',onClick);unmountDrawer?.();}};
 }
 function CSS_escape(s){return String(s).replace(/[^\w-]/g,c=>'\\'+c);}
 

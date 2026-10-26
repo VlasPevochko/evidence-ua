@@ -8,8 +8,9 @@ const html=fs.readFileSync('dist/muscle-lab.html','utf8'),css=fs.readFileSync('d
 
 // Rendered blocks are fresh; the guide script is the source copy.
 for(const [key,content] of Object.entries(guideParts()))assert(html.includes(`<!-- MUSCLE-GUIDE:${key}:START -->${content}<!-- MUSCLE-GUIDE:${key}:END -->`),key+' is stale; run the build');
-assert.equal(fs.readFileSync('dist/muscle-guide.js','utf8'),fs.readFileSync('src/muscle-lab/guide-ui.mjs','utf8'));
-assert(html.includes('muscle-guide.js?v=1')&&html.includes('muscle-lab.css?v=73'));
+// 2026-10-26 (owner «1 так / 2 так»): outcome Claims with their own drawer → the built script differs from the source only by import paths; guide v2, css v74.
+assert.equal(fs.readFileSync('dist/muscle-guide.js','utf8'),fs.readFileSync('src/muscle-lab/guide-ui.mjs','utf8').replace("'../evidence/core/components.mjs'","'./evidence/components.js?v=61'").replace("'./practice.mjs'","'./muscle-practice-data.js?v=1'"));
+assert(html.includes('muscle-guide.js?v=2')&&html.includes('muscle-lab.css?v=74'));
 
 // Order: quick summary → model → scenes → guide → existing evidence → related → sources.
 const at=s=>{const i=html.indexOf(s);assert(i>=0,'missing '+s);return i;};
@@ -35,7 +36,24 @@ const chart=html.slice(html.indexOf('class="mg-ev-list"'),html.indexOf('</ul>',h
 assert.equal((chart.match(/class="mg-ev-row/g)||[]).length,evidenceRows.length);
 assert.equal((chart.match(/mg-ev-row mg-ev-null/g)||[]).length,3,'three comparisons cross zero');
 for(const li of chart.split('<li').filter(x=>x.includes('mg-ev-noci')))assert(!li.includes('mg-ev-ci"'),'no invented interval');
-assert(html.includes('Це огляд джерел, а не окремі перевірені твердження (Claims)'),'not presented as Claims');
+// Mechanisms stay explanations; outcome statements are approved Claims with their provisional level and one evidence button each.
+const practice=await import('../src/muscle-lab/practice.mjs');
+const {approvedLevels,assertApprovedLevel}=await import('./approved-confidence-levels.mjs');
+assert.deepEqual(practice.practiceIds,['CLM-000105','CLM-000106','CLM-000107','CLM-000108','CLM-000109','CLM-000110','CLM-000111','CLM-000112','CLM-000113']);
+assert.deepEqual(practice.practiceIds.map(id=>approvedLevels[id]),['moderate','low','moderate','moderate','low','very_low','moderate','low','very_low'],'levels exactly as approved on 26.10.2026');
+for(const c of practice.practiceClaims){assertApprovedLevel(c);assert.equal(c.publicationAcceptance.kind,'user_wording_approval');assert.equal(c.publicationAcceptance.formalScientificReview,false);assert(practice.practiceRecords.some(r=>r.claimId===c.id&&r.roleForClaim==='primary_support'),c.id+' has primary evidence');}
+const sec=(id)=>html.slice(html.indexOf(`id="${id}"`),html.indexOf('</details>\n<details class="mg-chapter"',html.indexOf(`id="${id}"`)));
+const opens=t=>[...t.matchAll(/data-claim-open="([^"]+)"/g)].map(m=>m[1]);
+assert.deepEqual(opens(sec('training')),['CLM-000105','CLM-000106','CLM-000107','CLM-000108','CLM-000109','CLM-000110','CLM-000113','CLM-000010','CLM-000009','CLM-000053','CLM-000054','CLM-000055']);
+assert.deepEqual(opens(sec('strength')),['CLM-000112']);assert.deepEqual(opens(sec('ageing')),['CLM-000111']);
+const all=opens(guideParts().GUIDE);assert.equal(new Set(all).size,all.length,'one control per Claim');
+assert(!guideParts().GUIDE.includes('Рівень впевненості не оцінено'),'every Claim shown carries its level');
+assert(html.includes('data-muscle-practice-dialog')&&practice.practiceBase.claims.length===14,'own drawer with the nine Claims and five protein Claims');
+const rec=(id)=>practice.practiceRecords.find(x=>x.id===id).result;
+assert.deepEqual([rec('EVR-000218').estimate,rec('EVR-000218').lowerCI,rec('EVR-000218').upperCI],[0.12,-0.13,0.37]);
+assert.deepEqual([rec('EVR-000224').estimate,rec('EVR-000224').lowerCI,rec('EVR-000224').upperCI],[-0.28,-0.48,-0.08]);
+assert.deepEqual([rec('EVR-000227').estimate,rec('EVR-000227').lowerCI,rec('EVR-000227').upperCI],[0.25,0.10,0.40]);
+assert(rec('EVR-000225').summary.includes('p = 0,23')&&rec('EVR-000226').summary.includes('−18%'));
 assert(html.includes('Концептуальна шкала, не розмір ефекту'),'conceptual bars are labelled');
 for(const n of ['3,3 імпульсу','на 18%','0,30 кг','137 систематичних оглядів','151 рандомізованого','2,5 місяця'])assert(html.includes(n),n);
 
@@ -95,3 +113,7 @@ assert.deepEqual(f.levels.filter(l=>l.classes.has('is-hit')).map(l=>l.dataset.hi
 const r=fixture({reduced:true});r.click(r.play);assert.equal(r.timers.size,0,'no timed animation under reduced motion');assert.equal(r.ui.state().step,signalChain.length-1);assert(r.status.textContent.includes('Зменшений рух'));
 f.ui.destroy();r.ui.destroy();
 console.log(`Muscle guide: ${chapters.length} folded chapters from the owner's PDF, ${guideSources.length} PubMed-checked sources, honest forest rows, safety notes, chain player and disorder map passed.`);
+// Two drawers on one page never answer for each other's Claims (the shared drawer ignores unknown IDs).
+{const {muscleKnowledge}=await import('../src/muscle-lab/module.mjs');const practice=await import('../src/muscle-lab/practice.mjs');
+ for(const c of practice.practiceBase.claims)assert(!muscleKnowledge.claims.some(m=>m.id===c.id),c.id+' collides with the model drawer');}
+console.log('Muscle guide Claims: nine approved outcome Claims with levels, five protein Claims reused, own drawer, no duplicate controls passed.');

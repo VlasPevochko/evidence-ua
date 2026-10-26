@@ -57,7 +57,17 @@ export const approvedLevels = {
   'CLM-000101': "low",
   'CLM-000102': "low",
   'CLM-000103': null,
-  'CLM-000104': "low"
+  'CLM-000104': "low",
+  // 2026-10-26: Muscle Lab outcome Claims, wording and levels approved by the owner («1 так / 2 так»).
+  'CLM-000105': "moderate",
+  'CLM-000106': "low",
+  'CLM-000107': "moderate",
+  'CLM-000108': "moderate",
+  'CLM-000109': "low",
+  'CLM-000110': "very_low",
+  'CLM-000111': "moderate",
+  'CLM-000112': "low",
+  'CLM-000113': "very_low"
 };
 export function assertApprovedLevel(c) {
   assert(c.id in approvedLevels, 'Claim missing from the approved table: ' + c.id);

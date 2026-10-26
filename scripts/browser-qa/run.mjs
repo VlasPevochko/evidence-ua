@@ -821,6 +821,12 @@ async function muscleGuideFlow(browser, origin, viewport) {
   check(where, await page.locator('#training').evaluate(node => node.open), 'a deep link must open its folded chapter');
   check(where, (await page.locator('.mg-chapter[open]').count()) === 1, 'only the linked chapter opens');
   check(where, (await page.locator('.mg-ev-row').count()) === 8 && (await page.locator('.mg-ev-noci .mg-ev-ci').count()) === 0, 'forest rows: eight, and none invents an interval');
+  // Outcome Claims open their own drawer, not the model's.
+  await page.locator('#training [data-claim-open="CLM-000106"]').click();
+  check(where, await page.locator('[data-muscle-practice-dialog]').evaluate(node => node.open) && !(await page.locator('#eua-evidence-dialog').evaluate(node => node.open)), 'the Claim drawer does not open (or the wrong one opens)');
+  check(where, (await page.locator('[data-muscle-practice-dialog] h2').innerText()).includes('відмови'), 'the drawer shows another Claim');
+  await page.keyboard.press('Escape');
+  check(where, (await page.locator('#guide .eua-confidence').count()) === 14, 'every guide Claim shows its level');
   await page.locator('#signal > summary').click();
   await page.locator('[data-chain-play]').click();
   await page.waitForTimeout(1300);

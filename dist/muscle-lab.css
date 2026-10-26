@@ -404,3 +404,18 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
 .mg-chapter[open] .mg-flow li{animation:mg-flow-in .5s ease both;animation-delay:calc(var(--i,0) * .28s)}
 @keyframes mg-flow-in{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.mg-chapter[open] .mg-flow li{animation:none}}
+/* Outcome Claims inside the guide (2026-10-26) and their drawer, styled like the model's drawer. */
+.mg-claims{margin:6px 0 12px;padding:12px 14px;border:1px solid #8bdefb33;border-radius:16px;background:#8bdefb0a}
+.mg-claims-title{margin:0 0 8px!important;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);font-weight:700}
+.mg-claim-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.mg-claim{padding:12px;border:1px solid #ffffff14;border-radius:12px;background:var(--panel2)}
+.mg-claim-text{margin:0 0 8px!important;color:#f0eee8;font-size:15px;line-height:1.5}
+.mg-claim .eua-provisional{margin:6px 0 0}
+.mg-claim .eua-evidence-button{margin-top:10px}
+.muscle-practice-dialog.muscle-shared{background:#101615;color:#edf3f8;border-color:#364b46;z-index:10}
+.muscle-practice-dialog .eua-drawer-head{background:#101615}
+.muscle-practice-dialog p{color:#cfd2d8}
+@media(max-width:760px){
+ .mg-claims{padding:10px}
+ .muscle-practice-dialog.muscle-shared{width:100%;max-width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0;padding:20px 16px;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+}

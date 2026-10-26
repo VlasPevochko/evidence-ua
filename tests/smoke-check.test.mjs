@@ -10,6 +10,8 @@ const smokeCheckPath = fileURLToPath(new URL('../scripts/smoke-check.mjs', impor
 function runSmokeCheck(files) {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'evidence-ua-smoke-'));
   try {
+    // Match the real site's explicit ES modules; Node 24 can miss invalid exports in ambiguous .js files.
+    fs.writeFileSync(path.join(workspace, 'package.json'), JSON.stringify({type:'module'}));
     const dist = path.join(workspace, 'dist');
     fs.mkdirSync(dist, { recursive: true });
     for (const [file, content] of Object.entries(files)) {

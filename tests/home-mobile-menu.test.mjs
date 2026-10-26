@@ -6,9 +6,12 @@ assert.ok(fs.existsSync('dist/home-mobile-header.js'), 'Mobile navigation must h
 const markup = fs.readFileSync('dist/index.html', 'utf8');
 const nativeMenu = markup.match(/<nav id="home-primary-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
 assert.ok(nativeMenu, 'Essential destinations must remain available before JavaScript loads');
-for (const destination of ['#start-here', './nutrition.html', './directions.html', '#pubmed-live']) {
+for (const destination of ['./directions.html', './nutrition.html', '#pubmed-live']) {
   assert.ok(nativeMenu.includes(`href="${destination}"`), `Native navigation must retain ${destination}`);
 }
+// The topic picker remains the hero action; the primary menu has one catalog destination.
+assert.ok(markup.includes('<a class="cta" href="#start-here">'));
+assert.equal((nativeMenu.match(/href="\.\/directions\.html"/g)||[]).length,1);
 class Element extends EventTarget {
   hidden = false;
   attributes = new Map();

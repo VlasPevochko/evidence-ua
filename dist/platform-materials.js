@@ -1,4 +1,4 @@
-import {catalog,learningLocation} from './platform-catalog.js?v=99';
+import {catalog,learningLocation} from './platform-catalog.js?v=100';
 import {entityRegistry} from './evidence/entities.js?v=59';
 
 // Navigation metadata only. No new scientific statements, assessments or sources.

@@ -33,7 +33,7 @@ export const areas = [
     {id:'digestion',title:'Травлення та всмоктування',href:'./nutrition-digestion.html',entityIds:[]},
     {id:'fat-loss',title:'Жироспалення: куди зникає жир?',href:'./fat-burning.html',kind:'guide',entityIds:[]}
   ]},
-  {id:'supplements',title:'Добавки',lab:'Досьє та докази',href:'./supplements.html',group:'evidence',available:true,state:'Креатин і попередні досьє',review:'Креатин: попередні оцінки; інші досьє: рівні впевненості не оцінено',description:'Наукові пояснення, джерела, практичні орієнтири та обмеження.',units:[
+  {id:'supplements',title:'Добавки',lab:'Досьє та докази',href:'./supplements.html',group:'evidence',available:true,state:'Креатин і попередні досьє',review:'Впевненість і статус наукового перегляду зазначено для кожного твердження',description:'Наукові пояснення, джерела, практичні орієнтири та обмеження.',units:[
     {id:'creatine',title:'Креатин',href:'./index.html#creatine',entityIds:['MOL-CREATINE']},
     {id:'atp-pcr',title:'Механізм ATP–PCr',href:'./index.html#creatine-mechanism',entityIds:['PTH-ATP-PCR','MOL-ATP','MOL-PHOSPHOCREATINE']},
     ...[['protein','Протеїн'],['caffeine','Кофеїн'],['omega','Омега-3'],['vitd','Вітамін D'],['magnesium','Магній'],['collagen','Колаген'],['beta-alanine','Бета-аланін'],['citrulline','Цитрулін'],['electrolytes','Електроліти'],['berberine','Берберин']].map(([id,title])=>({id,title,href:`./index.html#supplement-${id}`,entityIds:[]}))

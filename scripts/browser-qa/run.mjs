@@ -64,7 +64,7 @@ async function generic(browser, origin, viewport, file) {
   await page.waitForSelector('.eua-site-header');
   check(where, (await page.locator('.eua-site-header').count()) === 1, 'exactly one common header is required');
   check(where, (await page.locator('.eua-header-wordmark small').innerText()).includes('ЗДОРОВ’Я'), 'the common brand tagline is missing');
-  check(where, (await page.locator('.eua-site-header nav a').count()) === 7, 'common navigation must contain the same seven destinations');
+  check(where, (await page.locator('.eua-site-header nav a').count()) === 6, 'common navigation has six destinations after merging the duplicate catalog entry');
   // Compare actual rendered positions, not just common markup: the digestion
   // page previously lacked a border-box reset and made the same header taller.
   await page.evaluate(() => document.fonts.ready);

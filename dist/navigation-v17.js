@@ -13,7 +13,7 @@
   movement.setAttribute('aria-label', 'Відкрити розділ Рух');
   tagline.lastElementChild.replaceWith(movement);
   nav.replaceChildren();
-  [['Напрями', '#start-here'], ['Харчування', './nutrition.html'], ['Каталог', './directions.html'], ['Дослідження', '#pubmed-live']].forEach(([text, href]) => {
+  [['Напрями', './directions.html'], ['Харчування', './nutrition.html'], ['Дослідження', '#pubmed-live']].forEach(([text, href]) => {
     const a = document.createElement('a'); a.textContent = text; a.href = href; nav.append(a);
   });
   const cards = document.getElementById('cards');
@@ -34,7 +34,6 @@
   });
   document.querySelector('.supplement-heading').id = 'supplement-library';
   document.querySelector('.copy .cta').href = '#start-here';
-  nav.querySelector('a').href = '#start-here';
   const carousel = document.querySelector('.supplement-entry');
   const mobile = matchMedia('(max-width:1024px)');
   const guide = document.createElement('section');

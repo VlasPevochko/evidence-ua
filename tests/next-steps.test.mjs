@@ -10,7 +10,8 @@ const known=new Set(materials.map(m=>m.href.split('#')[0].split('?')[0]).concat(
 for(const [file,items] of Object.entries(NEXT_STEPS)){
   assert(fs.existsSync('dist/'+file),`${file} exists`);
   const html=fs.readFileSync('dist/'+file,'utf8');
-  assert(/platform-shell\.js\?v=9\d/.test(html)||html.includes('platform-next-steps.js'),`${file} loads the module that mounts the block`);
+  // A cache revision may have three digits; the contract is the module, not a version decade.
+  assert(/platform-shell\.js\?v=\d+/.test(html)||html.includes('platform-next-steps.js'),`${file} loads the module that mounts the block`);
   assert.equal(items.length,3,`${file}: exactly three next steps`);
   assert.equal(new Set(items.map(i=>i[0])).size,3,`${file}: no duplicates`);
   for(const [href,title,tag] of items){

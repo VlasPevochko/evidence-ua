@@ -1,4 +1,4 @@
-import {ClaimCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=55';
+import {ClaimCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=2.1';
 import {organelles,getOrganelle,learningLevels,sources,moduleMeta,visual,cellKnowledge,adjacentOrganelle} from './cell-lab-data.js?v=56';
 import {renderCellAtlas} from './cell-illustration.js?v=73';
 import {renderCellSources} from './cell-sources.js?v=72';

@@ -1,8 +1,8 @@
-import './site-header.js?v=6';
-import {findMaterials,materials} from './platform-materials.js?v=99';
-import {materialCard} from './platform-tools.js?v=99';
-import {catalog,findAreas} from './platform-catalog.js?v=99';
-import {pathCard} from './platform-learning.js?v=84';
+import './site-header.js?v=7';
+import {findMaterials,materials} from './platform-materials.js?v=100';
+import {materialCard} from './platform-tools.js?v=100';
+import {catalog,findAreas} from './platform-catalog.js?v=100';
+import {pathCard} from './platform-learning.js?v=85';
 export {pathCard};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function areaCard(area){

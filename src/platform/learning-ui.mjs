@@ -7,5 +7,5 @@ export function pathCard(path){
  return `<article class="path-card"><h3>${esc(path.title)}</h3><p>${esc(path.description)}</p><ol>${steps.map((s,i)=>`<li><a href="${esc(learningHref(path.id,i))}">${esc(s.title)}</a></li>`).join('')}</ol><a class="path-start" href="${esc(learningHref(path.id,0))}">Почати маршрут →</a></article>`;
 }
 export function homeLearningHTML(){
- return `<details id="home-learning-paths"><summary>Хочу навчатися послідовно — обрати маршрут</summary><p>Обери тему й почни з першого матеріалу. На сторінках маршруту є переходи до попереднього та наступного кроку.</p><div class="start-paths">${catalog.paths.map(pathCard).join('')}</div></details>`;
+ return `<details id="home-learning-paths" open><summary>Хочу навчатися послідовно — обрати маршрут</summary><p>Обери тему й почни з першого матеріалу. На сторінках маршруту є переходи до попереднього та наступного кроку.</p><div class="start-paths">${catalog.paths.map(pathCard).join('')}</div></details>`;
 }

@@ -47,7 +47,7 @@ export function mountPlatformNavigation(root=document){
   // Keep the existing home hero height: compact header entries only.
   if(selected==='home'){
     const homeNav=root.querySelector('.page > header nav');
-    if(homeNav&&!homeNav.querySelector('.eua-home-catalog-entry')){const link=root.createElement('a');link.href='./directions.html';link.className='eua-home-catalog-entry';link.textContent='Каталог';link.setAttribute('aria-label','Усі матеріали Evidence UA');homeNav.append(link);}
+    if(homeNav&&!homeNav.querySelector('a[href="./directions.html"]')){const link=root.createElement('a');link.href='./directions.html';link.className='eua-home-catalog-entry';link.textContent='Напрями';link.setAttribute('aria-label','Усі матеріали Evidence UA');homeNav.append(link);}
     if(homeNav&&!homeNav.querySelector('.eua-home-atlas-entry')){const link=root.createElement('a');link.href='./atlas.html';link.className='eua-home-atlas-entry';link.textContent='Атлас';link.setAttribute('aria-label','Інтерактивний Атлас Evidence');homeNav.append(link);}
     if(homeNav&&!homeNav.querySelector('.eua-home-exercises-entry')){const link=root.createElement('a');link.href='./exercises.html';link.className='eua-home-exercises-entry';link.textContent='Вправи';link.setAttribute('aria-label','Бібліотека вправ Evidence UA');homeNav.append(link);}
   }

@@ -1,6 +1,6 @@
 import {nutritionBase,nutritionModule} from './nutrition-data.js?v=55';
 import {createNutritionPlayer} from './nutrition-player.js?v=55';
-import {ClaimCard,SourceCard,claimButton,getClaim,escapeHTML,mountEvidenceDrawer} from './evidence/components.js?v=55';
+import {ClaimCard,SourceCard,claimButton,getClaim,escapeHTML,mountEvidenceDrawer} from './evidence/components.js?v=2.1';
 
 const e=escapeHTML;
 // Structures that can be picked on the diagram: which route and step show them, and which Claim explains them.

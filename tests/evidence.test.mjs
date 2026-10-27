@@ -1,3 +1,4 @@
+// Spectrum home guard refreshes the retained guide bootstrap cache; scientific assertions below stay unchanged.
 // Follow-up audit fixes refresh shared imports; these wiring expectations follow the cache cascade.
 // ui.js bumped 2.0 -> 2.1: creatine dosing details and kidney explanation folded (owner «креатин коротше», 2026-10-22).
 // ui.js bumped 1.9 -> 2.0: the creatine article was rebuilt as a compact card (claims first, mechanism/myths/sources folded).
@@ -144,7 +145,7 @@ check('production module order and configured Claim lists actually drive renderi
 });
 check('movement has one header entry and retains its page link',()=>{
 // navigation-v17.js 74 -> 75: the home supplement carousel was replaced by a catalogue entry (the guide now follows .supplement-entry).
- const nav=fs.readFileSync('dist/navigation-v17.js','utf8');assert(nav.includes("movement.href = './movement.html'"));assert(!nav.includes("['Рух', './movement.html']"));assert(nav.includes("['Харчування', './nutrition.html']"));assert(html.includes('navigation-v17.js?v=76'));
+ const nav=fs.readFileSync('dist/navigation-v17.js','utf8');assert(nav.includes("movement.href = './movement.html'"));assert(!nav.includes("['Рух', './movement.html']"));assert(nav.includes("['Харчування', './nutrition.html']"));assert(html.includes('navigation-v17.js?v=77'));
 });
 check('mobile structure explanation shares a compact frame with its controls',()=>{
  const css=fs.readFileSync('src/evidence/evidence.css','utf8');const mobile=css.slice(css.lastIndexOf('@media(max-width:760px)'));

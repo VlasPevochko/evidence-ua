@@ -1,3 +1,4 @@
+// Owner-selected Spectrum home (2026-10-27): refresh shared header/search cache parents; historical scientific fixtures stay unchanged.
 // Follow-up audit fixes refresh shared imports; these wiring expectations follow the cache cascade.
 // 2026-10-26 Muscle Lab guide: catalog/materials gained muscle units and search words → versions cascade (catalog/materials/tools/shell/directions/home-feedback 98→99, site-header 5→6, search 3→4).
 // Shared shell cache version includes the Nutrition route migration.
@@ -51,7 +52,7 @@ assert.equal(new Set(steps.map(s=>s.id)).size,steps.length);assert(foodPathTract
 
 // Page: retained share metadata, shell, reading section and attribution; no third-party scripts.
 const html=fs.readFileSync('dist/nutrition-digestion.html','utf8');
-for(const piece of [`<link rel="canonical" href="${readBase()}nutrition-digestion.html">`,'platform-shell.js?v=103','digestion-viewer.js?v=4','id="eua-evidence-dialog"','data-food-path','Всмоктування ≠ виведення','https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works','https://openstax.org/books/anatomy-and-physiology-2e/pages/23-7-chemical-digestion-and-absorption-a-closer-look','CC BY-SA 4.0','Z-Anatomy','./nutrition-inside.html#nutrition-lab'])assert(html.includes(piece),piece);
+for(const piece of [`<link rel="canonical" href="${readBase()}nutrition-digestion.html">`,'platform-shell.js?v=104','digestion-viewer.js?v=4','id="eua-evidence-dialog"','data-food-path','Всмоктування ≠ виведення','https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works','https://openstax.org/books/anatomy-and-physiology-2e/pages/23-7-chemical-digestion-and-absorption-a-closer-look','CC BY-SA 4.0','Z-Anatomy','./nutrition-inside.html#nutrition-lab'])assert(html.includes(piece),piece);
 assert(!/<script[^>]+src="https?:/.test(html));
 const viewer=fs.readFileSync('dist/digestion-viewer.js','utf8');
 assert(!/from\s*['"]https?:/.test(viewer));assert(!viewer.includes("from 'three'"));

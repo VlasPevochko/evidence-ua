@@ -21,19 +21,25 @@ const defaultLoader=async()=>{
   const extra=[...(gl.glossary?.movement||[]),...(gl.glossary?.sleep||[])];
   return {materials:mat.materials,findMaterials:mat.findMaterials,kinds:mat.materialKinds,terms:[...terms.TERMS,...extra]};
 };
+// The header and a page's search form share one lazy controller and shortcut.
+const controllers=new WeakMap();
+const focusable=node=>node&&typeof node.focus==='function'&&node.isConnected!==false&&!node.hidden&&!node.closest?.('[hidden]')&&(typeof node.getClientRects!=='function'||node.getClientRects().length>0);
 
 export function mountSearch(doc=document,button,loader=defaultLoader){
-  if(!button||button.dataset.searchMounted)return null;
+  if(!button)return null;
+  if(controllers.has(button))return controllers.get(button);
+  if(button.dataset.searchMounted)return null;
   button.dataset.searchMounted='1';
   const view=doc.defaultView;
-  let dialog=null,data=null,input,list,status;
+  let dialog=null,data=null,loading=null,input,list,status,opener=button;
+  const configuredFocus=()=>button.dataset.searchFocus?doc.getElementById(button.dataset.searchFocus):null;
   const build=()=>{
     dialog=doc.createElement('dialog');dialog.className='eua-search';dialog.setAttribute('aria-label','Пошук по сайту');
-    dialog.innerHTML=`<form method="dialog" class="eua-search-form"><div class="eua-search-bar"><input type="search" id="eua-search-q" placeholder="Матеріал або термін" autocomplete="off" aria-label="Пошук по сайту"><button type="submit" class="eua-search-close" aria-label="Закрити пошук">×</button></div><p class="eua-search-status" role="status" aria-live="polite"></p><div class="eua-search-results"></div></form>`;
+    dialog.innerHTML=`<form method="dialog" class="eua-search-form">${doc.body.dataset?.platformArea==='home'?'<h2 class="eua-search-title">Пошук по сайту</h2>':''}<div class="eua-search-bar"><input type="search" id="eua-search-q" placeholder="Матеріал або термін" autocomplete="off" aria-label="Пошук по сайту"><button type="submit" class="eua-search-close" aria-label="Закрити пошук">×</button></div><p class="eua-search-status" role="status" aria-live="polite"></p><div class="eua-search-results"></div></form>`;
     doc.body.append(dialog);
     input=dialog.querySelector('input');list=dialog.querySelector('.eua-search-results');status=dialog.querySelector('.eua-search-status');
     dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
-    dialog.addEventListener('close',()=>button.focus());
+    dialog.addEventListener('close',()=>{[opener,configuredFocus(),button].find(focusable)?.focus();});
     input.addEventListener('input',render);
     dialog.addEventListener('keydown',onKey);
     list.addEventListener('click',e=>{if(e.target.closest('a')){dialog.close();return;}const chip=e.target.closest('[data-q]');if(chip){input.value=chip.dataset.q;render();input.focus();}});
@@ -62,20 +68,26 @@ export function mountSearch(doc=document,button,loader=defaultLoader){
     const trm=r.terms.length?`<h2>Терміни</h2><ul>${r.terms.map(t=>`<li><a href="./glossary.html#term-${esc(t.id)}"><strong>${esc(t.title)}</strong><span>Словник термінів</span></a></li>`).join('')}</ul>`:'';
     list.innerHTML=mats+trm;
   }
-  async function open(){
+  async function open(query,focusTarget){
+    const activeDialog=doc.querySelector?.('dialog[open]');
+    if(activeDialog&&activeDialog!==dialog)return;
     if(typeof doc.createElement('dialog').showModal!=='function'){view.location.href='./directions.html';return;}
     if(!dialog)build();
+    opener=[focusTarget,configuredFocus(),button].find(focusable);
+    if(typeof query==='string')input.value=query;
     if(!dialog.open)dialog.showModal();
     input.focus();
-    if(!data){status.textContent='Завантаження…';try{data=await loader();}catch{status.textContent='Не вдалося завантажити пошук. Спробуйте каталог напрямів.';list.innerHTML='<p class="eua-search-hint"><a href="./directions.html">Відкрити каталог напрямів</a></p>';return;}}
+    if(!data){status.textContent='Завантаження…';try{loading||=loader();data=await loading;}catch{loading=null;status.textContent='Не вдалося завантажити пошук. Спробуйте каталог напрямів.';list.innerHTML='<p class="eua-search-hint"><a href="./directions.html">Відкрити каталог напрямів</a></p>';return;}}
     render();
   }
-  button.addEventListener('click',open);
+  button.addEventListener('click',()=>open());
   doc.addEventListener('keydown',e=>{
     if(e.key!=='/'||e.ctrlKey||e.metaKey||e.altKey)return;
     const t=e.target,tag=t?.tagName;
-    if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||t?.isContentEditable||dialog?.open)return;
+    if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||t?.isContentEditable||dialog?.open||doc.querySelector?.('dialog[open]'))return;
     e.preventDefault();open();
   });
-  return {open};
+  const controller={open};
+  controllers.set(button,controller);
+  return controller;
 }

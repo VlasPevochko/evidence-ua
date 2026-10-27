@@ -3,6 +3,9 @@
   stylesheet.rel = 'stylesheet';
   stylesheet.href = './navigation-v17.css?v=57';
   document.head.append(stylesheet);
+  // Owner-selected Spectrum home owns its header and native catalog HTML.
+  // Retain the evidence guide/footer below without rebuilding its new DOM.
+  if (!document.querySelector('.spectrum-home')) {
   const nav = document.querySelector('header nav');
   const logo = document.querySelector('header .logo');
   const tagline = logo.querySelector('small');
@@ -34,6 +37,7 @@
   });
   document.querySelector('.supplement-heading').id = 'supplement-library';
   document.querySelector('.copy .cta').href = '#start-here';
+  }
   const carousel = document.querySelector('.supplement-entry');
   const mobile = matchMedia('(max-width:1024px)');
   const guide = document.createElement('section');

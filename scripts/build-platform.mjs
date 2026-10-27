@@ -4,6 +4,7 @@ const SITE_BASE=readBase();
 import {learningNotesHTML} from '../src/platform/learning-notes.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 import {homeLearningHTML} from '../src/platform/learning-ui.mjs';
+import {homeSpectrumHTML} from '../src/platform/home-spectrum.mjs';
 import {materials} from '../src/platform/materials.mjs';
 for(const area of catalog.areas.filter(a=>a.available))for(const href of [area.href,...area.units.map(u=>u.href)]){
   const file='dist/'+href.replace(/^\.\//,'').split(/[?#]/)[0];
@@ -20,14 +21,14 @@ fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/mate
 fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=103'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./site-header.mjs'","'./site-header.js?v=10'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=85'").replace("'./site-header.mjs'","'./site-header.js?v=10'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=85'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
 const home=fs.readFileSync(homeFile,'utf8');
-const withRoutes=home.replace(/<!-- EUA_HOME_LEARNING_START -->[\s\S]*?<!-- EUA_HOME_LEARNING_END -->/,'<!-- EUA_HOME_LEARNING_START -->'+homeLearningHTML()+'<!-- EUA_HOME_LEARNING_END -->').replace(/<!-- EUA_HOME_DIRECTIONS_START -->[\s\S]*?<!-- EUA_HOME_DIRECTIONS_END -->/,'<!-- EUA_HOME_DIRECTIONS_START -->'+homeDirectionsHTML+'<!-- EUA_HOME_DIRECTIONS_END -->');
+const withRoutes=home.replace(/<!-- EUA_HOME_SPECTRUM_START -->[\s\S]*?<!-- EUA_HOME_SPECTRUM_END -->/,'<!-- EUA_HOME_SPECTRUM_START -->'+homeSpectrumHTML()+'<!-- EUA_HOME_SPECTRUM_END -->').replace(/<!-- EUA_HOME_LEARNING_START -->[\s\S]*?<!-- EUA_HOME_LEARNING_END -->/,'<!-- EUA_HOME_LEARNING_START -->'+homeLearningHTML()+'<!-- EUA_HOME_LEARNING_END -->').replace(/<!-- EUA_HOME_DIRECTIONS_START -->[\s\S]*?<!-- EUA_HOME_DIRECTIONS_END -->/,'<!-- EUA_HOME_DIRECTIONS_START -->'+homeDirectionsHTML+'<!-- EUA_HOME_DIRECTIONS_END -->');
 if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
@@ -176,7 +177,14 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
 // Follow-up audit fixes, synchronized with research/mechanisms on main.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const updates={'platform-shell.js?v=102':'platform-shell.js?v=103','directions.js?v=102':'directions.js?v=103','home-feedback.js?v=102':'home-feedback.js?v=103','site-header.js?v=9':'site-header.js?v=10','cell-lab.js?v=74':'cell-lab.js?v=75','muscle-lab.js?v=71':'muscle-lab.js?v=72','muscle-guide.js?v=3':'muscle-guide.js?v=4','digestion-viewer.js?v=3':'digestion-viewer.js?v=4','nutrition-lab.js?v=64':'nutrition-lab.js?v=65','fat-burning.js?v=7':'fat-burning.js?v=8','appearance.js?v=1':'appearance.js?v=2','compare-page.js?v=2':'compare-page.js?v=3'};
+ const updates={'platform-shell.js?v=102':'platform-shell.js?v=103','directions.js?v=102':'directions.js?v=103','home-feedback.js?v=102':'home-feedback.js?v=103','site-header.js?v=9':'site-header.js?v=11','cell-lab.js?v=74':'cell-lab.js?v=75','muscle-lab.js?v=71':'muscle-lab.js?v=72','muscle-guide.js?v=3':'muscle-guide.js?v=4','digestion-viewer.js?v=3':'digestion-viewer.js?v=4','nutrition-lab.js?v=64':'nutrition-lab.js?v=65','fat-burning.js?v=7':'fat-burning.js?v=8','appearance.js?v=1':'appearance.js?v=2','compare-page.js?v=2':'compare-page.js?v=3'};
  let next=old;for(const [from,to] of Object.entries(updates))next=next.replaceAll(from,to);
+ if(next!==old)fs.writeFileSync(file,next);
+}
+
+// Owner-selected Spectrum homepage (2026-10-27): shared header/search behavior is refreshed, other pages keep their design.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+ const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+ const next=old.replaceAll('platform-shell.js?v=103','platform-shell.js?v=104').replaceAll('directions.js?v=103','directions.js?v=104').replaceAll('site-header.js?v=10','site-header.js?v=11').replaceAll('navigation-v17.js?v=76','navigation-v17.js?v=77').replaceAll('fat-burning.js?v=8','fat-burning.js?v=9');
  if(next!==old)fs.writeFileSync(file,next);
 }

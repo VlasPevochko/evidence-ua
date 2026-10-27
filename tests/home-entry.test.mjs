@@ -9,7 +9,13 @@ const sandbox={window:{}};vm.runInNewContext(fs.readFileSync('dist/home-catalog.
 const topics=JSON.parse(JSON.stringify(sandbox.window.EvidenceUAHomeTopics));
 assert.deepEqual(topics.map(t=>t.id),catalog.areas.filter(a=>a.available).map(a=>a.id));
 for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,area.state);assert.equal(t.href,t.id==='supplements'?'#supplement-library':area.href);}
-assert(index.includes('<a class="cta" href="#start-here">'));assert(nav.includes("document.querySelector('.copy .cta').href = '#start-here'"));const catalogScript=index.indexOf('home-catalog.js?v=83'),navigationScript=index.indexOf('navigation-v17.js?v=76');assert(catalogScript>=0&&navigationScript>catalogScript,'The real catalog script must load before navigation');
+// Owner decision 2026-10-27: the question-led cosmic hero replaces the old picker CTA.
+// Keep the legacy card/footer behavior below as a preservation check; its DOM rewrites are guarded on the new home.
+assert(index.includes('class="spectrum-home"')&&index.includes('id="spectrum-search"'),'The selected question-led hero is present');
+assert(index.includes('./home-spectrum.js?v=1')&&index.includes('./home-spectrum.css?v=1'),'The new controller and stylesheet are wired');
+assert(nav.includes("if (!document.querySelector('.spectrum-home'))"),'Legacy DOM replacement is disabled on the selected home');
+const catalogScript=index.indexOf('home-catalog.js?v=83'),navigationScript=index.indexOf('navigation-v17.js?v=77');
+assert(catalogScript>=0&&navigationScript>catalogScript,'Canonical catalog loads before the retained evidence-guide bootstrap');
 for(const id of ['start-here','start-here-title','home-feedback','home-feedback-form','feedback-useful','feedback-stuck','feedback-change','home-feedback-output','home-feedback-status'])assert(index.includes(`id="${id}"`));
 assert(index.includes('id="feedback-generate" disabled'));assert(index.includes('не вказуйте персональних'.replace(/^н/,'Н')));assert(index.includes('Форма нічого не надсилає'));
 assert(css.includes('min-height:44px'));assert(css.includes('grid-template-columns:minmax(0,1fr)'));assert(css.includes('font-size:16px'));

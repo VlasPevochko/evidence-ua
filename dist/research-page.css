@@ -26,6 +26,39 @@ body[data-platform-area="research"]{margin:0;font-family:Inter,system-ui,-apple-
 .rs-source{margin:14px 0 0;font-size:14px;color:var(--pine-muted,#9db1a7)}
 .rs-source a{color:var(--pine-accent,#e3bd6b);text-underline-offset:3px}
 .rs-note{margin:24px 0 0;padding:14px 18px;border:1px solid var(--pine-line,#26403a);border-radius:14px;font-size:14px;color:var(--pine-muted,#9db1a7)}
+.rs-actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
+.rs-btn{min-height:44px;padding:8px 18px;border:1px solid var(--pine-line,#26403a);border-radius:10px;background:transparent;color:var(--pine-text,#e9efe9);font:600 15px/1.2 inherit;cursor:pointer}
+.rs-btn:first-child{background:var(--pine-accent,#e3bd6b);border-color:var(--pine-accent,#e3bd6b);color:var(--pine-accent-ink,#1b1608)}
+.rs-btn:focus-visible{outline:2px solid var(--pine-accent,#e3bd6b);outline-offset:2px}
+.rs-btn:disabled{opacity:.6;cursor:progress}
+.rs-status{margin:8px 0 0;min-height:1.2em;font-size:14px;color:var(--pine-muted,#9db1a7)}
+.rs-chart{margin:16px 0 0;padding:14px 16px;border:1px solid var(--pine-line,#26403a);border-radius:12px;background:#10201b}
+.rs-chart-title{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--pine-muted,#9db1a7)}
+.rs-chart-rows{display:grid;gap:10px}
+.rs-crow{display:grid;grid-template-columns:minmax(120px,34%) 1fr minmax(120px,max-content);align-items:center;gap:6px 14px}
+.rs-clabel{font-size:14px;line-height:1.35;color:var(--pine-text,#e9efe9)}
+.rs-cval{font-size:13px;line-height:1.35;color:var(--pine-muted,#9db1a7);font-variant-numeric:tabular-nums}
+.rs-cplot{position:relative;display:block;height:24px}
+.rs-cplot i{position:absolute;display:block}
+.rs-cnull{top:0;bottom:0;width:0;border-left:1px solid #5d7a70}
+.rs-cci{top:11px;height:2px;border-radius:1px;background:var(--pine-accent,#e3bd6b);transform-origin:var(--origin,50%) 50%}
+.rs-cdot{top:4px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--pine-accent,#e3bd6b);box-shadow:0 0 0 2px #10201b}
+.is-null .rs-cci{background:#8aa398}
+.is-null .rs-cdot{background:#8aa398}
+.rs-ctick{top:4px;bottom:4px;width:0;border-left:1px solid #1f3a33}
+.rs-caxisrow{margin-top:4px}
+.rs-caxis{position:relative;display:block;height:20px;font-size:12px;color:var(--pine-muted,#9db1a7)}
+.rs-tick{position:absolute;top:0;white-space:nowrap;transform:translateX(-50%)}
+.rs-tick-null{color:var(--pine-text,#e9efe9);font-weight:600}
+.rs-cdir{display:flex;justify-content:space-between;gap:12px;margin:2px 0 0;font-size:12px;color:var(--pine-muted,#9db1a7)}
+.rs-cnote{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--pine-muted,#9db1a7)}
+/* Поява: інтервал розтягується від точки, точка проявляється; ряди йдуть по черзі. Без руху для тих, хто його вимкнув. */
+.rs-chart:not(.is-in) .rs-cci{transform:scaleX(0)}
+.rs-chart:not(.is-in) .rs-cdot{opacity:0;transform:scale(.3)}
+.rs-cci{transition:transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*90ms)}
+.rs-cdot{transition:opacity .35s ease,transform .35s ease;transition-delay:calc(var(--i,0)*90ms + 200ms)}
+@media(prefers-reduced-motion:reduce){.rs-cci,.rs-cdot{transition:none!important}.rs-chart:not(.is-in) .rs-cci{transform:none}.rs-chart:not(.is-in) .rs-cdot{opacity:1;transform:none}}
+@media(max-width:600px){.rs-crow{grid-template-columns:1fr}.rs-caxisrow>span:not(.rs-caxis){display:none}.rs-cval{order:3}.rs-chart{padding:12px}}
 [hidden]{display:none!important}
 @media(max-width:600px){.rs-card>summary{padding:14px 16px}.rs-body{padding:0 16px 14px}.rs-question{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.rs-card *{transition:none!important}}

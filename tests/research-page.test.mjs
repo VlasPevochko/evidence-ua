@@ -28,7 +28,7 @@ assert.equal(countLabel(16,16),'Розборів: 16');assert.equal(countLabel(2
 const html=fs.readFileSync('dist/research.html','utf8');
 assert(/<body[^>]* data-pine[ >]/.test(html)&&html.includes('data-motif="hanabishi"'),'pine band with its own motif');
 assert.equal((html.match(/<h1\b/g)||[]).length,1,'one h1');assert.equal((html.match(/<header\b/g)||[]).length,1,'only the page header uses <header>');
-assert(html.includes('research-page.js?v=3')&&html.includes('research-page.css?v=1')&&html.includes('page-pine.css?v=18'),'assets with versions');
+assert(html.includes('research-page.js?v=5')&&html.includes('research-page.css?v=3')&&html.includes('page-pine.css?v=18'),'assets with versions');
 assert(html.includes('не оцінка Evidence UA і не медична порада'),'the disclaimer is visible');
 for(const f of fs.readdirSync('dist').filter(n=>n.startsWith('research')&&n.endsWith('.js')))assert(!/https?:\/\/(?!doi\.org\/|pubmed\.ncbi\.nlm\.nih\.gov\/)/.test(fs.readFileSync('dist/'+f,'utf8').replace(/\/\/ .*$/gm,'')),`${f}: only doi.org and PubMed links (opened by the reader's click)`);
 const mats=fs.readFileSync('src/platform/materials.mjs','utf8');assert(mats.includes("'./research.html'")&&mats.includes("'guide-research'"),'the page is in the catalog and the search words');
@@ -40,7 +40,7 @@ console.log('Research page: short answers, sourced, limits stated, filter, catal
 for(const id of ['creatine-rt','creatine-women','protein-supp','coffee','short-sleep-weight'])assert(STUDIES.some(s=>s.id===id),`${id} is in the second batch`);
 const coffee=STUDIES.find(s=>s.id==='coffee');assert(coffee.limits.includes('зв’язок')&&coffee.found.includes('вагітність'),'coffee: association only, pregnancy caveat stated');
 const sleepW=STUDIES.find(s=>s.id==='short-sleep-weight');assert(sleepW.source.pmid==='26080646'&&sleepW.limits.includes('зв’язок'),'sleep and weight: PubMed link, association only');
-assert(fs.readFileSync('dist/research-data.js','utf8').includes('supp:')&&fs.readFileSync('dist/research-page.js','utf8').includes('research-data.js?v=3'),'data version was bumped with the new write-ups');
+assert(fs.readFileSync('dist/research-data.js','utf8').includes('supp:')&&fs.readFileSync('dist/research-page.js','utf8').includes('research-data.js?v=4'),'data version was bumped with the new write-ups');
 // Третій пакет (2026-10-27, «на ваш вибір»): підсолоджувачі, інтервальні кардіо, магній і сон, падіння у літньому віці.
 for(const id of ['sweeteners','hiit-vs-mict','magnesium-sleep','falls-older'])assert(STUDIES.some(s=>s.id===id),`${id} is in the third batch`);
 const sw=STUDIES.find(s=>s.id==='sweeteners');assert(sw.limits.includes('не доводять причину')&&sw.found.includes('спостереженнях')&&sw.found.includes('рандомізованих'),'sweeteners: observational and trial findings kept apart');

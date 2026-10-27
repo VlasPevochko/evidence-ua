@@ -480,7 +480,7 @@ async function shareFlow(browser, origin, viewport) {
   copied = await copyCurrent();
   check(where, !!selectedExercise && copied.pathname === '/exercises.html' && copied.searchParams.get('e') === selectedExercise, 'the actual share button lost the selected exercise');
   check(where, [...copied.searchParams.keys()].every(k => ['e', 'region', 'type', 'pattern', 'equipment', 'view', 'sort'].includes(k)), 'exercise share leaked unrelated parameters');
-  await artifact(page, viewport, 'exercise-share', page.locator('[data-eua-tool="share"]').first().locator('xpath=ancestor::nav[1]'));
+  await artifact(page, viewport, 'exercise-share', page.locator('[data-eua-tool="share"]').first().locator('xpath=ancestor::details[1]'));
   // Open the copied URL too: keeping e in a string must still lead to that detail.
   await page.goto(copied.href, {waitUntil: 'load'});
   await page.locator('.ex-detail').waitFor({state: 'visible'});
@@ -489,7 +489,7 @@ async function shareFlow(browser, origin, viewport) {
   check(where, /Хребет/.test(await page.locator('#atlas-zone-title').innerText()), 'share precondition: the spine zone must be selected');
   copied = await copyCurrent();
   check(where, copied.pathname === '/atlas.html' && copied.searchParams.get('zone') === 'spine' && copied.searchParams.size === 1, 'the actual share button must retain only the selected Atlas zone');
-  await artifact(page, viewport, 'atlas-share', page.locator('[data-eua-tool="share"]').first().locator('xpath=ancestor::nav[1]'));
+  await artifact(page, viewport, 'atlas-share', page.locator('[data-eua-tool="share"]').first().locator('xpath=ancestor::details[1]'));
   await page.goto(copied.href, {waitUntil: 'load'});
   check(where, /Хребет/.test(await page.locator('#atlas-zone-title').innerText()), 'the shared Atlas address did not reopen the spine zone');
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `share errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
@@ -678,7 +678,10 @@ async function searchFlow(browser, origin, viewport) {
   await page.fill('#eua-search-q', '');
   await page.fill('#eua-search-q', 'цццццц');
   check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайдено'), 'an empty result says so');
-  await page.keyboard.press('Escape');
+  // Escape behavior was checked above from a result. Close explicitly here:
+  // a search input may consume its first Escape to clear the current query.
+  await dialog.locator('.eua-search-close').click();
+  await dialog.waitFor({state: 'hidden'});
   // Follow the actual header results to existing pages, rather than only testing index text.
   for (const [query, file, target] of [['атлас', 'atlas.html', '#atlas-zone-title'], ['вправи', 'exercises.html', '.ex-card']]) {
     await page.locator('.eua-header-search').click();
@@ -1461,7 +1464,7 @@ try {
     for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
     for (const viewport of viewports) await compareFlow(browser, origin, viewport);
     for (const viewport of viewports) await mapFlow(browser, origin, viewport);
-    for (const viewport of viewports) await searchFlow(browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(searchFlow, browser, origin, viewport);
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);

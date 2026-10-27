@@ -655,7 +655,7 @@ async function researchFlow(browser, origin, viewport) {
   const head = png ? (await import('node:fs')).readFileSync(png).subarray(0, 24) : null;
   check(where, /^evidence-ua-[a-z-]+\.png$/.test(download.suggestedFilename()) && head && head.readUInt32BE(16) === 1080 && head.readUInt32BE(20) === 1350, 'the picture is saved as a 1080×1350 PNG');
   const fits = await page.evaluate(async () => {
-    const mod = await import('./research-share.js?v=2'), data = await import('./research-data.js?v=3'), bad = [];
+    const mod = await import('./research-share.js?v=2'), data = await import('./research-data.js?v=4'), bad = [];
     for (const s of data.STUDIES) { const {layout} = await mod.drawCard(s, data.TOPICS[s.topic]); if (!mod.FITS(layout)) bad.push(s.id); }
     return bad;
   });
@@ -663,6 +663,10 @@ async function researchFlow(browser, origin, viewport) {
   await page.goto(origin + '/research.html#coffee');
   await page.locator('#rs-coffee[open]').waitFor({state: 'attached'});
   check(where, await page.locator('#rs-coffee').evaluate(el => el.open), 'a link with #id opens that write-up');
+  // Графік у картці «кава»: п'ять рядків, великі точки, поява анімацією, без переповнення.
+  await page.locator('#rs-coffee .rs-chart.is-in').waitFor({state: 'attached'});
+  const chart = await page.evaluate(() => { const f = document.querySelector('#rs-coffee .rs-chart'); return f && {rows: f.querySelectorAll('.rs-crow:not(.rs-caxisrow)').length, dot: f.querySelector('.rs-cdot').offsetWidth, shown: f.classList.contains('is-in'), nulls: f.querySelectorAll('.is-null').length, over: f.scrollWidth - f.clientWidth}; });
+  check(where, chart && chart.rows === 5 && chart.dot >= 8 && chart.shown && chart.nulls === 0 && chart.over <= 1, 'the coffee card draws its interval chart (5 rows, markers of 8 px or more, appears on open, fits the card) ' + JSON.stringify(chart));
   await page.locator('.rs-chip[data-topic="move"]').click();
   const moveCount = await page.locator('.rs-card').count();
   check(where, moveCount >= 2 && moveCount < total && (await page.locator('.rs-tag').evaluateAll(els => els.every(e => e.innerText === 'Рух'))), 'the topic filter narrows the list');

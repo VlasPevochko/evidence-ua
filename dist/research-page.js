@@ -1,6 +1,7 @@
 // «Дослідження простими словами»: картки з однією відповіддю, деталі згорнуті; фільтр за темою.
-import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=3';
+import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=4';
 import {shareStudy,saveCard} from './research-share.js?v=2';
+import {renderChart} from './research-chart.js?v=2';
 
 export const countLabel=(shown,total)=>shown===total?`Розборів: ${total}`:`Показано ${shown} із ${total}`;
 export const filterStudies=(topic,studies=STUDIES)=>topic==='all'?studies.slice():studies.filter(s=>s.topic===topic);
@@ -29,7 +30,8 @@ export function render(root=document){
       imgBtn.addEventListener('click',async()=>{imgBtn.disabled=true;try{await saveCard(s,TOPICS[s.topic],root);status.textContent='Картинку збережено.';}catch{status.textContent='Не вдалося створити картинку.';}imgBtn.disabled=false;});
       actions.append(shareBtn,imgBtn);
       card.id='rs-'+s.id;
-      body.append(dl,src,actions,status);card.append(head,body);list.append(card);
+      card.addEventListener('toggle',()=>{const f=card.querySelector('.rs-chart');if(!f)return;f.classList.remove('is-in');if(card.open)root.defaultView.requestAnimationFrame(()=>root.defaultView.requestAnimationFrame(()=>f.classList.add('is-in')));});
+      if(s.chart)body.append(dl,renderChart(root,s.chart),src,actions,status);else body.append(dl,src,actions,status);card.append(head,body);list.append(card);
     }
     if(summary)summary.textContent=countLabel(items.length,STUDIES.length);
     for(const b of filters.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.topic===topic));

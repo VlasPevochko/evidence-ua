@@ -9,6 +9,14 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright-core';
 
+// Keep actionable failures available through GitHub's check annotations as well
+// as runner logs, whose external storage may be inaccessible to a reviewer.
+function annotateFailure(message) {
+  const escaped=String(message).slice(0,12000).replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A');
+  console.error(`::error title=Browser QA::${escaped}`);
+}
+process.on('uncaughtExceptionMonitor', error => annotateFailure(error.stack || error));
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const dist = process.env.QA_DIST_DIRECTORY ? path.resolve(process.env.QA_DIST_DIRECTORY) : path.join(root, 'dist');
 const viewports = [{name: 'mobile', width: 390, height: 844}, {name: 'desktop', width: 1440, height: 900}];
@@ -1472,6 +1480,7 @@ if (process.env.QA_SCREENSHOT_ONLY === '1') {
 }
 
 if (failures.length) {
+  for (const failure of failures) annotateFailure(failure);
   console.error(`Browser QA failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
   process.exit(1);
 }

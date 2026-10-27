@@ -43,6 +43,14 @@ function serve() {
 
 const failures = [];
 const fail = (where, message) => failures.push(`${where}: ${message}`);
+async function isolatedFlow(flow, browser, origin, viewport) {
+  try { return await flow(browser, origin, viewport); }
+  catch (error) {
+    const message = error.stack || String(error);
+    annotateFailure(`${flow.name} @${viewport.name}: ${message}`);
+    fail(`${flow.name} @${viewport.name}`, message);
+  }
+}
 let checks = 0;
 const check = (where, ok, message) => { checks++; if (!ok) fail(where, message); };
 
@@ -472,7 +480,7 @@ async function shareFlow(browser, origin, viewport) {
   copied = await copyCurrent();
   check(where, !!selectedExercise && copied.pathname === '/exercises.html' && copied.searchParams.get('e') === selectedExercise, 'the actual share button lost the selected exercise');
   check(where, [...copied.searchParams.keys()].every(k => ['e', 'region', 'type', 'pattern', 'equipment', 'view', 'sort'].includes(k)), 'exercise share leaked unrelated parameters');
-  await artifact(page, viewport, 'exercise-share', page.locator('.eua-platform-nav'));
+  await artifact(page, viewport, 'exercise-share', page.locator('[data-eua-tool="share"]').first().locator('xpath=ancestor::nav[1]'));
   // Open the copied URL too: keeping e in a string must still lead to that detail.
   await page.goto(copied.href, {waitUntil: 'load'});
   await page.locator('.ex-detail').waitFor({state: 'visible'});
@@ -481,7 +489,7 @@ async function shareFlow(browser, origin, viewport) {
   check(where, /Хребет/.test(await page.locator('#atlas-zone-title').innerText()), 'share precondition: the spine zone must be selected');
   copied = await copyCurrent();
   check(where, copied.pathname === '/atlas.html' && copied.searchParams.get('zone') === 'spine' && copied.searchParams.size === 1, 'the actual share button must retain only the selected Atlas zone');
-  await artifact(page, viewport, 'atlas-share', page.locator('.eua-platform-nav'));
+  await artifact(page, viewport, 'atlas-share', page.locator('[data-eua-tool="share"]').first().locator('xpath=ancestor::nav[1]'));
   await page.goto(copied.href, {waitUntil: 'load'});
   check(where, /Хребет/.test(await page.locator('#atlas-zone-title').innerText()), 'the shared Atlas address did not reopen the spine zone');
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `share errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
@@ -1444,10 +1452,10 @@ try {
     for (const viewport of viewports) await continueFlow(browser, origin, viewport);
     for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
     for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
-    for (const viewport of viewports) await deniedStorageFlow(browser, origin, viewport);
-    for (const viewport of viewports) await shareFlow(browser, origin, viewport);
-    for (const viewport of viewports) await outcomeEvidenceFlow(browser, origin, viewport);
-    for (const viewport of viewports) await cellKeyboardFlow(browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(cellKeyboardFlow, browser, origin, viewport);
     for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
     for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
     for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);

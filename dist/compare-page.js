@@ -1,15 +1,21 @@
 // Порівняння двох добавок: ті самі короткі висновки й межі, що в каталозі «Добавки» (тексти не змінено).
 import {supplements} from './supplements.js?v=2';
+import {comparisonStatus} from './compare-status.js?v=1';
 
-export const REVIEW={
-  creatine:'Попередні оцінки окремих тверджень; науковий перегляд триває.',
-  other:'Рівень впевненості не оцінено; це попередній огляд.'
-};
+export function reviewStatus(status){
+  if(!status?.total)return 'Стан оцінки тверджень не внесено; дивіться окремі твердження в розборі.';
+  const assessment=status.assessed===0?'Рівень впевненості не оцінено.':status.provisional===status.assessed?
+    `Попередні оцінки окремих тверджень: ${status.assessed} із ${status.total}.`:
+    `Оцінено окремі твердження: ${status.assessed} із ${status.total}; попередніх оцінок: ${status.provisional}.`;
+  const unassessed=status.unassessed?` Не оцінено: ${status.unassessed}.`:'';
+  const review=status.formalReviewed===status.total?'Формальний науковий перегляд завершено для всіх тверджень.':'Формальний науковий перегляд не завершено.';
+  return assessment+unassessed+' '+review;
+}
 export const rows=item=>[
   ['Напрям',item.tag],
   ['Короткий висновок',item.summary],
   ['Межі висновку',item.limit],
-  ['Стан перегляду',item.id==='creatine'?REVIEW.creatine:REVIEW.other]
+  ['Стан перегляду',reviewStatus(comparisonStatus[item.id])]
 ];
 export function pick(id,fallback){return supplements.find(s=>s.id===id)||supplements[fallback];}
 export function resolve(search){

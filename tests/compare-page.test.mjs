@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {supplements} from '../dist/supplements.js';
-import {resolve,rows,REVIEW} from '../dist/compare-page.js';
+import {resolve,rows,reviewStatus} from '../dist/compare-page.js';
+import {comparisonStatus} from '../dist/compare-status.js';
 import {findMaterials} from '../src/platform/materials.mjs';
 
 // Порівняння добавок (рішення власника 2026-10-20): ті самі тексти, що в каталозі, поруч, без рейтингу.
@@ -9,12 +10,15 @@ const html=fs.readFileSync('dist/compare.html','utf8'),js=fs.readFileSync('dist/
 assert.equal((html.match(/<h1\b/g)||[]).length,1);
 assert(html.includes('data-pine')&&html.includes('data-motif="kagome"')&&fs.readFileSync('dist/page-pine.css','utf8').includes('.pb[data-motif="kagome"]'),'pine band with its own motif');
 for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='compare.html'))assert(!fs.readFileSync('dist/'+f,'utf8').includes('data-motif="kagome"'),`${f} must not reuse kagome`);
-// Text is never invented here: every row comes from the catalogue data.
+// Summary and limit text come unchanged from the catalogue data.
 const [a,b]=resolve('?a=creatine&b=supplement-caffeine');
 assert.equal(a.id,'creatine');assert.equal(b.id,'supplement-caffeine');
 const r=rows(a);assert.deepEqual(r.map(x=>x[0]),['Напрям','Короткий висновок','Межі висновку','Стан перегляду']);
 assert.equal(r[1][1],supplements[0].summary);assert.equal(r[2][1],supplements[0].limit);
-assert.equal(rows(b)[3][1],REVIEW.other);assert.equal(r[3][1],REVIEW.creatine);
+// 2026-10 follow-up: the old blanket unassessed status contradicted owner-approved Claim levels.
+// Status now counts canonical per-Claim assessments, preserving pending formal scientific review.
+assert.equal(rows(b)[3][1],reviewStatus(comparisonStatus[b.id]));assert.equal(r[3][1],reviewStatus(comparisonStatus[a.id]));
+for(const item of supplements){assert.match(rows(item)[3][1],/Попередні оцінки окремих тверджень/);assert.match(rows(item)[3][1],/Формальний науковий перегляд не завершено/);}
 // Bad or equal parameters fall back safely; the page can be linked with ?a=&b=.
 assert.notEqual(...resolve('?a=nope&b=nope').map(x=>x.id));
 const same=resolve('?a=creatine&b=creatine');assert.notEqual(same[0].id,same[1].id);

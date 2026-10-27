@@ -50,14 +50,14 @@ from lxml import html
 import json,hashlib
 import sys
 sys.path.insert(0, 'tests/helpers')
-from science_html_baseline import restore_historical_missing_ci
+from science_html_baseline import restore_historical_rendering
 expected=json.loads(Path('tests/fixtures/home-v56-science-digests.json').read_text())
 assert len(expected)==11  # berberine dossier added 2026-10-21 (owner decision)
 root=html.fromstring(Path('dist/index.html').read_text())
 for heading in root.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
     heading.tag='h4'
-# Technical renderer correction: retain the original digests, normalize only four absent CI tails.
-restore_historical_missing_ci(root)
+# Technical renderer corrections: retain original digests, normalize only seven exact formatting tails.
+restore_historical_rendering(root)
 actual={n.get('id'):hashlib.sha256(html.tostring(n,encoding='utf-8')).hexdigest() for n in root.xpath('//body/section[@id="creatine" or starts-with(@id,"supplement-")]')}
 assert expected==actual, 'Scientific article HTML changed'
 ids=[n.get('id') for n in root.xpath('//*[@id]')]

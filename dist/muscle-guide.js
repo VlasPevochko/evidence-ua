@@ -1,6 +1,6 @@
 // Behaviour for «Від нерва до росту»: signal chain player, disorder map, deep links into folded chapters.
 // One control per action; reduced motion shows the whole chain at once; everything stops when the page is hidden.
-import {mountEvidenceDrawer} from './evidence/components.js?v=2.1';
+import {mountEvidenceDrawer} from './evidence/components.js?v=2.2';
 import {practiceBase} from './muscle-practice-data.js?v=1';
 const STEP_MS=900;
 

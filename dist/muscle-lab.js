@@ -3,7 +3,7 @@ import {sceneFrame} from './muscle-lab-scenes.js?v=59';
 import {structureLearningCopy} from './muscle-learning-copy.js?v=68';
 import {scaleArt,scaleLegend} from './muscle-scale-art.js?v=1';
 import {sarcomereSVG,sarcomereState} from './muscle-sarcomere.js?v=1';
-import {ClaimCard,SourceCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=2.1';
+import {ClaimCard,SourceCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=2.2';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // The reading-level switcher is removed from the page; the full (university) wording is always shown.
@@ -259,7 +259,7 @@ export function mount(root=document){
   if(e.key==='Escape'&&root.body?.classList.contains('lesson')&&!root.querySelector('dialog[open]')){$('#lesson-exit')?.click();return;}
   const b=e.target.closest?.('[data-structure]');
   if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
-  e.preventDefault();selected=adjacentStructure(selected.id,e.key==='ArrowRight'?1:-1);render();
+  e.preventDefault();selected=adjacentStructure(b.dataset.structure,e.key==='ArrowRight'?1:-1);render();
   $(`#scales [data-structure="${selected.id}"]`)?.focus();
  };
  const onSlide=e=>{stopSlide();slide(e.target.value);};

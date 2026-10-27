@@ -10,7 +10,7 @@ import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright-core';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const dist = path.join(root, 'dist');
+const dist = process.env.QA_DIST_DIRECTORY ? path.resolve(process.env.QA_DIST_DIRECTORY) : path.join(root, 'dist');
 const viewports = [{name: 'mobile', width: 390, height: 844}, {name: 'desktop', width: 1440, height: 900}];
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -38,8 +38,9 @@ const fail = (where, message) => failures.push(`${where}: ${message}`);
 let checks = 0;
 const check = (where, ok, message) => { checks++; if (!ok) fail(where, message); };
 
-async function open(browser, origin, viewport, route) {
+async function open(browser, origin, viewport, route, {initScript} = {}) {
   const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
+  if (initScript) await context.addInitScript(initScript);
   const page = await context.newPage();
   const seen = {console: [], pageErrors: [], badResponses: [], external: [], requested: []};
   page.on('console', m => { if (m.type() === 'error') seen.console.push(m.text()); });
@@ -55,6 +56,21 @@ async function open(browser, origin, viewport, route) {
   await page.goto(origin + route, {waitUntil: 'load'});
   await page.waitForTimeout(400);
   return {context, page, seen};
+}
+
+// CI may retain small views of the changed states without screenshotting whole pages.
+async function artifact(page, viewport, name, locator) {
+  if (!process.env.QA_ARTIFACT_DIR) return;
+  const dir = path.resolve(process.env.QA_ARTIFACT_DIR);
+  fs.mkdirSync(dir, {recursive: true});
+  await locator.scrollIntoViewIfNeeded();
+  const box = await locator.boundingBox();
+  if (!box) throw new Error(`No screenshot target for ${name}`);
+  const x = Math.max(0, box.x), y = Math.max(0, box.y);
+  const width = Math.min(box.x + box.width, viewport.width) - x;
+  const height = Math.min(box.y + box.height, viewport.height) - y;
+  if (width <= 0 || height <= 0) throw new Error(`Screenshot target outside viewport: ${name}`);
+  await page.screenshot({path: path.join(dir, `${name}-${viewport.name}.png`), clip: {x, y, width, height}});
 }
 
 const headerGeometry = new Map();
@@ -221,6 +237,28 @@ async function nutritionFlow(browser, origin, viewport) {
       check(where, (await page.locator('#nl-step-text h3').innerText()).length > 3, `route ${r + 1} step ${i + 1} has no heading`);
     }
   }
+  // Explicit chips must bring the selected geometry inside the clipped stage,
+  // including the pump (which is below the glucose route's ordinary focus).
+  for (const route of ['glucose', 'protein', 'lipids']) {
+    await page.locator(`[data-nl-nutrient="${route}"]`).click();
+    const ids = await page.locator('[data-nl-structure]').evaluateAll(nodes => nodes.map(n => n.dataset.nlStructure));
+    for (const id of ids) {
+      await page.locator(`[data-nl-structure="${id}"]`).click();
+      await page.waitForFunction(() => !document.querySelector('#nl-cell').getAnimations().some(a => a.playState === 'running'));
+      const geometry = await page.locator(`#nl-stage [data-nl-highlight="${id}"]`).evaluate(node => {
+        const target = node.getBoundingClientRect(), frame = document.getElementById('nl-stage').getBoundingClientRect();
+        return {visible: target.width > 0 && target.height > 0 && getComputedStyle(node).display !== 'none',
+          inside: target.left >= frame.left - 1 && target.right <= frame.right + 1 && target.top >= frame.top - 1 && target.bottom <= frame.bottom + 1};
+      });
+      check(where, (await page.locator(`[data-nl-structure="${id}"]`).getAttribute('aria-pressed')) === 'true', `${id} chip does not select its structure`);
+      check(where, geometry.visible && geometry.inside, `${id} is clipped outside #nl-stage after the focus transition`);
+      if (!phone) check(where, await page.locator('#nl-cell').evaluate(node => {
+        const m = new DOMMatrix(getComputedStyle(node).transform);
+        return m.isIdentity;
+      }), `${id} must keep the ordinary desktop transform`);
+      if (id === 'pump') await artifact(page, viewport, 'nutrition-pump', page.locator('#nl-stage'));
+    }
+  }
   const stage = await page.locator('#nl-stage').boundingBox();
   check(where, stage && stage.width > (phone ? 280 : 500) && stage.height > 150, 'the diagram is too small');
   // Single play button toggles; a second press pauses.
@@ -232,6 +270,13 @@ async function nutritionFlow(browser, origin, viewport) {
   check(where, Number((await page.locator('#nl-counter').innerText()).match(/\d/)?.[0]) >= 2, 'playback did not advance');
   await play.click();
   check(where, (await play.getAttribute('aria-pressed')) === 'false', 'the second press must pause');
+  await page.waitForFunction(() => !document.querySelector('#nl-cell').getAnimations().some(a => a.playState === 'running'));
+  check(where, !new URL(page.url()).searchParams.has('structure'), 'ordinary playback must clear the manual structure selection');
+  check(where, await page.locator('#nl-glucose-particle').evaluate(node => {
+    const p = node.getBoundingClientRect(), stage = document.getElementById('nl-stage').getBoundingClientRect();
+    return p.width > 0 && p.left >= stage.left - 1 && p.right <= stage.right + 1 && p.top >= stage.top - 1 && p.bottom <= stage.bottom + 1;
+  }), 'ordinary playback must keep the current route particle in the stage after selecting a structure');
+
   // The timeline heading stays; the chart opens on demand and is compact.
   check(where, !(await page.locator('#chart').isVisible()), 'the timeline chart must be folded by default');
   const folded = (await page.locator('#nutrient-time').boundingBox()).height;
@@ -340,6 +385,150 @@ async function appearanceFlow(browser, origin, viewport) {
   await page.locator('.eua-appearance-panel').getByRole('radio', {name: 'Звичайний'}).click();
   check(where, (await html.getAttribute('data-theme')) === null && (await html.getAttribute('data-text')) === null, 'switching back restores the default look');
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'appearance must not raise errors');
+  await context.close();
+}
+
+async function deniedStorageFlow(browser, origin, viewport) {
+  // Cover both failures browsers expose: accessing window.localStorage itself,
+  // and storage methods that throw. Injection happens before any site script.
+  for (const mode of ['getter', 'methods']) {
+    const where = `appearance denied storage ${mode} @${viewport.name}`;
+    const initScript = mode === 'getter' ? () => {
+      window.__qaStorageDenials = 0;
+      Object.defineProperty(window, 'localStorage', {configurable: true, get() {
+        window.__qaStorageDenials++;
+        throw new DOMException('Storage denied for QA', 'SecurityError');
+      }});
+    } : () => {
+      window.__qaStorageDenials = 0;
+      for (const name of ['getItem', 'setItem', 'removeItem']) Object.defineProperty(Storage.prototype, name, {configurable: true, value() {
+        window.__qaStorageDenials++;
+        throw new DOMException('Storage denied for QA', 'SecurityError');
+      }});
+    };
+    const {context, page, seen} = await open(browser, origin, viewport, '/index.html', {initScript});
+    const toggle = page.locator('.eua-appearance-toggle'), panel = page.locator('.eua-appearance-panel');
+    await toggle.waitFor({state: 'visible'});
+    check(where, await page.evaluate(() => window.__qaStorageDenials > 0), 'storage denial was not exercised at startup');
+    check(where, await toggle.count() === 1, 'appearance controls still mount when reading storage is denied');
+    await toggle.click();
+    const denialsBeforeSave = await page.evaluate(() => window.__qaStorageDenials);
+    await panel.getByRole('radio', {name: 'Світла', exact: true}).click();
+    await panel.getByRole('radio', {name: 'Більший', exact: true}).click();
+    check(where, await page.locator('html').getAttribute('data-theme') === 'light' && await page.locator('html').getAttribute('data-text') === 'lg', 'theme and text must apply despite denied persistence');
+    check(where, await panel.getByRole('radio', {name: 'Світла', exact: true}).getAttribute('aria-checked') === 'true' && await panel.getByRole('radio', {name: 'Більший', exact: true}).getAttribute('aria-checked') === 'true', 'radio states must reflect the session choices');
+    check(where, await page.evaluate(before => window.__qaStorageDenials > before, denialsBeforeSave), 'the choice must exercise denied storage writes');
+    if (mode === 'getter') await artifact(page, viewport, 'appearance-storage-denied', panel);
+    await page.keyboard.press('Escape');
+    await toggle.click();
+    check(where, await panel.getByRole('radio', {name: 'Світла', exact: true}).getAttribute('aria-checked') === 'true', 'reopening the controls must keep the current session choice');
+    await panel.getByRole('radio', {name: 'Темна', exact: true}).click();
+    await panel.getByRole('radio', {name: 'Звичайний', exact: true}).click();
+    check(where, await page.locator('html').getAttribute('data-theme') === null && await page.locator('html').getAttribute('data-text') === null, 'defaults can still be restored without storage');
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `errors with denied storage: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+    await context.close();
+  }
+}
+
+async function shareFlow(browser, origin, viewport) {
+  const where = `share routes @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/exercises.html', {initScript: () => {
+    // Only the browser clipboard boundary is replaced; site sanitization and
+    // the real delegated click handler run unchanged.
+    Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText: async text => {window.__qaCopiedLink = text;}}});
+  }});
+  async function copyCurrent() {
+    const button = page.locator('[data-eua-tool="share"]').first();
+    await button.waitFor({state: 'attached'});
+    if (!await button.isVisible()) await button.locator('xpath=ancestor::details[1]').locator(':scope > summary').click();
+    await page.evaluate(() => {window.__qaCopiedLink = null;});
+    await button.click();
+    await page.waitForFunction(() => typeof window.__qaCopiedLink === 'string');
+    const link = new URL(await page.evaluate(() => window.__qaCopiedLink));
+    check(where, link.origin === origin, 'the share action changed the origin');
+    return link;
+  }
+  await page.selectOption('#ex-view', 'type');
+  await page.selectOption('#ex-sort', 'title');
+  await page.selectOption('#ex-filter-region', 'shoulder');
+  // Add tracking and a private search to the real UI state. Share must retain
+  // only validated library options, never arbitrary query parameters.
+  await page.evaluate(() => {const u = new URL(location.href); u.searchParams.set('utm_source', 'qa'); u.searchParams.set('q', 'private query'); history.replaceState(null, '', u);});
+  let copied = await copyCurrent();
+  check(where, copied.pathname === '/exercises.html' && copied.searchParams.get('region') === 'shoulder' && copied.searchParams.get('view') === 'type' && copied.searchParams.get('sort') === 'title', 'share must preserve the library selection');
+  check(where, [...copied.searchParams.keys()].every(k => ['region', 'view', 'sort'].includes(k)), 'library share leaked a private or unrelated query');
+  await page.locator('.ex-card-title a').first().click();
+  await page.locator('.ex-detail').waitFor({state: 'visible'});
+  const selectedExercise = new URL(page.url()).searchParams.get('e');
+  await page.evaluate(() => {const u = new URL(location.href); u.searchParams.set('utm_source', 'qa'); history.replaceState(null, '', u);});
+  copied = await copyCurrent();
+  check(where, !!selectedExercise && copied.pathname === '/exercises.html' && copied.searchParams.get('e') === selectedExercise, 'the actual share button lost the selected exercise');
+  check(where, [...copied.searchParams.keys()].every(k => ['e', 'region', 'type', 'pattern', 'equipment', 'view', 'sort'].includes(k)), 'exercise share leaked unrelated parameters');
+  await artifact(page, viewport, 'exercise-share', page.locator('.eua-platform-nav'));
+  // Open the copied URL too: keeping e in a string must still lead to that detail.
+  await page.goto(copied.href, {waitUntil: 'load'});
+  await page.locator('.ex-detail').waitFor({state: 'visible'});
+  check(where, new URL(page.url()).searchParams.get('e') === selectedExercise, 'the shared exercise address did not reopen its selection');
+  await page.goto(origin + '/atlas.html?zone=spine&utm_source=qa&unrelated=value', {waitUntil: 'load'});
+  check(where, /Хребет/.test(await page.locator('#atlas-zone-title').innerText()), 'share precondition: the spine zone must be selected');
+  copied = await copyCurrent();
+  check(where, copied.pathname === '/atlas.html' && copied.searchParams.get('zone') === 'spine' && copied.searchParams.size === 1, 'the actual share button must retain only the selected Atlas zone');
+  await artifact(page, viewport, 'atlas-share', page.locator('.eua-platform-nav'));
+  await page.goto(copied.href, {waitUntil: 'load'});
+  check(where, /Хребет/.test(await page.locator('#atlas-zone-title').innerText()), 'the shared Atlas address did not reopen the spine zone');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `share errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, 'sharing must not send third-party requests');
+  await context.close();
+}
+
+async function outcomeEvidenceFlow(browser, origin, viewport) {
+  const where = `outcome evidence @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html#supplement-beta-alanine');
+  await page.locator('#supplement-beta-alanine [data-claim-open="CLM-000096"]').click();
+  let dialog = page.locator('dialog[open]');
+  await dialog.waitFor({state: 'visible'});
+  const source = dialog.locator('.eua-source[id$="-SRC-000103"]');
+  const result = await source.locator('dd').nth(1).innerText();
+  check(where, /95% Байєсівський інтервал вірогідності 2,2–32,6/.test(result) && !/95% ДІ/.test(result), 'the real SourceCard must preserve the Bayesian interval label and bounds');
+  await artifact(page, viewport, 'source-bayesian-interval', source);
+  await page.keyboard.press('Escape');
+  await page.goto(origin + '/index.html#supplement-protein', {waitUntil: 'load'});
+  await page.locator('#supplement-protein [data-claim-open="CLM-000053"]').click();
+  dialog = page.locator('dialog[open]');
+  const methods = dialog.locator('details').filter({has: page.locator('summary', {hasText: 'Рівень 3 · Записи доказів та методологія'})});
+  check(where, !await methods.evaluate(n => n.open), 'outcome methodology must start folded');
+  await methods.locator(':scope > summary').click();
+  const record = methods.locator('.eua-record').filter({hasText: 'EVR-000104'});
+  await record.waitFor({state: 'visible'});
+  const text = await record.innerText();
+  check(where, await record.getByText('Контекст запису:', {exact: true}).isVisible() && text.includes('42 групи досліджень, 723 учасники; p = 0,079'), 'outcome methodology must show the existing record population context');
+  check(where, await record.getByText('Де в джерелі:', {exact: true}).isVisible() && text.includes('PMC5867436, Break point analysis / Figure 5'), 'outcome methodology must show the existing extraction locator');
+  await artifact(page, viewport, 'outcome-methodology', record);
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `evidence errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, 'opening local evidence must not request third-party content');
+  await context.close();
+}
+
+async function cellKeyboardFlow(browser, origin, viewport) {
+  const where = `cell keyboard @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/cell-lab.html');
+  const canvas = page.locator('#cell-canvas');
+  const membrane = canvas.locator('[data-organelle="STRUCT-PLASMA-MEMBRANE"]');
+  const cytoskeleton = canvas.locator('[data-organelle="STRUCT-CYTOSKELETON"]');
+  await membrane.waitFor({state: 'visible'});
+  // These are neighbours in the real SVG Tab order but differ from the semantic
+  // organelle order used by the arrows. The current default is mitochondrion.
+  for (const [key, expected] of [['ArrowRight', 'STRUCT-PLASMA-MEMBRANE'], ['ArrowDown', 'STRUCT-PLASMA-MEMBRANE'], ['ArrowLeft', 'ORG-PEROXISOME'], ['ArrowUp', 'ORG-PEROXISOME']]) {
+    await membrane.focus();
+    await page.keyboard.press('Tab');
+    check(where, await cytoskeleton.evaluate(n => document.activeElement === n && n.getAttribute('aria-pressed') === 'false'), `${key} precondition: Tab must focus an unselected organelle`);
+    await page.keyboard.press(key);
+    const target = canvas.locator(`[data-organelle="${expected}"]`);
+    check(where, await target.evaluate(n => document.activeElement === n && n.getAttribute('aria-pressed') === 'true'), `${key} must select and focus relative to the Tab-focused organelle`);
+    check(where, new URL(page.url()).searchParams.get('organelle') === expected, `${key} must keep the selected organelle in the URL`);
+  }
+  await artifact(page, viewport, 'cell-keyboard', canvas);
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `cell keyboard errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
   await context.close();
 }
 
@@ -470,10 +659,24 @@ async function searchFlow(browser, origin, viewport) {
   // The / shortcut opens it again, but not while typing in a field.
   await page.keyboard.press('/');
   await dialog.waitFor({state: 'visible'});
-  await page.keyboard.press('Escape');
   await page.fill('#eua-search-q', '');
   await page.fill('#eua-search-q', 'цццццц');
   check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайдено'), 'an empty result says so');
+  await page.keyboard.press('Escape');
+  // Follow the actual header results to existing pages, rather than only testing index text.
+  for (const [query, file, target] of [['атлас', 'atlas.html', '#atlas-zone-title'], ['вправи', 'exercises.html', '.ex-card']]) {
+    await page.locator('.eua-header-search').click();
+    await page.locator('dialog.eua-search').waitFor({state: 'visible'});
+    await page.fill('#eua-search-q', query);
+    const result = page.locator(`.eua-search-results a[href="./${file}"]`);
+    await result.waitFor({state: 'visible'});
+    check(where, await result.count() === 1, `${query} must find the real ${file} destination`);
+    await artifact(page, viewport, `search-${query === 'атлас' ? 'atlas' : 'exercises'}`, page.locator('dialog.eua-search'));
+    await result.click();
+    await page.waitForURL(`**/${file}`);
+    await page.locator(target).first().waitFor({state: 'visible'});
+    check(where, new URL(page.url()).pathname === `/${file}`, `${query} result did not open ${file}`);
+  }
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'search raises no errors');
   await context.close();
 }
@@ -637,6 +840,17 @@ async function compareFlow(browser, origin, viewport) {
   check(where, (await cards.count()) === 2, 'two supplements side by side');
   check(where, (await cards.nth(0).locator('h2').innerText()) === 'Креатин' && (await cards.nth(1).locator('h2').innerText()) === 'Кофеїн', 'the addresses choose the pair');
   check(where, (await cards.first().locator('dt').count()) === 4, 'four comparable rows per card');
+  // Both dossiers have existing provisional Claim assessments. The comparison
+  // must retain that distinction from the still-incomplete formal review.
+  await page.selectOption('#cp-a', 'supplement-protein');
+  for (const [side, name] of [[0, 'Білок / протеїн'], [1, 'Кофеїн']]) {
+    const status = await cards.nth(side).locator('dl > div').filter({has: page.locator('dt', {hasText: 'Стан перегляду'})}).locator('dd').innerText();
+    check(where, !/Рівень впевненості не оцінено|Стан оцінки тверджень не внесено/.test(status), `${name} incorrectly reports no Claim assessments`);
+    check(where, /попередн/iu.test(status) && /окрем[а-яіїєґ]* тверджен/iu.test(status), `${name} does not identify provisional Claim assessments`);
+    check(where, /Формальний науковий перегляд не завершено/.test(status), `${name} incorrectly implies a completed formal review`);
+  }
+  await artifact(page, viewport, 'comparison-status', page.locator('#cp-out'));
+  await page.selectOption('#cp-a', 'creatine');
   await page.selectOption('#cp-b', 'supplement-magnesium');
   check(where, (await cards.nth(1).locator('h2').innerText()) === 'Магній' && page.url().includes('b=supplement-magnesium'), 'the second choice changes the card and the shareable address');
   await page.selectOption('#cp-b', 'creatine');
@@ -766,6 +980,17 @@ async function muscleLabFlow(browser, origin, viewport) {
   }
   check(where, drawings.size === 6, 'each scale must show its own drawing');
   check(where, /structure=PRT-ACTIN-MYOSIN/.test(page.url()) && !/level=/.test(page.url()), 'the address keeps the structure and no level');
+  // Tab can focus a different button without changing the selection. Arrows
+  // should start there; testing only the already-selected button misses this bug.
+  for (const [key, expected] of [['ArrowRight', 2], ['ArrowLeft', 0]]) {
+    await scaleButtons.first().click();
+    await scaleButtons.first().focus();
+    await page.keyboard.press('Tab');
+    check(where, await scaleButtons.nth(1).evaluate(n => document.activeElement === n && n.getAttribute('aria-pressed') === 'false'), `${key} precondition: Tab must focus an unselected scale`);
+    await page.keyboard.press(key);
+    check(where, await scaleButtons.nth(expected).evaluate(n => document.activeElement === n && n.getAttribute('aria-pressed') === 'true'), `${key} must select and focus relative to the Tab-focused scale`);
+  }
+  await artifact(page, viewport, 'muscle-keyboard', page.locator('#scales'));
   // Contraction: the cycle changes by attribute, the sarcomere slides, filaments keep their length.
   await page.locator('#contraction').scrollIntoViewIfNeeded();
   for (let i = 0; i < 4; i++) {
@@ -1072,6 +1297,21 @@ async function homeMenuFlow(browser, origin) {
   await context.close();
 }
 
+// A historical dist can be served by the current pinned QA runner in CI for
+// before/after artifacts. This mode captures known audit states only: it neither
+// asserts fixed behavior nor prints a Browser QA success message for the baseline.
+async function baselineScreenshots(browser, origin, viewport) {
+  if (!process.env.QA_ARTIFACT_DIR) throw new Error('QA_SCREENSHOT_ONLY requires QA_ARTIFACT_DIR');
+  const {context, page} = await open(browser, origin, viewport, '/nutrition-inside.html?structure=pump');
+  await page.locator('[data-nl-structure="pump"][aria-pressed="true"]').waitFor({state: 'visible'});
+  await page.waitForFunction(() => !document.querySelector('#nl-cell').getAnimations().some(a => a.playState === 'running'));
+  await artifact(page, viewport, 'nutrition-pump', page.locator('#nl-stage'));
+  await page.goto(origin + '/compare.html?a=supplement-protein&b=supplement-caffeine', {waitUntil: 'load'});
+  await page.locator('.cp-card').first().waitFor({state: 'visible'});
+  await artifact(page, viewport, 'comparison-status', page.locator('#cp-out'));
+  await context.close();
+}
+
 const webgl = [];
 const server = await serve();
 const origin = `http://127.0.0.1:${server.address().port}`;
@@ -1080,36 +1320,49 @@ const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
   ? {executablePath: process.env.BROWSER_EXECUTABLE, args: ['--no-sandbox']}
   : {channel: 'chrome'});
 try {
-  for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
-  for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
-  for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
-  for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
-  for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
-  for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
-  for (const viewport of viewports) await continueFlow(browser, origin, viewport);
-  for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
-  for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
-  for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
-  for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
-  for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
-  for (const viewport of viewports) await compareFlow(browser, origin, viewport);
-  for (const viewport of viewports) await mapFlow(browser, origin, viewport);
-  for (const viewport of viewports) await searchFlow(browser, origin, viewport);
-  for (const viewport of viewports) await changesFlow(browser, origin, viewport);
-  for (const viewport of viewports) await cardArtFlow(browser, origin, viewport);
-  for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
-  for (const viewport of viewports) await videosFlow(browser, origin, viewport);
-  for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
-  for (const viewport of viewports) await pineFlow(browser, origin, viewport);
-  for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
-  for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
-  for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
-  await homeMenuFlow(browser, origin);
-  for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
-  for (const viewport of viewports) await fatBurningFlow(browser, origin, viewport);
+  if (process.env.QA_SCREENSHOT_ONLY === '1') {
+    for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
+  } else {
+    for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
+    for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
+    for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
+    for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
+    for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
+    for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
+    for (const viewport of viewports) await continueFlow(browser, origin, viewport);
+    for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
+    for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
+    for (const viewport of viewports) await deniedStorageFlow(browser, origin, viewport);
+    for (const viewport of viewports) await shareFlow(browser, origin, viewport);
+    for (const viewport of viewports) await outcomeEvidenceFlow(browser, origin, viewport);
+    for (const viewport of viewports) await cellKeyboardFlow(browser, origin, viewport);
+    for (const viewport of viewports) await nextStepsFlow(browser, origin, viewport);
+    for (const viewport of viewports) await savedAndTermsFlow(browser, origin, viewport);
+    for (const viewport of viewports) await glossaryFlow(browser, origin, viewport);
+    for (const viewport of viewports) await compareFlow(browser, origin, viewport);
+    for (const viewport of viewports) await mapFlow(browser, origin, viewport);
+    for (const viewport of viewports) await searchFlow(browser, origin, viewport);
+    for (const viewport of viewports) await changesFlow(browser, origin, viewport);
+    for (const viewport of viewports) await cardArtFlow(browser, origin, viewport);
+    for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
+    for (const viewport of viewports) await videosFlow(browser, origin, viewport);
+    for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
+    for (const viewport of viewports) await pineFlow(browser, origin, viewport);
+    for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
+    for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
+    for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
+    await homeMenuFlow(browser, origin);
+    for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
+    for (const viewport of viewports) await fatBurningFlow(browser, origin, viewport);
+  }
 } finally {
   await browser.close();
   server.close();
+}
+
+if (process.env.QA_SCREENSHOT_ONLY === '1') {
+  console.log('Historical-state screenshots captured; browser regression checks were not run.');
+  process.exit(0);
 }
 
 if (failures.length) {

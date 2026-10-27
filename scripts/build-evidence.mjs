@@ -9,7 +9,7 @@ fs.copyFileSync(path.join(root,'src/evidence/core/registry.mjs'),path.join(out,'
 fs.copyFileSync(path.join(root,'src/evidence/core/entities.mjs'),path.join(out,'entities.js'));
 fs.writeFileSync(path.join(out,'components.js'),fs.readFileSync(path.join(root,'src/evidence/core/components.mjs'),'utf8').replace("'./public-text.mjs'","'./public-text.js'"));
 fs.copyFileSync(path.join(root,'src/evidence/core/public-text.mjs'),path.join(out,'public-text.js'));
-fs.writeFileSync(path.join(out,'module-composer.js'),fs.readFileSync(path.join(root,'src/evidence/core/module-composer.mjs'),'utf8').replace("'./components.js'","'./components.js?v=2.1'"));
+fs.writeFileSync(path.join(out,'module-composer.js'),fs.readFileSync(path.join(root,'src/evidence/core/module-composer.mjs'),'utf8').replace("'./components.js'","'./components.js?v=2.2'"));
 fs.copyFileSync(path.join(root,'src/evidence/assets/muscle-fiber-v1.webp'),path.join(out,'muscle-fiber-v1.webp'));
 const seed=path.join(root,'src/evidence/creatine');
 let data=['// Generated topic registration; scientific content remains in the seed.',"import {createEvidenceBase} from './registry.js?v=1.5';"];
@@ -31,7 +31,7 @@ const linkRE=/<a\b[^>]*href="(https:\/\/(?:pubmed\.ncbi\.nlm\.nih\.gov|ods\.od\.
 const links=new Map();let m;while((m=linkRE.exec(legacy))){links.set(m[1],{url:m[1],title:m[2].replace(/<[^>]*>/g,'').trim(),reviewStatus:'Потребує outcome-level перевірки'});}
 data.push('export const legacySources = '+JSON.stringify([...links.values()],null,2)+';');
 fs.writeFileSync(path.join(out,'data.js'),data.join('\n'));
-fs.writeFileSync(path.join(out,'ui.js'),fs.readFileSync(path.join(root,'src/evidence/evidence-ui.mjs'),'utf8').replace("from './data.js'", "from './data.js?v=1.8'").replace("from './components.js'", "from './components.js?v=2.1'").replace("from './module-composer.js'", "from './module-composer.js?v=1.9'"));
+fs.writeFileSync(path.join(out,'ui.js'),fs.readFileSync(path.join(root,'src/evidence/evidence-ui.mjs'),'utf8').replace("from './data.js'", "from './data.js?v=1.8'").replace("from './components.js'", "from './components.js?v=2.2'").replace("from './module-composer.js'", "from './module-composer.js?v=2.0'"));
 fs.copyFileSync(path.join(root,'src/evidence/evidence.css'),path.join(out,'evidence.css'));
 const {renderModule}=await import(pathToFileURL(path.join(out,'ui.js'))+'?build='+Date.now());
 const pubStart=legacy.lastIndexOf('<div',legacy.indexOf('id="pubmed-live"'));
@@ -42,7 +42,7 @@ html=html.replace(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g,(tag,body)=>body.i
 // Place CSS last in head to isolate current module overrides; load JS after legacy route initialization.
 html=html.replace(/<link[^>]*data-evidence-style[^>]*>/g,'').replace(/<script[^>]*data-evidence-script[^>]*><\/script>/g,'');
 html=html.replace('</head>','<link rel="stylesheet" href="./evidence/evidence.css?v=1.9" data-evidence-style></head>');
-html=html.replace('</body>','<script type="module" src="./evidence/ui.js?v=2.2" data-evidence-script></script></body>');
+html=html.replace('</body>','<script type="module" src="./evidence/ui.js?v=2.3" data-evidence-script></script></body>');
 // Only visible text: do not localize code, URLs, attributes, scientific values or article titles.
 html=html.split(/(<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>)/gi).map((part,i)=>i%2?part:part.replace(/>([^<>]+)</g,(all,text)=>'>'+publicText(text)+'<')).join('');
 html=html.replace('<a href="#categories">Практика</a>','').replace('07 СВІТІВ ЗНАНЬ','НАПРЯМИ ЗНАНЬ').replace('Ця демонстрація не містить медичних рекомендацій.','Матеріал освітній і не є персональною медичною рекомендацією.');

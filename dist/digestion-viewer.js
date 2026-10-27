@@ -2,7 +2,7 @@
 import * as THREE from './vendor/three/three.module.js';
 import {OrbitControls} from './vendor/three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from './vendor/three/addons/loaders/GLTFLoader.js';
-import {ClaimCard, mountEvidenceDrawer, escapeHTML} from './evidence/components.js?v=2.1';
+import {ClaimCard, mountEvidenceDrawer, escapeHTML} from './evidence/components.js?v=2.2';
 import {digestionBase, digestionModule} from './digestion-data.js?v=1';
 import {foodPathSteps as STEPS, foodPathTract as TRACT, organNamesUA as NAMES} from './digestion-steps.js?v=2';
 

@@ -29,7 +29,10 @@ function group(doc,label,items,current,onPick){
 export function mountAppearance(doc=document){
   const view=doc.defaultView,header=doc.querySelector('.eua-site-header');
   if(!view||!header||header.querySelector('.eua-appearance'))return !!header;
-  let settings=normalize(view.localStorage?.getItem(APPEARANCE_KEY));
+  let stored=null;
+  // Access to localStorage itself can throw, as can getItem (for example in a restricted frame).
+  try{stored=view.localStorage?.getItem(APPEARANCE_KEY);}catch{}
+  let settings=normalize(stored);
   const wrap=doc.createElement('div');wrap.className='eua-appearance';
   const button=doc.createElement('button');button.type='button';button.className='eua-appearance-toggle';
   button.setAttribute('aria-haspopup','true');button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','Вигляд сайту: тема й розмір тексту');

@@ -1,5 +1,5 @@
 // «Дослідження простими словами»: картки з однією відповіддю, деталі згорнуті; фільтр за темою.
-import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=1';
+import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=2';
 
 export const countLabel=(shown,total)=>shown===total?`Розборів: ${total}`:`Показано ${shown} із ${total}`;
 export const filterStudies=(topic,studies=STUDIES)=>topic==='all'?studies.slice():studies.filter(s=>s.topic===topic);
@@ -19,7 +19,7 @@ export function render(root=document){
       const body=make('div','rs-body');const dl=make('dl','rs-rows');
       dl.append(row('Хто досліджувався',s.who),row('Що знайшли',s.found),row('Чого це не доводить',s.limits));
       const src=make('p','rs-source');src.append(make('span','',s.type+'. '));
-      const a=make('a','',s.source.label+' ↗');a.href='https://doi.org/'+s.source.doi;a.target='_blank';a.rel='noopener noreferrer';
+      const a=make('a','',s.source.label+' ↗');a.href=s.source.doi?'https://doi.org/'+s.source.doi:'https://pubmed.ncbi.nlm.nih.gov/'+s.source.pmid+'/';a.target='_blank';a.rel='noopener noreferrer';
       src.append(a,make('span','rs-checked',' Перевірено '+CHECKED+'.'));
       body.append(dl,src);card.append(head,body);list.append(card);
     }

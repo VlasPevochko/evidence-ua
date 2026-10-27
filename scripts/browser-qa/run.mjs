@@ -635,13 +635,13 @@ async function researchFlow(browser, origin, viewport) {
   const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
   await page.locator('.rs-card').first().waitFor({state: 'attached'});
   const total = await page.locator('.rs-card').count();
-  check(where, total >= 7, 'the page lists the write-ups');
+  check(where, total >= 12, 'the page lists the write-ups');
   check(where, (await page.locator('.rs-card[open]').count()) === 0, 'every card starts folded');
   const answers = await page.locator('.rs-answer').evaluateAll(els => els.map(e => e.getBoundingClientRect().height > 0 && e.innerText.length > 10));
   check(where, answers.every(Boolean), 'every card shows its one-line answer without opening');
   await page.locator('.rs-card summary').first().click();
   check(where, await page.locator('.rs-card[open] .rs-row').first().isVisible() && (await page.locator('.rs-card[open] .rs-row').count()) === 3, 'opening shows who, what was found and what it does not prove');
-  check(where, await page.locator('.rs-card[open] .rs-source a').first().getAttribute('href').then(h => /^https:\/\/doi\.org\/10\./.test(h)), 'the source is a DOI link');
+  check(where, await page.locator('.rs-card[open] .rs-source a').first().getAttribute('href').then(h => /^https:\/\/(doi\.org\/10\.|pubmed\.ncbi\.nlm\.nih\.gov\/\d+\/)/.test(h)), 'the source is a DOI or PubMed link');
   await page.locator('.rs-chip[data-topic="move"]').click();
   const moveCount = await page.locator('.rs-card').count();
   check(where, moveCount >= 2 && moveCount < total && (await page.locator('.rs-tag').evaluateAll(els => els.every(e => e.innerText === 'Рух'))), 'the topic filter narrows the list');

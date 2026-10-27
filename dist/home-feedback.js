@@ -1,5 +1,5 @@
 // User-generated text only: no network, persistence, tracking or automatic sending. (feedback-send.mjs is inactive until an endpoint is configured.)
-import {materials} from './platform-materials.js?v=102';
+import {materials} from './platform-materials.js?v=103';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function feedbackMaterial(href,selection){
  const id=typeof selection==='string'?selection:new URL(href).searchParams.get('feedbackFor');

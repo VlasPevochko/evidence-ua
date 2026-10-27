@@ -13,6 +13,10 @@ const guides=[
  {id:'guide-research',title:'Дослідження простими словами',href:'./research.html',areaId:'supplements',kind:'guide'},
  {id:'guide-mechanisms',title:'Як це працює: анімовані схеми',href:'./mechanisms.html',areaId:'supplements',kind:'guide'}
 ];
+const navigationMaterials=[
+ {id:'navigation-atlas',title:'Атлас людського тіла',href:'./atlas.html',areaId:'atlas',areaTitle:'Атлас',group:'atlas',kind:'interactive'},
+ {id:'navigation-exercises',title:'Бібліотека вправ',href:'./exercises.html',areaId:'exercises',areaTitle:'Вправи та практика',group:'movement',kind:'section'}
+].map(m=>({...m,review:'Навігація до матеріалів; статус наукового перегляду зазначено окремо'}));
 export const materialKinds={interactive:'Інтерактив',dossier:'Досьє',guide:'Розбір',section:'Матеріал'};
 const listedMaterials=catalog.areas.filter(a=>a.available).flatMap(area=>{
  const units=area.units.length?area.units:[{id:area.id,title:area.title,href:area.href,entityIds:[]}];
@@ -22,10 +26,11 @@ const structureMaterials=[
  {areaId:'muscle',file:'muscle-lab',param:'structure',hash:'explorer',ids:['TISSUE-SKELETAL-MUSCLE','STRUCT-FASCICLE','CELL-MUSCLE','STRUCT-MYOFIBRIL','STRUCT-SARCOMERE','PRT-ACTIN-MYOSIN']},
  {areaId:'cell',file:'cell-lab',param:'organelle',hash:'cell-canvas',ids:['ORG-NUCLEUS','ORG-NUCLEOLUS','ORG-MITOCHONDRION','ORG-RIBOSOME','ORG-ROUGH-ER','ORG-SMOOTH-ER','ORG-GOLGI','ORG-LYSOSOME','ORG-PEROXISOME','STRUCT-CYTOSKELETON','STRUCT-PLASMA-MEMBRANE']}
 ].flatMap(config=>config.ids.map(id=>{const area=catalog.getArea(config.areaId);return {id:config.areaId+'-'+id.toLowerCase(),title:entityRegistry.get(id).label,href:`./${config.file}.html?${config.param}=${id}#${config.hash}`,areaId:area.id,areaTitle:area.title,review:area.review,group:area.group,kind:'interactive'};})).filter(m=>!listedMaterials.some(old=>old.href===m.href));
-export const materials=listedMaterials.concat(structureMaterials,guides.map(g=>({...g,areaTitle:catalog.getArea(g.areaId).title,review:catalog.getArea(g.areaId).review,group:'evidence'})));
+export const materials=listedMaterials.concat(structureMaterials,navigationMaterials,guides.map(g=>({...g,areaTitle:catalog.getArea(g.areaId).title,review:catalog.getArea(g.areaId).review,group:'evidence'})));
 export const normalizeSearch=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
 // Alternative topic names for discovery only; scientific content is not changed.
 const searchTerms={
+ 'navigation-exercises':'вправи вправа бібліотека практика рухові практики',
  'supplements-protein':'білок білка білки білкові протеїнові protein сила безжирова маса',
  'supplements-creatine':'креатину сила силу безжирова маса нирки креатинін витривалість пам’ять',
  'supplements-caffeine':'кофеїну кава енергетики витривалість сила сон тиск вагітність',
@@ -83,10 +88,21 @@ export function materialContext(href){
  if(route(url.pathname)==='/')return /^#creatine-/.test(url.hash)||url.hash==='#evidence-card'?materials.find(m=>m.id==='supplements-creatine'):null;
  return materials.find(m=>{const target=new URL(m.href,url);return route(target.pathname)===route(url.pathname)&&!target.hash;})||materials.find(m=>route(new URL(m.href,url).pathname)===route(url.pathname))||null;
 }
+// Small navigation allowlists mirror exercises-data.js and the Atlas zone picker.
+// Regression tests check the known values without loading either UI in the browser.
+// Free-text library search (q) is deliberately excluded from shared URLs for privacy.
+const exerciseShareRules={
+ e:new Set(['tyaha-hanteli-v-nahili','tyaha-hanteli-v-nahyli','kontrol-lopatky','rotatorna-manzheta-kompleks','kompleks-rotatornoyi-manzhety','mobilnist-plecha-lopatky','hrudy-plechovyi-poyas','progresiya-kontrolyu-lopatky','spyna-mobilnist-kompleks','sylovyi-kompleks-spyna','animal-flow-mobilnist','animal-flow-intehrovanyi-rukh','rukhovyi-kompleks-navychky','test-koordinatsiyi']),
+ region:new Set(['shoulder','scapula','upper_back','elbow','chest','spine','full_body']),
+ type:new Set(['strength','mobility','movement_control','coordination','rehab_practice','screen_or_test']),
+ pattern:new Set(['horizontal_pull','scapular_control','shoulder_rotation','multiplanar_mobility','coordination_balance']),
+ equipment:new Set(['dumbbell']),view:new Set(['type']),sort:new Set(['title'])
+};
+const atlasShareRules={zone:new Set(['brain','shoulder','spine','muscles','gut','knee'])};
 export function contextLink(href){
  const original=new URL(href),clean=new URL(original.pathname,original.origin),route=original.pathname.replace(/\.html$/,'').replace(/\/$/,'');
- const rules=route.endsWith('/muscle-lab')?{structure:/^(TISSUE-SKELETAL-MUSCLE|STRUCT-FASCICLE|CELL-MUSCLE|STRUCT-MYOFIBRIL|STRUCT-SARCOMERE|PRT-ACTIN-MYOSIN)$/,level:/^(school|university|advanced)$/,tab:/^(description|function|sources)$/}:route.endsWith('/cell-lab')?{organelle:/^(ORG-(NUCLEUS|NUCLEOLUS|MITOCHONDRION|RIBOSOME|ROUGH-ER|SMOOTH-ER|GOLGI|LYSOSOME|PEROXISOME)|STRUCT-(PLASMA-MEMBRANE|CYTOSKELETON))$/,level:/^(school|university|advanced)$/,tab:/^(function|sources)$/}:(route.endsWith('/nutrition')||route.endsWith('/nutrition-inside'))?{nutrient:/^(glucose|protein|lipids)$/,step:/^[0-3]$/,depth:/^(simple|detailed)$/,scale:/^(body|cell)$/,structure:/^(sglt1|glut2|pump|pept1|micelle|chylomicron)$/}:{};
- for(const [key,rule] of Object.entries(rules)){const value=original.searchParams.get(key);if(value&&rule.test(value))clean.searchParams.set(key,value);}
+ const rules=route.endsWith('/exercises')?exerciseShareRules:route.endsWith('/atlas')?atlasShareRules:route.endsWith('/muscle-lab')?{structure:/^(TISSUE-SKELETAL-MUSCLE|STRUCT-FASCICLE|CELL-MUSCLE|STRUCT-MYOFIBRIL|STRUCT-SARCOMERE|PRT-ACTIN-MYOSIN)$/,level:/^(school|university|advanced)$/,tab:/^(description|function|sources)$/}:route.endsWith('/cell-lab')?{organelle:/^(ORG-(NUCLEUS|NUCLEOLUS|MITOCHONDRION|RIBOSOME|ROUGH-ER|SMOOTH-ER|GOLGI|LYSOSOME|PEROXISOME)|STRUCT-(PLASMA-MEMBRANE|CYTOSKELETON))$/,level:/^(school|university|advanced)$/,tab:/^(function|sources)$/}:(route.endsWith('/nutrition')||route.endsWith('/nutrition-inside'))?{nutrient:/^(glucose|protein|lipids)$/,step:/^[0-3]$/,depth:/^(simple|detailed)$/,scale:/^(body|cell)$/,structure:/^(sglt1|glut2|pump|pept1|micelle|chylomicron)$/}:{};
+ for(const [key,rule] of Object.entries(rules)){const value=original.searchParams.get(key);if(value&&(rule instanceof Set?rule.has(value):rule.test(value)))clean.searchParams.set(key,value);}
  const hashes=new Set(['#top','#start-here','#home-learning-paths','#home-feedback','#categories','#cards','#supplement-library','#pubmed-live','#evidence-card','#explorer','#sources',...materials.map(m=>new URL(m.href,original).hash)]);
  if(hashes.has(original.hash)||/^#creatine-(short|mechanism|evidence|dosing|kidney|myths|sources|review)$/.test(original.hash))clean.hash=original.hash;
  const position=learningLocation(original.href);if(position){clean.searchParams.set('path',position.path.id);clean.searchParams.set('lesson',String(position.index));}

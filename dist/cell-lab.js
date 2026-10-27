@@ -1,4 +1,4 @@
-import {ClaimCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=2.1';
+import {ClaimCard,claimButton,mountEvidenceDrawer} from './evidence/components.js?v=2.2';
 import {organelles,getOrganelle,learningLevels,sources,moduleMeta,visual,cellKnowledge,adjacentOrganelle} from './cell-lab-data.js?v=56';
 import {renderCellAtlas} from './cell-illustration.js?v=73';
 import {renderCellSources} from './cell-sources.js?v=72';
@@ -75,7 +75,7 @@ export function mount(root=document){
   if(e.key==='Escape'&&detailOpen){e.preventDefault();closeDetail();return;}
   if(!e.target.matches('[data-organelle]'))return;
   if(e.key==='Enter'||e.key===' '){e.preventDefault();choose(e);}
-  if(['ArrowRight','ArrowLeft','ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();detailOpen=false;selected=adjacentOrganelle(selected,['ArrowRight','ArrowDown'].includes(e.key)?1:-1);render();canvas.querySelector(`[data-organelle="${selected}"]`).focus();}
+  if(['ArrowRight','ArrowLeft','ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();detailOpen=false;selected=adjacentOrganelle(e.target.dataset.organelle,['ArrowRight','ArrowDown'].includes(e.key)?1:-1);render();canvas.querySelector(`[data-organelle="${selected}"]`).focus();}
  };
  const onSearch=e=>{const query=e.target.value.trim().toLocaleLowerCase('uk');let count=0;list.querySelectorAll('button').forEach(b=>{const o=getOrganelle(b.dataset.organelle);b.hidden=!`${o.label} ${o.tag}`.toLocaleLowerCase('uk').includes(query);if(!b.hidden)count++;});root.querySelector('#search-result').textContent=count?`Структур: ${count}`:'Нічого не знайдено. Спробуй іншу назву.';};
  root.addEventListener('click',choose);canvas.addEventListener('keydown',onKeys);root.querySelector('#organelle-search').addEventListener('input',onSearch);

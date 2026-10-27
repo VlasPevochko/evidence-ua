@@ -28,6 +28,19 @@ test('Nutrition retains the diets and offers the physiology branch without loadi
  const b=baseline.blocks.diets;assert.equal(sha(html.slice(html.indexOf(b.start),html.indexOf(b.end)+b.end.length)),b.sha256,'all diet research must be retained verbatim');
 });
 
+// This UI controller intentionally changes for the audited focus bug. Reconstruct
+// only those exact edits for the independent pre-move hash; all other code stays protected.
+function historicalNutritionController(text){
+ const edits=[
+  ...['250,210','650,210','650,383','250,280','127,395','550,407'].map(point=>[',focus:['+point+']','']),
+  [' // Explicit selection follows the structure; ordinary steps follow the route action.\n // Phone-only zoom uses drawing percentages, clamped so no empty edge shows.',' // Zoom the diagram towards the active point (phone only). Percentages of the drawing; clamped so no empty edge shows.'],
+  ['  const [x,y]=selectedStructure?structures[selectedStructure].focus:[focusX[routeId][index],focusY[routeId]];\n  const px=x/900*100,py=y/560*100;','  const px=focusX[routeId][index]/900*100,py=focusY[routeId]/560*100;'],
+  ["'./evidence/components.js?v=2.2'","'./evidence/components.js?v=55'"]
+ ];
+ for(const [current,historical] of edits){assert.equal(text.split(current).length-1,1,'Authorized controller edit must match exactly');text=text.replace(current,historical);}
+ return text;
+}
+
 test('moved mechanisms, scientific SVGs and source disclosures retain their exact original blocks',()=>{
  assert(fs.existsSync('dist/nutrition-inside.html'),'the physiology page must exist');
  const html=fs.readFileSync('dist/nutrition-inside.html','utf8');
@@ -40,9 +53,7 @@ test('moved mechanisms, scientific SVGs and source disclosures retain their exac
  }
  // page-pine.css v16 -> v17 (компактні банери, рішення власника 2026-10-25): лише версія в query-рядку, зміст сторінок той самий. fat-burning-pine.css v2 -> v3 (компактний банер, 2026-10-25): так само лише версія.
  // Shared UI cache revisions only: the authored physiology controller is otherwise compared byte-for-byte.
- // Дослідження простими словами (2026-10-27): platform-shell v100 -> v101, site-header v7 -> v8, page-pine v17 -> v18, fat-burning.js v5 -> v6: лише версії в query-рядках, зміст сторінок той самий.
- // Як це працює (2026-10-27): platform-shell v101 -> v102, site-header v8 -> v9, fat-burning.js v6 -> v7, page-pine v18 -> v19: лише версії в query-рядках.
- for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?fs.readFileSync(file,'utf8').replaceAll('fat-burning.js?v=7','fat-burning.js?v=4').replaceAll('platform-shell.js?v=102','platform-shell.js?v=97').replaceAll('site-header.js?v=9','site-header.js?v=4').replaceAll('digestion-viewer.js?v=3','digestion-viewer.js?v=1').replaceAll('page-pine.css?v=19','page-pine.css?v=16').replaceAll('fat-burning-pine.css?v=3','fat-burning-pine.css?v=2').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):file==='dist/nutrition-lab.js'?fs.readFileSync(file,'utf8').replace("'./evidence/components.js?v=2.1'","'./evidence/components.js?v=55'"):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
+ for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?fs.readFileSync(file,'utf8').replaceAll('fat-burning.js?v=8','fat-burning.js?v=4').replaceAll('fat-burning.js?v=6','fat-burning.js?v=4').replaceAll('fat-burning.js?v=5','fat-burning.js?v=4').replaceAll('appearance.js?v=2','appearance.js?v=1').replaceAll('platform-shell.js?v=103','platform-shell.js?v=97').replaceAll('platform-shell.js?v=101','platform-shell.js?v=97').replaceAll('platform-shell.js?v=100','platform-shell.js?v=97').replaceAll('site-header.js?v=10','site-header.js?v=4').replaceAll('site-header.js?v=8','site-header.js?v=4').replaceAll('site-header.js?v=7','site-header.js?v=4').replaceAll('digestion-viewer.js?v=4','digestion-viewer.js?v=1').replaceAll('digestion-viewer.js?v=3','digestion-viewer.js?v=1').replaceAll('page-pine.css?v=19','page-pine.css?v=16').replaceAll('page-pine.css?v=17','page-pine.css?v=16').replaceAll('fat-burning-pine.css?v=3','fat-burning-pine.css?v=2').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):file==='dist/nutrition-lab.js'?historicalNutritionController(fs.readFileSync(file,'utf8')):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
  assert(!html.includes('id="nutrition-diets"'));
 });
 

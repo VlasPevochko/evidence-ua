@@ -1,5 +1,5 @@
-import './site-header.js?v=9';
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=102';
+import './site-header.js?v=10';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=103';
 import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=4';
 import {mountTerms} from './platform-terms.js?v=2';
 import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=100';

@@ -16,11 +16,14 @@ try {
   fs.writeFileSync(path.join(temp, 'scripts/build-knowledge.mjs'), '');
   // build-site now also runs build-seo (sitemap and robots.txt); the contract fixture only needs a no-op stand-in for it.
   fs.writeFileSync(path.join(temp, 'scripts/build-seo.mjs'), '');
+  // Follow-up comparison metadata is generated too; retain the full authored snapshot alongside it.
+  fs.writeFileSync(path.join(temp, 'scripts/build-comparison-status.mjs'), `import fs from 'node:fs';fs.writeFileSync('dist/compare-status.js','export const comparisonStatus={};');`);
   const result = buildSite(temp, 'a'.repeat(40));
   assert.equal(result.files['authored.css'].sha256.length, 64);
   assert(result.files['.well-known/example'], 'Complete dist includes hidden assets');
   assert.equal(result.commit, 'a'.repeat(40));
-  assert.equal(result.fileCount, 3);
+  assert.equal(result.fileCount, 4);
+  assert(result.files['compare-status.js'], 'Canonical comparison metadata is included in the verified artifact');
   assert.equal(fs.readFileSync(path.join(temp, 'dist/authored.css'),'utf8'),'body{color:red}');
   fs.writeFileSync(path.join(temp, 'scripts/build-knowledge.mjs'), `import fs from 'node:fs';fs.unlinkSync('dist/authored.css');`);
   assert.throws(() => buildSite(temp, 'a'.repeat(40)), /removed.*authored\.css/i);

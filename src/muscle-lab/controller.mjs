@@ -259,7 +259,7 @@ export function mount(root=document){
   if(e.key==='Escape'&&root.body?.classList.contains('lesson')&&!root.querySelector('dialog[open]')){$('#lesson-exit')?.click();return;}
   const b=e.target.closest?.('[data-structure]');
   if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
-  e.preventDefault();selected=adjacentStructure(selected.id,e.key==='ArrowRight'?1:-1);render();
+  e.preventDefault();selected=adjacentStructure(b.dataset.structure,e.key==='ArrowRight'?1:-1);render();
   $(`#scales [data-structure="${selected.id}"]`)?.focus();
  };
  const onSlide=e=>{stopSlide();slide(e.target.value);};

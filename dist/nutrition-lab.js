@@ -1,12 +1,12 @@
 import {nutritionBase,nutritionModule} from './nutrition-data.js?v=55';
 import {createNutritionPlayer} from './nutrition-player.js?v=55';
-import {ClaimCard,SourceCard,claimButton,getClaim,escapeHTML,mountEvidenceDrawer} from './evidence/components.js?v=2.1';
+import {ClaimCard,SourceCard,claimButton,getClaim,escapeHTML,mountEvidenceDrawer} from './evidence/components.js?v=2.2';
 
 const e=escapeHTML;
 // Structures that can be picked on the diagram: which route and step show them, and which Claim explains them.
 const structures={
- sglt1:{route:'glucose',index:1,claimId:'CLM-000022'},glut2:{route:'glucose',index:2,claimId:'CLM-000023'},pump:{route:'glucose',index:1,claimId:'CLM-000024'},
- pept1:{route:'protein',index:1,claimId:'CLM-000025'},micelle:{route:'lipids',index:0,claimId:'CLM-000027'},chylomicron:{route:'lipids',index:2,claimId:'CLM-000028'}
+ sglt1:{route:'glucose',index:1,claimId:'CLM-000022',focus:[250,210]},glut2:{route:'glucose',index:2,claimId:'CLM-000023',focus:[650,210]},pump:{route:'glucose',index:1,claimId:'CLM-000024',focus:[650,383]},
+ pept1:{route:'protein',index:1,claimId:'CLM-000025',focus:[250,280]},micelle:{route:'lipids',index:0,claimId:'CLM-000027',focus:[127,395]},chylomicron:{route:'lipids',index:2,claimId:'CLM-000028',focus:[550,407]}
 };
 // The chips under the diagram double as its legend: only the structures that exist on the current route are offered.
 const routeStructures={glucose:['sglt1','glut2','pump'],protein:['pept1'],lipids:['micelle','chylomicron']};
@@ -43,11 +43,13 @@ export function mountNutritionLab(root=document,{base=nutritionBase,module=nutri
  const reduced=win.matchMedia?.('(prefers-reduced-motion: reduce)'),phone=win.matchMedia?.('(max-width: 760px)');
  const stopTimer=()=>{if(timer!==null){unschedule(timer);timer=null;}};
  function move(id,x,y,hidden=false){const item=one(id);item.setAttribute('transform',`translate(${x} ${y})`);item.style.transform=`translate(${x}px, ${y}px)`;item.toggleAttribute('hidden',hidden);}
- // Zoom the diagram towards the active point (phone only). Percentages of the drawing; clamped so no empty edge shows.
+ // Explicit selection follows the structure; ordinary steps follow the route action.
+ // Phone-only zoom uses drawing percentages, clamped so no empty edge shows.
  function focusStage(routeId,index){
   const stage=one('nl-stage');if(!stage)return;
   const zoom=phone?.matches?PHONE_ZOOM:1,clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-  const px=focusX[routeId][index]/900*100,py=focusY[routeId]/560*100;
+  const [x,y]=selectedStructure?structures[selectedStructure].focus:[focusX[routeId][index],focusY[routeId]];
+  const px=x/900*100,py=y/560*100;
   stage.style.setProperty('--nl-zoom',String(zoom));
   stage.style.setProperty('--nl-tx',zoom===1?'0%':`${clamp(50-zoom*px,100*(1-zoom),0).toFixed(1)}%`);
   stage.style.setProperty('--nl-ty',zoom===1?'0%':`${clamp(50-zoom*py,100*(1-zoom),0).toFixed(1)}%`);

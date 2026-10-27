@@ -832,6 +832,110 @@ async function compactBannerFlow(browser, origin, viewport) {
   }
 }
 
+async function researchFlow(browser, origin, viewport) {
+  // Рішення власника 2026-10-27: розбори дослідження коротко й ясно; відповідь видно одразу, деталі згорнуті.
+  const where = `research @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  await page.locator('.rs-card').first().waitFor({state: 'attached'});
+  const total = await page.locator('.rs-card').count();
+  check(where, total >= 16, 'the page lists the write-ups');
+  check(where, (await page.locator('.rs-card[open]').count()) === 0, 'every card starts folded');
+  const answers = await page.locator('.rs-answer').evaluateAll(els => els.map(e => e.getBoundingClientRect().height > 0 && e.innerText.length > 10));
+  check(where, answers.every(Boolean), 'every card shows its one-line answer without opening');
+  await page.locator('.rs-card summary').first().click();
+  check(where, await page.locator('.rs-card[open] .rs-row').first().isVisible() && (await page.locator('.rs-card[open] .rs-row').count()) === 3, 'opening shows who, what was found and what it does not prove');
+  check(where, await page.locator('.rs-card[open] .rs-source a').first().getAttribute('href').then(h => /^https:\/\/(doi\.org\/10\.|pubmed\.ncbi\.nlm\.nih\.gov\/\d+\/)/.test(h)), 'the source is a DOI or PubMed link');
+  // «Поділитись»: рідне вікно (підмінене), копіювання, картинка-файл, глибоке посилання, вмістимість тексту на картинці.
+  await page.evaluate(() => { window.__shared = null; Object.defineProperty(navigator, 'share', {value: async d => { window.__shared = d; }, configurable: true}); });
+  await page.locator('.rs-card[open] .rs-btn').first().click();
+  const shared = await page.evaluate(() => window.__shared);
+  check(where, shared && /#[a-z-]+$/.test(shared.url) && shared.title.length > 10 && shared.text.includes('Джерело:'), 'the share button hands over the question, answer, source and a link to this write-up');
+  await page.evaluate(() => { Object.defineProperty(navigator, 'share', {value: undefined, configurable: true}); window.__copied = ''; Object.defineProperty(navigator, 'clipboard', {value: {writeText: async t => { window.__copied = t; }}, configurable: true}); });
+  await page.locator('.rs-card[open] .rs-btn').first().click();
+  check(where, (await page.evaluate(() => window.__copied)).includes('research.html#') && (await page.locator('.rs-card[open] .rs-status').first().innerText()).includes('скопійовано'), 'without the share sheet the text is copied and the reader is told');
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('.rs-card[open] .rs-btn').nth(1).click()]);
+  const png = await download.path();
+  const head = png ? (await import('node:fs')).readFileSync(png).subarray(0, 24) : null;
+  check(where, /^evidence-ua-[a-z-]+\.png$/.test(download.suggestedFilename()) && head && head.readUInt32BE(16) === 1080 && head.readUInt32BE(20) === 1350, 'the picture is saved as a 1080×1350 PNG');
+  const fits = await page.evaluate(async () => {
+    const mod = await import('./research-share.js?v=2'), data = await import('./research-data.js?v=4'), bad = [];
+    for (const s of data.STUDIES) { const {layout} = await mod.drawCard(s, data.TOPICS[s.topic]); if (!mod.FITS(layout)) bad.push(s.id); }
+    return bad;
+  });
+  check(where, fits.length === 0, 'the text fits on the picture for every write-up' + (fits.length ? ': ' + fits.join(',') : ''));
+  await page.goto(origin + '/research.html#coffee');
+  await page.locator('#rs-coffee[open]').waitFor({state: 'attached'});
+  check(where, await page.locator('#rs-coffee').evaluate(el => el.open), 'a link with #id opens that write-up');
+  // Графік у картці «кава»: п'ять рядків, великі точки, поява анімацією, без переповнення.
+  await page.locator('#rs-coffee .rs-chart.is-in').waitFor({state: 'attached'});
+  const chart = await page.evaluate(() => { const f = document.querySelector('#rs-coffee .rs-chart'); return f && {rows: f.querySelectorAll('.rs-crow:not(.rs-caxisrow)').length, dot: f.querySelector('.rs-cdot').offsetWidth, shown: f.classList.contains('is-in'), nulls: f.querySelectorAll('.is-null').length, over: f.scrollWidth - f.clientWidth}; });
+  check(where, chart && chart.rows === 5 && chart.dot >= 8 && chart.shown && chart.nulls === 0 && chart.over <= 1, 'the coffee card draws its interval chart (5 rows, markers of 8 px or more, appears on open, fits the card) ' + JSON.stringify(chart));
+  await page.locator('.rs-chip[data-topic="move"]').click();
+  const moveCount = await page.locator('.rs-card').count();
+  check(where, moveCount >= 2 && moveCount < total && (await page.locator('.rs-tag').evaluateAll(els => els.every(e => e.innerText === 'Рух'))), 'the topic filter narrows the list');
+  check(where, (await page.locator('#rs-summary').innerText()).includes('із ' + total), 'the counter follows the filter');
+  check(where, (await page.locator('.rs-chip').evaluateAll(els => els.every(e => e.getBoundingClientRect().height >= 44))), 'filter buttons are tappable');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors');
+  await context.close();
+}
+
+async function mechanismsFlow(browser, origin, viewport) {
+  // Рішення власника 2026-10-27, пункт 5: анімовані схеми механізмів. Перевіряємо, що кроки справді рухають молекули й шкали.
+  const where = `mechanisms @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/mechanisms.html');
+  await page.locator('[data-scene="caffeine"] .mc-step').first().waitFor({state: 'attached'});
+  check(where, (await page.locator('.mc-step').count()) === 7, 'both schemes have their step buttons (3 + 4)');
+  const sc = '[data-scene="caffeine"]';
+  const geo = () => page.evaluate(() => {
+    const box = e => { const r = document.querySelector(e).getBoundingClientRect(); return {x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width}; };
+    const near = id => { const b = box('#' + id); const idx = Number(id.slice(1)), sockets = [...document.querySelectorAll('[data-scene="caffeine"] .mc-socket')].map(e => e.getBoundingClientRect()); if (idx > 3) return false; const sk = sockets[idx - 1]; return Math.abs(b.x - (sk.x + sk.width / 2)) < sk.width * 0.35 && b.y > sk.y - sk.height * 0.9 && b.y < sk.y + sk.height * 0.5; };
+    const lamp = parseFloat(getComputedStyle(document.querySelector('[data-scene="caffeine"] .mc-lamp')).opacity);
+    const bar = i => parseFloat(getComputedStyle(document.querySelectorAll('[data-scene="caffeine"] .mc-bar i')[i]).width) / document.querySelectorAll('[data-scene="caffeine"] .mc-bar')[i].getBoundingClientRect().width;
+    return {a1Docked: near('a1'), c1Docked: near('c1'), lamp, adenosine: bar(0), signal: bar(1)};
+  });
+  await page.locator(sc + ' .mc-step').nth(1).click();
+  await page.waitForTimeout(1700);
+  const s2 = await geo();
+  check(where, (await page.locator(sc).getAttribute('data-stage')) === '2' && (await page.locator(sc + ' .mc-caption h3').innerText()).includes('Аденозин сідає'), 'step 2 sets the stage and the caption');
+  check(where, s2.a1Docked && !s2.c1Docked && s2.lamp > 0.9 && s2.signal > 0.8, 'step 2: adenosine sits in the receptor and the sleepiness signal is strong');
+  await page.locator(sc + ' .mc-step').nth(2).click();
+  await page.waitForTimeout(1700);
+  const s3 = await geo();
+  check(where, s3.c1Docked && !s3.a1Docked && s3.lamp < 0.4 && s3.signal < 0.4 && s3.adenosine > 0.7, 'step 3: caffeine sits in the receptor, adenosine stays high, the signal drops');
+  const play = page.locator(sc + ' .mc-play');
+  await play.click();
+  check(where, (await play.innerText()) === 'Пауза' && (await page.locator(sc).getAttribute('data-playing')) === '1', 'the play button starts the autoplay');
+  await play.click();
+  check(where, (await play.innerText()) === 'Грати', 'and pauses it again');
+  // Креатин.
+  const cr = '[data-scene="creatine"]';
+  await page.locator(cr).scrollIntoViewIfNeeded();
+  const pcr = () => page.evaluate(() => { const i = document.querySelector('[data-scene="creatine"] .cr-store i'); return parseFloat(getComputedStyle(i).width) / i.parentElement.getBoundingClientRect().width; });
+  await page.locator(cr + ' .mc-step').nth(0).click(); await page.waitForTimeout(1500);
+  const rest = await pcr();
+  await page.locator(cr + ' .mc-step').nth(1).click(); await page.waitForTimeout(1500);
+  const sprint = await pcr();
+  check(where, (await page.locator(cr + ' .cr-flow i').first().evaluate(el => getComputedStyle(el).animationName)) === 'cr-run', 'sprint: phosphate dots flow from the store to ATP');
+  await page.locator(cr + ' .mc-step').nth(2).click(); await page.waitForTimeout(1500);
+  const empty = await pcr();
+  const power3 = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('[data-scene="creatine"] .cr-power i')).width) / document.querySelector('[data-scene="creatine"] .cr-power').getBoundingClientRect().width);
+  check(where, rest > 0.7 && sprint < rest && empty < 0.15 && power3 < 0.5, 'the store is full at rest, shrinks in a sprint and is nearly empty after ~10 s while power falls');
+  await page.locator(cr + ' .mc-step').nth(3).click(); await page.waitForTimeout(1500);
+  check(where, (await pcr()) > 0.7, 'rest: the store refills');
+  await page.locator(cr + ' .mc-step').nth(0).click(); await page.waitForTimeout(1500);
+  await page.locator(cr + ' .mc-switch').click(); await page.waitForTimeout(1500);
+  check(where, (await pcr()) > rest + 0.1, 'with creatine the store is larger (schematic)');
+  // Без руху: крок вмикається, але нічого не анімується.
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.locator(cr + ' .mc-step').nth(1).click();
+  check(where, (await page.locator(cr + ' .cr-flow i').first().evaluate(el => getComputedStyle(el).animationName)) === 'none', 'reduced motion stops the animation');
+  check(where, (await page.locator('.mc-step').evaluateAll(els => els.every(e => e.getBoundingClientRect().height >= 44))), 'step buttons are tappable');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors');
+  await context.close();
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -1343,6 +1447,8 @@ try {
     for (const viewport of viewports) await mapFlow(browser, origin, viewport);
     for (const viewport of viewports) await searchFlow(browser, origin, viewport);
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
+    for (const viewport of viewports) await researchFlow(browser, origin, viewport);
+    for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
     for (const viewport of viewports) await cardArtFlow(browser, origin, viewport);
     for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
     for (const viewport of viewports) await videosFlow(browser, origin, viewport);

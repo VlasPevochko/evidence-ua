@@ -15,14 +15,14 @@ const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.t
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const homeDirectionsHTML='<div class="label"><span>'+homeTopics.length+' напрямів Evidence UA</span><span>Обери тему · статус указано на картці</span></div><div class="cards" id="cards" aria-label="Тематичні напрями Evidence UA">'+homeTopics.map(topic=>`<a class="topic-card" data-area="${escapeHTML(topic.id)}" href="${escapeHTML(topic.href)}" style="--topic-x:${escapeHTML(topic.position)}"><strong>${escapeHTML(topic.title)}</strong><small>${escapeHTML(topic.subtitle)}</small><span class="topic-state">${escapeHTML(topic.state)} · Відкрити →</span></a>`).join('')+'</div>';
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
-fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=101'"));
+fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=103'"));
 fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
-fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=101'"));
+fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=103'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=101'").replace("'./site-header.mjs'","'./site-header.js?v=8'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./site-header.mjs'","'./site-header.js?v=10'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=101'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=101'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=85'").replace("'./site-header.mjs'","'./site-header.js?v=8'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=85'").replace("'./site-header.mjs'","'./site-header.js?v=10'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -155,14 +155,28 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
 // Review corrections: refresh shared UI parents after changing their imports.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const next=old.replaceAll('platform-shell.js?v=99','platform-shell.js?v=100').replaceAll('directions.js?v=99','directions.js?v=100').replaceAll('home-feedback.js?v=99','home-feedback.js?v=100').replaceAll('platform-learning.js?v=84','platform-learning.js?v=85').replaceAll('site-header.js?v=6','site-header.js?v=8').replaceAll('navigation-v17.js?v=75','navigation-v17.js?v=76').replaceAll('cell-lab.js?v=73','cell-lab.js?v=74').replaceAll('muscle-lab.js?v=70','muscle-lab.js?v=71').replaceAll('muscle-guide.js?v=2','muscle-guide.js?v=4').replaceAll('digestion-viewer.js?v=2','digestion-viewer.js?v=3').replaceAll('nutrition-lab.js?v=63','nutrition-lab.js?v=64').replaceAll('fat-burning.js?v=4','fat-burning.js?v=5');
+ const next=old.replaceAll('platform-shell.js?v=99','platform-shell.js?v=100').replaceAll('directions.js?v=99','directions.js?v=100').replaceAll('home-feedback.js?v=99','home-feedback.js?v=100').replaceAll('platform-learning.js?v=84','platform-learning.js?v=85').replaceAll('site-header.js?v=6','site-header.js?v=7').replaceAll('navigation-v17.js?v=75','navigation-v17.js?v=76').replaceAll('cell-lab.js?v=73','cell-lab.js?v=74').replaceAll('muscle-lab.js?v=70','muscle-lab.js?v=71').replaceAll('muscle-guide.js?v=2','muscle-guide.js?v=3').replaceAll('digestion-viewer.js?v=2','digestion-viewer.js?v=3').replaceAll('nutrition-lab.js?v=63','nutrition-lab.js?v=64').replaceAll('fat-burning.js?v=4','fat-burning.js?v=5');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
-// Follow-up audit fixes: every changed resource and its import parents refresh together.
+// Research page (2026-10-27): new material in the catalog and search → cascade of versions for everything that imports it.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const updates={'platform-shell.js?v=100':'platform-shell.js?v=101','directions.js?v=100':'directions.js?v=101','home-feedback.js?v=100':'home-feedback.js?v=101','site-header.js?v=7':'site-header.js?v=8','cell-lab.js?v=74':'cell-lab.js?v=75','muscle-lab.js?v=71':'muscle-lab.js?v=72','muscle-guide.js?v=3':'muscle-guide.js?v=4','digestion-viewer.js?v=3':'digestion-viewer.js?v=4','nutrition-lab.js?v=64':'nutrition-lab.js?v=65','fat-burning.js?v=5':'fat-burning.js?v=6','appearance.js?v=1':'appearance.js?v=2','compare-page.js?v=2':'compare-page.js?v=3'};
+ const next=old.replaceAll('platform-shell.js?v=100','platform-shell.js?v=101').replaceAll('directions.js?v=100','directions.js?v=101').replaceAll('home-feedback.js?v=100','home-feedback.js?v=101').replaceAll('site-header.js?v=7','site-header.js?v=8').replaceAll('page-pine.css?v=17','page-pine.css?v=18');
+ if(next!==old)fs.writeFileSync(file,next);
+}
+
+// Mechanisms page (2026-10-27): new material in the catalog and search → cascade of versions for everything that imports it.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+ const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+ const next=old.replaceAll('platform-shell.js?v=101','platform-shell.js?v=102').replaceAll('directions.js?v=101','directions.js?v=102').replaceAll('home-feedback.js?v=101','home-feedback.js?v=102').replaceAll('site-header.js?v=8','site-header.js?v=9').replaceAll('fat-burning.js?v=6','fat-burning.js?v=7').replaceAll('page-pine.css?v=18','page-pine.css?v=19');
+ if(next!==old)fs.writeFileSync(file,next);
+}
+
+// Follow-up audit fixes, synchronized with research/mechanisms on main.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+ const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+ const updates={'platform-shell.js?v=102':'platform-shell.js?v=103','directions.js?v=102':'directions.js?v=103','home-feedback.js?v=102':'home-feedback.js?v=103','site-header.js?v=9':'site-header.js?v=10','cell-lab.js?v=74':'cell-lab.js?v=75','muscle-lab.js?v=71':'muscle-lab.js?v=72','muscle-guide.js?v=3':'muscle-guide.js?v=4','digestion-viewer.js?v=3':'digestion-viewer.js?v=4','nutrition-lab.js?v=64':'nutrition-lab.js?v=65','fat-burning.js?v=7':'fat-burning.js?v=8','appearance.js?v=1':'appearance.js?v=2','compare-page.js?v=2':'compare-page.js?v=3'};
  let next=old;for(const [from,to] of Object.entries(updates))next=next.replaceAll(from,to);
  if(next!==old)fs.writeFileSync(file,next);
 }

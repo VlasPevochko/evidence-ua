@@ -9,7 +9,9 @@ const guides=[
  {id:'guide-compare',title:'Порівняння добавок',href:'./compare.html',areaId:'supplements',kind:'guide'},
  {id:'guide-map',title:'Карта знань',href:'./map.html',areaId:'supplements',kind:'guide'},
  {id:'guide-videos',title:'Відео від читачів',href:'./videos.html',areaId:'supplements',kind:'guide'},
- {id:'guide-changes',title:'Що нового й що перевірено',href:'./changes.html',areaId:'supplements',kind:'guide'}
+ {id:'guide-changes',title:'Що нового й що перевірено',href:'./changes.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-research',title:'Дослідження простими словами',href:'./research.html',areaId:'supplements',kind:'guide'},
+ {id:'guide-mechanisms',title:'Як це працює: анімовані схеми',href:'./mechanisms.html',areaId:'supplements',kind:'guide'}
 ];
 const navigationMaterials=[
  {id:'navigation-atlas',title:'Атлас людського тіла',href:'./atlas.html',areaId:'atlas',areaTitle:'Атлас',group:'atlas',kind:'interactive'},
@@ -41,6 +43,8 @@ const searchTerms={
  'nutrition-protein-absorption':'білок білка білки білкові засвоєння білка',
  'guide-protein-meta':'білок білка білки білкові',
  'guide-videos':'відео ролик youtube ютуб instagram tiktok запропонувати надіслати посилання бібліотека відео',
+ 'guide-mechanisms':'як це працює механізм схема анімація кофеїн аденозин рецептор креатин фосфокреатин атф енергія м’яз бадьорість сонливість',
+ 'guide-research':'дослідження простими словами розбір мета-аналіз кроки сон дієта DASH кето середземноморська вагітність алкоголь вино підходи тренування коротко відповідь',
  'guide-changes':'оновлення зміни новини журнал що нового історія перевірки як ми перевіряємо',
  'guide-map':'карта знань схема зв’язки між темами навігація як пов’язані матеріали',
  'guide-compare':'порівняння порівняти добавки поруч два досьє кофеїн креатин магній різниця',

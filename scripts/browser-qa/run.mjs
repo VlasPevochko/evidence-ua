@@ -635,7 +635,7 @@ async function researchFlow(browser, origin, viewport) {
   const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
   await page.locator('.rs-card').first().waitFor({state: 'attached'});
   const total = await page.locator('.rs-card').count();
-  check(where, total >= 12, 'the page lists the write-ups');
+  check(where, total >= 16, 'the page lists the write-ups');
   check(where, (await page.locator('.rs-card[open]').count()) === 0, 'every card starts folded');
   const answers = await page.locator('.rs-answer').evaluateAll(els => els.map(e => e.getBoundingClientRect().height > 0 && e.innerText.length > 10));
   check(where, answers.every(Boolean), 'every card shows its one-line answer without opening');

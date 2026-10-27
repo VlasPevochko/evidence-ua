@@ -1,5 +1,5 @@
 // «Дослідження простими словами»: картки з однією відповіддю, деталі згорнуті; фільтр за темою.
-import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=2';
+import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=3';
 
 export const countLabel=(shown,total)=>shown===total?`Розборів: ${total}`:`Показано ${shown} із ${total}`;
 export const filterStudies=(topic,studies=STUDIES)=>topic==='all'?studies.slice():studies.filter(s=>s.topic===topic);

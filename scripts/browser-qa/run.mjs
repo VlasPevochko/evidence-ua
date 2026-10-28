@@ -226,8 +226,9 @@ async function exerciseFlow(browser, origin, viewport) {
 async function nutritionFlow(browser, origin, viewport) {
   const where = `nutrition @${viewport.name}`;
   const {context, page} = await open(browser, origin, viewport, '/index.html');
-  // Regression: the visible general Nutrition CTA must not bypass the hub into physiology.
-  await page.getByRole('link',{name:/Розібрати харчування/}).click();
+  // The home examples are now folded; use the visible Nutrition direction.
+  // Select by its name, not href: this must still catch a link that bypasses the hub.
+  await page.locator('#cards').getByRole('link',{name:/Харчування/}).click();
   await page.waitForURL('**/nutrition.html');
   await page.locator('[data-nutrition-menu]').waitFor({state:'attached'});
   // Owner-approved 2026-10-25: Nutrition is the entry; all mechanisms live in its physiology branch.
@@ -1111,6 +1112,10 @@ async function homeNoScriptFlow(browser, origin, viewport) {
     check(where, await page.locator('header a[href="./directions.html"]').first().isVisible(), 'the native fallback header must retain a visible directions link');
     check(where, await page.locator('[data-spectrum-question][href]').count() === 3 && await page.locator('#cards a[href]').count() === 6, 'all questions and all six directions must remain real fallback links');
     await artifact(page, viewport, 'home-without-javascript', page.locator('body'), {scroll: false});
+    await page.locator('.home-examples>summary').click();
+    check(where,await page.locator('.home-example-links a:visible').count()===3,'the folded examples must open natively without JavaScript');
+    await page.locator('.home-path-outline>summary').first().click();
+    check(where,await page.locator('.home-path-outline').first().locator('ol a:visible').count()>=3,'the complete route outline must open natively without JavaScript');
     await page.locator('[data-spectrum-question="creatine"]').click();
     await page.waitForURL(url => url.pathname === '/index.html' && url.hash === '#creatine');
     await page.locator('body > #creatine').waitFor({state: 'visible'});
@@ -1631,6 +1636,51 @@ async function homeLowerFlow(browser, origin, viewport) {
   const where=`home library and disclosures @${viewport.name}`;
   const {context,page,seen}=await open(browser,origin,viewport,'/index.html');
   await page.waitForSelector('.evidence-guide');
+  // Owner 2026-10-28: scrolling should reveal distinct navigation, route and
+  // library chapters, with real visible actions instead of one text column.
+  const chapters=await page.locator('.home-directory-section, #home-learning-paths, .home-library-section').evaluateAll(nodes=>nodes.map(node=>{
+    const style=getComputedStyle(node),rect=node.getBoundingClientRect();
+    const summary=node.querySelector(':scope > summary'),headingStyle=summary?getComputedStyle(summary):null;
+    // A native details chapter puts its top inset on its own summary.
+    const padding=parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)+(headingStyle?parseFloat(headingStyle.paddingTop)+parseFloat(headingStyle.paddingBottom):0);
+    return {top:rect.top+scrollY,left:rect.left,right:rect.right,padding,background:style.backgroundColor,image:style.backgroundImage};
+  }));
+  const background=await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundColor);
+  check(where,chapters.length===3&&chapters.every(chapter=>chapter.padding>=24&&(chapter.image!=='none'||(chapter.background!==background&&chapter.background!=='rgba(0, 0, 0, 0)'))),'directions, routes and library need visibly bounded surfaces');
+  check(where,chapters.length===3&&chapters[0].top<chapters[1].top&&chapters[1].top<chapters[2].top,'the page must progress from choosing a direction to routes and the library');
+  check(where,(await page.locator('#start-here-title').innerText())==='Обери напрям','the directory heading must explicitly identify the choice');
+  const topicBoxes=await page.locator('#cards>.topic-card').evaluateAll(nodes=>nodes.map(node=>{
+    const rect=node.getBoundingClientRect();
+    const contentFits=[...node.querySelectorAll('strong,.topic-state,.topic-open')].every(part=>{
+      const range=document.createRange();range.selectNodeContents(part);
+      return [...range.getClientRects()].every(line=>line.left>=rect.left-1&&line.right<=rect.right+1);
+    });
+    return {x:rect.x,y:rect.y,right:rect.right,width:rect.width,height:rect.height,contentFits,titleFont:parseFloat(getComputedStyle(node.querySelector('strong')).fontSize),action:node.querySelector('.topic-open')?.textContent.trim()};
+  }));
+  check(where,topicBoxes.length===6&&topicBoxes.every(box=>box.x>=0&&box.right<=viewport.width+1&&box.width>=44&&box.height>=44&&box.titleFont>=18&&box.contentFits&&box.action?.includes('Відкрити')),'all six directions and their text must fit as readable, tappable links with an explicit opening cue');
+  if(viewport.width<=700)check(where,Math.abs(topicBoxes[0].y-topicBoxes[1].y)<2&&topicBoxes[1].x>topicBoxes[0].x&&new Set(topicBoxes.map(box=>Math.round(box.y))).size===3,'the mobile direction chooser needs two columns and three rows');
+  const examples=page.locator('.home-examples');
+  check(where,!(await examples.evaluate(node=>node.open))&&await examples.locator('a:visible').count()===0,'the repeated introductory examples should start folded');
+  await examples.locator('summary').click();
+  check(where,await examples.locator('a:visible').count()===3,'all three existing example destinations must remain available');
+  await examples.locator('summary').click();
+  const starts=page.locator('#home-learning-paths .path-card>.path-start');
+  check(where,await starts.count()===3&&await starts.evaluateAll(nodes=>nodes.every(node=>{const rect=node.getBoundingClientRect();return rect.width>=44&&rect.height>=44;})),'all three route starts must remain visible without opening lesson outlines');
+  check(where,await page.locator('.home-path-outline[open]').count()===0,'full lesson outlines must start folded to keep the route previews compact');
+  const outline=page.locator('.home-path-outline').first(),outlineSummary=outline.locator('summary');
+  await outlineSummary.focus();await page.keyboard.press('Enter');
+  check(where,await outline.evaluate(node=>node.open)&&await visibleAfterDisclosureTransition(outline.locator('ol')),'the complete route outline must open with the keyboard');
+  await outlineSummary.press('Enter');
+  check(where,!(await outline.evaluate(node=>node.open)),'route outlines must close without hiding the route start');
+  const cta=page.locator('.supplement-entry .se-cta');
+  check(where,await cta.evaluate(node=>{const rect=node.getBoundingClientRect(),style=getComputedStyle(node);return rect.height>=44&&style.backgroundColor!=='rgba(0, 0, 0, 0)';}),'the library catalog action must be a clearly filled, tappable control');
+  check(where,!(await page.locator('.supplement-feature-link').isVisible()),'the library wrapper must not revive the retired duplicate creatine action');
+  if(process.env.QA_ARTIFACT_DIR){
+    await artifact(page,viewport,'home-directions-section',page.locator('.home-directory-section'));
+    await artifact(page,viewport,'home-routes-section',page.locator('#home-learning-paths'));
+    await artifact(page,viewport,'home-library-section',page.locator('.home-library-section'));
+    await page.screenshot({path:path.join(path.resolve(process.env.QA_ARTIFACT_DIR),`home-full-${viewport.name}.png`),fullPage:true});
+  }
   // The carousel is gone: one short entry leads to the catalogue and to every existing dossier.
   check(where,await page.locator('#supplement-carousel, .supplement-rail, #supplement-search').count()===0,'the retired supplement carousel is back on the home page');
   check(where,(await page.locator('.supplement-entry .se-cta').getAttribute('href'))==='./supplements.html','the entry must lead to the catalogue');
@@ -1744,6 +1794,7 @@ try {
   } else if (homeOnly) {
     await homeFlows(browser, origin);
     for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
+    await homeLowerFlow(browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
   } else {
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
@@ -1776,6 +1827,7 @@ try {
     for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
     for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
     for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
+    await homeLowerFlow(browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
     for (const viewport of viewports) await fatBurningFlow(browser, origin, viewport);
   }
 } finally {

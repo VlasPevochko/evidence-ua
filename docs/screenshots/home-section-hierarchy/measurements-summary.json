@@ -1,0 +1,366 @@
+{
+  "codePreservation": {
+    "heroHTMLIdentical": true,
+    "heroHTMLSHA256": "a33c7b6d2555e6480981df06ce52d66bc951fdefa72d9e8ab2babf23e8da6f47",
+    "heroCSSPrefixBytes": 25576,
+    "heroCSSPrefixIdentical": true,
+    "heroCSSPrefixSHA256": "a04a430f398226f3ab9f63b3dbb3d46a7e7884e94c3cb86afa14e0b477ed3996",
+    "assets": {
+      "home-spectrum.js": {
+        "identical": true,
+        "sha256": "ca8b11d6b106ef457a41a7401dce0fefbd0bace656f148969bd1f532f00f90e7"
+      },
+      "home-spectrum-wave.mjs": {
+        "identical": true,
+        "sha256": "799b45b45df5c79fc55eba35033b204a71588feeaf932838cde9431b572fac33"
+      },
+      "home-spectrum-ribbon.webp": {
+        "identical": true,
+        "sha256": "2864ed15ec351a790fbc23779aefb7dbc20936635984b20036a44d19e6802d4c"
+      },
+      "site-header.js": {
+        "identical": true,
+        "sha256": "8adb7e771d85f837286258e899472dfeff63b9ab73ea80481e89571a8101c33f"
+      },
+      "site-header.css": {
+        "identical": true,
+        "sha256": "efd139fa4f5e03c02022ed5fc3909c05a61c96254713d7dcd4a68b5f47ba0816"
+      }
+    }
+  },
+  "viewports": [
+    {
+      "name": "mobile390",
+      "before": {
+        "height": 5836,
+        "libraryY": 3842.83,
+        "routesHeight": 1187.13
+      },
+      "after": {
+        "height": 5215,
+        "libraryY": 3024.44,
+        "routesHeight": 684.56
+      },
+      "heightChange": -621,
+      "overflow": 0,
+      "lowerActions": 36,
+      "lowerTargetsUnder44": 2,
+      "heroGeometryIdentical": true,
+      "heroDifferences": [],
+      "chapterComputed": {
+        "directions": {
+          "selector": ".home-directory-section",
+          "paddingTop": "23px",
+          "paddingRight": "14px",
+          "paddingBottom": "14px",
+          "paddingLeft": "14px",
+          "borderTopWidth": "1px",
+          "borderTopColor": "rgba(209, 165, 255, 0.6)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(161, 122, 201, 0.3)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(161, 122, 201, 0.3)",
+          "borderLeftWidth": "1px",
+          "borderLeftColor": "rgba(161, 122, 201, 0.3)",
+          "backgroundColor": "rgb(19, 16, 27)",
+          "backgroundImage": "radial-gradient(at 92% 0px, rgba(100, 52, 138, 0.137), rgba(0, 0, 0, 0) 62%), none",
+          "borderRadius": "5px",
+          "boxSizing": "border-box"
+        },
+        "routes": {
+          "selector": "#home-learning-paths",
+          "paddingTop": "0px",
+          "paddingRight": "14px",
+          "paddingBottom": "4px",
+          "paddingLeft": "14px",
+          "borderTopWidth": "1px",
+          "borderTopColor": "rgba(142, 110, 173, 0.3)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(142, 110, 173, 0.3)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(142, 110, 173, 0.3)",
+          "borderLeftWidth": "2px",
+          "borderLeftColor": "rgb(198, 154, 242)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "linear-gradient(110deg, rgba(33, 22, 44, 0.533), rgb(16, 14, 24))",
+          "borderRadius": "3px",
+          "boxSizing": "border-box"
+        },
+        "library": {
+          "selector": ".home-library-section",
+          "paddingTop": "24px",
+          "paddingRight": "16px",
+          "paddingBottom": "16px",
+          "paddingLeft": "16px",
+          "borderTopWidth": "2px",
+          "borderTopColor": "rgb(183, 155, 206)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(158, 134, 188, 0.35)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(158, 134, 188, 0.35)",
+          "borderLeftWidth": "1px",
+          "borderLeftColor": "rgba(158, 134, 188, 0.35)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "linear-gradient(155deg, rgb(24, 20, 33), rgb(16, 14, 24) 65%)",
+          "borderRadius": "5px",
+          "boxSizing": "border-box"
+        }
+      },
+      "defaultDisclosureStates": [
+        {
+          "id": "",
+          "className": "home-examples",
+          "open": false
+        },
+        {
+          "id": "home-learning-paths",
+          "className": "",
+          "open": true
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        }
+      ],
+      "health": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "badLocalResponses": [],
+        "externalRequestsBlocked": []
+      }
+    },
+    {
+      "name": "narrow360",
+      "before": {
+        "height": 5961,
+        "libraryY": 3871.75,
+        "routesHeight": 1209.22
+      },
+      "after": {
+        "height": 5467,
+        "libraryY": 3081.86,
+        "routesHeight": 712.06
+      },
+      "heightChange": -494,
+      "overflow": 0,
+      "lowerActions": 36,
+      "lowerTargetsUnder44": 2,
+      "heroGeometryIdentical": true,
+      "heroDifferences": [],
+      "chapterComputed": {
+        "directions": {
+          "selector": ".home-directory-section",
+          "paddingTop": "23px",
+          "paddingRight": "14px",
+          "paddingBottom": "14px",
+          "paddingLeft": "14px",
+          "borderTopWidth": "1px",
+          "borderTopColor": "rgba(209, 165, 255, 0.6)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(161, 122, 201, 0.3)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(161, 122, 201, 0.3)",
+          "borderLeftWidth": "1px",
+          "borderLeftColor": "rgba(161, 122, 201, 0.3)",
+          "backgroundColor": "rgb(19, 16, 27)",
+          "backgroundImage": "radial-gradient(at 92% 0px, rgba(100, 52, 138, 0.137), rgba(0, 0, 0, 0) 62%), none",
+          "borderRadius": "5px",
+          "boxSizing": "border-box"
+        },
+        "routes": {
+          "selector": "#home-learning-paths",
+          "paddingTop": "0px",
+          "paddingRight": "14px",
+          "paddingBottom": "4px",
+          "paddingLeft": "14px",
+          "borderTopWidth": "1px",
+          "borderTopColor": "rgba(142, 110, 173, 0.3)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(142, 110, 173, 0.3)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(142, 110, 173, 0.3)",
+          "borderLeftWidth": "2px",
+          "borderLeftColor": "rgb(198, 154, 242)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "linear-gradient(110deg, rgba(33, 22, 44, 0.533), rgb(16, 14, 24))",
+          "borderRadius": "3px",
+          "boxSizing": "border-box"
+        },
+        "library": {
+          "selector": ".home-library-section",
+          "paddingTop": "24px",
+          "paddingRight": "16px",
+          "paddingBottom": "16px",
+          "paddingLeft": "16px",
+          "borderTopWidth": "2px",
+          "borderTopColor": "rgb(183, 155, 206)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(158, 134, 188, 0.35)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(158, 134, 188, 0.35)",
+          "borderLeftWidth": "1px",
+          "borderLeftColor": "rgba(158, 134, 188, 0.35)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "linear-gradient(155deg, rgb(24, 20, 33), rgb(16, 14, 24) 65%)",
+          "borderRadius": "5px",
+          "boxSizing": "border-box"
+        }
+      },
+      "defaultDisclosureStates": [
+        {
+          "id": "",
+          "className": "home-examples",
+          "open": false
+        },
+        {
+          "id": "home-learning-paths",
+          "className": "",
+          "open": true
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        }
+      ],
+      "health": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "badLocalResponses": [],
+        "externalRequestsBlocked": []
+      }
+    },
+    {
+      "name": "desktop1440",
+      "before": {
+        "height": 3644,
+        "libraryY": 2312.58,
+        "routesHeight": 494.88
+      },
+      "after": {
+        "height": 3694,
+        "libraryY": 2303.69,
+        "routesHeight": 364.66
+      },
+      "heightChange": 50,
+      "overflow": 0,
+      "lowerActions": 36,
+      "lowerTargetsUnder44": 2,
+      "heroGeometryIdentical": true,
+      "heroDifferences": [],
+      "chapterComputed": {
+        "directions": {
+          "selector": ".home-directory-section",
+          "paddingTop": "32px",
+          "paddingRight": "28px",
+          "paddingBottom": "26px",
+          "paddingLeft": "28px",
+          "borderTopWidth": "1px",
+          "borderTopColor": "rgba(209, 165, 255, 0.6)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(161, 122, 201, 0.3)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(161, 122, 201, 0.3)",
+          "borderLeftWidth": "1px",
+          "borderLeftColor": "rgba(161, 122, 201, 0.3)",
+          "backgroundColor": "rgb(19, 16, 27)",
+          "backgroundImage": "radial-gradient(at 92% 0px, rgba(100, 52, 138, 0.137), rgba(0, 0, 0, 0) 62%), none",
+          "borderRadius": "5px",
+          "boxSizing": "border-box"
+        },
+        "routes": {
+          "selector": "#home-learning-paths",
+          "paddingTop": "0px",
+          "paddingRight": "26px",
+          "paddingBottom": "12px",
+          "paddingLeft": "26px",
+          "borderTopWidth": "1px",
+          "borderTopColor": "rgba(142, 110, 173, 0.3)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(142, 110, 173, 0.3)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(142, 110, 173, 0.3)",
+          "borderLeftWidth": "2px",
+          "borderLeftColor": "rgb(198, 154, 242)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "linear-gradient(110deg, rgba(33, 22, 44, 0.533), rgb(16, 14, 24))",
+          "borderRadius": "3px",
+          "boxSizing": "border-box"
+        },
+        "library": {
+          "selector": ".home-library-section",
+          "paddingTop": "32px",
+          "paddingRight": "28px",
+          "paddingBottom": "24px",
+          "paddingLeft": "28px",
+          "borderTopWidth": "2px",
+          "borderTopColor": "rgb(183, 155, 206)",
+          "borderRightWidth": "1px",
+          "borderRightColor": "rgba(158, 134, 188, 0.35)",
+          "borderBottomWidth": "1px",
+          "borderBottomColor": "rgba(158, 134, 188, 0.35)",
+          "borderLeftWidth": "1px",
+          "borderLeftColor": "rgba(158, 134, 188, 0.35)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "linear-gradient(155deg, rgb(24, 20, 33), rgb(16, 14, 24) 65%)",
+          "borderRadius": "5px",
+          "boxSizing": "border-box"
+        }
+      },
+      "defaultDisclosureStates": [
+        {
+          "id": "",
+          "className": "home-examples",
+          "open": false
+        },
+        {
+          "id": "home-learning-paths",
+          "className": "",
+          "open": true
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        },
+        {
+          "id": "",
+          "className": "home-path-outline",
+          "open": false
+        }
+      ],
+      "health": {
+        "consoleErrors": [],
+        "pageErrors": [],
+        "badLocalResponses": [],
+        "externalRequestsBlocked": []
+      }
+    }
+  ]
+}

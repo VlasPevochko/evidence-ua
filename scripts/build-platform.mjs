@@ -5,6 +5,7 @@ import {learningNotesHTML} from '../src/platform/learning-notes.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 import {homeLearningHTML} from '../src/platform/learning-ui.mjs';
 import {homeSpectrumHTML} from '../src/platform/home-spectrum.mjs';
+import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
 for(const area of catalog.areas.filter(a=>a.available))for(const href of [area.href,...area.units.map(u=>u.href)]){
   const file='dist/'+href.replace(/^\.\//,'').split(/[?#]/)[0];
@@ -13,8 +14,7 @@ for(const area of catalog.areas.filter(a=>a.available))for(const href of [area.h
 fs.writeFileSync('dist/platform-catalog.js',fs.readFileSync('src/platform/catalog.mjs','utf8').replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=54'"));
 const positions={muscle:'18.5%',nutrition:'34%',supplements:'50%',cell:'3%',movement:'3%',sleep:'75%'};
 const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.title,subtitle:a.lab,href:a.id==='supplements'?'#supplement-library':a.href,state:a.state,position:positions[a.id]||'50%'}));
-const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const homeDirectionsHTML='<div class="label"><span>'+homeTopics.length+' напрямів Evidence UA</span><span>Обери тему · статус указано на картці</span></div><div class="cards" id="cards" aria-label="Тематичні напрями Evidence UA">'+homeTopics.map(topic=>`<a class="topic-card" data-area="${escapeHTML(topic.id)}" href="${escapeHTML(topic.href)}" style="--topic-x:${escapeHTML(topic.position)}"><strong>${escapeHTML(topic.title)}</strong><small>${escapeHTML(topic.subtitle)}</small><span class="topic-state">${escapeHTML(topic.state)} · Відкрити →</span></a>`).join('')+'</div>';
+const homeDirections=homeDirectionsHTML(homeTopics);
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
 fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=103'"));
 fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
@@ -23,12 +23,12 @@ fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/nex
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
 fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=85'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=86'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
 const home=fs.readFileSync(homeFile,'utf8');
-const withRoutes=home.replace(/<!-- EUA_HOME_SPECTRUM_START -->[\s\S]*?<!-- EUA_HOME_SPECTRUM_END -->/,'<!-- EUA_HOME_SPECTRUM_START -->'+homeSpectrumHTML()+'<!-- EUA_HOME_SPECTRUM_END -->').replace(/<!-- EUA_HOME_LEARNING_START -->[\s\S]*?<!-- EUA_HOME_LEARNING_END -->/,'<!-- EUA_HOME_LEARNING_START -->'+homeLearningHTML()+'<!-- EUA_HOME_LEARNING_END -->').replace(/<!-- EUA_HOME_DIRECTIONS_START -->[\s\S]*?<!-- EUA_HOME_DIRECTIONS_END -->/,'<!-- EUA_HOME_DIRECTIONS_START -->'+homeDirectionsHTML+'<!-- EUA_HOME_DIRECTIONS_END -->');
+const withRoutes=home.replace(/<!-- EUA_HOME_SPECTRUM_START -->[\s\S]*?<!-- EUA_HOME_SPECTRUM_END -->/,'<!-- EUA_HOME_SPECTRUM_START -->'+homeSpectrumHTML()+'<!-- EUA_HOME_SPECTRUM_END -->').replace(/<!-- EUA_HOME_LEARNING_START -->[\s\S]*?<!-- EUA_HOME_LEARNING_END -->/,'<!-- EUA_HOME_LEARNING_START -->'+homeLearningHTML()+'<!-- EUA_HOME_LEARNING_END -->').replace(/<!-- EUA_HOME_DIRECTIONS_START -->[\s\S]*?<!-- EUA_HOME_DIRECTIONS_END -->/,'<!-- EUA_HOME_DIRECTIONS_START -->'+homeDirections+'<!-- EUA_HOME_DIRECTIONS_END -->');
 if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
@@ -188,3 +188,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const next=old.replaceAll('platform-shell.js?v=103','platform-shell.js?v=104').replaceAll('directions.js?v=103','directions.js?v=104').replaceAll('site-header.js?v=10','site-header.js?v=11').replaceAll('navigation-v17.js?v=76','navigation-v17.js?v=77').replaceAll('fat-burning.js?v=8','fat-burning.js?v=9');
  if(next!==old)fs.writeFileSync(file,next);
 }
+
+// Owner 2026-10-28: lower-home route outlines changed; refresh the module import parent.
+{const path="dist/directions.html",old=fs.readFileSync(path,"utf8"),next=old.replaceAll("directions.js?v=104","directions.js?v=105");if(next!==old)fs.writeFileSync(path,next);}

@@ -1,3 +1,4 @@
+// Owner 2026-10-28: refresh the lower-home hierarchy stylesheet; hero controller unchanged.
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
@@ -7,7 +8,7 @@ const html=fs.readFileSync('dist/index.html','utf8');
 const css=fs.readFileSync('dist/home-spectrum.css','utf8');
 const entry=fs.readFileSync('dist/home-spectrum.js','utf8');
 const motion=fs.readFileSync('dist/home-spectrum-wave.mjs','utf8');
-assert(html.includes('home-spectrum.css?v=2')&&html.includes('home-spectrum.js?v=1'),'selected hero assets are wired');
+assert(html.includes('home-spectrum.css?v=3')&&html.includes('home-spectrum.js?v=1'),'selected hero assets are wired');
 for(const name of ['home-geo-hero.js','home-mobile-header.js','home-directions.js'])assert(!html.includes('src="./'+name),'obsolete home controllers are detached');
 assert(entry.includes('home-spectrum-wave.mjs?v=1'),'the active controller imports the tested ribbon renderer');
 assert(css.includes('home-spectrum-ribbon.webp')&&css.includes('radial-gradient'),'decorative static fallback survives missing Canvas/JavaScript');

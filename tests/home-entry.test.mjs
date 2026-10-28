@@ -1,3 +1,4 @@
+// Owner 2026-10-28: refresh the lower-home hierarchy stylesheet; hero controller unchanged.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -12,7 +13,7 @@ for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,are
 // Owner decision 2026-10-27: the question-led cosmic hero replaces the old picker CTA.
 // Keep the legacy card/footer behavior below as a preservation check; its DOM rewrites are guarded on the new home.
 assert(index.includes('class="spectrum-home"')&&index.includes('id="spectrum-search"'),'The selected question-led hero is present');
-assert(index.includes('./home-spectrum.js?v=1')&&index.includes('./home-spectrum.css?v=2'),'The new controller and stylesheet are wired');
+assert(index.includes('./home-spectrum.js?v=1')&&index.includes('./home-spectrum.css?v=3'),'The new controller and stylesheet are wired');
 assert(nav.includes("if (!document.querySelector('.spectrum-home'))"),'Legacy DOM replacement is disabled on the selected home');
 const catalogScript=index.indexOf('home-catalog.js?v=83'),navigationScript=index.indexOf('navigation-v17.js?v=77');
 assert(catalogScript>=0&&navigationScript>catalogScript,'Canonical catalog loads before the retained evidence-guide bootstrap');
@@ -69,10 +70,14 @@ assert expected==actual, 'Scientific article HTML changed'
 ids=[n.get('id') for n in root.xpath('//*[@id]')]
 assert len(ids)==len(set(ids)), 'Duplicate HTML IDs'
 assert root.xpath('//*[@id="evidence-card"]'), 'Starter link target absent'
-directions=root.xpath('//*[@id="start-here"]/*[@id="cards"]')
-assert len(directions)==1 and len(directions[0].xpath('./a'))==6, 'Six direct directions must work without JavaScript'
+# Owner 2026-10-28: directions now live in a distinct home chapter; all six
+# native actions still precede the optional examples and work without JS.
+directory=root.xpath('//*[@id="start-here"]/section[@class="home-directory-section"]')
+assert len(directory)==1, 'The directions need their own clearly labelled section'
+directions=directory[0].xpath('./*[@id="cards"]')
+assert len(directions)==1 and len(directions[0].xpath('./a'))==6, 'Six directions must work without JavaScript'
 assert directions[0].xpath('./a/@data-area')==['muscle','cell','nutrition','supplements','movement','sleep']
 start=root.xpath('//*[@id="start-here"]')[0]
-assert list(start).index(directions[0]) < list(start).index(start.xpath('./div[@class="start-choices"]')[0]), 'Directions must precede example questions'
+assert list(start).index(directory[0]) < list(start).index(start.xpath('./div[@class="start-choices"]')[0]), 'Directions must precede example questions'
 `]);
 console.log('Home entry: six actual catalog pages, CTA flow, real cards, feedback handlers, no sending/storage/tracking, copy success/fallback, sanitized URLs and eleven article subtrees (berberine added) passed.');

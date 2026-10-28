@@ -56,10 +56,11 @@
 
 - [x] Run npm run check, repeat build, compare scientific data/HTML and inspect final diff.
 - [x] Run independent whole-branch review and full automated Browser QA; resolve actual defects without weakening assertions.
-- [ ] Repeat Website build and tests plus Browser QA in GitHub Actions after PR creation (blocked by GitHub API transport).
+- [ ] Obtain green Website build and tests plus Browser QA in GitHub Actions on the final PR head; public HTML supports status reads while API transport remains blocked.
 - [x] Save changed-file list, validation limits and precise revert instructions in docs/HOME_SPECTRUM_REPORT.md.
-- [ ] Create PR, wait for green checks and present concrete review result. Do not merge until this PR receives explicit owner approval.
+- [x] Create PR: the owner opened PR #130 through the prepared GitHub form; its exact head is verified through the native Git pull ref.
+- [ ] Present green final PR checks and concrete review result. Do not merge until this PR receives explicit owner approval.
 
 Execution follows the user's explicit implementation request and the active multi-agent workflow; routine implementation choices are delegated without another permission round.
 
-Delivery status: implementation and independent code/visual reviews are complete; focused real-browser QA passed 286 checks and the final full run passed 2949 checks over all 21 pages. Fresh npm run check passed 96/96 test files, validation and smoke. All 254 rebuilt dist hashes match the immutable browser-tested snapshot. GitHub API transport returns Forbidden, while Git push to the canonical repository works; PR creation/CI and the owner's later merge remain pending. No branch/worktree has been deleted and production remains at the saved baseline.
+Delivery status: implementation and independent code/visual reviews are complete; focused real-browser QA passed 286 checks and the final full run passed 2949 checks over all 21 pages. Fresh npm run check passed 96/96 test files, validation and smoke. All 254 rebuilt dist hashes match the immutable browser-tested snapshot. The owner created PR #130; its first Website job passed and Browser QA exposed an early focus assertion before the queued native close event on mobile. A real-browser diagnostic reproduced the race with unchanged production. The QA-only fix awaits actual expected focus, retaining the original assertion. Fresh local checks passed again: 286 focused browser checks and 96/96 test files, validation/smoke; all 254 dist hashes remain unchanged. GitHub repeats both jobs after push. Public HTML now supports CI status reads; API transport remains Forbidden. No branch/worktree has been deleted and production remains at the saved baseline. Owner merge approval is still pending.

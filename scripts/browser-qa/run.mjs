@@ -1013,6 +1013,10 @@ async function homeSpectrumFlow(browser, origin, viewport) {
       if (repeat === 0) { await directions.locator('.spectrum-directions-list a').first().focus(); await page.keyboard.press('Escape'); }
       else await directions.locator('[data-spectrum-close]').click();
       await directions.waitFor({state: 'hidden'});
+      // Native close hides the dialog synchronously but queues its close event.
+      // A collapsed mobile header needs that event to focus the visible toggle.
+      // Wait for the actual focus contract, not merely the earlier hidden state.
+      await page.waitForFunction(node => node === document.activeElement, await focusTarget.elementHandle());
       check(where, await focusTarget.evaluate(node => node === document.activeElement), `${source} directions close must restore a visible opener's focus`);
     }
     // The phone drawer fills the viewport. Exercise an actual outside click
@@ -1023,6 +1027,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
       check(where, box.x > 1, 'the desktop directions drawer must leave a backdrop');
       await page.mouse.click(box.x / 2, 100);
       await directions.waitFor({state: 'hidden'});
+      await page.waitForFunction(node => node === document.activeElement, await focusTarget.elementHandle());
       check(where, await focusTarget.evaluate(node => node === document.activeElement), 'backdrop dismissal must return focus to the directions opener');
     }
     await openDirections('hero');

@@ -28,7 +28,32 @@
 
 Незалежний review знайшов і виправив: домашнє меню на маршруті досьє, відкладений пошук після переходу, фокус на прихованому полі, закриття панелі при кліку всередині padding, статичні стилі без JavaScript і успадкований старий grid layout. Додано регресійні перевірки. Окремо перевіряються браузерні сценарії й фактичні pixels хвилі.
 
-Остаточний `npm run check` пройшов: **96/96 тестових файлів**, validation п’яти модулів, smoke **21 HTML, 97 JS, 178 локальних цілей, 293 локальні HTML-якорі**. Повторна збірка дала ідентичні hashes усіх **254 файлів dist**. Повторний незалежний review не виявив невиправлених дефектів. GitHub Actions Browser QA ще очікується; до його terminal success не заявляємо браузерну готовність. Локальний браузерний preview не запускався; використовуємо чинний CI workflow. Статичні макети й DOM-fixtures не є доказом браузерної плавності.
+Інтеграційний `npm run check` пройшов: **96/96 тестових файлів**, validation п’яти модулів, smoke **21 HTML, 97 JS, 178 локальних цілей, 293 локальні HTML-якорі**. Повторна збірка дала ідентичні hashes усіх **254 файлів dist**. Повторний незалежний review не виявив невиправлених дефектів.
+
+Автоматичний браузерний прогін виконується документованим у `CLAUDE.md` runner на вже встановленому Chromium; браузер не встановлювався, публічний або користувацький preview не запускався. Runner сам створює тимчасовий ізольований сервер, блокує сторонні запити й закриває браузер/сервер після прогону. Це перевірка в настільному браузері з мобільними viewport і touch events, а не на фізичному телефоні власника.
+
+Перший повний браузерний прогін виявив п’ять невдалих перевірок із 2804: три помилково очікували неіндексоване посилання `sleep.html` замість канонічного матеріалу `sleep.html#sleep-stages`, дві використовували touch-команду Chromium, що завершувалась без фактичного прокручування. Виправлено саме harness: ціль читається з каталогу; touch перевіряється довіреною послідовністю натискання/руху/відпускання. Вимоги справжнього `scrollY`, зміни пікселів Canvas, зупинки у спокої та статичного reduced motion збережені.
+
+Перегляд справжніх скриншотів також виявив успадкований бірюзовий фон і маршрут нижче першого desktop-екрана. Ці проблеми виправлені тільки для головної; CSS cache піднятий до v2. Після виправлення **286/286 перевірок головної** пройшли на 360, 390 та 1440 px: пошук/результати, меню/фокус/Escape, реальні переходи, no-JS, звичайний wheel, touch-scroll, Canvas pixels, reduced motion і нижні блоки. Незалежний review п’ятифайлового виправлення не знайшов блокерів.
+
+Незалежний візуальний огляд фактичних desktop/mobile скриншотів і двох панелей підтвердив відповідність обраному третьому макету: повноширинна фіолетова хвиля, три зміщені питання з прямими посиланнями, композиція 2+1 на телефоні й маршрут у першому desktop-екрані. Замість сітки однакових карток питання прив’язані до спектра; пошук і напрями узгоджені за палітрою та типографікою. Огляд не виявив візуальних блокерів і не означає перевірку унікальності всього інтернету.
+
+Фінальний повторний `npm run check` після CSS v2 завершився з exit 0: **96/96 тестових файлів**, validation та smoke пройшли. Фінальний повний **Browser QA завершився з exit 0: 2949 перевірок на 21 сторінці × 2 viewport**, плюс окремий сценарій головної на 360 px і звичайний wheel/touch/reduced-motion; 3D-моделі фактично відрендерено **2/2**. Браузер читав окремий незмінний snapshot `dist`, щоб тести збірки не переписували файли під час завантаження. Після перебудови SHA-256 усіх **254 файлів dist** тотожні цьому перевіреному snapshot.
+
+GitHub Actions ще не запущено: середовище відповідає `Forbidden` на HTTPS-запит до `api.github.com`, хоча Git read/push до **VlasPevochko/evidence-ua** працює. Тому PR автоматично не створено; гілка реалізації та резервна гілка збережені на GitHub. Створення PR через вебінтерфейс запустить чинні Website build and tests та Browser QA. Потрібно дочекатися обох зелених перевірок і окремого рішення власника про merge. Локальні результати не є результатами CI або публікацією.
+
+## Фактичні скриншоти
+
+Ці файли збережені в Git. «До» знято з `dist` базового commit `4a5be20`; «після» та інтерактивні стани — з виправленої головної під час фінального повного прогону 2949 перевірок. Це браузерні знімки, а не згенеровані макети.
+
+| Стан | Комп’ютер | Телефон |
+| --- | --- | --- |
+| До змін | [1440 px](screenshots/home-spectrum/before-desktop.png) | [390 px](screenshots/home-spectrum/before-mobile.png) |
+| Нова головна | [1440 px](screenshots/home-spectrum/after-desktop.png) | [390 px](screenshots/home-spectrum/after-mobile.png) |
+| Відкритий пошук | [1440 px](screenshots/home-spectrum/search-desktop.png) | [390 px](screenshots/home-spectrum/search-mobile.png) |
+| Вибір напряму | [1440 px](screenshots/home-spectrum/directions-desktop.png) | [390 px](screenshots/home-spectrum/directions-mobile.png) |
+
+![Нова головна: справжній браузерний знімок](screenshots/home-spectrum/after-desktop.png)
 
 ## Як повернути попередню головну
 
@@ -74,6 +99,14 @@
 - `dist/supplements.html`
 - `dist/videos.html`
 - `docs/HOME_SPECTRUM_REPORT.md`
+- `docs/screenshots/home-spectrum/after-desktop.png`
+- `docs/screenshots/home-spectrum/after-mobile.png`
+- `docs/screenshots/home-spectrum/before-desktop.png`
+- `docs/screenshots/home-spectrum/before-mobile.png`
+- `docs/screenshots/home-spectrum/directions-desktop.png`
+- `docs/screenshots/home-spectrum/directions-mobile.png`
+- `docs/screenshots/home-spectrum/search-desktop.png`
+- `docs/screenshots/home-spectrum/search-mobile.png`
 - `docs/superpowers/plans/2026-10-27-home-spectrum.md`
 - `docs/superpowers/specs/2026-10-27-home-spectrum-design.md`
 - `scripts/browser-qa/run.mjs`

@@ -16,7 +16,7 @@
 - Main backup and isolated branch before edits; preserve all retained dist files.
 - No scientific content/confidence changes; frozen scientific digests remain authoritative.
 - Normal native scrolling, passive listeners, reduced-motion static fallback and bounded rendering.
-- Build and test sequentially. Browser execution uses the existing supported GitHub Actions workflow.
+- Build and test sequentially. Automated browser QA uses the documented pinned runner with preinstalled Chromium and an immutable dist snapshot; the existing GitHub Actions workflow repeats it when a PR can be created.
 - Cache versions follow changed modules and import parents. Owner approves merge separately.
 
 ## Review Focus
@@ -29,34 +29,37 @@
 
 ## Task 1: Hero and responsive composition
 
-- [ ] Add failing tests for homeSpectrumHTML(): real destinations from catalog, energy route state and semantic form/heading.
-- [ ] Create src/platform/home-spectrum.mjs and authored dist/home-spectrum.css. Produce homeSpectrumHTML() for root integration.
-- [ ] Verify responsive hierarchy, readable HTML text, focus and static no-JS fallback; no old hero/card-grid composition.
+- [x] Add failing tests for homeSpectrumHTML(): real destinations from catalog, energy route state and semantic form/heading.
+- [x] Create src/platform/home-spectrum.mjs and authored dist/home-spectrum.css. Produce homeSpectrumHTML() for root integration.
+- [x] Verify responsive hierarchy, readable HTML text, focus and static no-JS fallback; no old hero/card-grid composition.
 
 ## Task 2: Scroll-responsive ribbon
 
-- [ ] Add behavior tests for mountSpectrumWave(): scroll changes phase, native scrolling is not consumed, reduced motion stops animation, hidden/offscreen/pagehide cancels, remount/teardown is safe.
-- [ ] Implement authored dist/home-spectrum-wave.mjs with bounded Canvas 2D draw and idle settling. No permanent animation loop.
-- [ ] Run focused tests and report actual red/green results.
+- [x] Add behavior tests for mountSpectrumWave(): scroll changes phase, native scrolling is not consumed, reduced motion stops animation, hidden/offscreen/pagehide cancels, remount/teardown is safe.
+- [x] Implement authored dist/home-spectrum-wave.mjs with bounded Canvas 2D draw and idle settling. No permanent animation loop.
+- [x] Run focused tests and report actual red/green results.
 
 ## Task 3: Search/menu integration
 
-- [ ] Reuse shared search with one dialog per intended opener and no duplicated keyboard shortcuts; support the hero query and useful no-JS fallback.
-- [ ] Implement home-only catalog panel using canonical topics, with close/Escape and focus restoration. Preserve header behavior on all other pages.
-- [ ] Add repeated open/close, activation and route-fallback tests before implementation.
+- [x] Reuse shared search with one dialog per intended opener and no duplicated keyboard shortcuts; support the hero query and useful no-JS fallback.
+- [x] Implement home-only catalog panel using canonical topics, with close/Escape and focus restoration. Preserve header behavior on all other pages.
+- [x] Add repeated open/close, activation and route-fallback tests before implementation.
 
 ## Task 4: Root integration and preservation
 
-- [ ] Replace only home presentation and detach obsolete DOM-rewriting scripts; retain evidence guide text, lower-content anchors, feedback and route controller.
-- [ ] Integrate canonical fragment into build-platform and generated allowlist where needed; update import/cache parents.
-- [ ] Update only obsolete presentation contracts with owner-decision comments; leave scientific fixtures unchanged.
-- [ ] Add browser scenarios and before/after screenshots for wave, search, directions and actual destination clicks at phone and desktop sizes.
+- [x] Replace only home presentation and detach obsolete DOM-rewriting scripts; retain evidence guide text, lower-content anchors, feedback and route controller.
+- [x] Integrate canonical fragment into build-platform and generated allowlist where needed; update import/cache parents.
+- [x] Update only obsolete presentation contracts with owner-decision comments; leave scientific fixtures unchanged.
+- [x] Add browser scenarios and before/after screenshots for wave, search, directions and actual destination clicks at phone and desktop sizes.
 
 ## Task 5: Reviewable delivery
 
-- [ ] Run npm run check, repeat build, compare scientific data/HTML and inspect final diff.
-- [ ] Run independent whole-branch review and CI Browser QA; resolve actual defects without weakening assertions.
-- [ ] Save changed-file list, validation limits and precise revert instructions in docs/HOME_SPECTRUM_REPORT.md.
+- [x] Run npm run check, repeat build, compare scientific data/HTML and inspect final diff.
+- [x] Run independent whole-branch review and full automated Browser QA; resolve actual defects without weakening assertions.
+- [ ] Repeat Website build and tests plus Browser QA in GitHub Actions after PR creation (blocked by GitHub API transport).
+- [x] Save changed-file list, validation limits and precise revert instructions in docs/HOME_SPECTRUM_REPORT.md.
 - [ ] Create PR, wait for green checks and present concrete review result. Do not merge until this PR receives explicit owner approval.
 
 Execution follows the user's explicit implementation request and the active multi-agent workflow; routine implementation choices are delegated without another permission round.
+
+Delivery status: implementation and independent code/visual reviews are complete; focused real-browser QA passed 286 checks and the final full run passed 2949 checks over all 21 pages. Fresh npm run check passed 96/96 test files, validation and smoke. All 254 rebuilt dist hashes match the immutable browser-tested snapshot. GitHub API transport returns Forbidden, while Git push to the canonical repository works; PR creation/CI and the owner's later merge remain pending. No branch/worktree has been deleted and production remains at the saved baseline.

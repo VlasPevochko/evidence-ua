@@ -1,5 +1,7 @@
 // Browser QA for the static site. Run from the repository root:
 //   npm ci --prefix scripts/browser-qa --ignore-scripts && node scripts/browser-qa/run.mjs
+// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs
+// The default run and CI still execute every page and regression flow.
 // Uses the Chrome already installed on the machine (BROWSER_EXECUTABLE overrides the path).
 // Everything is served from a throw-away local server and third-party requests are blocked, so
 // the run is hermetic. The static tests cannot see layout, focus or runtime errors; this can.
@@ -876,7 +878,14 @@ async function nativeHomeScroll(page, context, touch) {
         const rect = canvas.getBoundingClientRect();
         return {x: Math.min(innerWidth - 24, innerWidth * .75), y: Math.min(innerHeight - 24, Math.max(180, rect.top + 150))};
       });
-      await client.send('Input.synthesizeScrollGesture', {...position, yDistance: -140, speed: 500, gestureSourceType: 'touch'});
+      // A trusted finger sequence exercises real touch scrolling. Chromium's
+      // synthesizeScrollGesture(touch) can report success without moving a page.
+      await client.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [position]});
+      for (let step = 1; step <= 16; step++) {
+        await client.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [{x: position.x, y: Math.max(24, position.y - step * 10)}]});
+        await page.waitForTimeout(16);
+      }
+      await client.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
     } finally { await client.detach(); }
   } else {
     await page.mouse.move(Math.round((await page.viewportSize()).width / 2), 330);
@@ -923,6 +932,9 @@ async function homeSpectrumFlow(browser, origin, viewport) {
   try {
     await page.locator('canvas#spectrum-wave').waitFor({state: 'visible'});
     await page.evaluate(() => document.fonts.ready);
+    const homeSurface = await page.locator('.page').evaluate(node => ({background: getComputedStyle(node).backgroundColor, before: getComputedStyle(node, '::before').display, after: getComputedStyle(node, '::after').display}));
+    check(where, homeSurface.background === 'rgb(11, 10, 18)' && homeSurface.before === 'none' && homeSurface.after === 'none', 'the chosen dark cosmic surface must replace every legacy teal wrapper layer');
+    if (viewport.width >= 1400) check(where, await page.locator('.spectrum-route-bar').evaluate(node => node.getBoundingClientRect().bottom <= innerHeight), 'the desktop route must remain visible within the first screen');
     check(where, (await page.locator('#top h1').innerText()).trim() === 'Почни з питання.', 'the real HTML heading must state the chosen entry');
     check(where, await page.locator('#spectrum-search').getAttribute('role') === 'search' && await page.locator('label[for="spectrum-query"]').count() === 1, 'the question search has a semantic form and accessible input label');
     const controls = await page.locator('#spectrum-query, #spectrum-search button[type="submit"], [data-spectrum-question], [data-spectrum-route], #spectrum-directions-trigger').evaluateAll(nodes => nodes.map(node => {
@@ -946,7 +958,11 @@ async function homeSpectrumFlow(browser, origin, viewport) {
       check(where, await page.locator('[data-spectrum-question="muscle"] h2').evaluate(node => getComputedStyle(node).textDecorationLine.includes('underline')), 'the question link must give visible pointer feedback');
     }
     const search = page.locator('dialog.eua-search');
-    for (const [query, href] of [['креатин', './index.html#creatine'], ['сон', './sleep.html']]) {
+    // Search indexes catalog units, whose Sleep destination includes its
+    // section anchor; the hub's bare page URL is not an indexed material.
+    const sleepStagesHref = areas.find(area => area.id === 'sleep').units.find(unit => unit.id === 'stages').href;
+    const sleepStagesURL = new URL(sleepStagesHref, origin + '/index.html');
+    for (const [query, href] of [['креатин', './index.html#creatine'], ['сон', sleepStagesHref]]) {
       await page.locator('#spectrum-query').fill(query);
       await page.locator('#spectrum-query').press('Enter');
       await search.waitFor({state: 'visible'});
@@ -965,8 +981,9 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     // than merely showing a matching label in a standalone hero widget.
     await submit.click();
     await search.waitFor({state: 'visible'});
-    await search.locator('.eua-search-results a[href="./sleep.html"]').click();
-    await page.waitForURL('**/sleep.html');
+    await search.locator(`.eua-search-results a[href="${sleepStagesHref}"]`).click();
+    await page.waitForURL(url => url.pathname === sleepStagesURL.pathname && url.hash === sleepStagesURL.hash);
+    await page.locator(sleepStagesURL.hash).waitFor({state: 'visible'});
     check(where, await page.locator('#sleep-stages').count() === 1, 'the home search result must open the actual Sleep material');
     await page.goto(origin + '/index.html#top', {waitUntil: 'load'});
     await page.locator('.eua-header-home-spectrum').waitFor();
@@ -1697,6 +1714,18 @@ async function baselineScreenshots(browser, origin, viewport) {
   await context.close();
 }
 
+async function homeFlows(browser, origin) {
+  for (const viewport of viewports) await isolatedFlow(homeSpectrumFlow, browser, origin, viewport);
+  // The extra narrow phone is home-only; all other pages retain the normal
+  // two-viewport matrix instead of silently tripling the entire suite.
+  await isolatedFlow(homeSpectrumFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
+  for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
+  for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
+  await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
+  for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});
+}
+
+const homeOnly = process.env.QA_HOME_ONLY === '1';
 const webgl = [];
 const server = await serve();
 const origin = `http://127.0.0.1:${server.address().port}`;
@@ -1707,6 +1736,9 @@ const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
 try {
   if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
+  } else if (homeOnly) {
+    await homeFlows(browser, origin);
+    for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
   } else {
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
@@ -1730,14 +1762,7 @@ try {
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
-    for (const viewport of viewports) await isolatedFlow(homeSpectrumFlow, browser, origin, viewport);
-    // The extra narrow phone is home-only; all other pages retain the normal
-    // two-viewport matrix instead of silently tripling the entire suite.
-    await isolatedFlow(homeSpectrumFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
-    for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
-    for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
-    await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
-    for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});
+    await homeFlows(browser, origin);
     for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
     for (const viewport of viewports) await videosFlow(browser, origin, viewport);
     for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
@@ -1760,7 +1785,8 @@ if (process.env.QA_SCREENSHOT_ONLY === '1') {
 
 if (failures.length) {
   for (const failure of failures) annotateFailure(failure);
-  console.error(`Browser QA failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
+  console.error(`${homeOnly ? 'Homepage QA' : 'Browser QA'} failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
   process.exit(1);
 }
-console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas, muscles-zone, spine-zone and Spectrum home/search/directions/native-scroll flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);
+if (homeOnly) console.log(`Homepage QA passed: ${checks} checks; Spectrum interactions at three viewports plus no-script, native-scroll, reduced-motion and lower-home flows.`);
+else console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas, muscles-zone, spine-zone and Spectrum home/search/directions/native-scroll flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);

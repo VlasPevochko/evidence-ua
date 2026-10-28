@@ -12,7 +12,7 @@ for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,are
 // Owner decision 2026-10-27: the question-led cosmic hero replaces the old picker CTA.
 // Keep the legacy card/footer behavior below as a preservation check; its DOM rewrites are guarded on the new home.
 assert(index.includes('class="spectrum-home"')&&index.includes('id="spectrum-search"'),'The selected question-led hero is present');
-assert(index.includes('./home-spectrum.js?v=1')&&index.includes('./home-spectrum.css?v=1'),'The new controller and stylesheet are wired');
+assert(index.includes('./home-spectrum.js?v=1')&&index.includes('./home-spectrum.css?v=2'),'The new controller and stylesheet are wired');
 assert(nav.includes("if (!document.querySelector('.spectrum-home'))"),'Legacy DOM replacement is disabled on the selected home');
 const catalogScript=index.indexOf('home-catalog.js?v=83'),navigationScript=index.indexOf('navigation-v17.js?v=77');
 assert(catalogScript>=0&&navigationScript>catalogScript,'Canonical catalog loads before the retained evidence-guide bootstrap');

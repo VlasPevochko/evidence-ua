@@ -2,7 +2,7 @@ import './site-header.js?v=11';
 import {findMaterials,materials} from './platform-materials.js?v=103';
 import {materialCard} from './platform-tools.js?v=103';
 import {catalog,findAreas} from './platform-catalog.js?v=100';
-import {pathCard} from './platform-learning.js?v=85';
+import {pathCard} from './platform-learning.js?v=86';
 export {pathCard};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function areaCard(area){

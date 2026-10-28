@@ -1,3 +1,4 @@
+// Owner-selected Spectrum home (2026-10-27): refresh shared header/search cache parents; historical scientific fixtures stay unchanged.
 // Follow-up audit fixes refresh shared imports; these wiring expectations follow the cache cascade.
 // 2026-10-26 Muscle Lab guide: catalog/materials gained muscle units and search words → versions cascade (catalog/materials/tools/shell/directions/home-feedback 98→99, site-header 5→6, search 3→4).
 // Shared shell cache version includes the Nutrition route migration.
@@ -64,7 +65,7 @@ assert.equal(directory.querySelector('#search-empty').hidden,true);
 assert(!/<a[\s>]/.test(directory.querySelector('#planned-list').innerHTML));
 const muscle=root('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE');mountMuscle(muscle);assert.equal(muscle.querySelector('#structure-title').textContent,'М’язове волокно');
 const cell=root('https://evidence.invalid/cell-lab.html?organelle=ORG-RIBOSOME');mountCell(cell);assert.equal(cell.querySelector('#organelle-title').textContent,'Рибосома');assert(cell.querySelector('#cell-canvas').innerHTML.includes('data-organelle="ORG-RIBOSOME" role="button" tabindex="0" aria-pressed="true"'));
-for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=103'));
+for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=104'));
 console.log('Platform: registry, links/anchors, planned states, search/reset, learning routes and actual selected-entity initialization passed. Browser visual QA not performed.');
 
 const created=[],header={nextElementSibling:null,closest(){return null;},after(element){this.nextElementSibling=element;}};

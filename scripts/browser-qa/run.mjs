@@ -1,5 +1,7 @@
 // Browser QA for the static site. Run from the repository root:
 //   npm ci --prefix scripts/browser-qa --ignore-scripts && node scripts/browser-qa/run.mjs
+// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs
+// The default run and CI still execute every page and regression flow.
 // Uses the Chrome already installed on the machine (BROWSER_EXECUTABLE overrides the path).
 // Everything is served from a throw-away local server and third-party requests are blocked, so
 // the run is hermetic. The static tests cannot see layout, focus or runtime errors; this can.
@@ -8,6 +10,7 @@ import http from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright-core';
+import {areas} from '../../src/platform/catalog.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
 // as runner logs, whose external storage may be inaccessible to a reviewer.
@@ -43,8 +46,8 @@ function serve() {
 
 const failures = [];
 const fail = (where, message) => failures.push(`${where}: ${message}`);
-async function isolatedFlow(flow, browser, origin, viewport) {
-  try { return await flow(browser, origin, viewport); }
+async function isolatedFlow(flow, browser, origin, viewport, ...args) {
+  try { return await flow(browser, origin, viewport, ...args); }
   catch (error) {
     const message = error.stack || String(error);
     annotateFailure(`${flow.name} @${viewport.name}: ${message}`);
@@ -54,10 +57,17 @@ async function isolatedFlow(flow, browser, origin, viewport) {
 let checks = 0;
 const check = (where, ok, message) => { checks++; if (!ok) fail(where, message); };
 
-async function open(browser, origin, viewport, route, {initScript} = {}) {
-  const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
+async function open(browser, origin, viewport, route, {initScript, contextOptions = {}} = {}) {
+  const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block', ...contextOptions});
   if (initScript) await context.addInitScript(initScript);
   const page = await context.newPage();
+  const seen = await observePage(page, origin);
+  await page.goto(origin + route, {waitUntil: 'load'});
+  await page.waitForTimeout(400);
+  return {context, page, seen};
+}
+
+async function observePage(page, origin) {
   const seen = {console: [], pageErrors: [], badResponses: [], external: [], requested: []};
   page.on('console', m => { if (m.type() === 'error') seen.console.push(m.text()); });
   page.on('pageerror', e => seen.pageErrors.push(String(e)));
@@ -69,17 +79,15 @@ async function open(browser, origin, viewport, route, {initScript} = {}) {
     seen.external.push(url);
     return r.abort();
   });
-  await page.goto(origin + route, {waitUntil: 'load'});
-  await page.waitForTimeout(400);
-  return {context, page, seen};
+  return seen;
 }
 
 // CI may retain small views of the changed states without screenshotting whole pages.
-async function artifact(page, viewport, name, locator) {
+async function artifact(page, viewport, name, locator, {scroll = true} = {}) {
   if (!process.env.QA_ARTIFACT_DIR) return;
   const dir = path.resolve(process.env.QA_ARTIFACT_DIR);
   fs.mkdirSync(dir, {recursive: true});
-  await locator.scrollIntoViewIfNeeded();
+  if (scroll) await locator.scrollIntoViewIfNeeded();
   const box = await locator.boundingBox();
   if (!box) throw new Error(`No screenshot target for ${name}`);
   const x = Math.max(0, box.x), y = Math.max(0, box.y);
@@ -96,7 +104,22 @@ async function generic(browser, origin, viewport, file) {
   await page.waitForSelector('.eua-site-header');
   check(where, (await page.locator('.eua-site-header').count()) === 1, 'exactly one common header is required');
   check(where, (await page.locator('.eua-header-wordmark small').innerText()).includes('ЗДОРОВ’Я'), 'the common brand tagline is missing');
-  check(where, (await page.locator('.eua-site-header nav a').count()) === 6, 'common navigation has six destinations after merging the duplicate catalog entry');
+  // Owner decision 2026-10-27: retain all canonical anchors in the DOM so the
+  // home article router can reveal them; CSS compacts only the active home.
+  const home = file === 'index.html';
+  const canonicalNavigation = [
+    ['Напрями', './directions.html'], ['Харчування', './nutrition.html'],
+    ['Дослідження', './index.html#pubmed-live'], ['Атлас', './atlas.html'],
+    ['Вправи', './exercises.html'], ['Добавки', './supplements.html']
+  ];
+  const navigation = await page.locator('.eua-site-header nav a').evaluateAll(nodes => nodes.map(node => [node.textContent.trim(), node.getAttribute('href')]));
+  check(where, JSON.stringify(navigation) === JSON.stringify(canonicalNavigation), `the DOM must retain all six canonical navigation labels and targets; found ${JSON.stringify(navigation)}`);
+  const checkVisibleNavigation = async () => {
+    const expected = home ? ['Напрями', 'Дослідження'] : canonicalNavigation.map(([label]) => label);
+    const visible = (await page.locator('.eua-site-header nav a:visible').allTextContents()).map(text => text.trim());
+    check(where, JSON.stringify(visible) === JSON.stringify(expected), `rendered navigation must contain ${expected.join(', ')}; found ${visible.join(', ')}`);
+  };
+  if (home) check(where, await page.locator('.eua-site-header.eua-header-home-spectrum .eua-header-about').count() === 1, 'the compact home header keeps the about action');
   // Compare actual rendered positions, not just common markup: the digestion
   // page previously lacked a border-box reset and made the same header taller.
   await page.evaluate(() => document.fonts.ready);
@@ -108,8 +131,10 @@ async function generic(browser, origin, viewport, file) {
     });
   }, viewport.name === 'mobile');
   const reference=headerGeometry.get(viewport.name);
-  if(!reference)headerGeometry.set(viewport.name,geometry);
-  else for(let i=0;i<geometry.length;i++)for(const axis of ['x','y','width','height']){
+  // The approved home masthead has its own serif composition and height;
+  // retain identical-header geometry assertions for all other pages.
+  if(!home&&!reference)headerGeometry.set(viewport.name,geometry);
+  else if(!home)for(let i=0;i<geometry.length;i++)for(const axis of ['x','y','width','height']){
     check(where,Math.abs(geometry[i][axis]-reference[i][axis])<=1,`${geometry[i].selector} ${axis}=${geometry[i][axis]} differs from shared reference ${reference[i][axis]}`);
   }
   if(viewport.name === 'mobile'){
@@ -117,10 +142,11 @@ async function generic(browser, origin, viewport, file) {
     check(where, !(await menu.isVisible()), 'common menu must start closed on a phone');
     await toggle.click();
     check(where, await menu.isVisible(), 'common menu must open');
+    await checkVisibleNavigation();
     await page.keyboard.press('Escape');
     check(where, !(await menu.isVisible()), 'Escape must close the common menu');
     check(where, await toggle.evaluate(n=>document.activeElement===n), 'Escape must restore focus to the menu toggle');
-  }
+  } else await checkVisibleNavigation();
   check(where, (await page.title()).trim().length > 0, 'empty <title>');
   check(where, (await page.locator('html').getAttribute('lang')) === 'uk', 'html lang is not "uk"');
   check(where, seen.console.length === 0, `console errors: ${seen.console.join(' | ')}`);
@@ -797,31 +823,310 @@ async function dietsFlow(browser, origin, viewport) {
   await context.close();
 }
 
-async function cardArtFlow(browser, origin, viewport) {
-  const where = `card art @${viewport.name}`;
-  // The picture cards belong to the «З чого почнемо?» section, which is laid out when opened through its anchor.
-  const {context, page, seen} = await open(browser, origin, viewport, '/index.html#start-here');
-  await page.locator('.home-picker-visual').first().waitFor({state: 'attached'});
-  // The cards are built by a script after load: wait until they have a real size before measuring.
-  await page.waitForFunction(() => [...document.querySelectorAll('.home-picker-visual')].length === 6 && [...document.querySelectorAll('.home-picker-visual')].every(e => e.getBoundingClientRect().width > 60));
-  const cards = await page.evaluate(async () => {
-    const out = [];
-    for (const el of document.querySelectorAll('.home-picker-visual')) {
-      const url = (getComputedStyle(el).backgroundImage.match(/url\("?([^")]+)"?\)/) || [])[1];
-      const ok = url ? await new Promise(r => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = url; }) : false;
-      const b = el.getBoundingClientRect();
-      out.push({area: el.parentElement.dataset.area, file: (url || '').split('/').pop(), ok, w: Math.round(b.width), h: Math.round(b.height)});
+// Owner decision 2026-10-27 replaces the old picture picker/geometric hero
+// with Spectrum questions, shared search/directions and a native-scroll wave.
+// Check rendered pixels as well as telemetry: a changing dataset alone does
+// not prove that the visitor sees the canvas change.
+async function waveSnapshot(page) {
+  return page.locator('canvas#spectrum-wave').evaluate(canvas => {
+    const {width, height} = canvas;
+    const pixels = canvas.getContext('2d').getImageData(0, 0, width, height).data;
+    const step = Math.max(1, Math.floor(width * height / 20000));
+    let hash = 2166136261;
+    const colors = new Set();
+    for (let pixel = 0; pixel < width * height; pixel += step) {
+      const at = pixel * 4;
+      for (let channel = 0; channel < 4; channel++) hash = Math.imul(hash ^ pixels[at + channel], 16777619);
+      if (pixels[at + 3]) colors.add(`${pixels[at]},${pixels[at + 1]},${pixels[at + 2]}`);
     }
-    return out;
+    const rect = canvas.getBoundingClientRect();
+    return {width, height, digest: (hash >>> 0).toString(16), colors: colors.size,
+      phase: canvas.dataset.wavePhase, progress: canvas.dataset.waveProgress, frame: canvas.dataset.waveFrame,
+      visible: rect.bottom > 24 && rect.top < innerHeight - 24, scrollY};
   });
-  check(where, cards.length === 6, 'six direction cards have a picture');
-  check(where, cards.every(c => /^card-art-[a-z]+-v[12]\.webp$/.test(c.file)), 'every card uses its card-art file');
-  check(where, new Set(cards.map(c => c.file)).size === 6, 'six different pictures');
-  check(where, cards.every(c => c.ok), 'every picture loads');
-  check(where, cards.every(c => c.w >= 80 && c.h >= 80), 'pictures are big enough to read');
-  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the home page');
-  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the cards raise no errors');
-  await context.close();
+}
+
+async function waitForWaveIdle(page) {
+  await page.locator('canvas#spectrum-wave').evaluate(async canvas => {
+    const start = performance.now();
+    let frame = canvas.dataset.waveFrame, stableSince = start;
+    if (frame === undefined) throw new Error('wave frame telemetry is missing');
+    while (performance.now() - start < 4000) {
+      await new Promise(resolve => setTimeout(resolve, 80));
+      if (canvas.dataset.waveFrame !== frame) { frame = canvas.dataset.waveFrame; stableSince = performance.now(); }
+      if (performance.now() - stableSince >= 320) return;
+    }
+    throw new Error('wave keeps rendering after native scrolling stops');
+  });
+}
+
+function checkBrowserHealth(where, seen) {
+  check(where, seen.console.length === 0, `console errors: ${seen.console.join(' | ')}`);
+  check(where, seen.pageErrors.length === 0, `uncaught errors: ${seen.pageErrors.join(' | ')}`);
+  check(where, seen.badResponses.length === 0, `failed local requests: ${seen.badResponses.join(', ')}`);
+  check(where, seen.external.length === 0, `third-party requests: ${seen.external.join(', ')}`);
+}
+
+async function nativeHomeScroll(page, context, touch) {
+  if (touch) {
+    // CDP injects a native finger gesture into a touch-capable Chromium
+    // context. No dispatchEvent(), scrollTo() or synthetic scroll event can
+    // stand in for the browser actually moving the document here.
+    const client = await context.newCDPSession(page);
+    try {
+      const position = await page.locator('canvas#spectrum-wave').evaluate(canvas => {
+        const rect = canvas.getBoundingClientRect();
+        return {x: Math.min(innerWidth - 24, innerWidth * .75), y: Math.min(innerHeight - 24, Math.max(180, rect.top + 150))};
+      });
+      // A trusted finger sequence exercises real touch scrolling. Chromium's
+      // synthesizeScrollGesture(touch) can report success without moving a page.
+      await client.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [position]});
+      for (let step = 1; step <= 16; step++) {
+        await client.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [{x: position.x, y: Math.max(24, position.y - step * 10)}]});
+        await page.waitForTimeout(16);
+      }
+      await client.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
+    } finally { await client.detach(); }
+  } else {
+    await page.mouse.move(Math.round((await page.viewportSize()).width / 2), 330);
+    await page.mouse.wheel(0, 140);
+  }
+}
+
+async function homeWaveFlow(browser, origin, viewport, {touch = false, reduced = false} = {}) {
+  const where = `home ${reduced ? 'reduced motion' : touch ? 'native touch' : 'native wheel'} @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html', {
+    contextOptions: {hasTouch: touch, reducedMotion: reduced ? 'reduce' : 'no-preference'}
+  });
+  try {
+    await page.waitForFunction(() => document.querySelector('canvas#spectrum-wave')?.dataset.waveFrame !== undefined);
+    await waitForWaveIdle(page);
+    if (touch) check(where, await page.evaluate(() => navigator.maxTouchPoints > 0), 'the finger gesture must run in a touch-capable context');
+    const before = await waveSnapshot(page);
+    check(where, before.width > 0 && before.height > 0 && before.colors > 12 && before.visible, 'the visible wave must contain rendered, nonempty geometry');
+    await nativeHomeScroll(page, context, touch);
+    await page.waitForFunction(y => scrollY > y + 20, before.scrollY);
+    await waitForWaveIdle(page);
+    const after = await waveSnapshot(page);
+    check(where, after.scrollY > before.scrollY + 20, 'ordinary native input must move the document');
+    check(where, after.visible, 'the wave must remain in view while its geometry is compared');
+    check(where, after.width === before.width && after.height === before.height, 'scrolling must not resize the canvas backing buffer');
+    if (reduced) {
+      check(where, after.phase === before.phase && after.frame === before.frame && after.digest === before.digest, 'reduced motion must keep the actual wave pixels, phase and frame static after native scrolling');
+    } else {
+      check(where, after.phase !== before.phase && after.progress !== before.progress, 'actual scrollY must update the wave phase and progress');
+      check(where, after.digest !== before.digest, 'the actual RGBA canvas pixels must change after native scrolling');
+      await artifact(page, viewport, touch ? 'home-wave-touch-scrolled' : 'home-wave-scrolled', page.locator('body'), {scroll: false});
+    }
+    await page.waitForTimeout(400);
+    const idle = await waveSnapshot(page);
+    check(where, idle.frame === after.frame && idle.digest === after.digest, 'an idle visible wave must stop drawing');
+    check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'native scrolling must not create horizontal overflow');
+    checkBrowserHealth(where, seen);
+  } finally { await context.close(); }
+}
+
+async function homeSpectrumFlow(browser, origin, viewport) {
+  const where = `home Spectrum @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('canvas#spectrum-wave').waitFor({state: 'visible'});
+    await page.evaluate(() => document.fonts.ready);
+    const homeSurface = await page.locator('.page').evaluate(node => ({background: getComputedStyle(node).backgroundColor, before: getComputedStyle(node, '::before').display, after: getComputedStyle(node, '::after').display}));
+    check(where, homeSurface.background === 'rgb(11, 10, 18)' && homeSurface.before === 'none' && homeSurface.after === 'none', 'the chosen dark cosmic surface must replace every legacy teal wrapper layer');
+    if (viewport.width >= 1400) check(where, await page.locator('.spectrum-route-bar').evaluate(node => node.getBoundingClientRect().bottom <= innerHeight), 'the desktop route must remain visible within the first screen');
+    check(where, (await page.locator('#top h1').innerText()).trim() === 'Почни з питання.', 'the real HTML heading must state the chosen entry');
+    check(where, await page.locator('#spectrum-search').getAttribute('role') === 'search' && await page.locator('label[for="spectrum-query"]').count() === 1, 'the question search has a semantic form and accessible input label');
+    const controls = await page.locator('#spectrum-query, #spectrum-search button[type="submit"], [data-spectrum-question], [data-spectrum-route], #spectrum-directions-trigger').evaluateAll(nodes => nodes.map(node => {
+      const box = node.getBoundingClientRect(); return {width: box.width, height: box.height, left: box.left, right: box.right};
+    }));
+    check(where, controls.length === 7 && controls.every(box => box.width >= 44 && box.height >= 44 && box.left >= 0 && box.right <= viewport.width + 1), 'all hero controls must be usable tap targets within the viewport');
+    const questionBoxes = await page.locator('[data-spectrum-question]').evaluateAll(nodes => nodes.map(node => {
+      const box = node.getBoundingClientRect();return {x: box.x, y: box.y, right: box.right, bottom: box.bottom};
+    }));
+    check(where, viewport.width <= 700 ? questionBoxes[0].right <= questionBoxes[1].x + 1 && questionBoxes[2].y >= questionBoxes[1].bottom - 1 : questionBoxes.every((box, index) => !index || box.x > questionBoxes[index - 1].right), 'three questions must retain the readable phone 2+1 / desktop three-column hierarchy');
+    check(where, await page.locator('canvas#spectrum-wave').evaluate(canvas => canvas.getAttribute('aria-hidden') === 'true' && getComputedStyle(canvas).pointerEvents === 'none'), 'the decorative wave must stay out of accessibility and pointer navigation');
+    await artifact(page, viewport, 'home-first-screen', page.locator('body'), {scroll: false});
+    await page.locator('#spectrum-query').focus();
+    await page.keyboard.press('Tab');
+    const submit = page.locator('#spectrum-search button[type="submit"]');
+    check(where, await submit.evaluate(node => document.activeElement === node && node.matches(':focus-visible') && getComputedStyle(node).outlineStyle !== 'none' && parseFloat(getComputedStyle(node).outlineWidth) >= 2), 'keyboard navigation must visibly focus the search submit button');
+    await page.keyboard.press('Tab');
+    check(where, await page.locator('[data-spectrum-question="muscle"]').evaluate(node => document.activeElement === node && node.matches(':focus-visible') && getComputedStyle(node).outlineStyle !== 'none'), 'keyboard navigation must visibly focus the first real question');
+    if (viewport.width > 700) {
+      await page.locator('[data-spectrum-question="muscle"]').hover();
+      check(where, await page.locator('[data-spectrum-question="muscle"] h2').evaluate(node => getComputedStyle(node).textDecorationLine.includes('underline')), 'the question link must give visible pointer feedback');
+    }
+    const search = page.locator('dialog.eua-search');
+    // Search indexes catalog units, whose Sleep destination includes its
+    // section anchor; the hub's bare page URL is not an indexed material.
+    const sleepStagesHref = areas.find(area => area.id === 'sleep').units.find(unit => unit.id === 'stages').href;
+    const sleepStagesURL = new URL(sleepStagesHref, origin + '/index.html');
+    for (const [query, href] of [['креатин', './index.html#creatine'], ['сон', sleepStagesHref]]) {
+      await page.locator('#spectrum-query').fill(query);
+      await page.locator('#spectrum-query').press('Enter');
+      await search.waitFor({state: 'visible'});
+      const result = search.locator(`.eua-search-results a[href="${href}"]`);
+      await result.waitFor({state: 'visible'});
+      check(where, await search.count() === 1 && await page.locator('#eua-search-q').inputValue() === query, 'the hero must seed one actual shared search dialog');
+      check(where, await page.locator('#eua-search-q').evaluate(node => node === document.activeElement), 'opening the shared search must focus its query');
+      check(where, (await search.locator('.eua-search-status').innerText()).includes('Знайдено'), 'the typed question must produce real indexed results');
+      if (query === 'креатин') await artifact(page, viewport, 'home-search-open', search);
+      await result.focus();
+      await page.keyboard.press('Escape');
+      await search.waitFor({state: 'hidden'});
+      check(where, await page.locator('#spectrum-query').evaluate(node => node === document.activeElement), 'Escape from a result must close search and restore the hero query focus');
+    }
+    // A repeated submit must still navigate through a real result, rather
+    // than merely showing a matching label in a standalone hero widget.
+    await submit.click();
+    await search.waitFor({state: 'visible'});
+    await search.locator(`.eua-search-results a[href="${sleepStagesHref}"]`).click();
+    await page.waitForURL(url => url.pathname === sleepStagesURL.pathname && url.hash === sleepStagesURL.hash);
+    await page.locator(sleepStagesURL.hash).waitFor({state: 'visible'});
+    check(where, await page.locator('#sleep-stages').count() === 1, 'the home search result must open the actual Sleep material');
+    await page.goto(origin + '/index.html#top', {waitUntil: 'load'});
+    await page.locator('.eua-header-home-spectrum').waitFor();
+    const directions = page.locator('dialog#spectrum-directions');
+    const openDirections = async source => {
+      const opener = source === 'hero' ? page.locator('#spectrum-directions-trigger') : page.locator('.eua-site-header nav a[href="./directions.html"]');
+      if (!(await opener.isVisible())) await page.locator('.eua-header-toggle').click();
+      await opener.click();
+      await directions.waitFor({state: 'visible'});
+      check(where, await directions.count() === 1, 'repeated entry points must reuse one native directions dialog');
+      return source === 'header' && viewport.width <= 1100 ? page.locator('.eua-header-toggle') : opener;
+    };
+    for (const source of ['hero', 'header']) for (let repeat = 0; repeat < 2; repeat++) {
+      const focusTarget = await openDirections(source);
+      const actual = await directions.locator('.spectrum-directions-list a').evaluateAll(nodes => nodes.map(node => ({id: node.dataset.spectrumArea, href: node.getAttribute('href'), title: node.querySelector('.spectrum-directions-name')?.textContent.trim(), state: node.querySelector('.spectrum-directions-state')?.textContent.trim()})));
+      const expected = areas.filter(area => area.available).map(({id, href, title, state}) => ({id, href, title, state}));
+      check(where, JSON.stringify(actual) === JSON.stringify(expected), `${source} directions must show all six real catalog destinations and their current statuses`);
+      const box = await directions.boundingBox();
+      check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1 && box.y >= 0 && box.y + box.height <= viewport.height + 1, 'the native directions drawer must fit the viewport');
+      if (source === 'hero' && repeat === 0) {
+        await artifact(page, viewport, 'home-directions-open', directions);
+        // A click targeted at dialog padding is inside its rectangle, not a
+        // backdrop dismissal; this previously closed the home drawer.
+        await page.mouse.click(box.x + 8, box.y + 8);
+        check(where, await directions.isVisible() && await directions.evaluate(node => node.open), 'clicking inside the directions padding must keep the drawer open');
+      }
+      if (repeat === 0) { await directions.locator('.spectrum-directions-list a').first().focus(); await page.keyboard.press('Escape'); }
+      else await directions.locator('[data-spectrum-close]').click();
+      await directions.waitFor({state: 'hidden'});
+      // Native close hides the dialog synchronously but queues its close event.
+      // A collapsed mobile header needs that event to focus the visible toggle.
+      // Wait for the actual focus contract, not merely the earlier hidden state.
+      await page.waitForFunction(node => node === document.activeElement, await focusTarget.elementHandle());
+      check(where, await focusTarget.evaluate(node => node === document.activeElement), `${source} directions close must restore a visible opener's focus`);
+    }
+    // The phone drawer fills the viewport. Exercise an actual outside click
+    // only where the desktop drawer leaves a visible native backdrop.
+    if (viewport.width > 700) {
+      const focusTarget = await openDirections('hero');
+      const box = await directions.boundingBox();
+      check(where, box.x > 1, 'the desktop directions drawer must leave a backdrop');
+      await page.mouse.click(box.x / 2, 100);
+      await directions.waitFor({state: 'hidden'});
+      await page.waitForFunction(node => node === document.activeElement, await focusTarget.elementHandle());
+      check(where, await focusTarget.evaluate(node => node === document.activeElement), 'backdrop dismissal must return focus to the directions opener');
+    }
+    await openDirections('hero');
+    await directions.locator('.spectrum-directions-list a[href="./nutrition.html"]').click();
+    await page.waitForURL('**/nutrition.html');
+    check(where, await page.locator('.nutrition-branch').count() === 2, 'choosing a direction must open its actual Nutrition entry');
+    for (const [question, pathname, hash, target] of [
+      ['muscle', '/muscle-lab.html', '#explorer', '#explorer'],
+      ['fat', '/fat-burning.html', '', '#fb-step-title'],
+      ['creatine', '/index.html', '#creatine', 'body > #creatine']
+    ]) {
+      await page.goto(origin + '/index.html#top', {waitUntil: 'load'});
+      await page.locator(`[data-spectrum-question="${question}"]`).click();
+      await page.waitForURL(url => url.pathname === pathname && url.hash === hash);
+      await page.locator(target).waitFor({state: 'visible'});
+      check(where, new URL(page.url()).pathname === pathname && new URL(page.url()).hash === hash, `${question} must reach its real existing material and section`);
+      if (question === 'creatine') {
+        await page.waitForFunction(() => document.body.dataset.routeView === 'article');
+        check(where, !(await page.locator('#top').isVisible()), 'the question must activate the preserved creatine article router');
+        // The same home header stays mounted on a dossier. Its configured
+        // hero query is hidden here, so Escape must focus the visible button.
+        const headerSearch = page.locator('.eua-site-header .eua-header-search');
+        await headerSearch.waitFor({state: 'visible'});
+        await headerSearch.click();
+        await search.waitFor({state: 'visible'});
+        await page.keyboard.press('Escape');
+        await search.waitFor({state: 'hidden'});
+        check(where, await headerSearch.isVisible() && await headerSearch.evaluate(node => node === document.activeElement), 'Escape from article search must restore the visible header search button');
+        const headerDirections = page.locator('.eua-site-header nav a[href="./directions.html"]');
+        if (!(await headerDirections.isVisible())) await page.locator('.eua-header-toggle').click();
+        check(where, await page.locator('.eua-site-header nav a:visible').count() === 6, 'the dossier header must reveal all six canonical navigation entries');
+        check(where, await headerDirections.getAttribute('role') === null && await headerDirections.getAttribute('aria-haspopup') === null && await headerDirections.getAttribute('aria-controls') === null, 'article Directions must retain native catalog-link semantics');
+        await headerDirections.click();
+        await page.waitForURL(url => url.pathname === '/directions.html' && !url.hash);
+        check(where, await page.locator('h1').isVisible(), 'article Directions must navigate to the actual catalog instead of opening the home drawer');
+      }
+    }
+    await page.goto(origin + '/index.html#top', {waitUntil: 'load'});
+    await page.locator('[data-spectrum-route]').click();
+    await page.waitForURL(url => url.pathname === '/cell-lab.html' && url.searchParams.get('path') === 'energy' && url.searchParams.get('lesson') === '0');
+    await page.locator('#cell-canvas [data-organelle="ORG-MITOCHONDRION"][aria-pressed="true"]').waitFor();
+    check(where, new URL(page.url()).searchParams.get('organelle') === 'ORG-MITOCHONDRION' && new URL(page.url()).hash === '#cell-canvas', 'starting the energy route must retain its real organelle and canvas deep link');
+    check(where, /Мітохондрія/.test(await page.locator('#organelle-title').innerText()) && /Клітина та енергія/.test(await page.locator('.eua-learning-nav').innerText()), 'the destination must select the mitochondrion model and mount the energy curriculum');
+    check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'home transitions must not introduce horizontal overflow');
+    checkBrowserHealth(where, seen);
+  } finally { await context.close(); }
+}
+
+async function homeNoScriptFlow(browser, origin, viewport) {
+  const where = `home without JavaScript @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html', {contextOptions: {javaScriptEnabled: false}});
+  try {
+    check(where, await page.locator('#spectrum-title').isVisible(), 'the question heading must be readable without JavaScript');
+    // Computed styles catch CSS selectors that accidentally depend on the
+    // router setting data-route-view, and the inherited legacy home grid.
+    const layout = await page.evaluate(async () => {
+      const page = document.querySelector('body > .page'), home = document.querySelector('.spectrum-home'), ribbon = document.querySelector('.spectrum-ribbon');
+      const pageStyle = getComputedStyle(page), homeStyle = getComputedStyle(home), ribbonStyle = getComputedStyle(ribbon);
+      const fullWidth = node => { const box = node.getBoundingClientRect(); return Math.abs(box.left) <= 1 && Math.abs(box.width - document.documentElement.clientWidth) <= 1; };
+      const imageURL = (ribbonStyle.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/) || [])[1];
+      let ribbonLoaded = false;
+      if (imageURL) {
+        const image = new Image(); image.src = imageURL;
+        try { await image.decode(); ribbonLoaded = image.naturalWidth > 0 && image.naturalHeight > 0; } catch {}
+      }
+      const ribbonBox = ribbon.getBoundingClientRect(), homeBox = home.getBoundingClientRect();
+      return {
+        display: pageStyle.display, pageFullWidth: fullWidth(page), homeFullWidth: fullWidth(home),
+        background: getComputedStyle(document.body).backgroundColor, homeBackground: homeStyle.backgroundImage,
+        headingFont: getComputedStyle(document.getElementById('spectrum-title')).fontFamily,
+        ribbonPosition: ribbonStyle.position, ribbonImage: ribbonStyle.backgroundImage, ribbonLoaded,
+        ribbonVisible: ribbonStyle.display !== 'none' && ribbonStyle.visibility !== 'hidden' && Number(ribbonStyle.opacity) > 0 && ribbonBox.width > 0 && ribbonBox.height > 0 && ribbonBox.bottom > homeBox.top && ribbonBox.top < homeBox.bottom,
+        ribbonPointerEvents: ribbonStyle.pointerEvents,
+        overflow: document.documentElement.scrollWidth - innerWidth
+      };
+    });
+    check(where, layout.display === 'block' && layout.pageFullWidth && layout.homeFullWidth, `the static home must keep its full-width block layout: ${JSON.stringify(layout)}`);
+    check(where, layout.background === 'rgb(11, 10, 18)' && layout.homeBackground.includes('radial-gradient') && layout.headingFont.includes('Spectrum Serif'), 'the no-script home must retain its cosmic background and heading typography');
+    check(where, layout.ribbonPosition === 'absolute' && layout.ribbonPointerEvents === 'none' && layout.ribbonVisible && layout.ribbonLoaded && layout.ribbonImage.includes('home-spectrum-ribbon.webp'), 'the authored static ribbon must load and retain its decorative positioned styles without JavaScript');
+    check(where, layout.overflow <= 1, `the no-script home has ${layout.overflow}px horizontal overflow`);
+    check(where, await page.locator('header a[href="./directions.html"]').first().isVisible(), 'the native fallback header must retain a visible directions link');
+    check(where, await page.locator('[data-spectrum-question][href]').count() === 3 && await page.locator('#cards a[href]').count() === 6, 'all questions and all six directions must remain real fallback links');
+    await artifact(page, viewport, 'home-without-javascript', page.locator('body'), {scroll: false});
+    await page.locator('[data-spectrum-question="creatine"]').click();
+    await page.waitForURL(url => url.pathname === '/index.html' && url.hash === '#creatine');
+    await page.locator('body > #creatine').waitFor({state: 'visible'});
+    check(where, await page.locator('body > #creatine').evaluate(node => node.matches(':target') && getComputedStyle(node).display === 'block') && await page.locator('body > #creatine h1').isVisible(), 'the native #creatine target must reveal the existing dossier without JavaScript');
+    check(where, await page.locator('body > .page').evaluate(node => getComputedStyle(node).display === 'none') && !(await page.locator('.spectrum-home').isVisible()), 'native article targeting must hide the static home without JavaScript');
+    // Start from a fresh home document so the native :target test cannot
+    // accidentally substitute for the independent GET form fallback.
+    await page.goto(origin + '/index.html', {waitUntil: 'load'});
+    await page.locator('#spectrum-title').waitFor({state: 'visible'});
+    check(where, await page.locator('#spectrum-search').getAttribute('method') === 'get' && await page.locator('#spectrum-search').getAttribute('action') === './directions.html', 'the no-script query must use the actual catalog GET fallback');
+    await page.locator('#spectrum-query').fill('сон');
+    await page.locator('#spectrum-search button[type="submit"]').click();
+    await page.waitForURL(url => url.pathname === '/directions.html' && url.searchParams.get('q') === 'сон');
+    check(where, await page.locator('h1').isVisible(), 'submitting the fallback must reach the actual catalog page');
+    checkBrowserHealth(where, seen);
+  } finally { await context.close(); }
 }
 
 async function compactBannerFlow(browser, origin, viewport) {
@@ -1320,29 +1625,12 @@ async function visibleAfterDisclosureTransition(locator){
   catch{return false;}
 }
 
-// Home restyle keeps the working library and disclosures; decorations never
-// receive pointer input and the palette is shared with the Supplements page.
+// Owner decision 2026-10-27 replaces only the home pine/shippo presentation.
+// Its working library, evidence guide, disclosures and feedback stay covered.
 async function homeLowerFlow(browser, origin, viewport) {
-  const where=`home pine/shippo @${viewport.name}`;
+  const where=`home library and disclosures @${viewport.name}`;
   const {context,page,seen}=await open(browser,origin,viewport,'/index.html');
   await page.waitForSelector('.evidence-guide');
-  const style=await page.evaluate(()=>{
-    const category=document.querySelector('#categories'),guide=document.querySelector('.evidence-guide');
-    const fragments=[[category,'::before'],[category,'::after'],[guide,'::before']].map(([e,pseudo])=>{
-      const css=getComputedStyle(e,pseudo);return {image:css.backgroundImage,pointer:css.pointerEvents,opacity:Number(css.opacity),width:parseFloat(css.width)};
-    });
-    return {background:getComputedStyle(category).backgroundColor,footer:getComputedStyle(document.querySelector('.mission')).backgroundColor,
-      title:getComputedStyle(document.querySelector('#start-here-title')).fontFamily,
-      surface:getComputedStyle(document.querySelector('.start-choices>a')).backgroundColor,fragments};
-  });
-  check(where,style.background==='rgb(13, 25, 22)'&&style.footer===style.background,'pine background must continue through the footer');
-  check(where,style.surface==='rgb(20, 37, 32)','choice cards must use the Supplements surface');
-  check(where,style.title.includes('Source Serif 4'),'section headings must share the Supplements serif');
-  for(const fragment of style.fragments){
-    check(where,fragment.image.includes('home-shippo.svg'),'each fragment must use the same shippo repeat');
-    check(where,fragment.pointer==='none'&&fragment.opacity>0&&fragment.opacity<=.35,'decorations must stay quiet and noninteractive');
-    check(where,fragment.width<=viewport.width*.7,'shippo must be fragmented, not a full-width stripe');
-  }
   // The carousel is gone: one short entry leads to the catalogue and to every existing dossier.
   check(where,await page.locator('#supplement-carousel, .supplement-rail, #supplement-search').count()===0,'the retired supplement carousel is back on the home page');
   check(where,(await page.locator('.supplement-entry .se-cta').getAttribute('href'))==='./supplements.html','the entry must lead to the catalogue');
@@ -1362,12 +1650,18 @@ async function homeLowerFlow(browser, origin, viewport) {
   check(where,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'opened home content must not overflow horizontally');
   // Deep links from other pages (#home-feedback) must open the folded group together with the block.
   const feedbackPage=await context.newPage();
+  const feedbackSeen=await observePage(feedbackPage,origin);
   await feedbackPage.goto(page.url().split('#')[0]+'#home-feedback',{waitUntil:'load'});
   check(where,await feedbackPage.evaluate(()=>document.getElementById('home-about').open&&document.getElementById('home-feedback').open),'#home-feedback must open «Про сайт» and the feedback form');
+  await feedbackPage.locator('#feedback-useful').fill('Зрозумілий перехід від запитання до джерел.');
+  await feedbackPage.locator('#feedback-generate').click();
+  check(where,await feedbackPage.locator('#home-feedback-output').isVisible()&&(await feedbackPage.locator('#home-feedback-text').inputValue()).includes('Зрозумілий перехід від запитання до джерел.'),'the preserved feedback form must generate the actual local report');
+  check(where,(await feedbackPage.locator('#home-feedback-status').innerText()).includes('не надісланий'),'feedback generation must retain its explicit local-only status');
+  checkBrowserHealth(`${where} feedback`,feedbackSeen);
   await feedbackPage.close();
-  await page.emulateMedia({reducedMotion:'reduce'});
-  check(where,await page.locator('#categories').evaluate(e=>getComputedStyle(e,'::before').animationName)==='none','reduced motion must disable shippo movement');
-  check(where,seen.pageErrors.length===0&&seen.console.length===0,'home interactions must remain error-free');
+  // Reduced motion now has an actual pixel/static-frame native-scroll
+  // regression in homeWaveFlow, replacing the removed shippo animation.
+  checkBrowserHealth(where,seen);
   await context.close();
 }
 
@@ -1404,22 +1698,6 @@ async function fatBurningFlow(browser, origin, viewport) {
   await context.close();
 }
 
-async function homeMenuFlow(browser, origin) {
-  const viewport = viewports[0];
-  const where = `home menu @${viewport.name}`;
-  const {context, page} = await open(browser, origin, viewport, '/index.html');
-  const toggle = page.locator('.home-menu-toggle');
-  check(where, await toggle.isVisible(), 'menu toggle is not visible on mobile');
-  check(where, !(await page.locator('.page > header nav').first().isVisible()), 'menu is open before the click');
-  await toggle.click();
-  check(where, await page.locator('.page > header nav').first().isVisible(), 'menu does not open');
-  const labels = await page.locator('.page > header nav a:visible').allInnerTexts();
-  check(where, labels.length >= 4, `only ${labels.length} visible menu links`);
-  await page.keyboard.press('Escape');
-  check(where, !(await page.locator('.page > header nav').first().isVisible()), 'Escape does not close the menu');
-  await context.close();
-}
-
 // A historical dist can be served by the current pinned QA runner in CI for
 // before/after artifacts. This mode captures known audit states only: it neither
 // asserts fixed behavior nor prints a Browser QA success message for the baseline.
@@ -1432,9 +1710,27 @@ async function baselineScreenshots(browser, origin, viewport) {
   await page.goto(origin + '/compare.html?a=supplement-protein&b=supplement-caffeine', {waitUntil: 'load'});
   await page.locator('.cp-card').first().waitFor({state: 'visible'});
   await artifact(page, viewport, 'comparison-status', page.locator('#cp-out'));
+  // The historical home has the old hero DOM. Capture its real first screen
+  // without asserting the new Spectrum markup or any corrected behavior.
+  await page.goto(origin + '/index.html', {waitUntil: 'load'});
+  await page.locator('#top').waitFor({state: 'visible'});
+  await page.evaluate(() => document.fonts.ready);
+  await artifact(page, viewport, 'home-first-screen', page.locator('body'), {scroll: false});
   await context.close();
 }
 
+async function homeFlows(browser, origin) {
+  for (const viewport of viewports) await isolatedFlow(homeSpectrumFlow, browser, origin, viewport);
+  // The extra narrow phone is home-only; all other pages retain the normal
+  // two-viewport matrix instead of silently tripling the entire suite.
+  await isolatedFlow(homeSpectrumFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
+  for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
+  for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
+  await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
+  for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});
+}
+
+const homeOnly = process.env.QA_HOME_ONLY === '1';
 const webgl = [];
 const server = await serve();
 const origin = `http://127.0.0.1:${server.address().port}`;
@@ -1445,6 +1741,9 @@ const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
 try {
   if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
+  } else if (homeOnly) {
+    await homeFlows(browser, origin);
+    for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
   } else {
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
@@ -1468,7 +1767,7 @@ try {
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
-    for (const viewport of viewports) await cardArtFlow(browser, origin, viewport);
+    await homeFlows(browser, origin);
     for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
     for (const viewport of viewports) await videosFlow(browser, origin, viewport);
     for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
@@ -1476,7 +1775,6 @@ try {
     for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
     for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
     for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
-    await homeMenuFlow(browser, origin);
     for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
     for (const viewport of viewports) await fatBurningFlow(browser, origin, viewport);
   }
@@ -1492,7 +1790,8 @@ if (process.env.QA_SCREENSHOT_ONLY === '1') {
 
 if (failures.length) {
   for (const failure of failures) annotateFailure(failure);
-  console.error(`Browser QA failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
+  console.error(`${homeOnly ? 'Homepage QA' : 'Browser QA'} failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
   process.exit(1);
 }
-console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas, muscles-zone, spine-zone and home-menu flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);
+if (homeOnly) console.log(`Homepage QA passed: ${checks} checks; Spectrum interactions at three viewports plus no-script, native-scroll, reduced-motion and lower-home flows.`);
+else console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas, muscles-zone, spine-zone and Spectrum home/search/directions/native-scroll flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);

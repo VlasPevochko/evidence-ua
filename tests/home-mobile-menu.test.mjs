@@ -9,8 +9,8 @@ assert.ok(nativeMenu, 'Essential destinations must remain available before JavaS
 for (const destination of ['./directions.html', './nutrition.html', '#pubmed-live']) {
   assert.ok(nativeMenu.includes(`href="${destination}"`), `Native navigation must retain ${destination}`);
 }
-// The topic picker remains the hero action; the primary menu has one catalog destination.
-assert.ok(markup.includes('<a class="cta" href="#start-here">'));
+// Owner decision 2026-10-27: the spectrum hero has a catalog fallback; shared header/menu behavior is tested separately.
+assert.ok(markup.includes('id="spectrum-directions-trigger"')&&markup.includes('id="spectrum-search"'));
 assert.equal((nativeMenu.match(/href="\.\/directions\.html"/g)||[]).length,1);
 class Element extends EventTarget {
   hidden = false;

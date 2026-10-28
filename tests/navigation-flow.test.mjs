@@ -1,3 +1,4 @@
+// Owner-selected Spectrum replaces the old hero jump; legacy target and real catalog destination remain.
 // home-vcard.css bumped 77 -> 78: accent colours snapped to the shared gold/cyan set (cache busting).
 // home-vcard.css version bumped 76 -> 77 because its border-radius values moved to the 8/16/30 scale (cache busting).
 import assert from 'node:assert/strict';
@@ -52,7 +53,7 @@ for(const route of catalog.paths)for(let i=0;i<route.steps.length;i++){
  const url=new URL(learningHref(route.id,i),'https://evidence.invalid/');const location=learningLocation(url.href);assert.equal(location.index,i);assert.equal(location.path.id,route.id);
 }
 const muscle=fs.readFileSync('dist/muscle-lab.html','utf8'),home=fs.readFileSync('dist/index.html','utf8'),protein=fs.readFileSync('dist/protein-meta.html','utf8');
-assert(muscle.includes('href="./index.html#top"'));assert(muscle.includes('href="./directions.html"'));assert(home.includes('href="#start-here"'));assert(protein.includes('#supplement-protein'));assert(protein.includes('#top'));
+assert(muscle.includes('href="./index.html#top"'));assert(muscle.includes('href="./directions.html"'));assert(home.includes('id="start-here"')&&home.includes('id="spectrum-directions-trigger"')&&home.includes('href="./directions.html"'));assert(protein.includes('#supplement-protein'));assert(protein.includes('#top'));
 // Execute the production hash router, not a reimplementation of it.
 // The VM records declarations; v76 resolves the home layout through CSS so
 // desktop grid and mobile flex survive a round trip through an article.

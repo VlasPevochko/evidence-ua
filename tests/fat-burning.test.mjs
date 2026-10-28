@@ -1,3 +1,4 @@
+// Shared header cache refresh only; fat-burning scientific content and behavior are unchanged.
 // Follow-up audit fixes refresh shared imports; these wiring expectations follow the cache cascade.
 // 2026-10-22: search finds supplements by topic (new keywords in platform-materials) → cascade: materials v84, search v2, header v4, tools v85, shell v97.
 import test from "node:test";
@@ -19,7 +20,7 @@ test("fat-burning page is a discoverable Ukrainian educational route",()=>{
   // v=2: pine recolour, serif headings and folded sources (owner decision 2026-10-20: page aligned with the site standard).
   // v=3: fat-burning.js now imports the header module with the search button (site-header.js?v=3), so its cache version moved.
   // v=5: shared header v7 removes the duplicate primary catalog entry.
-  assert.match(html,/src="\.\/fat-burning\.js\?v=8"/);
+  assert.match(html,/src="\.\/fat-burning\.js\?v=9"/);
   assert.match(html,/href="\.\/fat-burning\.css\?v=2"/);
   assert.match(css,/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert(!/<iframe\b/i.test(html),"no unlicensed third-party media");

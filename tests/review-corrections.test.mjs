@@ -47,7 +47,8 @@ test('legacy startup preserves the same single catalog entry before the shared h
   const nav=element(), cards=element(), cta={}, heading={};
   const document = {createElement:element, getElementById:()=>cards, querySelector:selector=>selector==='.copy .cta'?cta:heading};
   const source=fs.readFileSync('dist/navigation-v17.js','utf8');
-  const start=source.indexOf('  nav.replaceChildren();'), end=source.indexOf('  const carousel =');
+  // The Spectrum guard ends before the preserved guide; exercise only the retained legacy startup block.
+  const start=source.indexOf('  nav.replaceChildren();'), end=source.indexOf("  }\n  const carousel =");
   assert(start>=0&&end>start);
   vm.runInNewContext(source.slice(start,end), {nav, document, window:{EvidenceUAHomeTopics:[]}});
   assert.equal(nav.children[0].textContent, 'Напрями');

@@ -1,4 +1,4 @@
-import './site-header.js?v=10';
+import './site-header.js?v=11';
 import {toolsHTML,mountQuickTools} from './platform-tools.js?v=103';
 import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=4';
 import {mountTerms} from './platform-terms.js?v=2';

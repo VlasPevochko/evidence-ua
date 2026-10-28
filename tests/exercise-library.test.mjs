@@ -1,3 +1,4 @@
+// Owner-selected Spectrum home (2026-10-27): refresh shared header/search cache parents; historical scientific fixtures stay unchanged.
 // Follow-up audit fixes refresh shared imports; these wiring expectations follow the cache cascade.
 // 2026-10-26 Muscle Lab guide: catalog/materials gained muscle units and search words → versions cascade (catalog/materials/tools/shell/directions/home-feedback 98→99, site-header 5→6, search 3→4).
 // 2026-10-22: search finds supplements by topic (new keywords in platform-materials) → cascade: materials v84, search v2, header v4, tools v85, shell v97.
@@ -215,7 +216,7 @@ for (const shell of [shellSource, shellBuilt]) {
 assert.equal(
   shellBuilt,
   // The shared header import is rewritten by the platform builder as well.
-  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=4'").replace("'./terms.mjs'", "'./platform-terms.js?v=2'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=103'").replace("'./site-header.mjs'", "'./site-header.js?v=10'"),
+  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=4'").replace("'./terms.mjs'", "'./platform-terms.js?v=2'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=103'").replace("'./site-header.mjs'", "'./site-header.js?v=11'"),
   'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
 );
 assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');

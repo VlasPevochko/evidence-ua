@@ -47,7 +47,9 @@ export function mountHomeLens(doc = globalThis.document) {
     const action = section.querySelector('[data-lens-reveal]');
     progress = action?.contains(doc.activeElement) ? 1 : value;
     section.style.setProperty('--lens-progress', String(progress));
-    if (progress >= 0.75) section.setAttribute('data-lens-open', '');
+    // Match the CSS interior fade: clamp(0, progress * 2 - .25, 1).
+    // Any visible action must accept a pointer; zero opacity stays inactive.
+    if (progress > 0.125) section.setAttribute('data-lens-open', '');
     else section.removeAttribute('data-lens-open');
     if (progress === 1) section.setAttribute('data-lens-complete', '');
   }

@@ -175,6 +175,24 @@ test('full reveal remains reversible across hidden-tab and bfcache restoration',
   assert.equal(f.progress(), 0); assert.equal(f.frames.size, 0);
 });
 
+// Browser evidence at native +128/+208px showed a visible but inert action.
+// The interior opacity starts above zero at p>.125; pointer readiness must
+// follow that boundary in both directions, rather than waiting for OPEN.
+test('visible interior action accepts pointer input throughout its fade and disables at zero opacity', () => {
+  const f = fixture(); f.mount(); f.intersect(true); f.flush();
+  for (const [top, interactive] of [
+    [344, false], [304.032, false], [304, false], [303.968, true],
+    [216, true], [136, true], [24, true],
+    [136, true], [216, true], [304, false], [344, false],
+  ]) {
+    f.move(top); f.win.fire('scroll'); f.flush();
+    assert.equal(f.section.hasAttribute('data-lens-open'), interactive,
+      `pointer readiness at section top ${top}, progress ${f.progress()}`);
+    assert.equal(f.frames.size, 0, 'pointer readiness adds no idle frame');
+  }
+  assert.equal(f.complete(), true, 'closing the action keeps discovered choices visible');
+});
+
 test('focus reveals all six native links and jump activation keeps its browser default', () => {
   const f = fixture(); f.mount();
   f.section.fire('focusin', {target: f.links[3]});

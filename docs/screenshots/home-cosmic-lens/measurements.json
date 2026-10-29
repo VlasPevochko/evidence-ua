@@ -1,0 +1,59 @@
+[
+  {
+    "viewport": {
+      "name": "mobile390",
+      "width": 390,
+      "height": 844
+    },
+    "beforeHeight": 5215,
+    "afterHeight": 2721,
+    "directoryHeight": 806.953125,
+    "horizontalOverflow": 0,
+    "heroGeometryIdentical": true,
+    "health": {
+      "errors": [],
+      "bad": [],
+      "external": []
+    },
+    "initialRouteOpen": false,
+    "initialLibraryOpen": false
+  },
+  {
+    "viewport": {
+      "name": "narrow360",
+      "width": 360,
+      "height": 844
+    },
+    "beforeHeight": 5467,
+    "afterHeight": 2793,
+    "directoryHeight": 785.265625,
+    "horizontalOverflow": 0,
+    "heroGeometryIdentical": true,
+    "health": {
+      "errors": [],
+      "bad": [],
+      "external": []
+    },
+    "initialRouteOpen": false,
+    "initialLibraryOpen": false
+  },
+  {
+    "viewport": {
+      "name": "desktop1440",
+      "width": 1440,
+      "height": 900
+    },
+    "beforeHeight": 3694,
+    "afterHeight": 2437,
+    "directoryHeight": 857.9375,
+    "horizontalOverflow": 0,
+    "heroGeometryIdentical": true,
+    "health": {
+      "errors": [],
+      "bad": [],
+      "external": []
+    },
+    "initialRouteOpen": false,
+    "initialLibraryOpen": false
+  }
+]

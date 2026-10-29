@@ -1,0 +1,281 @@
+{
+  "viewport": {
+    "name": "mobile",
+    "width": 390,
+    "height": 844
+  },
+  "scrollDistance": 320,
+  "closed": {
+    "progress": 0,
+    "top": 341.125,
+    "scrollY": 702,
+    "overflow": 0,
+    "glass": [
+      "matrix(0.745999, -0.363848, 0.438371, 0.898794, 0, 0)",
+      "matrix(0.647132, -0.315627, 0.438371, 0.898794, 0, 0)",
+      "matrix(0.620168, -0.302476, 0.438371, 0.898794, 0, 0)"
+    ],
+    "cards": [
+      {
+        "visible": false,
+        "opacity": 0,
+        "width": 169,
+        "height": 114,
+        "left": 18,
+        "right": 187,
+        "top": 783.96875,
+        "bottom": 897.96875,
+        "textFits": true,
+        "href": "./muscle-lab.html",
+        "title": "М’язи та тренування"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "width": 169,
+        "height": 114,
+        "left": 203,
+        "right": 372,
+        "top": 783.96875,
+        "bottom": 897.96875,
+        "textFits": true,
+        "href": "./cell-lab.html",
+        "title": "Клітини та органели"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "width": 169,
+        "height": 114,
+        "left": 18,
+        "right": 187,
+        "top": 897.96875,
+        "bottom": 1011.96875,
+        "textFits": true,
+        "href": "./nutrition.html",
+        "title": "Харчування"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "width": 169,
+        "height": 114,
+        "left": 203,
+        "right": 372,
+        "top": 897.96875,
+        "bottom": 1011.96875,
+        "textFits": true,
+        "href": "#supplement-library",
+        "title": "Добавки"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "width": 169,
+        "height": 128.109375,
+        "left": 18,
+        "right": 187,
+        "top": 1011.96875,
+        "bottom": 1140.078125,
+        "textFits": true,
+        "href": "./movement.html",
+        "title": "Рух і біомеханіка"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "width": 169,
+        "height": 128.109375,
+        "left": 203,
+        "right": 372,
+        "top": 1011.96875,
+        "bottom": 1140.078125,
+        "textFits": true,
+        "href": "./sleep.html",
+        "title": "Сон і відновлення"
+      }
+    ]
+  },
+  "middle": {
+    "progress": 0.399755859375,
+    "top": 213.125,
+    "scrollY": 830,
+    "overflow": 0,
+    "glass": [
+      "matrix(0.745999, -0.363848, 0.438371, 0.898794, -7.19561, -3.19805)",
+      "matrix(0.647132, -0.315627, 0.438371, 0.898794, 5.99634, 1.59902)",
+      "matrix(0.620168, -0.302476, 0.438371, 0.898794, 11.5929, 4.39731)"
+    ],
+    "cards": [
+      {
+        "visible": false,
+        "opacity": 0.799512,
+        "width": 169,
+        "height": 114,
+        "left": 18,
+        "right": 187,
+        "top": 646.3746337890625,
+        "bottom": 760.3746337890625,
+        "textFits": true,
+        "href": "./muscle-lab.html",
+        "title": "М’язи та тренування"
+      },
+      {
+        "visible": false,
+        "opacity": 0.724512,
+        "width": 169,
+        "height": 114,
+        "left": 203,
+        "right": 372,
+        "top": 647.2745971679688,
+        "bottom": 761.2745971679688,
+        "textFits": true,
+        "href": "./cell-lab.html",
+        "title": "Клітини та органели"
+      },
+      {
+        "visible": false,
+        "opacity": 0.649512,
+        "width": 169,
+        "height": 114,
+        "left": 18,
+        "right": 187,
+        "top": 762.1746215820312,
+        "bottom": 876.1746215820312,
+        "textFits": true,
+        "href": "./nutrition.html",
+        "title": "Харчування"
+      },
+      {
+        "visible": false,
+        "opacity": 0.574512,
+        "width": 169,
+        "height": 114,
+        "left": 203,
+        "right": 372,
+        "top": 763.0745849609375,
+        "bottom": 877.0745849609375,
+        "textFits": true,
+        "href": "#supplement-library",
+        "title": "Добавки"
+      },
+      {
+        "visible": false,
+        "opacity": 0.499512,
+        "width": 169,
+        "height": 128.109375,
+        "left": 18,
+        "right": 187,
+        "top": 877.974609375,
+        "bottom": 1006.083984375,
+        "textFits": true,
+        "href": "./movement.html",
+        "title": "Рух і біомеханіка"
+      },
+      {
+        "visible": false,
+        "opacity": 0.424512,
+        "width": 169,
+        "height": 128.109375,
+        "left": 203,
+        "right": 372,
+        "top": 878.8746337890625,
+        "bottom": 1006.9840087890625,
+        "textFits": true,
+        "href": "./sleep.html",
+        "title": "Сон і відновлення"
+      }
+    ]
+  },
+  "opened": {
+    "progress": 1,
+    "top": 21.125,
+    "scrollY": 1022,
+    "overflow": 0,
+    "glass": [
+      "matrix(0.745999, -0.363848, 0.438371, 0.898794, -18, -8)",
+      "matrix(0.647132, -0.315627, 0.438371, 0.898794, 15, 4)",
+      "matrix(0.620168, -0.302476, 0.438371, 0.898794, 29, 11)"
+    ],
+    "cards": [
+      {
+        "visible": true,
+        "opacity": 1,
+        "width": 169,
+        "height": 114,
+        "left": 18,
+        "right": 187,
+        "top": 451.96875,
+        "bottom": 565.96875,
+        "textFits": true,
+        "href": "./muscle-lab.html",
+        "title": "М’язи та тренування"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "width": 169,
+        "height": 114,
+        "left": 203,
+        "right": 372,
+        "top": 451.96875,
+        "bottom": 565.96875,
+        "textFits": true,
+        "href": "./cell-lab.html",
+        "title": "Клітини та органели"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "width": 169,
+        "height": 114,
+        "left": 18,
+        "right": 187,
+        "top": 565.96875,
+        "bottom": 679.96875,
+        "textFits": true,
+        "href": "./nutrition.html",
+        "title": "Харчування"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "width": 169,
+        "height": 114,
+        "left": 203,
+        "right": 372,
+        "top": 565.96875,
+        "bottom": 679.96875,
+        "textFits": true,
+        "href": "#supplement-library",
+        "title": "Добавки"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "width": 169,
+        "height": 128.109375,
+        "left": 18,
+        "right": 187,
+        "top": 679.96875,
+        "bottom": 808.078125,
+        "textFits": true,
+        "href": "./movement.html",
+        "title": "Рух і біомеханіка"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "width": 169,
+        "height": 128.109375,
+        "left": 203,
+        "right": 372,
+        "top": 679.96875,
+        "bottom": 808.078125,
+        "textFits": true,
+        "href": "./sleep.html",
+        "title": "Сон і відновлення"
+      }
+    ]
+  }
+}

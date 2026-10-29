@@ -20,14 +20,16 @@ test('primary topic navigation has one clearly named catalog destination', () =>
   assert(!entries.some(e => e.label === 'Каталог'));
 });
 
-test('learning routes are immediately visible without opening About', () => {
-  assert(inspect(homeLearningHTML(), "'open' in root.attrib"), 'The three existing routes start open');
+// Owner 2026-10-28 chose a compact lens entrance: routes have their own closed
+// disclosure and remain outside About, with all three underlying routes intact.
+test('learning routes have a compact native entrance outside About', () => {
+  assert(!inspect(homeLearningHTML(), "'open' in root.attrib"), 'The auxiliary route menu starts folded beneath the lens');
   const result = JSON.parse(execFileSync('python', ['-c', `from lxml import html
 import json
 root=html.parse('dist/index.html')
 routes=root.xpath('//*[@id="home-learning-paths"]')
 print(json.dumps({'count':len(routes),'open':bool(routes and 'open' in routes[0].attrib),'insideAbout':bool(routes and routes[0].xpath('ancestor::*[@id="home-about"]')),'cards':len(routes[0].xpath('.//article')) if routes else 0}))`], {encoding:'utf8'}));
-  assert.deepEqual(result, {count:1, open:true, insideAbout:false, cards:3});
+  assert.deepEqual(result, {count:1, open:false, insideAbout:false, cards:3});
 });
 
 test('the digestion starter opens the promised material directly', () => {

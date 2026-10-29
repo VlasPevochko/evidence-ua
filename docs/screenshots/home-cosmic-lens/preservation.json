@@ -1,0 +1,30 @@
+{
+  "base": "6a83be1523726a2d814cd52a4bcdb13776b4d0e4",
+  "heroHTMLIdentical": true,
+  "protectedFilesIdentical": [
+    "dist/home-spectrum.css",
+    "dist/home-spectrum.js",
+    "dist/home-spectrum-wave.mjs",
+    "dist/home-spectrum-ribbon.webp",
+    "src/platform/home-spectrum.mjs",
+    "src/platform/catalog.mjs",
+    "src/platform/shell.mjs",
+    "dist/site-header.js",
+    "dist/site-header.css"
+  ],
+  "scientificDossierSubtreesIdentical": [
+    "creatine",
+    "supplement-protein",
+    "supplement-caffeine",
+    "supplement-omega",
+    "supplement-vitd",
+    "supplement-magnesium",
+    "supplement-collagen",
+    "supplement-beta-alanine",
+    "supplement-citrulline",
+    "supplement-electrolytes",
+    "supplement-berberine"
+  ],
+  "directoryPathCardIdentical": true,
+  "artBytes": 397014
+}

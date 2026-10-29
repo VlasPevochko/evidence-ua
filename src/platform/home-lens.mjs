@@ -1,0 +1,166 @@
+// Native links remain the baseline. This controller only advances decorative
+// scroll progress and opens existing home disclosures for fragment navigation.
+const mounts = new WeakMap();
+const noop = () => {};
+
+export function lensProgress(top, viewportHeight, sectionHeight = 0) {
+  const distance = Math.min(320, Math.max(160, 0.38 * viewportHeight));
+  const end = Math.min(24, viewportHeight - sectionHeight - 16);
+  const start = end + distance;
+  // Native scrolling can round the final fractional CSS pixel.
+  if (top <= end + 1) return 1;
+  return Math.min(1, Math.max(0, (start - top) / distance));
+}
+
+export function mountHomeLens(doc = globalThis.document) {
+  const view = doc?.defaultView;
+  if (!view || doc.body?.dataset.platformArea !== 'home') return noop;
+  if (mounts.has(doc)) return mounts.get(doc);
+  const section = doc.querySelector('[data-home-lens]');
+  if (!section) return noop;
+
+  const cleanups = [];
+  let observer;
+  let frame = null;
+  let disposed = false;
+  let suspended = false;
+  let near = false;
+  let progress = 0;
+  let reduced = false;
+
+  const homeActive = () => !disposed && !suspended && !doc.hidden
+    && doc.body.dataset.routeView !== 'article'
+    && section.isConnected !== false && !section.closest('[hidden]')
+    && section.getClientRects().length > 0;
+
+  function listen(target, type, callback, options) {
+    cleanups.push(() => target.removeEventListener(type, callback, options));
+    target.addEventListener(type, callback, options);
+  }
+
+  function stop() {
+    if (frame !== null) view.cancelAnimationFrame(frame);
+    frame = null;
+  }
+
+  function paint(value) {
+    progress = Math.max(progress, value);
+    section.style.setProperty('--lens-progress', String(progress));
+    if (progress === 1) {
+      section.setAttribute('data-lens-complete', '');
+      stop();
+    }
+  }
+
+  function reveal() { paint(1); }
+
+  function update() {
+    frame = null;
+    if (!near || reduced || !homeActive() || progress === 1) return;
+    try {
+      const rect = section.getBoundingClientRect();
+      paint(lensProgress(rect.top, view.innerHeight, rect.height));
+    }
+    catch { dispose(); }
+  }
+
+  function schedule() {
+    if (!near || reduced || progress === 1 || !homeActive()) { stop(); return; }
+    if (frame === null) frame = view.requestAnimationFrame(update);
+  }
+
+  function openHash() {
+    let id;
+    try { id = decodeURIComponent(view.location.hash.slice(1)); }
+    catch { return; }
+    if (!id) return;
+    const target = doc.getElementById(id);
+    // Home and article content share the body platform marker. Only the main
+    // home .page containing this lens owns these native disclosures.
+    if (!target || !section.closest('.page')?.contains(target)) return;
+    for (let node = target; node; node = node.parentElement) {
+      if (node.tagName === 'DETAILS') node.open = true;
+    }
+    if (id === 'cards' || section.querySelector('#cards')?.contains(target)) reveal();
+  }
+
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    stop();
+    observer?.disconnect();
+    for (const cleanup of cleanups.splice(0).reverse()) cleanup();
+    section.removeAttribute('data-lens-ready');
+    section.removeAttribute('data-lens-complete');
+    section.style.removeProperty('--lens-progress');
+    mounts.delete(doc);
+  }
+
+  mounts.set(doc, dispose);
+  try {
+    openHash();
+    // These stay useful even when motion enhancement is unavailable.
+    listen(view, 'hashchange', () => { openHash(); schedule(); });
+    listen(view, 'load', openHash, {once: true});
+    listen(view, 'pagehide', event => {
+      if (!event.persisted) { dispose(); return; }
+      suspended = true; near = false; stop(); observer?.disconnect();
+    });
+    listen(view, 'pageshow', () => {
+      suspended = false;
+      if (observer) observer.observe(section);
+      openHash(); schedule();
+    });
+
+    if (typeof view.IntersectionObserver !== 'function'
+      || typeof view.matchMedia !== 'function'
+      || typeof view.requestAnimationFrame !== 'function'
+      || typeof view.cancelAnimationFrame !== 'function') return dispose;
+
+    const media = view.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!media || typeof media.addEventListener !== 'function') return dispose;
+    reduced = media.matches;
+    if (reduced) { reveal(); return dispose; }
+
+    listen(media, 'change', event => {
+      reduced = event.matches;
+      if (reduced) {
+        // A preference change permanently completes this mount, so returning
+        // to motion later cannot hide links the visitor has already seen.
+        reveal(); section.removeAttribute('data-lens-ready');
+      }
+    });
+    listen(section, 'focusin', event => {
+      const link = event.target.closest?.('a.topic-card[data-area]');
+      if (link && section.querySelector('#cards')?.contains(link)) reveal();
+    });
+    listen(section, 'click', event => {
+      if (event.target.closest?.('[data-lens-reveal]')) reveal();
+    });
+    listen(view, 'scroll', schedule, {passive: true});
+    listen(view, 'resize', schedule, {passive: true});
+    listen(doc, 'visibilitychange', schedule);
+
+    observer = new view.IntersectionObserver(entries => {
+      if (disposed || suspended) return;
+      for (const entry of entries) if (entry.target === section) near = entry.isIntersecting;
+      schedule();
+    }, {rootMargin: '240px 0px'});
+    observer.observe(section);
+    if (homeActive()) {
+      const rect = section.getBoundingClientRect();
+      paint(lensProgress(rect.top, view.innerHeight, rect.height));
+    }
+    // Apply the hiding styles only after every enhancement dependency is ready.
+    section.setAttribute('data-lens-ready', '');
+  } catch {
+    // Fail open even when an API exists but throws during setup.
+    dispose();
+  }
+  return dispose;
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'complete') mountHomeLens(document);
+  else document.defaultView?.addEventListener('load', () => mountHomeLens(document), {once: true});
+}

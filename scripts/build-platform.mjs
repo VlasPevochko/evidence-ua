@@ -23,7 +23,8 @@ fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/nex
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
 fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=86'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
+fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8'));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -191,3 +192,5 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
 
 // Owner 2026-10-28: lower-home route outlines changed; refresh the module import parent.
 {const path="dist/directions.html",old=fs.readFileSync(path,"utf8"),next=old.replaceAll("directions.js?v=104","directions.js?v=105");if(next!==old)fs.writeFileSync(path,next);}
+// Owner-selected compact home routes; directory renderer unchanged, import cache refreshed.
+{const path="dist/directions.html",old=fs.readFileSync(path,"utf8"),next=old.replaceAll("directions.js?v=105","directions.js?v=106");if(next!==old)fs.writeFileSync(path,next);}

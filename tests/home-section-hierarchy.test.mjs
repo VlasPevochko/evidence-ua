@@ -19,7 +19,9 @@ const unsafe=inspect(homeDirectionsHTML([{...topics[0],title:'<script>alert(1)</
 assert.equal(unsafe,0,'Navigation labels remain text rather than executable markup');
 
 const routes=inspect(homeLearningHTML(),`{'open':'open' in root.attrib,'title':root.xpath('./summary')[0].text_content(),'items':[{'id':n.get('data-home-path'),'start':n.xpath('./a[contains(@class,"path-start")]/@href'),'outlineCount':len(n.xpath('./details[@class="home-path-outline"]')),'closed':len(n.xpath('./details[@class="home-path-outline"][@open]'))==0,'steps':n.xpath('./details//ol/li/a/@href')} for n in root.xpath('.//article[@class="path-card"]')]}`);
-assert(routes.open,'Route starts remain visible without opening a second menu');
+// Owner 2026-10-28 chose the lens: keep the route menu compact below it,
+// retaining all starts and outlines inside a native disclosure.
+assert(!routes.open,'Auxiliary routes start folded beneath the selected lens');
 assert.match(routes.title,/Навчальні маршрути/);
 assert.deepEqual(routes.items.map(item=>item.id),catalog.paths.map(path=>path.id));
 for(const [index,item]of routes.items.entries()){

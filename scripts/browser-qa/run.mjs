@@ -369,6 +369,8 @@ async function trainerFlow(browser, origin, viewport) {
   const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
   const trainer = page.locator('.evidence-guide .eua-trainer');
   await trainer.waitFor({state: 'attached'});
+  // Owner 2026-10-28: the native library entrance starts closed.
+  await toggleHomeFold(page, '.home-library-fold', true);
   await trainer.scrollIntoViewIfNeeded();
   check(where, (await trainer.locator('.eua-trainer-option').count()) === 3, 'a card offers three readings');
   // Wrong answer first: it must be explained, not just marked.
@@ -868,21 +870,21 @@ function checkBrowserHealth(where, seen) {
   check(where, seen.external.length === 0, `third-party requests: ${seen.external.join(', ')}`);
 }
 
-async function nativeHomeScroll(page, context, touch) {
+async function nativeHomeScroll(page, context, touch, {target = 'canvas#spectrum-wave', steps = 16} = {}) {
   if (touch) {
     // CDP injects a native finger gesture into a touch-capable Chromium
     // context. No dispatchEvent(), scrollTo() or synthetic scroll event can
     // stand in for the browser actually moving the document here.
     const client = await context.newCDPSession(page);
     try {
-      const position = await page.locator('canvas#spectrum-wave').evaluate(canvas => {
-        const rect = canvas.getBoundingClientRect();
+      const position = await page.locator(target).evaluate(node => {
+        const rect = node.getBoundingClientRect();
         return {x: Math.min(innerWidth - 24, innerWidth * .75), y: Math.min(innerHeight - 24, Math.max(180, rect.top + 150))};
       });
       // A trusted finger sequence exercises real touch scrolling. Chromium's
       // synthesizeScrollGesture(touch) can report success without moving a page.
       await client.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [position]});
-      for (let step = 1; step <= 16; step++) {
+      for (let step = 1; step <= steps; step++) {
         await client.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [{x: position.x, y: Math.max(24, position.y - step * 10)}]});
         await page.waitForTimeout(16);
       }
@@ -892,6 +894,270 @@ async function nativeHomeScroll(page, context, touch) {
     await page.mouse.move(Math.round((await page.viewportSize()).width / 2), 330);
     await page.mouse.wheel(0, 140);
   }
+}
+
+// Toggle native details through its actual summary and keyboard activation.
+// Used by preserved lower-home flows after the owner-approved compact defaults.
+async function toggleHomeFold(page, selector, openState) {
+  const fold = page.locator(selector);
+  if (await fold.evaluate(node => node.open) === openState) return;
+  const summary = fold.locator(':scope > summary');
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  // The native open flag precedes the inherited 280ms ::details-content
+  // expansion. Wait for its actual body to fit before clicking nested links.
+  // Poll from Node: the pinned driver's retry timers and main-world RAF polling
+  // stall in JavaScript-disabled contexts after transient clipping/interception.
+  const deadline = Date.now() + 1500;
+  let state;
+  do {
+    state = await fold.evaluate(node => {
+      const content = [...node.children].filter(child => child.tagName !== 'SUMMARY').at(-1);
+      const outer = node.getBoundingClientRect(), body = content?.getBoundingClientRect();
+      return {open: node.open, bodyFits: !body || (body.height > 0 && body.bottom <= outer.bottom + 1), outerBottom: outer.bottom, bodyBottom: body?.bottom};
+    });
+    if (state.open === openState && (!openState || state.bodyFits)) return;
+    await page.waitForTimeout(20);
+  } while (Date.now() < deadline);
+  throw new Error(`Native home disclosure ${selector} did not settle: ${JSON.stringify(state)}`);
+}
+
+async function lensSnapshot(page) {
+  return page.locator('[data-home-lens]').evaluate(section => {
+    const box = section.getBoundingClientRect();
+    const rendered = node => {
+      const rect = node.getBoundingClientRect();
+      if (!rect.width || !rect.height || node.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      for (let parent = node; parent; parent = parent.parentElement) {
+        const style = getComputedStyle(parent);
+        if (style.display === 'none' || style.visibility !== 'visible' || Number(style.opacity) < .99) return false;
+      }
+      return true;
+    };
+    return {
+      progress: Number(getComputedStyle(section).getPropertyValue('--lens-progress')),
+      top: box.top, scrollY, overflow: document.documentElement.scrollWidth - innerWidth,
+      glass: [...section.querySelectorAll('.home-lens-glass')].map(node => getComputedStyle(node).transform),
+      cards: [...section.querySelectorAll('#cards > a.topic-card')].map(node => {
+        const rect = node.getBoundingClientRect();
+        const parts = [...node.querySelectorAll('strong, .topic-state, .topic-open')];
+        const textFits = parts.every(part => {
+          const range = document.createRange(); range.selectNodeContents(part);
+          return [...range.getClientRects()].every(line => line.left >= rect.left - 1 && line.right <= rect.right + 1 && line.top >= rect.top - 1 && line.bottom <= rect.bottom + 1);
+        });
+        return {visible: rendered(node), opacity: Number(getComputedStyle(node).opacity),
+          width: rect.width, height: rect.height, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, textFits,
+          href: node.getAttribute('href'), title: node.querySelector('strong')?.textContent.trim()};
+      })
+    };
+  });
+}
+
+function checkLensLinks(where, snapshot, viewport) {
+  check(where, snapshot.cards.length === 6 && snapshot.cards.every(card => card.visible && card.opacity >= .99), 'all six native directions must be truly rendered at full opacity');
+  check(where, snapshot.cards.length === 6 && snapshot.cards.every(card => card.width >= 44 && card.height >= 44 && card.left >= -1 && card.right <= viewport.width + 1 && card.textFits && card.href && card.title), 'all six links need readable text rectangles and 44px tap targets within the viewport width');
+  check(where, snapshot.overflow <= 1, `lens layout has ${snapshot.overflow}px horizontal overflow`);
+}
+
+async function homeLensFlow(browser, origin, viewport) {
+  const where = `home cosmic lens @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html', {
+    contextOptions: {reducedMotion: 'no-preference'},
+    initScript: () => {
+      // Count lens-specific style writes, including writes of unchanged values.
+      // Hero and other modules may legitimately use RAF; their activity must not
+      // be mistaken for a lens render loop.
+      window.__lensQA = {styleWrites: 0, callbacks: 0, lensPaintCallbacks: 0, lensCallbacks: 0};
+      const lensCallbacks = new WeakSet();
+      new MutationObserver(records => {
+        for (const record of records) if (record.target.matches?.('[data-home-lens]')) window.__lensQA.styleWrites++;
+      }).observe(document, {subtree: true, attributes: true, attributeFilter: ['style']});
+      const nativeRAF = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = callback => nativeRAF(time => {
+        window.__lensQA.callbacks++;
+        if (lensCallbacks.has(callback)) window.__lensQA.lensCallbacks++;
+        const section = document.querySelector('[data-home-lens]');
+        const before = section?.getAttribute('style');
+        try { callback(time); }
+        finally {
+          if (section?.getAttribute('style') !== before) {
+            window.__lensQA.lensPaintCallbacks++;
+            // Identify the actual callback by observed lens work rather than
+            // implementation names or source text. Catch idle rescheduling too.
+            lensCallbacks.add(callback);
+          }
+        }
+      });
+    }
+  });
+  try {
+    await page.evaluate(() => document.fonts.ready);
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    const heroGeometry = async () => page.locator('.spectrum-home, .spectrum-ribbon, canvas#spectrum-wave').evaluateAll(nodes => nodes.map(node => {
+      const box = node.getBoundingClientRect(), style = getComputedStyle(node);
+      return {x: box.x, y: box.y + scrollY, width: box.width, height: box.height, image: style.backgroundImage};
+    }));
+    const heroBefore = await heroGeometry();
+    check(where, await page.locator('[data-lens-reveal]').evaluate(node => {const box = node.getBoundingClientRect();return node.tagName === 'A' && node.getAttribute('href') === '#cards' && box.width >= 44 && box.height >= 44 && box.left >= 0 && box.right <= innerWidth + 1;}), 'the reveal jump must remain a native 44px anchor within the viewport');
+    const folds = page.locator('#home-learning-paths, .home-library-fold');
+    check(where, await folds.evaluateAll(nodes => nodes.length === 2 && nodes.every(node => !node.open)), 'auxiliary routes and library must start natively closed');
+    const entranceBoxes = await folds.locator(':scope > summary').evaluateAll(nodes => nodes.map(node => {
+      const box = node.getBoundingClientRect();
+      const range = document.createRange(); range.selectNodeContents(node);
+      return {width: box.width, height: box.height, fits: [...range.getClientRects()].every(line => line.left >= box.left - 1 && line.right <= box.right + 1)};
+    }));
+    check(where, entranceBoxes.length === 2 && entranceBoxes.every(box => box.width >= 44 && box.height >= 44 && box.fits), 'closed chapter summaries must remain readable 44px controls');
+
+    // Position at onset only; the reveal itself must come from Chromium wheel
+    // input, not scrollTo, dispatched events or a direct progress assignment.
+    await page.evaluate(() => {
+      const section = document.querySelector('[data-home-lens]');
+      const rect = section.getBoundingClientRect();
+      const distance = Math.min(320, Math.max(160, innerHeight * .38));
+      const end = Math.min(24, innerHeight - rect.height - 16);
+      scrollTo({top: rect.top + scrollY - end - distance, behavior: 'instant'});
+    });
+    await page.waitForTimeout(240);
+    const closed = await lensSnapshot(page);
+    check(where, closed.progress >= 0 && closed.progress <= .01, 'the native reveal must begin at the declared viewport onset');
+    await artifact(page, viewport, 'home-lens-closed', page.locator('body'), {scroll: false});
+    await page.mouse.move(viewport.width / 2, viewport.height / 2);
+    await page.mouse.wheel(0, 128);
+    await page.waitForFunction(y => scrollY >= y + 120, closed.scrollY);
+    await page.waitForTimeout(220);
+    const middle = await lensSnapshot(page);
+    check(where, middle.progress > closed.progress && middle.progress < 1, 'one short native wheel movement must partially open the lens');
+    check(where, middle.glass.length === 3 && middle.glass.some((transform, index) => transform !== closed.glass[index]), 'the transparent glass geometry must visibly respond to native scrolling');
+    await artifact(page, viewport, 'home-lens-mid', page.locator('body'), {scroll: false});
+    const middleIdleBefore = await page.evaluate(() => ({...window.__lensQA}));
+    await page.waitForTimeout(400);
+    const middleIdleAfter = await page.evaluate(() => ({...window.__lensQA}));
+    check(where, middleIdleAfter.styleWrites === middleIdleBefore.styleWrites && middleIdleAfter.lensCallbacks === middleIdleBefore.lensCallbacks, 'a partially revealed lens must stop its own style writes and RAF callbacks at idle');
+    await page.mouse.wheel(0, 192);
+    await page.waitForFunction(y => scrollY >= y + 315, closed.scrollY);
+    await page.waitForTimeout(250);
+    const opened = await lensSnapshot(page);
+    check(where, opened.scrollY - closed.scrollY <= 321 && opened.progress >= .999, 'all directions must open within 320 CSS px after onset');
+    check(where, opened.cards.length === 6 && opened.cards.every(card => card.top >= -1 && card.bottom <= viewport.height + 1), 'after the two short wheel movements all six real direction rectangles must actually be on screen');
+    check(where, closed.progress <= middle.progress && middle.progress <= opened.progress, 'native scroll progress must advance monotonically');
+    checkLensLinks(where, opened, viewport);
+    if (process.env.QA_ARTIFACT_DIR) {
+      fs.mkdirSync(path.resolve(process.env.QA_ARTIFACT_DIR), {recursive: true});
+      fs.writeFileSync(path.join(path.resolve(process.env.QA_ARTIFACT_DIR), `home-lens-geometry-${viewport.name}.json`), JSON.stringify({viewport, scrollDistance: opened.scrollY - closed.scrollY, closed, middle, opened}, null, 2));
+    }
+    await artifact(page, viewport, 'home-lens-revealed-on-screen', page.locator('body'), {scroll: false});
+    await page.locator('[data-lens-stage]').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-lens-stage] img')].length === 2 && [...document.querySelectorAll('[data-lens-stage] img')].every(img => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0));
+    const art = await page.locator('[data-lens-stage]').evaluate(stage => {
+      const box = stage.getBoundingClientRect(), style = getComputedStyle(stage);
+      return {decorative: stage.getAttribute('aria-hidden') === 'true', width: box.width, height: box.height, left: box.left, right: box.right,
+        clipped: ['hidden', 'clip'].includes(style.overflowX), images: [...stage.querySelectorAll('img')].map(img => ({width: Number(img.getAttribute('width')), height: Number(img.getAttribute('height')), lazy: img.loading === 'lazy', async: img.decoding === 'async', alt: img.alt}))};
+    });
+    check(where, art.decorative && art.width > 0 && art.height >= 200 && art.left >= -1 && art.right <= viewport.width + 1 && art.clipped && art.images.length === 2 && art.images.every(img => img.width > 0 && img.height > 0 && img.lazy && img.async && img.alt === ''), 'both loaded lens images need explicit dimensions, decorative semantics, lazy decoding and a contained stage');
+    await artifact(page, viewport, 'home-lens-open', page.locator('[data-home-lens]'));
+    if (process.env.QA_ARTIFACT_DIR) await page.screenshot({path: path.join(path.resolve(process.env.QA_ARTIFACT_DIR), `home-compact-full-${viewport.name}.png`), fullPage: true});
+    await page.waitForTimeout(400);
+    const idleBefore = await page.evaluate(() => ({...window.__lensQA}));
+    const idleVisual = await lensSnapshot(page);
+    await page.waitForTimeout(550);
+    const idleAfter = await page.evaluate(() => ({...window.__lensQA}));
+    const idleVisualAfter = await lensSnapshot(page);
+    check(where, idleAfter.styleWrites === idleBefore.styleWrites && idleAfter.lensPaintCallbacks === idleBefore.lensPaintCallbacks && idleAfter.lensCallbacks === idleBefore.lensCallbacks && JSON.stringify(idleVisual.glass) === JSON.stringify(idleVisualAfter.glass), `lens-specific style writes and painting must settle at idle (all-module RAF callbacks: ${idleAfter.callbacks - idleBefore.callbacks})`);
+    await page.mouse.wheel(0, -180);
+    await page.waitForTimeout(250);
+    check(where, (await lensSnapshot(page)).progress >= opened.progress, 'scrolling back must never re-hide a revealed direction');
+    await page.evaluate(() => scrollTo({top: 0, behavior: 'instant'}));
+    await page.waitForTimeout(240);
+    const heroAfter = await heroGeometry();
+    check(where, heroBefore.length === 3 && heroAfter.every((box, index) => ['x', 'y', 'width', 'height'].every(axis => Math.abs(box[axis] - heroBefore[index][axis]) <= 1) && box.image === heroBefore[index].image), 'revealing the lower lens must preserve the hero, ribbon image and canvas geometry');
+
+    // Native keyboard activation of the actual jump must keep its fragment.
+    await page.reload({waitUntil: 'load'});
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    const jump = page.locator('[data-lens-reveal]');
+    await jump.evaluate(node => node.focus({preventScroll: true}));
+    await page.keyboard.press('Enter');
+    await page.waitForURL(url => url.hash === '#cards');
+    await page.waitForTimeout(220);
+    checkLensLinks(`${where} native jump`, await lensSnapshot(page), viewport);
+    await page.goto(origin + '/index.html', {waitUntil: 'load'});
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    await page.locator('[data-lens-reveal]').evaluate(node => node.focus({preventScroll: true}));
+    await page.keyboard.press('Tab');
+    check(where, await page.locator('#cards > .topic-card').first().evaluate(node => document.activeElement === node && node.matches(':focus-visible') && getComputedStyle(node).outlineStyle !== 'none'), 'Tab from the native jump must visibly focus the first real direction');
+    await page.waitForTimeout(220);
+    checkLensLinks(`${where} keyboard focus`, await lensSnapshot(page), viewport);
+
+    for (const selector of ['#home-learning-paths', '.home-library-fold']) {
+      await toggleHomeFold(page, selector, true);
+      check(where, await page.locator(selector).evaluate(node => node.open), `${selector} must open through its real summary`);
+      if (selector === '.home-library-fold') await artifact(page, viewport, 'home-library-expanded', page.locator('.home-library-section'));
+      await toggleHomeFold(page, selector, false);
+      check(where, !(await page.locator(selector).evaluate(node => node.open)), `${selector} must close through its real summary`);
+    }
+    // Same-document native link and fresh-document deep links must each reveal
+    // their previously closed ancestor. These checks preserve the actual guide.
+    await page.locator('#cards > a[data-area="supplements"]').click();
+    await page.waitForURL(url => url.hash === '#supplement-library');
+    check(where, await page.locator('.home-library-fold').evaluate(node => node.open) && await page.locator('#supplement-library').isVisible(), 'the native Supplements direction must reveal the library');
+    for (const hash of ['#supplement-library', '#evidence-guide-title']) {
+      await page.goto(origin + '/index.html' + hash, {waitUntil: 'load'});
+      await page.locator(hash).waitFor({state: 'visible'});
+      check(where, await page.locator(hash).evaluate(node => {for (let parent = node.parentElement; parent; parent = parent.parentElement) if (parent.tagName === 'DETAILS' && !parent.open) return false; return true;}), `${hash} must reveal every closed native ancestor on direct load`);
+    }
+    // Reload below the fold and a fast native scroll must retain usable links
+    // and continue moving the document, with no pinned section or scroll trap.
+    await page.goto(origin + '/index.html', {waitUntil: 'load'});
+    await page.locator('#cards').scrollIntoViewIfNeeded();
+    await page.reload({waitUntil: 'load'});
+    await page.waitForTimeout(250);
+    checkLensLinks(`${where} mid-page reload`, await lensSnapshot(page), viewport);
+    const fastBefore = await page.evaluate(() => scrollY);
+    await page.mouse.move(viewport.width / 2, viewport.height / 2);
+    await page.mouse.wheel(0, 1100);
+    await page.waitForFunction(y => scrollY > y + 300, fastBefore);
+    check(where, (await page.evaluate(() => scrollY)) > fastBefore + 300, 'a fast native wheel must continue past the lens without a scroll trap');
+    checkLensLinks(`${where} fast scroll`, await lensSnapshot(page), viewport);
+    checkBrowserHealth(where, seen);
+  } finally { await context.close(); }
+
+  for (const fallback of ['reduced motion', 'without JavaScript']) {
+    const fallbackWhere = `${where} ${fallback}`;
+    const state = await open(browser, origin, viewport, '/index.html', {contextOptions: fallback === 'reduced motion' ? {reducedMotion: 'reduce'} : {javaScriptEnabled: false}});
+    try {
+      // Assert immediately, before scroll, focus, wheel or touch can reveal it.
+      checkLensLinks(fallbackWhere, await lensSnapshot(state.page), viewport);
+      check(fallbackWhere, await state.page.evaluate(() => scrollY === 0), 'fallback directions must be visible without requiring a gesture');
+      checkBrowserHealth(fallbackWhere, state.seen);
+    } finally { await state.context.close(); }
+  }
+}
+
+async function homeLensTouchFlow(browser, origin, viewport) {
+  const where = `home cosmic lens native touch @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html', {contextOptions: {hasTouch: true, isMobile: true, reducedMotion: 'no-preference'}});
+  try {
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    check(where, await page.evaluate(() => navigator.maxTouchPoints > 0), 'lens gestures need an actual touch-capable context');
+    await page.evaluate(() => {
+      const rect = document.querySelector('[data-home-lens]').getBoundingClientRect();
+      const distance = Math.min(320, Math.max(160, innerHeight * .38));
+      const end = Math.min(24, innerHeight - rect.height - 16);
+      scrollTo({top: rect.top + scrollY - end - distance, behavior: 'instant'});
+    });
+    await page.waitForTimeout(200);
+    const before = await lensSnapshot(page);
+    await nativeHomeScroll(page, context, true, {target: '[data-lens-stage]', steps: 20});
+    await page.waitForFunction(y => scrollY > y + 20, before.scrollY);
+    await page.waitForTimeout(350);
+    const middle = await lensSnapshot(page);
+    await nativeHomeScroll(page, context, true, {target: '[data-lens-stage]', steps: 20});
+    await page.waitForTimeout(400);
+    const after = await lensSnapshot(page);
+    check(where, after.scrollY > before.scrollY + 100 && before.progress <= middle.progress && middle.progress <= after.progress, 'real finger scrolling must move the document and monotonically open the lens');
+    checkLensLinks(where, after, viewport);
+    checkBrowserHealth(where, seen);
+  } finally { await context.close(); }
 }
 
 async function homeWaveFlow(browser, origin, viewport, {touch = false, reduced = false} = {}) {
@@ -921,7 +1187,7 @@ async function homeWaveFlow(browser, origin, viewport, {touch = false, reduced =
     }
     await page.waitForTimeout(400);
     const idle = await waveSnapshot(page);
-    check(where, idle.frame === after.frame && idle.digest === after.digest, 'an idle visible wave must stop drawing');
+    check(where, idle.frame === after.frame && idle.digest === after.digest, 'an idle visible wave must stop drawing: ' + JSON.stringify({after, idle}));
     check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'native scrolling must not create horizontal overflow');
     checkBrowserHealth(where, seen);
   } finally { await context.close(); }
@@ -1114,6 +1380,8 @@ async function homeNoScriptFlow(browser, origin, viewport) {
     await artifact(page, viewport, 'home-without-javascript', page.locator('body'), {scroll: false});
     await page.locator('.home-examples>summary').click();
     check(where,await page.locator('.home-example-links a:visible').count()===3,'the folded examples must open natively without JavaScript');
+    // Native outer route disclosure also starts closed without JavaScript.
+    await toggleHomeFold(page, '#home-learning-paths', true);
     await page.locator('.home-path-outline>summary').first().click();
     check(where,await page.locator('.home-path-outline').first().locator('ol a:visible').count()>=3,'the complete route outline must open natively without JavaScript');
     await page.locator('[data-spectrum-question="creatine"]').click();
@@ -1635,18 +1903,25 @@ async function visibleAfterDisclosureTransition(locator){
 async function homeLowerFlow(browser, origin, viewport) {
   const where=`home library and disclosures @${viewport.name}`;
   const {context,page,seen}=await open(browser,origin,viewport,'/index.html');
-  await page.waitForSelector('.evidence-guide');
+  try {
+  await page.locator('.evidence-guide').waitFor({state:'attached'});
+  check(where,await page.locator('#home-learning-paths, .home-library-fold').evaluateAll(nodes=>nodes.length===2&&nodes.every(node=>!node.open)),'owner-approved route and library entrances must start closed');
   // Owner 2026-10-28: scrolling should reveal distinct navigation, route and
   // library chapters, with real visible actions instead of one text column.
   const chapters=await page.locator('.home-directory-section, #home-learning-paths, .home-library-section').evaluateAll(nodes=>nodes.map(node=>{
     const style=getComputedStyle(node),rect=node.getBoundingClientRect();
-    const summary=node.querySelector(':scope > summary'),headingStyle=summary?getComputedStyle(summary):null;
+    const summary=node.querySelector(':scope > summary, :scope > .home-library-fold > summary'),headingStyle=summary?getComputedStyle(summary):null;
     // A native details chapter puts its top inset on its own summary.
     const padding=parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)+(headingStyle?parseFloat(headingStyle.paddingTop)+parseFloat(headingStyle.paddingBottom):0);
-    return {top:rect.top+scrollY,left:rect.left,right:rect.right,padding,background:style.backgroundColor,image:style.backgroundImage};
+    return {top:rect.top+scrollY,left:rect.left,right:rect.right,padding,background:style.backgroundColor,image:style.backgroundImage,border:parseFloat(style.borderTopWidth)};
   }));
   const background=await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundColor);
-  check(where,chapters.length===3&&chapters.every(chapter=>chapter.padding>=24&&(chapter.image!=='none'||(chapter.background!==background&&chapter.background!=='rgba(0, 0, 0, 0)'))),'directions, routes and library need visibly bounded surfaces');
+  // The selected lens is intentionally borderless: its loaded graphic supplies
+  // the visual chapter. Native route/library entrances retain bounded surfaces.
+  await page.locator('[data-lens-stage]').scrollIntoViewIfNeeded();
+  await page.waitForFunction(()=>[...document.querySelectorAll('[data-lens-stage] img')].length===2&&[...document.querySelectorAll('[data-lens-stage] img')].every(img=>img.complete&&img.naturalWidth>0));
+  check(where,await page.locator('[data-lens-stage]').evaluate(node=>{const box=node.getBoundingClientRect();return box.width>0&&box.height>=200&&getComputedStyle(node).visibility==='visible';}),'the direction chapter must contain its loaded, visible lens graphic');
+  check(where,chapters.length===3&&chapters.slice(1).every(chapter=>chapter.padding>=24&&chapter.border>=1&&(chapter.image!=='none'||(chapter.background!==background&&chapter.background!=='rgba(0, 0, 0, 0)'))),'route and library entrances need readable, visibly bounded surfaces');
   check(where,chapters.length===3&&chapters[0].top<chapters[1].top&&chapters[1].top<chapters[2].top,'the page must progress from choosing a direction to routes and the library');
   check(where,(await page.locator('#start-here-title').innerText())==='Обери напрям','the directory heading must explicitly identify the choice');
   const topicBoxes=await page.locator('#cards>.topic-card').evaluateAll(nodes=>nodes.map(node=>{
@@ -1664,6 +1939,7 @@ async function homeLowerFlow(browser, origin, viewport) {
   await examples.locator('summary').click();
   check(where,await examples.locator('a:visible').count()===3,'all three existing example destinations must remain available');
   await examples.locator('summary').click();
+  await toggleHomeFold(page,'#home-learning-paths',true);
   const starts=page.locator('#home-learning-paths .path-card>.path-start');
   check(where,await starts.count()===3&&await starts.evaluateAll(nodes=>nodes.every(node=>{const rect=node.getBoundingClientRect();return rect.width>=44&&rect.height>=44;})),'all three route starts must remain visible without opening lesson outlines');
   check(where,await page.locator('.home-path-outline[open]').count()===0,'full lesson outlines must start folded to keep the route previews compact');
@@ -1672,6 +1948,7 @@ async function homeLowerFlow(browser, origin, viewport) {
   check(where,await outline.evaluate(node=>node.open)&&await visibleAfterDisclosureTransition(outline.locator('ol')),'the complete route outline must open with the keyboard');
   await outlineSummary.press('Enter');
   check(where,!(await outline.evaluate(node=>node.open)),'route outlines must close without hiding the route start');
+  await toggleHomeFold(page,'.home-library-fold',true);
   const cta=page.locator('.supplement-entry .se-cta');
   check(where,await cta.evaluate(node=>{const rect=node.getBoundingClientRect(),style=getComputedStyle(node);return rect.height>=44&&style.backgroundColor!=='rgba(0, 0, 0, 0)';}),'the library catalog action must be a clearly filled, tappable control');
   check(where,!(await page.locator('.supplement-feature-link').isVisible()),'the library wrapper must not revive the retired duplicate creatine action');
@@ -1712,7 +1989,7 @@ async function homeLowerFlow(browser, origin, viewport) {
   // Reduced motion now has an actual pixel/static-frame native-scroll
   // regression in homeWaveFlow, replacing the removed shippo animation.
   checkBrowserHealth(where,seen);
-  await context.close();
+  } finally { await context.close(); }
 }
 
 // Fat Burning Lab: verify actual controls, not only presence of labels in static HTML.
@@ -1770,6 +2047,8 @@ async function baselineScreenshots(browser, origin, viewport) {
 }
 
 async function homeFlows(browser, origin) {
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
+  await isolatedFlow(homeLensTouchFlow, browser, origin, viewports[0]);
   for (const viewport of viewports) await isolatedFlow(homeSpectrumFlow, browser, origin, viewport);
   // The extra narrow phone is home-only; all other pages retain the normal
   // two-viewport matrix instead of silently tripling the entire suite.
@@ -1793,8 +2072,8 @@ try {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
   } else if (homeOnly) {
     await homeFlows(browser, origin);
-    for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
-    await homeLowerFlow(browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
+    for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);
+    await isolatedFlow(homeLowerFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
   } else {
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
@@ -1826,8 +2105,8 @@ try {
     for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
     for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
     for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
-    for (const viewport of viewports) await homeLowerFlow(browser, origin, viewport);
-    await homeLowerFlow(browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
+    for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);
+    await isolatedFlow(homeLowerFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
     for (const viewport of viewports) await fatBurningFlow(browser, origin, viewport);
   }
 } finally {
@@ -1845,5 +2124,5 @@ if (failures.length) {
   console.error(`${homeOnly ? 'Homepage QA' : 'Browser QA'} failed (${failures.length} of ${checks} checks):\n` + failures.map(f => ` - ${f}`).join('\n'));
   process.exit(1);
 }
-if (homeOnly) console.log(`Homepage QA passed: ${checks} checks; Spectrum interactions at three viewports plus no-script, native-scroll, reduced-motion and lower-home flows.`);
+if (homeOnly) console.log(`Homepage QA passed: ${checks} checks; Spectrum interactions at three viewports plus cosmic-lens wheel/touch/keyboard/fallback/deep-link, no-script, native-scroll, reduced-motion and lower-home flows.`);
 else console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas, muscles-zone, spine-zone and Spectrum home/search/directions/native-scroll flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);

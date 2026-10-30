@@ -1,0 +1,34 @@
+{
+  "base": "09cdff1f9d4ee96aa624363262fbcb70aa6384fa",
+  "heroHTMLIdentical": true,
+  "protectedFilesIdentical": [
+    "dist/home-spectrum.css",
+    "dist/home-spectrum.js",
+    "dist/home-spectrum-wave.mjs",
+    "dist/home-spectrum-ribbon.webp",
+    "src/platform/home-spectrum.mjs",
+    "src/platform/catalog.mjs",
+    "src/platform/shell.mjs",
+    "dist/site-header.js",
+    "dist/site-header.css",
+    "src/platform/learning-ui.mjs"
+  ],
+  "scientificDossierSubtreesIdentical": [
+    "creatine",
+    "supplement-protein",
+    "supplement-caffeine",
+    "supplement-omega",
+    "supplement-vitd",
+    "supplement-magnesium",
+    "supplement-collagen",
+    "supplement-beta-alanine",
+    "supplement-citrulline",
+    "supplement-electrolytes",
+    "supplement-berberine"
+  ],
+  "existingArtworkIdentical": [
+    "dist/home-lens-core.webp",
+    "dist/home-lens-nebula.webp"
+  ],
+  "artBytes": 397014
+}

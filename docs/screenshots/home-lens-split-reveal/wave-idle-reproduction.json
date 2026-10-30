@@ -1,0 +1,76 @@
+[
+  {
+    "mode": "old stability only",
+    "waitMs": 467,
+    "after": {
+      "width": 1440,
+      "height": 362,
+      "digest": "d163d797",
+      "colors": 456,
+      "phase": "0.67072",
+      "progress": "0.10675",
+      "frame": "4",
+      "visible": true,
+      "scrollY": 140
+    },
+    "idle": {
+      "width": 1440,
+      "height": 362,
+      "digest": "80cc9aba",
+      "colors": 458,
+      "phase": "0.92347",
+      "progress": "0.14697",
+      "frame": "7",
+      "visible": true,
+      "scrollY": 140
+    },
+    "injection": {
+      "armed": false,
+      "delayed": [
+        {
+          "progress": 0.10675,
+          "at": 3507.100000023842
+        }
+      ],
+      "paintCalls": 6
+    },
+    "idleEqual": false
+  },
+  {
+    "mode": "target plus stability",
+    "waitMs": 1668,
+    "after": {
+      "width": 1440,
+      "height": 362,
+      "digest": "f979da63",
+      "colors": 461,
+      "phase": "0.97738",
+      "progress": "0.15556",
+      "frame": "17",
+      "visible": true,
+      "scrollY": 140
+    },
+    "idle": {
+      "width": 1440,
+      "height": 362,
+      "digest": "f979da63",
+      "colors": 461,
+      "phase": "0.97738",
+      "progress": "0.15556",
+      "frame": "17",
+      "visible": true,
+      "scrollY": 140
+    },
+    "injection": {
+      "armed": false,
+      "delayed": [
+        {
+          "progress": 0.10676,
+          "at": 1425.800000011921
+        }
+      ],
+      "paintCalls": 16
+    },
+    "idleEqual": true
+  }
+]

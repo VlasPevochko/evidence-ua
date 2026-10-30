@@ -58,6 +58,7 @@ class Element extends Events {
 function fixture({reduced = false, missing = null, failure = null, route = 'home', top = 344, viewportHeight = 1000, sectionHeight = 600} = {}) {
   const doc = new Events(), win = new Events(), media = new Events();
   doc.defaultView = win; doc.hidden = false; doc.readyState = 'complete';
+  doc.activeElement = null;
   doc.body = new Element('BODY'); doc.body.home = true;
   doc.body.dataset = {platformArea: 'home', routeView: route};
   win.location = {hash: ''}; win.innerHeight = viewportHeight;
@@ -134,7 +135,7 @@ test('fractional native scroll rounding completes the mounted reveal within its 
   assert.ok(f.section.getBoundingClientRect().bottom <= 829, 'section fits with the 16px bottom margin plus rounding tolerance');
 });
 
-test('native scroll advances monotonically with one event-coalesced frame and no idle loop', () => {
+test('native scroll reverses after completion while discovered choices stay open without an idle loop', () => {
   const f = fixture(), dispose = f.mount();
   assert.equal(f.mount(), dispose);
   assert.equal(f.ready(), true); assert.equal(f.progress(), 0);
@@ -143,13 +144,53 @@ test('native scroll advances monotonically with one event-coalesced frame and no
   f.win.fire('scroll'); f.win.fire('scroll'); f.win.fire('resize');
   assert.equal(f.frames.size, 1); f.flush();
   assert.equal(f.progress(), 0.5); assert.equal(f.frames.size, 0);
-  f.move(324); f.win.fire('scroll'); f.flush(); assert.equal(f.progress(), 0.5);
+  f.move(324); f.win.fire('scroll'); f.flush(); assert.equal(f.progress(), 0.0625);
   f.move(24); f.win.fire('scroll'); f.flush();
   assert.equal(f.progress(), 1); assert.equal(f.complete(), true);
-  f.move(344); f.win.fire('scroll'); f.flush(); assert.equal(f.progress(), 1);
+  f.move(344); f.win.fire('scroll'); f.flush(); assert.equal(f.progress(), 0);
+  assert.equal(f.complete(), true, 'six discovered choices stay visible when the image closes');
+  assert.equal(f.frames.size, 0, 'completion does not start an idle loop');
+  f.move(184); f.win.fire('scroll'); f.flush(); assert.equal(f.progress(), 0.5);
+  assert.equal(f.complete(), true);
+  assert.equal(f.frames.size, 0);
   assert.equal(f.win.handlers.get('scroll')[0].options.passive, true);
   assert.equal(f.win.handlers.has('wheel'), false); assert.equal(f.win.handlers.has('touchmove'), false);
   dispose();
+});
+
+test('full reveal remains reversible across hidden-tab and bfcache restoration', () => {
+  const f = fixture(); f.mount(); f.intersect(true); f.move(24); f.flush();
+  assert.equal(f.progress(), 1); assert.equal(f.complete(), true); assert.equal(f.frames.size, 0);
+  f.move(344); f.win.fire('scroll'); f.flush();
+  assert.equal(f.progress(), 0, 'completion must not freeze the actual image open');
+  assert.equal(f.complete(), true);
+  f.win.fire('scroll'); f.doc.hidden = true; f.doc.fire('visibilitychange');
+  assert.equal(f.frames.size, 0);
+  f.move(184); f.doc.hidden = false; f.doc.fire('visibilitychange'); f.flush();
+  assert.equal(f.progress(), 0.5); assert.equal(f.complete(), true);
+  f.win.fire('pagehide', {persisted: true}); f.move(24);
+  f.win.fire('pageshow', {persisted: true}); f.intersect(true); f.flush();
+  assert.equal(f.progress(), 1); assert.equal(f.complete(), true);
+  f.move(344); f.win.fire('scroll'); f.flush();
+  assert.equal(f.progress(), 0); assert.equal(f.frames.size, 0);
+});
+
+// Browser evidence at native +128/+208px showed a visible but inert action.
+// The interior opacity starts above zero at p>.125; pointer readiness must
+// follow that boundary in both directions, rather than waiting for OPEN.
+test('visible interior action accepts pointer input throughout its fade and disables at zero opacity', () => {
+  const f = fixture(); f.mount(); f.intersect(true); f.flush();
+  for (const [top, interactive] of [
+    [344, false], [304.032, false], [304, false], [303.968, true],
+    [216, true], [136, true], [24, true],
+    [136, true], [216, true], [304, false], [344, false],
+  ]) {
+    f.move(top); f.win.fire('scroll'); f.flush();
+    assert.equal(f.section.hasAttribute('data-lens-open'), interactive,
+      `pointer readiness at section top ${top}, progress ${f.progress()}`);
+    assert.equal(f.frames.size, 0, 'pointer readiness adds no idle frame');
+  }
+  assert.equal(f.complete(), true, 'closing the action keeps discovered choices visible');
 });
 
 test('focus reveals all six native links and jump activation keeps its browser default', () => {
@@ -164,6 +205,21 @@ test('focus reveals all six native links and jump activation keeps its browser d
   jump.section.fire('click', {target: jump.jump, preventDefault() { cancelled = true; }});
   assert.equal(jump.complete(), true); assert.equal(cancelled, false);
   assert.equal(jump.jump.getAttribute('href'), '#cards');
+});
+
+// A hidden central anchor must open before keyboard use and cannot disappear
+// while focused, even when native scroll geometry returns to CLOSED.
+test('central keyboard focus holds the image open until focus leaves the action', () => {
+  const f = fixture(); f.mount(); f.intersect(true); f.flush();
+  assert.equal(f.progress(), 0); assert.equal(f.section.hasAttribute('data-lens-open'), false);
+  f.doc.activeElement = f.jump; f.section.fire('focusin', {target: f.jump});
+  assert.equal(f.progress(), 1); assert.equal(f.section.hasAttribute('data-lens-open'), true);
+  f.move(344); f.win.fire('scroll'); f.flush();
+  assert.equal(f.progress(), 1, 'keyboard target stays visible and clickable');
+  f.doc.activeElement = f.links[0]; f.section.fire('focusout', {target: f.jump}); f.flush();
+  assert.equal(f.progress(), 0); assert.equal(f.complete(), true);
+  assert.equal(f.section.hasAttribute('data-lens-open'), false);
+  assert.equal(f.frames.size, 0);
 });
 
 test('hidden tabs, article routes and offscreen exit cancel pending work and resume once', () => {
@@ -196,6 +252,7 @@ test('cleanup restores visible native content, cancels pending frames and permit
   const f = fixture(), dispose = f.mount(); f.intersect(true);
   dispose(); dispose();
   assert.equal(f.ready(), false); assert.equal(f.complete(), false);
+  assert.equal(f.section.hasAttribute('data-lens-open'), false);
   assert.equal(f.section.style.getPropertyValue('--lens-progress'), '');
   assert.equal(f.frames.size, 0); assert.equal(f.observer.connected, false);
   assert.equal(f.win.count() + f.doc.count() + f.media.count() + f.section.count(), 0);
@@ -217,6 +274,7 @@ test('missing enhancement APIs and initialization errors leave the six links vis
 test('reduced motion is immediately final and live changes never hide revealed actions', () => {
   const initial = fixture({reduced: true}); initial.mount();
   assert.equal(initial.ready(), false); assert.equal(initial.frames.size, 0);
+  assert.equal(initial.progress(), 1); assert.equal(initial.complete(), true);
   const f = fixture(); f.mount(); f.intersect(true);
   f.media.matches = true; f.media.fire('change', {matches: true});
   assert.equal(f.ready(), false); assert.equal(f.progress(), 1); assert.equal(f.complete(), true);

@@ -1,5 +1,5 @@
 // Native links remain the baseline. This controller only advances decorative
-// scroll progress and opens existing home disclosures for fragment navigation.
+// reversible scroll progress and opens home disclosures for fragment navigation.
 const mounts = new WeakMap();
 const noop = () => {};
 
@@ -44,19 +44,21 @@ export function mountHomeLens(doc = globalThis.document) {
   }
 
   function paint(value) {
-    progress = Math.max(progress, value);
+    const action = section.querySelector('[data-lens-reveal]');
+    progress = action?.contains(doc.activeElement) ? 1 : value;
     section.style.setProperty('--lens-progress', String(progress));
-    if (progress === 1) {
-      section.setAttribute('data-lens-complete', '');
-      stop();
-    }
+    // Match the CSS interior fade: clamp(0, progress * 2 - .25, 1).
+    // Any visible action must accept a pointer; zero opacity stays inactive.
+    if (progress > 0.125) section.setAttribute('data-lens-open', '');
+    else section.removeAttribute('data-lens-open');
+    if (progress === 1) section.setAttribute('data-lens-complete', '');
   }
 
   function reveal() { paint(1); }
 
   function update() {
     frame = null;
-    if (!near || reduced || !homeActive() || progress === 1) return;
+    if (!near || reduced || !homeActive()) return;
     try {
       const rect = section.getBoundingClientRect();
       paint(lensProgress(rect.top, view.innerHeight, rect.height));
@@ -65,7 +67,7 @@ export function mountHomeLens(doc = globalThis.document) {
   }
 
   function schedule() {
-    if (!near || reduced || progress === 1 || !homeActive()) { stop(); return; }
+    if (!near || reduced || !homeActive()) { stop(); return; }
     if (frame === null) frame = view.requestAnimationFrame(update);
   }
 
@@ -92,6 +94,7 @@ export function mountHomeLens(doc = globalThis.document) {
     for (const cleanup of cleanups.splice(0).reverse()) cleanup();
     section.removeAttribute('data-lens-ready');
     section.removeAttribute('data-lens-complete');
+    section.removeAttribute('data-lens-open');
     section.style.removeProperty('--lens-progress');
     mounts.delete(doc);
   }
@@ -123,17 +126,20 @@ export function mountHomeLens(doc = globalThis.document) {
     if (reduced) { reveal(); return dispose; }
 
     listen(media, 'change', event => {
-      reduced = event.matches;
-      if (reduced) {
+      if (event.matches) {
+        reduced = true;
+        stop();
         // A preference change permanently completes this mount, so returning
         // to motion later cannot hide links the visitor has already seen.
         reveal(); section.removeAttribute('data-lens-ready');
       }
     });
     listen(section, 'focusin', event => {
+      if (event.target.closest?.('[data-lens-reveal]')) reveal();
       const link = event.target.closest?.('a.topic-card[data-area]');
       if (link && section.querySelector('#cards')?.contains(link)) reveal();
     });
+    listen(section, 'focusout', schedule);
     listen(section, 'click', event => {
       if (event.target.closest?.('[data-lens-reveal]')) reveal();
     });
@@ -153,6 +159,7 @@ export function mountHomeLens(doc = globalThis.document) {
     }
     // Apply the hiding styles only after every enhancement dependency is ready.
     section.setAttribute('data-lens-ready', '');
+    openHash();
   } catch {
     // Fail open even when an API exists but throws during setup.
     dispose();

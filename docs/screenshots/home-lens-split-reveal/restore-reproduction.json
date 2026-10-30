@@ -1,0 +1,3140 @@
+[
+  {
+    "viewport": {
+      "name": "360",
+      "width": 360,
+      "height": 844
+    },
+    "lifecycle": "hidden document",
+    "selectiveDelayMs": 0,
+    "before": {
+      "at": 1280.7999999821186,
+      "scrollY": 706,
+      "progress": 0.000146484375,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.000292969",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.9965)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1613.699999988079,
+      "scrollY": 1026,
+      "progress": 0.000146484375,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.000292969",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.9965)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1624.5999999940395,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.000292969",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.9965)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1930.5999999940395,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1966.199999988079,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1617.5999999940395
+        }
+      ],
+      "paints": [
+        {
+          "time": 929.5,
+          "rafTime": 926.5,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 1011.4000000059605,
+          "rafTime": 1009.8,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 0.200146484375;"
+        },
+        {
+          "time": 1061.0999999940395,
+          "rafTime": 1059.866,
+          "before": "--lens-progress: 0.200146484375;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 1618.7999999821186,
+          "rafTime": 1609.822,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "360",
+      "width": 360,
+      "height": 844
+    },
+    "lifecycle": "persisted pagehide",
+    "selectiveDelayMs": 0,
+    "before": {
+      "at": 710,
+      "scrollY": 706,
+      "progress": 0.000146484375,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1043.2999999821186,
+      "scrollY": 1026,
+      "progress": 0.000146484375,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1049.2999999821186,
+      "scrollY": 1026,
+      "progress": 0.000146484375,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1353.199999988079,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1386.5999999940395,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1047
+        }
+      ],
+      "paints": [
+        {
+          "time": 392.7999999821186,
+          "rafTime": 388.2,
+          "before": "--lens-progress: 1;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 439.09999999403954,
+          "rafTime": 438.166,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 0.200146484375;"
+        },
+        {
+          "time": 490.59999999403954,
+          "rafTime": 488.2,
+          "before": "--lens-progress: 0.200146484375;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 1055.2999999821186,
+          "rafTime": 1054.8,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "360",
+      "width": 360,
+      "height": 844
+    },
+    "lifecycle": "hidden document",
+    "selectiveDelayMs": 220,
+    "before": {
+      "at": 1215.199999988079,
+      "scrollY": 706,
+      "progress": 0.000146484375,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.000292969",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.9965)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1543.5999999940395,
+      "scrollY": 1026,
+      "progress": 0.000146484375,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.000292969",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.9965)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1548.9000000059605,
+      "scrollY": 1026,
+      "progress": 0.000146484375,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.000292969",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.9965)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1851.5999999940395,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.417402",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90219)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.417231",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90363)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.417231",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90363)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.417231",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90363)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.417231",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90363)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.417231",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90363)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1944.4000000059605,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1546.9000000059605
+        },
+        {
+          "event": "delayed identified lens RAF",
+          "at": 1547.699999988079,
+          "delay": 220
+        }
+      ],
+      "paints": [
+        {
+          "time": 885.9000000059605,
+          "rafTime": 873,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 945.0999999940395,
+          "rafTime": 939.766,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 0.200146484375;"
+        },
+        {
+          "time": 995.5999999940395,
+          "rafTime": 989.766,
+          "before": "--lens-progress: 0.200146484375;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 1768.199999988079,
+          "rafTime": 1539.722,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": false,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "360",
+      "width": 360,
+      "height": 844
+    },
+    "lifecycle": "persisted pagehide",
+    "selectiveDelayMs": 220,
+    "before": {
+      "at": 807.8000000119209,
+      "scrollY": 706,
+      "progress": 0.000146484375,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1140.0999999940395,
+      "scrollY": 1026,
+      "progress": 0.000146484375,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1145.5,
+      "scrollY": 1026,
+      "progress": 0.000146484375,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, -0.0140625, 0)",
+        "matrix(1, 0, 0, 1, 0.0140625, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1449.5,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1480.0999999940395,
+      "scrollY": 1026,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1143.699999988079
+        },
+        {
+          "event": "delayed identified lens RAF",
+          "at": 1153.199999988079,
+          "delay": 220
+        }
+      ],
+      "paints": [
+        {
+          "time": 489.5,
+          "rafTime": 486.1,
+          "before": "--lens-progress: 1;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 538,
+          "rafTime": 536.166,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 0.200146484375;"
+        },
+        {
+          "time": 586.9000000059605,
+          "rafTime": 586.166,
+          "before": "--lens-progress: 0.200146484375;",
+          "after": "--lens-progress: 0.000146484375;"
+        },
+        {
+          "time": 1373.800000011921,
+          "rafTime": 1152.7,
+          "before": "--lens-progress: 0.000146484375;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "390",
+      "width": 390,
+      "height": 844
+    },
+    "lifecycle": "hidden document",
+    "selectiveDelayMs": 0,
+    "before": {
+      "at": 1166.7999999821186,
+      "scrollY": 699,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1500.8999999761581,
+      "scrollY": 1019,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1516.3999999761581,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1820.7999999821186,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1849.8999999761581,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1506
+        }
+      ],
+      "paints": [
+        {
+          "time": 896.1999999880791,
+          "rafTime": 894.9,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.199609375;"
+        },
+        {
+          "time": 946.3999999761581,
+          "rafTime": 944.9,
+          "before": "--lens-progress: 0.199609375;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1507.3999999761581,
+          "rafTime": 1494.822,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "390",
+      "width": 390,
+      "height": 844
+    },
+    "lifecycle": "persisted pagehide",
+    "selectiveDelayMs": 0,
+    "before": {
+      "at": 724.9000000059605,
+      "scrollY": 699,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1059.6000000238419,
+      "scrollY": 1019,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1064.800000011921,
+      "scrollY": 1019,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1367.9000000059605,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1391.1000000238419,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1063
+        }
+      ],
+      "paints": [
+        {
+          "time": 405.90000000596046,
+          "rafTime": 404.5,
+          "before": "--lens-progress: 1;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 455.80000001192093,
+          "rafTime": 454.566,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.199609375;"
+        },
+        {
+          "time": 505.60000002384186,
+          "rafTime": 504.5,
+          "before": "--lens-progress: 0.199609375;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1071.800000011921,
+          "rafTime": 1071.2,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "390",
+      "width": 390,
+      "height": 844
+    },
+    "lifecycle": "hidden document",
+    "selectiveDelayMs": 220,
+    "before": {
+      "at": 1109.300000011921,
+      "scrollY": 699,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1457.9000000059605,
+      "scrollY": 1019,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1462.9000000059605,
+      "scrollY": 1019,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1767,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.416831",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90929)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.416831",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90929)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.416831",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90929)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.416831",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90929)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.416831",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90929)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.416831",
+          "transform": "matrix(1, 0, 0, 1, 0, 4.90929)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1861.7000000178814,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1461.4000000059605
+        },
+        {
+          "event": "delayed identified lens RAF",
+          "at": 1462,
+          "delay": 220
+        }
+      ],
+      "paints": [
+        {
+          "time": 822.0999999940395,
+          "rafTime": 819.6,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.199609375;"
+        },
+        {
+          "time": 888.3000000119209,
+          "rafTime": 886.2,
+          "before": "--lens-progress: 0.199609375;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1682.5999999940395,
+          "rafTime": 1452.89,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": false,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "390",
+      "width": 390,
+      "height": 844
+    },
+    "lifecycle": "persisted pagehide",
+    "selectiveDelayMs": 220,
+    "before": {
+      "at": 836,
+      "scrollY": 699,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1171.2000000178814,
+      "scrollY": 1019,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1177,
+      "scrollY": 1019,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1479.9000000059605,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1503.2000000178814,
+      "scrollY": 1019,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -96, 0)",
+        "matrix(1, 0, 0, 1, 96, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1174.7000000178814
+        },
+        {
+          "event": "delayed identified lens RAF",
+          "at": 1183.5,
+          "delay": 220
+        }
+      ],
+      "paints": [
+        {
+          "time": 499.80000001192093,
+          "rafTime": 498.964,
+          "before": "--lens-progress: 1;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 566.5,
+          "rafTime": 565.6,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.199609375;"
+        },
+        {
+          "time": 616.9000000059605,
+          "rafTime": 615.666,
+          "before": "--lens-progress: 0.199609375;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1405.7000000178814,
+          "rafTime": 1182.2,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "1440",
+      "width": 1440,
+      "height": 900
+    },
+    "lifecycle": "hidden document",
+    "selectiveDelayMs": 0,
+    "before": {
+      "at": 1241.5,
+      "scrollY": 523,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1591.4000000059605,
+      "scrollY": 843,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1604.300000011921,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1907.4000000059605,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1929.800000011921,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1595.5999999940395
+        }
+      ],
+      "paints": [
+        {
+          "time": 940.8000000119209,
+          "rafTime": 936.4,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.198828125;"
+        },
+        {
+          "time": 1004,
+          "rafTime": 1003.066,
+          "before": "--lens-progress: 0.198828125;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1598.2000000178814,
+          "rafTime": 1586.422,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "1440",
+      "width": 1440,
+      "height": 900
+    },
+    "lifecycle": "persisted pagehide",
+    "selectiveDelayMs": 0,
+    "before": {
+      "at": 826.2999999821186,
+      "scrollY": 523,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1187.199999988079,
+      "scrollY": 843,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1192.0999999940395,
+      "scrollY": 843,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1497.5999999940395,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1526.7999999821186,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1190.2999999821186
+        }
+      ],
+      "paints": [
+        {
+          "time": 454.59999999403954,
+          "rafTime": 450.598,
+          "before": "--lens-progress: 1;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 553.0999999940395,
+          "rafTime": 550.6,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.198828125;"
+        },
+        {
+          "time": 602.1999999880791,
+          "rafTime": 600.5,
+          "before": "--lens-progress: 0.198828125;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1201.199999988079,
+          "rafTime": 1200.5,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "1440",
+      "width": 1440,
+      "height": 900
+    },
+    "lifecycle": "hidden document",
+    "selectiveDelayMs": 220,
+    "before": {
+      "at": 1235.5999999940395,
+      "scrollY": 523,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1582.199999988079,
+      "scrollY": 843,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1587.800000011921,
+      "scrollY": 843,
+      "progress": 0,
+      "complete": false,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1894,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "0.312838",
+          "transform": "matrix(1, 0, 0, 1, 0, 6.45653)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.312838",
+          "transform": "matrix(1, 0, 0, 1, 0, 6.45653)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.312838",
+          "transform": "matrix(1, 0, 0, 1, 0, 6.45653)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.312838",
+          "transform": "matrix(1, 0, 0, 1, 0, 6.45653)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.312838",
+          "transform": "matrix(1, 0, 0, 1, 0, 6.45653)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "0.312838",
+          "transform": "matrix(1, 0, 0, 1, 0, 6.45653)",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1999,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1585.5999999940395
+        },
+        {
+          "event": "delayed identified lens RAF",
+          "at": 1586.5999999940395,
+          "delay": 220
+        }
+      ],
+      "paints": [
+        {
+          "time": 920.6999999880791,
+          "rafTime": 911.1,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.198828125;"
+        },
+        {
+          "time": 996.3000000119209,
+          "rafTime": 994.4,
+          "before": "--lens-progress: 0.198828125;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1807.0999999940395,
+          "rafTime": 1577.722,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": false,
+    "settledPass": true
+  },
+  {
+    "viewport": {
+      "name": "1440",
+      "width": 1440,
+      "height": 900
+    },
+    "lifecycle": "persisted pagehide",
+    "selectiveDelayMs": 220,
+    "before": {
+      "at": 898.2999999821186,
+      "scrollY": 523,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "suspended": {
+      "at": 1285,
+      "scrollY": 843,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "immediate": {
+      "at": 1293,
+      "scrollY": 843,
+      "progress": 0,
+      "complete": true,
+      "interior": "0",
+      "halves": [
+        "matrix(1, 0, 0, 1, 0, 0)",
+        "matrix(1, 0, 0, 1, 0, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "old300": {
+      "at": 1596.0999999940395,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "settled": {
+      "at": 1619.7999999821186,
+      "scrollY": 843,
+      "progress": 1,
+      "complete": true,
+      "interior": "1",
+      "halves": [
+        "matrix(1, 0, 0, 1, -145, 0)",
+        "matrix(1, 0, 0, 1, 145, 0)"
+      ],
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "transition": "opacity 0.16s linear, transform 0.16s ease-out"
+        }
+      ]
+    },
+    "raf": {
+      "armed": 0,
+      "events": [
+        {
+          "event": "restore",
+          "at": 1291
+        },
+        {
+          "event": "delayed identified lens RAF",
+          "at": 1304,
+          "delay": 220
+        }
+      ],
+      "paints": [
+        {
+          "time": 504.39999997615814,
+          "rafTime": 487.164,
+          "before": "--lens-progress: 1;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 605.7999999821186,
+          "rafTime": 603.8,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 0.198828125;"
+        },
+        {
+          "time": 672,
+          "rafTime": 670.466,
+          "before": "--lens-progress: 0.198828125;",
+          "after": "--lens-progress: 0;"
+        },
+        {
+          "time": 1532.5,
+          "rafTime": 1303.8,
+          "before": "--lens-progress: 0;",
+          "after": "--lens-progress: 1;"
+        }
+      ]
+    },
+    "oldPass": true,
+    "settledPass": true
+  }
+]

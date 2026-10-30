@@ -852,12 +852,18 @@ async function waveSnapshot(page) {
 async function waitForWaveIdle(page) {
   await page.locator('canvas#spectrum-wave').evaluate(async canvas => {
     const start = performance.now();
+    const view=canvas.ownerDocument.defaultView;
     let frame = canvas.dataset.waveFrame, stableSince = start;
     if (frame === undefined) throw new Error('wave frame telemetry is missing');
     while (performance.now() - start < 4000) {
       await new Promise(resolve => setTimeout(resolve, 80));
-      if (canvas.dataset.waveFrame !== frame) { frame = canvas.dataset.waveFrame; stableSince = performance.now(); }
-      if (performance.now() - stableSince >= 320) return;
+      // A temporarily delayed compositor frame can look idle while native-scroll
+      // easing is unfinished. Require the actual target AND the original quiet
+      // window; the later strict frame/pixel equality check remains unchanged.
+      const target=view.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : Math.min(1,Math.max(0,view.scrollY / Math.max(480,view.innerHeight || 900)));
+      const converged=Math.abs(Number(canvas.dataset.waveProgress)-target)<=.00001;
+      if (canvas.dataset.waveFrame !== frame || !converged) { frame = canvas.dataset.waveFrame; stableSince = performance.now(); }
+      if (converged && performance.now() - stableSince >= 320) return;
     }
     throw new Error('wave keeps rendering after native scrolling stops');
   });
@@ -934,10 +940,44 @@ async function lensSnapshot(page) {
       }
       return true;
     };
+    const rect = node => {
+      const r = node.getBoundingClientRect();
+      return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height};
+    };
+    const stage = section.querySelector('[data-lens-stage]');
+    const interior = section.querySelector('.home-lens-interior');
+    const action = section.querySelector('[data-lens-reveal]');
+    const stageRect = rect(stage), actionRect = rect(action);
+    // Resolve the computed clip, then measure the actual image's visible edge.
+    // A transform on a transparent overlay cannot satisfy this geometry gate.
+    const halves = [...section.querySelectorAll('.home-lens-half')].map(node => {
+      const image = node.querySelector('img'), imageRect = rect(image);
+      const clip = getComputedStyle(node).clipPath;
+      const values = clip.match(/^inset\(([^)]+)\)$/)?.[1].split(/\s+/) || [];
+      const inset = [values[0], values[1] || values[0], values[2] || values[0], values[3] || values[1] || values[0]];
+      const pixels = (value, size) => parseFloat(value) * (value?.endsWith('%') ? size / 100 : 1);
+      return {image: imageRect, transform:getComputedStyle(node).transform, clip,
+        left:imageRect.left + pixels(inset[3], imageRect.width), right:imageRect.right - pixels(inset[1], imageRect.width),
+        loaded:image.complete && image.naturalWidth > 0, src:image.getAttribute('src')};
+    });
+    const hit = (x,y) => {const node = document.elementFromPoint(x,y);return !!node && (node === action || action.contains(node));};
+    const hitPoints = [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].map(([x,y]) => hit(actionRect.left+actionRect.width*x,actionRect.top+actionRect.height*y));
+    const textFits = [...interior.querySelectorAll('p,a')].every(node => {
+      const range=document.createRange();range.selectNodeContents(node);
+      return [...range.getClientRects()].every(r => r.left >= stageRect.left && r.right <= stageRect.right && r.top >= stageRect.top && r.bottom <= stageRect.bottom);
+    });
     return {
+      height:document.documentElement.scrollHeight,
+      complete:section.hasAttribute('data-lens-complete'),
+      stage:stageRect, halves, gap:halves.length === 2 ? halves[1].left-halves[0].right : null,
+      interior:{...rect(interior), opacity:Number(getComputedStyle(interior).opacity), text:interior.innerText, textFits},
+      action:{...actionRect, visible:rendered(action), href:action.getAttribute('href'), tag:action.tagName,
+        inside:stage.contains(action), accessible:!action.closest('[hidden], [inert], [aria-hidden="true"]'), focused:document.activeElement===action, controls:stage.querySelectorAll('a,button,input,[role="button"]').length,
+        count:section.querySelectorAll('[data-lens-reveal]').length, hitPoints, centerHit:hitPoints[0],
+        pointerEvents:getComputedStyle(action).pointerEvents,
+        onScreen:actionRect.left>=0 && actionRect.right<=innerWidth && actionRect.top>=0 && actionRect.bottom<=innerHeight},
       progress: Number(getComputedStyle(section).getPropertyValue('--lens-progress')),
       top: box.top, scrollY, overflow: document.documentElement.scrollWidth - innerWidth,
-      glass: [...section.querySelectorAll('.home-lens-glass')].map(node => getComputedStyle(node).transform),
       cards: [...section.querySelectorAll('#cards > a.topic-card')].map(node => {
         const rect = node.getBoundingClientRect();
         const parts = [...node.querySelectorAll('strong, .topic-state, .topic-open')];
@@ -945,7 +985,7 @@ async function lensSnapshot(page) {
           const range = document.createRange(); range.selectNodeContents(part);
           return [...range.getClientRects()].every(line => line.left >= rect.left - 1 && line.right <= rect.right + 1 && line.top >= rect.top - 1 && line.bottom <= rect.bottom + 1);
         });
-        return {visible: rendered(node), opacity: Number(getComputedStyle(node).opacity),
+        return {visible: rendered(node), opacity: Number(getComputedStyle(node).opacity), transform:getComputedStyle(node).transform,
           width: rect.width, height: rect.height, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, textFits,
           href: node.getAttribute('href'), title: node.querySelector('strong')?.textContent.trim()};
       })
@@ -957,6 +997,39 @@ function checkLensLinks(where, snapshot, viewport) {
   check(where, snapshot.cards.length === 6 && snapshot.cards.every(card => card.visible && card.opacity >= .99), 'all six native directions must be truly rendered at full opacity');
   check(where, snapshot.cards.length === 6 && snapshot.cards.every(card => card.width >= 44 && card.height >= 44 && card.left >= -1 && card.right <= viewport.width + 1 && card.textFits && card.href && card.title), 'all six links need readable text rectangles and 44px tap targets within the viewport width');
   check(where, snapshot.overflow <= 1, `lens layout has ${snapshot.overflow}px horizontal overflow`);
+}
+
+function checkLensAction(where, snapshot, {onScreen = false} = {}) {
+  const {action, interior, stage} = snapshot;
+  check(where, action.count === 1 && action.controls === 1 && action.tag === 'A' && action.href === '#cards' && action.inside && action.visible,
+    'the single native #cards action must be rendered inside the accessible stage, without hidden/inert ancestors');
+  check(where, interior.opacity === 1 && interior.text.includes('6 напрямів') && interior.text.includes('Знайди свою тему') && interior.textFits && action.width >= 44 && action.height >= 44 && action.left >= stage.left && action.right <= stage.right && action.top >= stage.top && action.bottom <= stage.bottom,
+    'readable HTML and an opaque 44px action must fit physically inside the lens');
+  if (onScreen) check(where, action.onScreen && action.hitPoints.every(Boolean), 'the on-screen action must pass real center and corner hit tests');
+}
+
+async function positionLensOnset(page) {
+  await page.evaluate(() => {
+    const rect = document.querySelector('[data-home-lens]').getBoundingClientRect();
+    const distance = Math.min(320, Math.max(160, innerHeight * .38));
+    const end = Math.min(24, innerHeight - rect.height - 16);
+    scrollTo({top:rect.top + scrollY - end - distance, behavior:'instant'});
+  });
+  await page.waitForTimeout(240);
+}
+
+async function waitForLensLinksSettled(page, viewport, state) {
+  const before=await lensSnapshot(page);
+  // Completion changes the target immediately; native CSS transitions take
+  // 160ms. Assert their real final paint rather than an arbitrary earlier frame.
+  await page.waitForFunction(() => [...document.querySelectorAll('#cards > a.topic-card')].every(node => {
+    const style=getComputedStyle(node);
+    return Number(style.opacity)>=.999 && (style.transform==='none' || Math.abs(new DOMMatrixReadOnly(style.transform).f)<.1);
+  }), null, {timeout:2000});
+  if(process.env.QA_ARTIFACT_DIR) {
+    const dir=path.resolve(process.env.QA_ARTIFACT_DIR);fs.mkdirSync(dir,{recursive:true});
+    fs.writeFileSync(path.join(dir,`home-lens-transition-${state}-${viewport.name}.json`),JSON.stringify({state,viewport,before,settled:await lensSnapshot(page)},null,2));
+  }
 }
 
 async function homeLensFlow(browser, origin, viewport) {
@@ -1020,6 +1093,8 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.waitForTimeout(240);
     const closed = await lensSnapshot(page);
     check(where, closed.progress >= 0 && closed.progress <= .01, 'the native reveal must begin at the declared viewport onset');
+    check(where, Math.abs(closed.gap) <= 1 && closed.interior.opacity === 0 && !closed.action.centerHit && closed.action.pointerEvents === 'none', 'CLOSED must join the actual clipped halves without an invisible button hit target');
+    await page.locator('[data-lens-stage] img').evaluateAll(nodes => Promise.all(nodes.map(node => node.decode())));
     await artifact(page, viewport, 'home-lens-closed', page.locator('body'), {scroll: false});
     await page.mouse.move(viewport.width / 2, viewport.height / 2);
     await page.mouse.wheel(0, 128);
@@ -1027,7 +1102,7 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.waitForTimeout(220);
     const middle = await lensSnapshot(page);
     check(where, middle.progress > closed.progress && middle.progress < 1, 'one short native wheel movement must partially open the lens');
-    check(where, middle.glass.length === 3 && middle.glass.some((transform, index) => transform !== closed.glass[index]), 'the transparent glass geometry must visibly respond to native scrolling');
+    check(where, middle.halves.length === 2 && middle.halves.every((half,index) => half.loaded && half.transform !== closed.halves[index].transform) && middle.gap > closed.gap + 20, 'both actual clipped image halves must visibly separate at MID');
     await artifact(page, viewport, 'home-lens-mid', page.locator('body'), {scroll: false});
     const middleIdleBefore = await page.evaluate(() => ({...window.__lensQA}));
     await page.waitForTimeout(400);
@@ -1035,57 +1110,106 @@ async function homeLensFlow(browser, origin, viewport) {
     check(where, middleIdleAfter.styleWrites === middleIdleBefore.styleWrites && middleIdleAfter.lensCallbacks === middleIdleBefore.lensCallbacks, 'a partially revealed lens must stop its own style writes and RAF callbacks at idle');
     await page.mouse.wheel(0, 192);
     await page.waitForFunction(y => scrollY >= y + 315, closed.scrollY);
-    await page.waitForTimeout(250);
+    await waitForLensLinksSettled(page,viewport,'native-open');
     const opened = await lensSnapshot(page);
     check(where, opened.scrollY - closed.scrollY <= 321 && opened.progress >= .999, 'all directions must open within 320 CSS px after onset');
     check(where, opened.cards.length === 6 && opened.cards.every(card => card.top >= -1 && card.bottom <= viewport.height + 1), 'after the two short wheel movements all six real direction rectangles must actually be on screen');
     check(where, closed.progress <= middle.progress && middle.progress <= opened.progress, 'native scroll progress must advance monotonically');
     checkLensLinks(where, opened, viewport);
-    if (process.env.QA_ARTIFACT_DIR) {
-      fs.mkdirSync(path.resolve(process.env.QA_ARTIFACT_DIR), {recursive: true});
-      fs.writeFileSync(path.join(path.resolve(process.env.QA_ARTIFACT_DIR), `home-lens-geometry-${viewport.name}.json`), JSON.stringify({viewport, scrollDistance: opened.scrollY - closed.scrollY, closed, middle, opened}, null, 2));
-    }
-    await artifact(page, viewport, 'home-lens-revealed-on-screen', page.locator('body'), {scroll: false});
-    await page.locator('[data-lens-stage]').scrollIntoViewIfNeeded();
-    await page.waitForFunction(() => [...document.querySelectorAll('[data-lens-stage] img')].length === 2 && [...document.querySelectorAll('[data-lens-stage] img')].every(img => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0));
+    check(where, opened.gap >= (viewport.width <= 700 ? 120 : 180) && opened.gap > middle.gap + 20 && opened.halves.every(half => half.loaded), 'OPEN needs a substantial actual clipped-image gap, larger than MID');
+    checkLensAction(where, opened, {onScreen:true});
+    await artifact(page, viewport, 'home-lens-open', page.locator('body'), {scroll:false});
     const art = await page.locator('[data-lens-stage]').evaluate(stage => {
-      const box = stage.getBoundingClientRect(), style = getComputedStyle(stage);
-      return {decorative: stage.getAttribute('aria-hidden') === 'true', width: box.width, height: box.height, left: box.left, right: box.right,
-        clipped: ['hidden', 'clip'].includes(style.overflowX), images: [...stage.querySelectorAll('img')].map(img => ({width: Number(img.getAttribute('width')), height: Number(img.getAttribute('height')), lazy: img.loading === 'lazy', async: img.decoding === 'async', alt: img.alt}))};
+      const box=stage.getBoundingClientRect(), style=getComputedStyle(stage);
+      const images=[...stage.querySelectorAll('img')];
+      return {accessible:!stage.closest('[aria-hidden="true"], [inert], [hidden]'), width:box.width, height:box.height, left:box.left, right:box.right,
+        clipped:['hidden','clip'].includes(style.overflowX), urls:new Set(images.map(img=>img.currentSrc)).size,
+        images:images.map(img=>({width:Number(img.getAttribute('width')),height:Number(img.getAttribute('height')),lazy:img.loading==='lazy',async:img.decoding==='async',alt:img.alt,decorative:!!img.closest('[aria-hidden="true"]'),loaded:img.complete&&img.naturalWidth>0&&img.naturalHeight>0}))};
     });
-    check(where, art.decorative && art.width > 0 && art.height >= 200 && art.left >= -1 && art.right <= viewport.width + 1 && art.clipped && art.images.length === 2 && art.images.every(img => img.width > 0 && img.height > 0 && img.lazy && img.async && img.alt === ''), 'both loaded lens images need explicit dimensions, decorative semantics, lazy decoding and a contained stage');
-    await artifact(page, viewport, 'home-lens-open', page.locator('[data-home-lens]'));
-    if (process.env.QA_ARTIFACT_DIR) await page.screenshot({path: path.join(path.resolve(process.env.QA_ARTIFACT_DIR), `home-compact-full-${viewport.name}.png`), fullPage: true});
+    // Owner 2026-10-29: decoration alone is hidden; the native action is accessible.
+    // Two clipped foreground copies reuse one WebP plus the existing nebula URL.
+    check(where, art.accessible && art.width > 0 && art.height >= 200 && art.left >= -1 && art.right <= viewport.width + 1 && art.clipped && art.images.length === 3 && art.urls === 2 && art.images.every(img=>img.width>0&&img.height>0&&img.lazy&&img.async&&img.alt===''&&img.decorative&&img.loaded), 'three loaded decorative images must reuse two URLs inside a contained accessible stage');
     await page.waitForTimeout(400);
     const idleBefore = await page.evaluate(() => ({...window.__lensQA}));
     const idleVisual = await lensSnapshot(page);
     await page.waitForTimeout(550);
     const idleAfter = await page.evaluate(() => ({...window.__lensQA}));
     const idleVisualAfter = await lensSnapshot(page);
-    check(where, idleAfter.styleWrites === idleBefore.styleWrites && idleAfter.lensPaintCallbacks === idleBefore.lensPaintCallbacks && idleAfter.lensCallbacks === idleBefore.lensCallbacks && JSON.stringify(idleVisual.glass) === JSON.stringify(idleVisualAfter.glass), `lens-specific style writes and painting must settle at idle (all-module RAF callbacks: ${idleAfter.callbacks - idleBefore.callbacks})`);
-    await page.mouse.wheel(0, -180);
+    check(where, idleAfter.styleWrites === idleBefore.styleWrites && idleAfter.lensPaintCallbacks === idleBefore.lensPaintCallbacks && idleAfter.lensCallbacks === idleBefore.lensCallbacks && JSON.stringify(idleVisual.halves) === JSON.stringify(idleVisualAfter.halves) && JSON.stringify(idleVisual.interior) === JSON.stringify(idleVisualAfter.interior), `lens-specific style writes and painting must settle at idle (all-module RAF callbacks: ${idleAfter.callbacks - idleBefore.callbacks})`);
+    await page.mouse.wheel(0, -320);
+    await page.waitForFunction(y => scrollY <= y + 2, closed.scrollY);
     await page.waitForTimeout(250);
-    check(where, (await lensSnapshot(page)).progress >= opened.progress, 'scrolling back must never re-hide a revealed direction');
+    const back = await lensSnapshot(page);
+    // Owner-approved reversal applies to art; discovered navigation stays visible.
+    check(where, back.progress <= .01 && Math.abs(back.gap-closed.gap) <= 1 && back.halves.every((half,index)=>Math.abs(half.image.left-closed.halves[index].image.left)<=1) && back.complete, 'native wheel -320 must physically rejoin the halves while keeping completion sticky');
+    checkLensLinks(`${where} BACK`, back, viewport);
+    check(where, back.interior.opacity === 0 && !back.action.centerHit, 'BACK must remove the hidden action from pointer hit testing');
+    await artifact(page, viewport, 'home-lens-back', page.locator('body'), {scroll:false});
+    if (process.env.QA_ARTIFACT_DIR) {
+      const dir=path.resolve(process.env.QA_ARTIFACT_DIR);fs.mkdirSync(dir,{recursive:true});
+      fs.writeFileSync(path.join(dir, `home-lens-geometry-${viewport.name}.json`), JSON.stringify({viewport,scrollDistance:opened.scrollY-closed.scrollY,closed,middle,opened,back},null,2));
+    }
+    // Capture/measure all native states before any activation or artifact scrolling.
+    await page.mouse.wheel(0,320);
+    await page.waitForTimeout(250);
+    checkLensAction(`${where} mouse`, await lensSnapshot(page), {onScreen:true});
+    await page.locator('[data-lens-reveal]').click();
+    await page.waitForURL(url=>url.hash==='#cards');
+    checkLensLinks(`${where} actual mouse activation`, await lensSnapshot(page), viewport);
     await page.evaluate(() => scrollTo({top: 0, behavior: 'instant'}));
     await page.waitForTimeout(240);
     const heroAfter = await heroGeometry();
     check(where, heroBefore.length === 3 && heroAfter.every((box, index) => ['x', 'y', 'width', 'height'].every(axis => Math.abs(box[axis] - heroBefore[index][axis]) <= 1) && box.image === heroBefore[index].image), 'revealing the lower lens must preserve the hero, ribbon image and canvas geometry');
 
-    // Native keyboard activation of the actual jump must keep its fragment.
-    await page.reload({waitUntil: 'load'});
+    // Stopping at MID must never offer a dead action. Use coordinate clicks:
+    // locator auto-scroll/focus would conceal a pointer-events regression.
+    const partialActions=[];
+    for(const delta of [128,208]) {
+      await page.goto(origin + '/index.html',{waitUntil:'load'});
+      await page.locator('[data-home-lens][data-lens-ready]').waitFor({state:'attached'});
+      await positionLensOnset(page);
+      const onset=await page.evaluate(()=>scrollY);
+      await page.mouse.move(viewport.width/2,viewport.height/2);
+      await page.mouse.wheel(0,delta);
+      await page.waitForFunction(({y,distance})=>scrollY>=y+distance-1,{y:onset,distance:delta});
+      await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-home-lens]')).getPropertyValue('--lens-progress'))>.3);
+      const offered=await lensSnapshot(page);
+      check(where,offered.progress>.3 && offered.progress<.75 && offered.interior.opacity>0 && !offered.action.focused,'native partial scroll must offer a visible action without focus or full-reveal assistance');
+      check(where,offered.action.count===1 && offered.action.href==='#cards' && offered.action.inside && offered.action.accessible && offered.action.onScreen && offered.action.width>=44 && offered.action.height>=44 && offered.action.hitPoints.every(Boolean),`the visible action at native +${delta}px must receive real pointer hits`);
+      await page.mouse.click(offered.action.left+offered.action.width/2,offered.action.top+offered.action.height/2);
+      await page.waitForURL(url=>url.hash==='#cards',{timeout:2000});
+      await waitForLensLinksSettled(page,viewport,`partial-${delta}`);
+      const activated=await lensSnapshot(page);
+      checkLensLinks(`${where} partial +${delta}px coordinate activation`,activated,viewport);
+      partialActions.push({nativeWheel:delta,before:offered,after:activated,hash:new URL(page.url()).hash});
+    }
+    if(process.env.QA_ARTIFACT_DIR)fs.writeFileSync(path.join(path.resolve(process.env.QA_ARTIFACT_DIR),`home-lens-partial-actions-${viewport.name}.json`),JSON.stringify({viewport,partialActions},null,2));
+
+    // Start with no fragment so keyboard focus opens an actually CLOSED lens.
+    await page.goto(origin + '/index.html', {waitUntil: 'load'});
     await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
     const jump = page.locator('[data-lens-reveal]');
-    await jump.evaluate(node => node.focus({preventScroll: true}));
+    await positionLensOnset(page);
+    await jump.focus();
+    checkLensAction(`${where} focused CLOSED`, await lensSnapshot(page), {onScreen:true});
+    const focusBefore=await page.evaluate(()=>scrollY);
+    await page.mouse.wheel(0,128);
+    await page.waitForFunction(y=>scrollY>=y+120,focusBefore);
+    await page.mouse.wheel(0,-128);
+    await page.waitForFunction(y=>scrollY<=y+2,focusBefore);
+    await page.waitForTimeout(220);
+    checkLensAction(`${where} focus held during reversal`, await lensSnapshot(page), {onScreen:true});
+    check(where, await jump.evaluate(node=>document.activeElement===node), 'scroll reversal must retain actual central action focus');
     await page.keyboard.press('Enter');
     await page.waitForURL(url => url.hash === '#cards');
-    await page.waitForTimeout(220);
+    await waitForLensLinksSettled(page,viewport,'keyboard-jump');
     checkLensLinks(`${where} native jump`, await lensSnapshot(page), viewport);
     await page.goto(origin + '/index.html', {waitUntil: 'load'});
     await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
     await page.locator('[data-lens-reveal]').evaluate(node => node.focus({preventScroll: true}));
     await page.keyboard.press('Tab');
     check(where, await page.locator('#cards > .topic-card').first().evaluate(node => document.activeElement === node && node.matches(':focus-visible') && getComputedStyle(node).outlineStyle !== 'none'), 'Tab from the native jump must visibly focus the first real direction');
-    await page.waitForTimeout(220);
+    await waitForLensLinksSettled(page,viewport,'keyboard-focus');
     checkLensLinks(`${where} keyboard focus`, await lensSnapshot(page), viewport);
 
     for (const selector of ['#home-learning-paths', '.home-library-fold']) {
@@ -1110,7 +1234,7 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.goto(origin + '/index.html', {waitUntil: 'load'});
     await page.locator('#cards').scrollIntoViewIfNeeded();
     await page.reload({waitUntil: 'load'});
-    await page.waitForTimeout(250);
+    await waitForLensLinksSettled(page,viewport,'reload');
     checkLensLinks(`${where} mid-page reload`, await lensSnapshot(page), viewport);
     const fastBefore = await page.evaluate(() => scrollY);
     await page.mouse.move(viewport.width / 2, viewport.height / 2);
@@ -1118,16 +1242,95 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.waitForFunction(y => scrollY > y + 300, fastBefore);
     check(where, (await page.evaluate(() => scrollY)) > fastBefore + 300, 'a fast native wheel must continue past the lens without a scroll trap');
     checkLensLinks(`${where} fast scroll`, await lensSnapshot(page), viewport);
+    await page.goto(origin + '/index.html', {waitUntil:'load'});
+    await positionLensOnset(page);
+    await page.mouse.wheel(0,128);
+    await page.waitForTimeout(220);
+    check(where, (await lensSnapshot(page)).progress < 1, 'live reduced-motion change must start from partial motion');
+    await page.emulateMedia({reducedMotion:'reduce'});
+    await waitForLensLinksSettled(page,viewport,'live-reduced');
+    checkLensAction(`${where} live reduced motion`, await lensSnapshot(page), {onScreen:true});
+    checkLensLinks(`${where} live reduced motion`, await lensSnapshot(page), viewport);
+    const reducedBefore=await page.evaluate(()=>({...window.__lensQA}));
+    await page.mouse.wheel(0,-128);
+    await page.waitForTimeout(350);
+    const reducedAfter=await page.evaluate(()=>({...window.__lensQA}));
+    check(where, reducedAfter.styleWrites===reducedBefore.styleWrites && reducedAfter.lensCallbacks===reducedBefore.lensCallbacks && (await lensSnapshot(page)).progress===1, 'live reduced motion must stop lens work and retain OPEN after reverse scroll');
+    // Browser lifecycle signals are controlled here; the real native scroll,
+    // observer, DOM geometry and render counters remain in use.
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    await page.goto(origin + '/index.html', {waitUntil:'load'});
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state:'attached'});
+    await positionLensOnset(page);
+    for (const lifecycle of ['hidden document', 'persisted pagehide']) {
+      await page.evaluate(mode => {
+        if(mode==='hidden document') {
+          Object.defineProperty(document,'hidden',{configurable:true,value:true});
+          document.dispatchEvent(new Event('visibilitychange'));
+        } else dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));
+      }, lifecycle);
+      const paused=await page.evaluate(()=>({...window.__lensQA}));
+      const pausedVisual=await lensSnapshot(page);
+      await page.mouse.wheel(0,320);
+      await page.waitForFunction(y=>scrollY>=y+315,pausedVisual.scrollY);
+      await page.waitForTimeout(300);
+      const suspended=await page.evaluate(()=>({...window.__lensQA}));
+      check(where, suspended.styleWrites===paused.styleWrites && suspended.lensCallbacks===paused.lensCallbacks && (await lensSnapshot(page)).progress===pausedVisual.progress, `${lifecycle} must suspend actual lens work during native scroll`);
+      await page.evaluate(mode=>{
+        if(mode==='hidden document') {
+          delete document.hidden;
+          document.dispatchEvent(new Event('visibilitychange'));
+        } else dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+      },lifecycle);
+      // Restoring schedules a lens RAF; only that paint starts the cards'
+      // 160ms CSS transition. A fixed delay can sample midway under load.
+      // Completion is sticky on the second lifecycle pass, so also await the
+      // actual restored artwork before checking the on-screen central action.
+      await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-home-lens]')).getPropertyValue('--lens-progress'))===1,null,{timeout:2000});
+      await waitForLensLinksSettled(page,viewport,`restore-${lifecycle.replaceAll(' ','-')}`);
+      checkLensLinks(`${where} ${lifecycle} restore`,await lensSnapshot(page),viewport);
+      checkLensAction(`${where} ${lifecycle} restore`,await lensSnapshot(page),{onScreen:true});
+      await positionLensOnset(page);
+    }
+    await page.goto(origin + '/index.html#creatine',{waitUntil:'load'});
+    await page.waitForSelector('body[data-route-view="article"]');
+    await page.waitForTimeout(300);
+    const articleBefore=await page.evaluate(()=>({...window.__lensQA}));
+    await page.mouse.wheel(0,320);
+    await page.waitForTimeout(350);
+    const articleAfter=await page.evaluate(()=>({...window.__lensQA}));
+    check(where, articleAfter.styleWrites===articleBefore.styleWrites && articleAfter.lensCallbacks===articleBefore.lensCallbacks,'actual article view must leave the hidden home lens idle');
+    await page.goto(origin + '/index.html',{waitUntil:'load'});
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state:'attached'});
+    await positionLensOnset(page);
+    await page.evaluate(async()=>{
+      const script=[...document.scripts].find(node=>node.src.includes('/home-lens.js'));
+      const module=await import(script.src);
+      module.mountHomeLens(document)();
+    });
+    check(where,await page.locator('[data-home-lens]').evaluate(node=>!node.hasAttribute('data-lens-ready') && Number(getComputedStyle(node).getPropertyValue('--lens-progress'))===1),'cleanup must remove enhancement state and restore default OPEN immediately');
+    await waitForLensLinksSettled(page,viewport,'cleanup');
+    checkLensLinks(`${where} cleanup`,await lensSnapshot(page),viewport);
+    checkLensAction(`${where} cleanup`,await lensSnapshot(page),{onScreen:true});
+    const disposed=await page.evaluate(()=>({...window.__lensQA}));
+    await page.mouse.wheel(0,128);
+    await page.waitForTimeout(300);
+    const disposedAfter=await page.evaluate(()=>({...window.__lensQA}));
+    check(where,disposedAfter.styleWrites===disposed.styleWrites && disposedAfter.lensCallbacks===disposed.lensCallbacks,'disposed controller must stop lens writes and callbacks');
     checkBrowserHealth(where, seen);
   } finally { await context.close(); }
 
-  for (const fallback of ['reduced motion', 'without JavaScript']) {
+  for (const fallback of ['reduced motion', 'without JavaScript', 'missing observer', 'observer setup failure']) {
     const fallbackWhere = `${where} ${fallback}`;
-    const state = await open(browser, origin, viewport, '/index.html', {contextOptions: fallback === 'reduced motion' ? {reducedMotion: 'reduce'} : {javaScriptEnabled: false}});
+    const state = await open(browser, origin, viewport, '/index.html', {contextOptions: fallback === 'reduced motion' ? {reducedMotion:'reduce'} : fallback === 'without JavaScript' ? {javaScriptEnabled:false} : {}, initScript:fallback === 'missing observer' ? () => { window.IntersectionObserver=undefined; } : fallback === 'observer setup failure' ? () => { const NativeObserver=window.IntersectionObserver; window.IntersectionObserver=class extends NativeObserver {observe(target){if(target.matches('[data-home-lens]'))throw new Error('QA lens observer setup failure');return super.observe(target);}}; } : undefined});
     try {
       // Assert immediately, before scroll, focus, wheel or touch can reveal it.
       checkLensLinks(fallbackWhere, await lensSnapshot(state.page), viewport);
+      checkLensAction(fallbackWhere, await lensSnapshot(state.page));
       check(fallbackWhere, await state.page.evaluate(() => scrollY === 0), 'fallback directions must be visible without requiring a gesture');
+      await state.page.locator('[data-lens-reveal]').click();
+      await state.page.waitForURL(url=>url.hash==='#cards');
+      checkLensLinks(`${fallbackWhere} native action`, await lensSnapshot(state.page), viewport);
       checkBrowserHealth(fallbackWhere, state.seen);
     } finally { await state.context.close(); }
   }
@@ -1152,10 +1355,17 @@ async function homeLensTouchFlow(browser, origin, viewport) {
     await page.waitForTimeout(350);
     const middle = await lensSnapshot(page);
     await nativeHomeScroll(page, context, true, {target: '[data-lens-stage]', steps: 20});
-    await page.waitForTimeout(400);
+    await waitForLensLinksSettled(page,viewport,'native-touch-open');
     const after = await lensSnapshot(page);
     check(where, after.scrollY > before.scrollY + 100 && before.progress <= middle.progress && middle.progress <= after.progress, 'real finger scrolling must move the document and monotonically open the lens');
     checkLensLinks(where, after, viewport);
+    await positionLensOnset(page);
+    await page.mouse.wheel(0,320);
+    await page.waitForTimeout(300);
+    checkLensAction(`${where} touch action`, await lensSnapshot(page), {onScreen:true});
+    await page.locator('[data-lens-reveal]').tap();
+    await page.waitForURL(url=>url.hash==='#cards');
+    checkLensLinks(`${where} actual touch activation`, await lensSnapshot(page), viewport);
     checkBrowserHealth(where, seen);
   } finally { await context.close(); }
 }
@@ -1919,11 +2129,20 @@ async function homeLowerFlow(browser, origin, viewport) {
   // The selected lens is intentionally borderless: its loaded graphic supplies
   // the visual chapter. Native route/library entrances retain bounded surfaces.
   await page.locator('[data-lens-stage]').scrollIntoViewIfNeeded();
-  await page.waitForFunction(()=>[...document.querySelectorAll('[data-lens-stage] img')].length===2&&[...document.querySelectorAll('[data-lens-stage] img')].every(img=>img.complete&&img.naturalWidth>0));
+  await page.waitForFunction(()=>[...document.querySelectorAll('[data-lens-stage] img')].length===3&&[...document.querySelectorAll('[data-lens-stage] img')].every(img=>img.complete&&img.naturalWidth>0));
   check(where,await page.locator('[data-lens-stage]').evaluate(node=>{const box=node.getBoundingClientRect();return box.width>0&&box.height>=200&&getComputedStyle(node).visibility==='visible';}),'the direction chapter must contain its loaded, visible lens graphic');
   check(where,chapters.length===3&&chapters.slice(1).every(chapter=>chapter.padding>=24&&chapter.border>=1&&(chapter.image!=='none'||(chapter.background!==background&&chapter.background!=='rgba(0, 0, 0, 0)'))),'route and library entrances need readable, visibly bounded surfaces');
   check(where,chapters.length===3&&chapters[0].top<chapters[1].top&&chapters[1].top<chapters[2].top,'the page must progress from choosing a direction to routes and the library');
   check(where,(await page.locator('#start-here-title').innerText())==='Обери напрям','the directory heading must explicitly identify the choice');
+  // This flow measures the final chooser layout; dedicated wheel flows above
+  // already cover the intermediate reveal. Native focus fully reveals it.
+  // Record the pre-focus state too, so per-card stagger offsets are reviewable.
+  if(process.env.QA_ARTIFACT_DIR) {
+    const dir=path.resolve(process.env.QA_ARTIFACT_DIR);fs.mkdirSync(dir,{recursive:true});
+    fs.writeFileSync(path.join(dir,`home-lens-lower-before-focus-${viewport.name}.json`),JSON.stringify(await lensSnapshot(page),null,2));
+  }
+  await page.locator('[data-lens-reveal]').focus();
+  await waitForLensLinksSettled(page,viewport,'lower-focus');
   const topicBoxes=await page.locator('#cards>.topic-card').evaluateAll(nodes=>nodes.map(node=>{
     const rect=node.getBoundingClientRect();
     const contentFits=[...node.querySelectorAll('strong,.topic-state,.topic-open')].every(part=>{

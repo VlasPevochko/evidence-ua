@@ -1,0 +1,30 @@
+{
+  "boundedCommand": "timeout 18s env QA_HOME_ONLY=1 BROWSER_EXECUTABLE=/usr/bin/chromium node scripts/browser-qa/run.mjs",
+  "result": "Bounded RED: first flow reached obsolete image count wait run.mjs:1050. Parent timeout terminated Chromium; later closed-browser cascade is cleanup noise, not product failure.",
+  "authorizedContractChanges": [
+    "2 image nodes \u2192 3 nodes, still 2 artwork URLs",
+    "aria-hidden on whole stage \u2192 decoration only, central action accessible",
+    "monotonic artwork \u2192 reversible artwork plus sticky discovered links"
+  ],
+  "initialExtendedRun": {
+    "checks": 704,
+    "failures": 3,
+    "cause": "Global throwing observer injection also broke another module; scoped simulated throw to lens observe target; no production modification."
+  },
+  "lifecycleSamplingRun": {
+    "checks": 806,
+    "failures": 4,
+    "names": [
+      "cleanup full opacity at mobile, desktop, mobile-narrow",
+      "lower-home mobile grid rows"
+    ],
+    "originalFailureHasNumericSamples": false,
+    "boundedReproduction": "transition-reproduction.json",
+    "resolution": "Keep immediate default OPEN assertion; wait for actual card opacity>=.999 and translateY<.1 after dispose. Lower-home final layout setup focuses actual central action, then waits for those same actual paint values. Native 128+192 wheel and -320 BACK receive no focus/reveal help."
+  },
+  "focusedGreen": {
+    "checks": 809,
+    "failures": 0,
+    "exit": 0
+  }
+}

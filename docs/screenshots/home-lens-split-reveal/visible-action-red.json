@@ -1,0 +1,194 @@
+[
+  {
+    "width": 360,
+    "nativeWheel": 128,
+    "onset": 706,
+    "before": {
+      "progress": 0.400146484375,
+      "open": false,
+      "interiorOpacity": "0.550293",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 179.9921875,
+      "y": 468.6875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "after": {
+      "progress": 0.400146484375,
+      "open": false,
+      "interiorOpacity": "0.550293",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 179.9921875,
+      "y": 468.6875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "activated": false
+  },
+  {
+    "width": 360,
+    "nativeWheel": 208,
+    "onset": 706,
+    "before": {
+      "progress": 0.650146484375,
+      "open": false,
+      "interiorOpacity": "1",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 179.9921875,
+      "y": 388.6875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "after": {
+      "progress": 0.650146484375,
+      "open": false,
+      "interiorOpacity": "1",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 179.9921875,
+      "y": 388.6875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "activated": false
+  },
+  {
+    "width": 390,
+    "nativeWheel": 128,
+    "onset": 699,
+    "before": {
+      "progress": 0.399609375,
+      "open": false,
+      "interiorOpacity": "0.549219",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 194.9921875,
+      "y": 480.265625,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "after": {
+      "progress": 0.399609375,
+      "open": false,
+      "interiorOpacity": "0.549219",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 194.9921875,
+      "y": 480.265625,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "activated": false
+  },
+  {
+    "width": 390,
+    "nativeWheel": 208,
+    "onset": 699,
+    "before": {
+      "progress": 0.649609375,
+      "open": false,
+      "interiorOpacity": "1",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 194.9921875,
+      "y": 400.265625,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "after": {
+      "progress": 0.649609375,
+      "open": false,
+      "interiorOpacity": "1",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 194.9921875,
+      "y": 400.265625,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "activated": false
+  },
+  {
+    "width": 1440,
+    "nativeWheel": 128,
+    "onset": 523,
+    "before": {
+      "progress": 0.398828125,
+      "open": false,
+      "interiorOpacity": "0.547656",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 976.6328125,
+      "y": 498.171875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "after": {
+      "progress": 0.398828125,
+      "open": false,
+      "interiorOpacity": "0.547656",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 976.6328125,
+      "y": 498.171875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "activated": false
+  },
+  {
+    "width": 1440,
+    "nativeWheel": 208,
+    "onset": 523,
+    "before": {
+      "progress": 0.648828125,
+      "open": false,
+      "interiorOpacity": "1",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 976.6328125,
+      "y": 418.171875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "after": {
+      "progress": 0.648828125,
+      "open": false,
+      "interiorOpacity": "1",
+      "actionOpacity": "1",
+      "pointerEvents": "none",
+      "x": 976.6328125,
+      "y": 418.171875,
+      "centerHit": false,
+      "hitClass": "home-lens-stage",
+      "hash": "",
+      "focusedAction": false
+    },
+    "activated": false
+  }
+]

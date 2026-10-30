@@ -1,0 +1,704 @@
+{
+  "viewport": {
+    "name": "desktop",
+    "width": 1440,
+    "height": 900
+  },
+  "scrollDistance": 320,
+  "closed": {
+    "height": 2437,
+    "complete": false,
+    "stage": {
+      "left": 643.296875,
+      "right": 1310,
+      "top": 362.375,
+      "bottom": 822.375,
+      "width": 666.703125,
+      "height": 460
+    },
+    "halves": [
+      {
+        "image": {
+          "left": 721.640625,
+          "right": 1231.640625,
+          "top": 337.375,
+          "bottom": 847.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "clip": "inset(0px 50% 0px 0px)",
+        "left": 721.640625,
+        "right": 976.640625,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      },
+      {
+        "image": {
+          "left": 721.640625,
+          "right": 1231.640625,
+          "top": 337.375,
+          "bottom": 847.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "clip": "inset(0px 0px 0px 50%)",
+        "left": 976.640625,
+        "right": 1231.640625,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      }
+    ],
+    "gap": 0,
+    "interior": {
+      "left": 880.640625,
+      "right": 1072.640625,
+      "top": 518.578125,
+      "bottom": 666.171875,
+      "width": 192,
+      "height": 147.59375,
+      "opacity": 0,
+      "text": "6 напрямів\n\nЗнайди свою тему\n\nОбрати напрям\n↓",
+      "textFits": true
+    },
+    "action": {
+      "left": 904.953125,
+      "right": 1048.3125,
+      "top": 604.171875,
+      "bottom": 648.171875,
+      "width": 143.359375,
+      "height": 44,
+      "visible": false,
+      "href": "#cards",
+      "tag": "A",
+      "inside": true,
+      "accessible": true,
+      "focused": false,
+      "controls": 1,
+      "count": 1,
+      "hitPoints": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "centerHit": false,
+      "pointerEvents": "none",
+      "onScreen": true
+    },
+    "progress": 0,
+    "top": 344.375,
+    "scrollY": 523,
+    "overflow": 0,
+    "cards": [
+      {
+        "visible": false,
+        "opacity": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 12)",
+        "width": 364,
+        "height": 148,
+        "left": 130,
+        "right": 494,
+        "top": 888.3125,
+        "bottom": 1036.3125,
+        "textFits": true,
+        "href": "./muscle-lab.html",
+        "title": "М’язи та тренування"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 12)",
+        "width": 364,
+        "height": 148,
+        "left": 538,
+        "right": 902,
+        "top": 888.3125,
+        "bottom": 1036.3125,
+        "textFits": true,
+        "href": "./cell-lab.html",
+        "title": "Клітини та органели"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 12)",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 888.3125,
+        "bottom": 1036.3125,
+        "textFits": true,
+        "href": "./nutrition.html",
+        "title": "Харчування"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 12)",
+        "width": 364,
+        "height": 148,
+        "left": 130,
+        "right": 494,
+        "top": 1036.3125,
+        "bottom": 1184.3125,
+        "textFits": true,
+        "href": "#supplement-library",
+        "title": "Добавки"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 12)",
+        "width": 364,
+        "height": 148,
+        "left": 538,
+        "right": 902,
+        "top": 1036.3125,
+        "bottom": 1184.3125,
+        "textFits": true,
+        "href": "./movement.html",
+        "title": "Рух і біомеханіка"
+      },
+      {
+        "visible": false,
+        "opacity": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 12)",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 1036.3125,
+        "bottom": 1184.3125,
+        "textFits": true,
+        "href": "./sleep.html",
+        "title": "Сон і відновлення"
+      }
+    ]
+  },
+  "middle": {
+    "height": 2437,
+    "complete": false,
+    "stage": {
+      "left": 643.296875,
+      "right": 1310,
+      "top": 234.375,
+      "bottom": 694.375,
+      "width": 666.703125,
+      "height": 460
+    },
+    "halves": [
+      {
+        "image": {
+          "left": 663.810546875,
+          "right": 1173.810546875,
+          "top": 209.375,
+          "bottom": 719.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, -57.8301, 0)",
+        "clip": "inset(0px 50% 0px 0px)",
+        "left": 663.810546875,
+        "right": 918.810546875,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      },
+      {
+        "image": {
+          "left": 779.470703125,
+          "right": 1289.470703125,
+          "top": 209.375,
+          "bottom": 719.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, 57.8301, 0)",
+        "clip": "inset(0px 0px 0px 50%)",
+        "left": 1034.470703125,
+        "right": 1289.470703125,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      }
+    ],
+    "gap": 115.66015625,
+    "interior": {
+      "left": 880.640625,
+      "right": 1072.640625,
+      "top": 390.578125,
+      "bottom": 538.171875,
+      "width": 192,
+      "height": 147.59375,
+      "opacity": 0.547656,
+      "text": "6 напрямів\n\nЗнайди свою тему\n\nОбрати напрям\n↓",
+      "textFits": true
+    },
+    "action": {
+      "left": 904.953125,
+      "right": 1048.3125,
+      "top": 476.171875,
+      "bottom": 520.171875,
+      "width": 143.359375,
+      "height": 44,
+      "visible": false,
+      "href": "#cards",
+      "tag": "A",
+      "inside": true,
+      "accessible": true,
+      "focused": false,
+      "controls": 1,
+      "count": 1,
+      "hitPoints": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "centerHit": true,
+      "pointerEvents": "auto",
+      "onScreen": true
+    },
+    "progress": 0.398828125,
+    "top": 216.375,
+    "scrollY": 651,
+    "overflow": 0,
+    "cards": [
+      {
+        "visible": false,
+        "opacity": 0.797656,
+        "transform": "matrix(1, 0, 0, 1, 0, 2.42812)",
+        "width": 364,
+        "height": 148,
+        "left": 130,
+        "right": 494,
+        "top": 750.7406005859375,
+        "bottom": 898.7406005859375,
+        "textFits": true,
+        "href": "./muscle-lab.html",
+        "title": "М’язи та тренування"
+      },
+      {
+        "visible": false,
+        "opacity": 0.722656,
+        "transform": "matrix(1, 0, 0, 1, 0, 3.32812)",
+        "width": 364,
+        "height": 148,
+        "left": 538,
+        "right": 902,
+        "top": 751.640625,
+        "bottom": 899.640625,
+        "textFits": true,
+        "href": "./cell-lab.html",
+        "title": "Клітини та органели"
+      },
+      {
+        "visible": false,
+        "opacity": 0.647656,
+        "transform": "matrix(1, 0, 0, 1, 0, 4.22813)",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 752.5406494140625,
+        "bottom": 900.5406494140625,
+        "textFits": true,
+        "href": "./nutrition.html",
+        "title": "Харчування"
+      },
+      {
+        "visible": false,
+        "opacity": 0.572656,
+        "transform": "matrix(1, 0, 0, 1, 0, 5.12813)",
+        "width": 364,
+        "height": 148.00006103515625,
+        "left": 130,
+        "right": 494,
+        "top": 901.4406127929688,
+        "bottom": 1049.440673828125,
+        "textFits": true,
+        "href": "#supplement-library",
+        "title": "Добавки"
+      },
+      {
+        "visible": false,
+        "opacity": 0.497656,
+        "transform": "matrix(1, 0, 0, 1, 0, 6.02812)",
+        "width": 364,
+        "height": 147.99993896484375,
+        "left": 538,
+        "right": 902,
+        "top": 902.3406372070312,
+        "bottom": 1050.340576171875,
+        "textFits": true,
+        "href": "./movement.html",
+        "title": "Рух і біомеханіка"
+      },
+      {
+        "visible": false,
+        "opacity": 0.422656,
+        "transform": "matrix(1, 0, 0, 1, 0, 6.92812)",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 903.2406005859375,
+        "bottom": 1051.2406005859375,
+        "textFits": true,
+        "href": "./sleep.html",
+        "title": "Сон і відновлення"
+      }
+    ]
+  },
+  "opened": {
+    "height": 2437,
+    "complete": true,
+    "stage": {
+      "left": 643.296875,
+      "right": 1310,
+      "top": 42.375,
+      "bottom": 502.375,
+      "width": 666.703125,
+      "height": 460
+    },
+    "halves": [
+      {
+        "image": {
+          "left": 576.640625,
+          "right": 1086.640625,
+          "top": 17.375,
+          "bottom": 527.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, -145, 0)",
+        "clip": "inset(0px 50% 0px 0px)",
+        "left": 576.640625,
+        "right": 831.640625,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      },
+      {
+        "image": {
+          "left": 866.640625,
+          "right": 1376.640625,
+          "top": 17.375,
+          "bottom": 527.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, 145, 0)",
+        "clip": "inset(0px 0px 0px 50%)",
+        "left": 1121.640625,
+        "right": 1376.640625,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      }
+    ],
+    "gap": 290,
+    "interior": {
+      "left": 880.640625,
+      "right": 1072.640625,
+      "top": 198.578125,
+      "bottom": 346.171875,
+      "width": 192,
+      "height": 147.59375,
+      "opacity": 1,
+      "text": "6 напрямів\n\nЗнайди свою тему\n\nОбрати напрям\n↓",
+      "textFits": true
+    },
+    "action": {
+      "left": 904.953125,
+      "right": 1048.3125,
+      "top": 284.171875,
+      "bottom": 328.171875,
+      "width": 143.359375,
+      "height": 44,
+      "visible": true,
+      "href": "#cards",
+      "tag": "A",
+      "inside": true,
+      "accessible": true,
+      "focused": false,
+      "controls": 1,
+      "count": 1,
+      "hitPoints": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "centerHit": true,
+      "pointerEvents": "auto",
+      "onScreen": true
+    },
+    "progress": 1,
+    "top": 24.375,
+    "scrollY": 843,
+    "overflow": 0,
+    "cards": [
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 130,
+        "right": 494,
+        "top": 556.3125,
+        "bottom": 704.3125,
+        "textFits": true,
+        "href": "./muscle-lab.html",
+        "title": "М’язи та тренування"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 538,
+        "right": 902,
+        "top": 556.3125,
+        "bottom": 704.3125,
+        "textFits": true,
+        "href": "./cell-lab.html",
+        "title": "Клітини та органели"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 556.3125,
+        "bottom": 704.3125,
+        "textFits": true,
+        "href": "./nutrition.html",
+        "title": "Харчування"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 130,
+        "right": 494,
+        "top": 704.3125,
+        "bottom": 852.3125,
+        "textFits": true,
+        "href": "#supplement-library",
+        "title": "Добавки"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 538,
+        "right": 902,
+        "top": 704.3125,
+        "bottom": 852.3125,
+        "textFits": true,
+        "href": "./movement.html",
+        "title": "Рух і біомеханіка"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 704.3125,
+        "bottom": 852.3125,
+        "textFits": true,
+        "href": "./sleep.html",
+        "title": "Сон і відновлення"
+      }
+    ]
+  },
+  "back": {
+    "height": 2437,
+    "complete": true,
+    "stage": {
+      "left": 643.296875,
+      "right": 1310,
+      "top": 362.375,
+      "bottom": 822.375,
+      "width": 666.703125,
+      "height": 460
+    },
+    "halves": [
+      {
+        "image": {
+          "left": 721.640625,
+          "right": 1231.640625,
+          "top": 337.375,
+          "bottom": 847.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "clip": "inset(0px 50% 0px 0px)",
+        "left": 721.640625,
+        "right": 976.640625,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      },
+      {
+        "image": {
+          "left": 721.640625,
+          "right": 1231.640625,
+          "top": 337.375,
+          "bottom": 847.375,
+          "width": 510,
+          "height": 510
+        },
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "clip": "inset(0px 0px 0px 50%)",
+        "left": 976.640625,
+        "right": 1231.640625,
+        "loaded": true,
+        "src": "./home-lens-core.webp"
+      }
+    ],
+    "gap": 0,
+    "interior": {
+      "left": 880.640625,
+      "right": 1072.640625,
+      "top": 518.578125,
+      "bottom": 666.171875,
+      "width": 192,
+      "height": 147.59375,
+      "opacity": 0,
+      "text": "6 напрямів\n\nЗнайди свою тему\n\nОбрати напрям\n↓",
+      "textFits": true
+    },
+    "action": {
+      "left": 904.953125,
+      "right": 1048.3125,
+      "top": 604.171875,
+      "bottom": 648.171875,
+      "width": 143.359375,
+      "height": 44,
+      "visible": false,
+      "href": "#cards",
+      "tag": "A",
+      "inside": true,
+      "accessible": true,
+      "focused": false,
+      "controls": 1,
+      "count": 1,
+      "hitPoints": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "centerHit": false,
+      "pointerEvents": "none",
+      "onScreen": true
+    },
+    "progress": 0,
+    "top": 344.375,
+    "scrollY": 523,
+    "overflow": 0,
+    "cards": [
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 130,
+        "right": 494,
+        "top": 876.3125,
+        "bottom": 1024.3125,
+        "textFits": true,
+        "href": "./muscle-lab.html",
+        "title": "М’язи та тренування"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 538,
+        "right": 902,
+        "top": 876.3125,
+        "bottom": 1024.3125,
+        "textFits": true,
+        "href": "./cell-lab.html",
+        "title": "Клітини та органели"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 876.3125,
+        "bottom": 1024.3125,
+        "textFits": true,
+        "href": "./nutrition.html",
+        "title": "Харчування"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 130,
+        "right": 494,
+        "top": 1024.3125,
+        "bottom": 1172.3125,
+        "textFits": true,
+        "href": "#supplement-library",
+        "title": "Добавки"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 538,
+        "right": 902,
+        "top": 1024.3125,
+        "bottom": 1172.3125,
+        "textFits": true,
+        "href": "./movement.html",
+        "title": "Рух і біомеханіка"
+      },
+      {
+        "visible": true,
+        "opacity": 1,
+        "transform": "none",
+        "width": 364,
+        "height": 148,
+        "left": 946,
+        "right": 1310,
+        "top": 1024.3125,
+        "bottom": 1172.3125,
+        "textFits": true,
+        "href": "./sleep.html",
+        "title": "Сон і відновлення"
+      }
+    ]
+  }
+}

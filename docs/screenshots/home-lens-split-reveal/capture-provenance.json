@@ -1,0 +1,69 @@
+{
+  "productionCommit": "cb5290f6b64cecfabb9bcd61498792efd4b165d4",
+  "baselineCommit": "09cdff1f9d4ee96aa624363262fbcb70aa6384fa",
+  "capturedAtUTC": "2026-10-30T05:29:19.544298+00:00",
+  "snapshot": "/workspace/scratch/evidence-ua-lens-reveal/final-dist-v2",
+  "distFileCount": 258,
+  "fullDistSHA256Manifest": "/workspace/scratch/evidence-ua-lens-reveal/final-dist-v2-hashes.json",
+  "fullDistManifestSHA256": "4acda97f2c9256b080ccc5c85d51dab5f87ce7bf69c557f2c9a9a2ff85d80622",
+  "workingDistExactlyMatchesSnapshot": true,
+  "captureMethod": "Native wheel +128,+192,-320; state geometry before screenshot with scroll:false; images decoded, fonts.ready. No focus, action activation, locator scrolling or forced progress before CLOSED/MID/OPEN/BACK.",
+  "qaSourceSHA256": "4cdc22a2446962be27db597911bab1948ad2fd624aee53fbdb046b19551ee68c",
+  "fullRun": {
+    "log": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified.log",
+    "checks": 3502,
+    "failures": 0,
+    "pages": 21,
+    "standardViewports": 2,
+    "extraHomeWidth": 360,
+    "artifacts": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified"
+  },
+  "focusedFinalLensFlow": {
+    "log": "/workspace/scratch/evidence-ua-lens-reveal/qa/focused-restore.log",
+    "checks": 471,
+    "failures": 0,
+    "widths": [
+      390,
+      1440,
+      360
+    ]
+  },
+  "selectedOriginalPngSHA256": {
+    "1440-closed.png": "6457ae713be0fac20197bea300f9b256c515e055e74e3c2176fb9e6e9deb1475",
+    "1440-open.png": "e50e86535219c089d637da0fae268748c0694467f3707b502961e1542dbb576a",
+    "360-open.png": "ce022732c4a7dcd165165137c57ebf52703fc83d517e322fda4fa091668b855a",
+    "390-back.png": "8a01ea2ece2068db797f5f838805bd65f06a2ef8693fcdb1c1820562bf5f16ec",
+    "390-closed.png": "1ad59c31f5bcc792ca7dfe90215dc6a697d1699db1dae9abff9089da152b0a06",
+    "390-mid.png": "0b351e29718326e2a63d64c7ecf65a970145f1553ea3787ffc18e5cf8b0c958c",
+    "390-open.png": "15cc5f08836985ac5f07248d29eaa52db48846798681ae7cde62e23cb1dddefe",
+    "before-390-open.png": "20f7e4285c33ed41faee37e303e8ffdf86776c36d03d6b49c8c362b0f2e9a415"
+  },
+  "selectedOriginalSources": {
+    "before-390-open.png": "/workspace/scratch/evidence-ua-lens-reveal/baseline/mobile390-open.png",
+    "390-closed.png": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified/home-lens-closed-mobile.png",
+    "390-mid.png": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified/home-lens-mid-mobile.png",
+    "390-open.png": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified/home-lens-open-mobile.png",
+    "390-back.png": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified/home-lens-back-mobile.png",
+    "360-open.png": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified/home-lens-open-mobile-narrow.png",
+    "1440-closed.png": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified/home-lens-closed-desktop.png",
+    "1440-open.png": "/workspace/scratch/evidence-ua-lens-reveal/qa/final-verified/home-lens-open-desktop.png"
+  },
+  "geometrySHA256": {
+    "geometry-desktop.json": "bd8bc27c7984cfa0a8fc79eed02116e49d7d79da74763f36ed599508e6ad561a",
+    "geometry-mobile-narrow.json": "ce190c56c2988eec512a30f58db7669408ecc3250921394ec3a34a529be59005",
+    "geometry-mobile.json": "0496034cdbf39b6116bcbb9b8481300abd66a7b1ff2c639c643818b174855ed5"
+  },
+  "diagnosticArtifacts": {
+    "restore-reproduction.json": "Controlled native-browser restore with observed lens RAF delay; prior original failed full had no numeric samples.",
+    "transition-reproduction.json": "Earlier bounded dispose/paint diagnostic on 4a8b767; historical production prior to positive-opacity fix.",
+    "wave-idle-reproduction.json": "Bounded delayed actual wave RAF; unchanged production wave, strict 400ms frame/digest equality.",
+    "visible-action-red.json": "Six native partial coordinate probes on 4a8b767; none activated.",
+    "visible-action-green.json": "Six same probes on cb5290f, immutable v2; all activated."
+  },
+  "limits": [
+    "Chromium only",
+    "CDP mobile touch emulation",
+    "Controlled lifecycle signals; not actual bfcache or OS tab background",
+    "No physical owner phone or direct published-site verification"
+  ]
+}

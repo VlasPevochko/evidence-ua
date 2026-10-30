@@ -1,0 +1,335 @@
+[
+  {
+    "width": 360,
+    "before": {
+      "progress": 0.000146484375,
+      "ready": true,
+      "cards": [
+        {
+          "opacity": "0.0799229",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.8412)",
+          "top": 752.2318725585938
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 752.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 866.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 866.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 980.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 980.390625
+        }
+      ]
+    },
+    "immediate": {
+      "progress": 1,
+      "ready": false,
+      "cards": [
+        {
+          "opacity": "0.0799229",
+          "transform": "matrix(1, 0, 0, 1, 0, 11.8412)",
+          "top": 752.2318725585938
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 752.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 866.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 866.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 980.390625
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 980.390625
+        }
+      ]
+    },
+    "settled": {
+      "progress": 1,
+      "ready": false,
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 740.390625
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 740.390625
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 854.390625
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 854.390625
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 968.390625
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 968.390625
+        }
+      ]
+    }
+  },
+  {
+    "width": 390,
+    "before": {
+      "progress": 0,
+      "ready": true,
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 774.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 774.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1002.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1002.84375
+        }
+      ]
+    },
+    "immediate": {
+      "progress": 1,
+      "ready": false,
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 774.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 774.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1002.84375
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1002.84375
+        }
+      ]
+    },
+    "settled": {
+      "progress": 1,
+      "ready": false,
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 762.84375
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 762.84375
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 876.84375
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 876.84375
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 990.84375
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 990.84375
+        }
+      ]
+    }
+  },
+  {
+    "width": 1440,
+    "before": {
+      "progress": 0,
+      "ready": true,
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1036.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1036.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1036.3125
+        }
+      ]
+    },
+    "immediate": {
+      "progress": 1,
+      "ready": false,
+      "cards": [
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 888.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1036.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1036.3125
+        },
+        {
+          "opacity": "0",
+          "transform": "matrix(1, 0, 0, 1, 0, 12)",
+          "top": 1036.3125
+        }
+      ]
+    },
+    "settled": {
+      "progress": 1,
+      "ready": false,
+      "cards": [
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 876.3125
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 876.3125
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 876.3125
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 1024.3125
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 1024.3125
+        },
+        {
+          "opacity": "1",
+          "transform": "none",
+          "top": 1024.3125
+        }
+      ]
+    }
+  }
+]

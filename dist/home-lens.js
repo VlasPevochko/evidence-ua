@@ -1,4 +1,4 @@
-import {mountHomePicker} from './home-picker.js?v=1';
+import {mountHomePicker} from './home-picker.js?v=2';
 
 // Native links remain the baseline. This controller only advances decorative
 // reversible scroll progress and opens home disclosures for fragment navigation.

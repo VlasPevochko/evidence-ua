@@ -15,10 +15,17 @@ export function mountHomePicker(doc, section) {
   };
   const plain=event=>!event.defaultPrevented&&!event.ctrlKey&&!event.metaKey
     &&!event.shiftKey&&!event.altKey&&!(event.button>0);
+  function finishClose(){
+    // Native close events are queued: an older event can arrive after reopen.
+    if(panel.open)return;
+    trigger.setAttribute('aria-expanded','false');
+    if(restore&&!disposed){restore=false;trigger.focus({preventScroll:true});}
+  }
   function dismiss(returnFocus=true){
     if(!panel.open)return;
     restore=returnFocus;
     panel.close();
+    finishClose();
   }
   function show(event){
     if(disposed||(event&&!plain(event)))return;
@@ -43,10 +50,7 @@ export function mountHomePicker(doc, section) {
   listen(trigger,'keydown',event=>{if(event.key===' '&&!event.repeat)show(event);});
   listen(close,'click',()=>dismiss());
   listen(panel,'cancel',event=>{event.preventDefault();dismiss();});
-  listen(panel,'close',()=>{
-    trigger.setAttribute('aria-expanded','false');
-    if(restore&&!disposed)trigger.focus({preventScroll:true});
-  });
+  listen(panel,'close',finishClose);
   listen(panel,'click',event=>{
     const link=event.target.closest?.('a');
     if(link&&panel.contains(link)&&plain(event)){dismiss(false);return;}

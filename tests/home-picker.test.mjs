@@ -18,7 +18,7 @@ class Node extends EventTarget {
   close(){this.open=false;this.dispatchEvent(new Event('close'));}
   closest(selector){return selector==='a'&&this.tagName==='A'?this:null;}
 }
-function fixture({supported=true,hash='',throws=false}={}){
+function fixture({supported=true,hash='',throws=false,deferClose=false}={}){
   const doc=new EventTarget(),view=new EventTarget();doc.defaultView=view;
   const trigger=new Node(),panel=new Node(),close=new Node(),body=new Node();
   for(const n of [trigger,panel,close,body])n.doc=doc;
@@ -27,6 +27,9 @@ function fixture({supported=true,hash='',throws=false}={}){
   panel.querySelector=()=>close;
   if(!supported)panel.showModal=undefined;
   if(throws)panel.showModal=()=>{throw Error('unavailable');};
+  const pendingClose=[];
+  // Real HTMLDialogElement.close() queues its close event after hiding.
+  if(deferClose)panel.close=()=>{panel.open=false;pendingClose.push(()=>panel.dispatchEvent(new Event('close')));};
   doc.body=body;doc.activeElement=trigger;
   view.location={hash};
   assert.equal(typeof mountHomePicker,'function','The contextual picker controller must exist');
@@ -36,7 +39,7 @@ function fixture({supported=true,hash='',throws=false}={}){
     for(const [k,v]of Object.entries(props))Object.defineProperty(e,k,{value:v});
     target.dispatchEvent(e);return e;
   }
-  return {doc,view,trigger,panel,close,dispose,fire};
+  return {doc,view,trigger,panel,close,dispose,fire,flushClose:()=>{for(const callback of pendingClose.splice(0))callback();}};
 }
 
 test('six choices stay closed until the lens action is activated',()=>{
@@ -80,4 +83,16 @@ test('disposal closes the panel, restores attributes and removes handlers',()=>{
   const f=fixture();f.fire(f.trigger,'click');f.dispose();f.dispose();
   assert.equal(f.panel.open,false);assert.equal(f.trigger.getAttribute('aria-expanded'),null);
   assert.equal(f.fire(f.trigger,'click').defaultPrevented,false);assert.equal(f.panel.open,false);
+});
+
+test('queued native close events cannot delay dismissal state or corrupt a reopened panel',()=>{
+  const f=fixture({deferClose:true});f.fire(f.trigger,'click');
+  f.fire(f.panel,'cancel');
+  assert.equal(f.trigger.getAttribute('aria-expanded'),'false','Dismissal state must match the already hidden dialog immediately');
+  assert.equal(f.doc.activeElement,f.trigger,'Escape must immediately return focus');
+  f.fire(f.trigger,'click');f.flushClose();
+  assert.equal(f.panel.open,true);assert.equal(f.trigger.getAttribute('aria-expanded'),'true');
+  assert.equal(f.doc.activeElement,f.close,'A queued earlier close must not steal focus from the reopened panel');
+  f.fire(f.close,'click');f.doc.activeElement=f.doc.body;f.flushClose();
+  assert.equal(f.doc.activeElement,f.doc.body,'The later native event must not refocus after restoration already ran');
 });

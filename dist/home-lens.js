@@ -3,9 +3,9 @@
 const mounts = new WeakMap();
 const noop = () => {};
 
-export function lensProgress(top, viewportHeight, sectionHeight = 0) {
+export function lensProgress(top, viewportHeight, targetHeight = 0) {
   const distance = Math.min(320, Math.max(160, 0.38 * viewportHeight));
-  const end = Math.min(24, viewportHeight - sectionHeight - 16);
+  const end = Math.min(24, viewportHeight - targetHeight - 16);
   const start = end + distance;
   // Native scrolling can round the final fractional CSS pixel.
   if (top <= end + 1) return 1;
@@ -18,6 +18,10 @@ export function mountHomeLens(doc = globalThis.document) {
   if (mounts.has(doc)) return mounts.get(doc);
   const section = doc.querySelector('[data-home-lens]');
   if (!section) return noop;
+  // Catalogue height includes choices below the artwork. Using it would reveal
+  // the central action only after it left a short landscape viewport.
+  const stage = section.querySelector('[data-lens-stage]') || section;
+  const links = [...(section.querySelector('#cards')?.querySelectorAll('a.topic-card[data-area]') || [])];
 
   const cleanups = [];
   let observer;
@@ -52,6 +56,12 @@ export function mountHomeLens(doc = globalThis.document) {
     if (progress > 0.125) section.setAttribute('data-lens-open', '');
     else section.removeAttribute('data-lens-open');
     if (progress === 1) section.setAttribute('data-lens-complete', '');
+    const complete = section.hasAttribute('data-lens-complete');
+    // Match each card's CSS fade without removing it from keyboard navigation.
+    links.forEach((link, index) => {
+      if (!complete && progress * 2 <= index * .075) link.setAttribute('data-lens-hidden', '');
+      else link.removeAttribute('data-lens-hidden');
+    });
   }
 
   function reveal() { paint(1); }
@@ -60,7 +70,7 @@ export function mountHomeLens(doc = globalThis.document) {
     frame = null;
     if (!near || reduced || !homeActive()) return;
     try {
-      const rect = section.getBoundingClientRect();
+      const rect = stage.getBoundingClientRect();
       paint(lensProgress(rect.top, view.innerHeight, rect.height));
     }
     catch { dispose(); }
@@ -95,6 +105,7 @@ export function mountHomeLens(doc = globalThis.document) {
     section.removeAttribute('data-lens-ready');
     section.removeAttribute('data-lens-complete');
     section.removeAttribute('data-lens-open');
+    for (const link of links) link.removeAttribute('data-lens-hidden');
     section.style.removeProperty('--lens-progress');
     mounts.delete(doc);
   }
@@ -154,7 +165,7 @@ export function mountHomeLens(doc = globalThis.document) {
     }, {rootMargin: '240px 0px'});
     observer.observe(section);
     if (homeActive()) {
-      const rect = section.getBoundingClientRect();
+      const rect = stage.getBoundingClientRect();
       paint(lensProgress(rect.top, view.innerHeight, rect.height));
     }
     // Apply the hiding styles only after every enhancement dependency is ready.

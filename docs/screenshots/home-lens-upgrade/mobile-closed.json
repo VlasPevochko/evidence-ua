@@ -1,0 +1,50 @@
+{
+  "cards": [
+    {
+      "bottom": 735.84375,
+      "opacity": "0",
+      "pointer": "none",
+      "top": 620.53125,
+      "x": 98.75
+    },
+    {
+      "bottom": 735.84375,
+      "opacity": "0",
+      "pointer": "none",
+      "top": 620.53125,
+      "x": 276.25
+    },
+    {
+      "bottom": 849.84375,
+      "opacity": "0",
+      "pointer": "none",
+      "top": 735.84375,
+      "x": 98.75
+    },
+    {
+      "bottom": 849.84375,
+      "opacity": "0",
+      "pointer": "none",
+      "top": 735.84375,
+      "x": 276.25
+    },
+    {
+      "bottom": 983.34375,
+      "opacity": "0",
+      "pointer": "none",
+      "top": 849.84375,
+      "x": 98.75
+    },
+    {
+      "bottom": 983.34375,
+      "opacity": "0",
+      "pointer": "none",
+      "top": 849.84375,
+      "x": 276.25
+    }
+  ],
+  "progress": "0",
+  "scrollY": 1143,
+  "stageTop": 278.96875,
+  "url": "http://terminal.local:4173/app/index.html"
+}

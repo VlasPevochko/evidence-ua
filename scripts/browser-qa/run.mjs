@@ -985,7 +985,7 @@ async function lensSnapshot(page) {
           const range = document.createRange(); range.selectNodeContents(part);
           return [...range.getClientRects()].every(line => line.left >= rect.left - 1 && line.right <= rect.right + 1 && line.top >= rect.top - 1 && line.bottom <= rect.bottom + 1);
         });
-        return {visible: rendered(node), opacity: Number(getComputedStyle(node).opacity), transform:getComputedStyle(node).transform,
+        return {visible: rendered(node), opacity: Number(getComputedStyle(node).opacity), transform:getComputedStyle(node).transform, pointerEvents:getComputedStyle(node).pointerEvents,
           width: rect.width, height: rect.height, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, textFits,
           href: node.getAttribute('href'), title: node.querySelector('strong')?.textContent.trim()};
       })
@@ -1010,7 +1010,9 @@ function checkLensAction(where, snapshot, {onScreen = false} = {}) {
 
 async function positionLensOnset(page) {
   await page.evaluate(() => {
-    const rect = document.querySelector('[data-home-lens]').getBoundingClientRect();
+    // Owner-approved 2026-10-31: stage timing keeps the action visible even
+    // when the catalogue below it cannot fit in a short viewport.
+    const rect = document.querySelector('[data-lens-stage]').getBoundingClientRect();
     const distance = Math.min(320, Math.max(160, innerHeight * .38));
     const end = Math.min(24, innerHeight - rect.height - 16);
     scrollTo({top:rect.top + scrollY - end - distance, behavior:'instant'});
@@ -1085,7 +1087,7 @@ async function homeLensFlow(browser, origin, viewport) {
     // input, not scrollTo, dispatched events or a direct progress assignment.
     await page.evaluate(() => {
       const section = document.querySelector('[data-home-lens]');
-      const rect = section.getBoundingClientRect();
+      const rect = section.querySelector('[data-lens-stage]').getBoundingClientRect();
       const distance = Math.min(320, Math.max(160, innerHeight * .38));
       const end = Math.min(24, innerHeight - rect.height - 16);
       scrollTo({top: rect.top + scrollY - end - distance, behavior: 'instant'});
@@ -1094,6 +1096,7 @@ async function homeLensFlow(browser, origin, viewport) {
     const closed = await lensSnapshot(page);
     check(where, closed.progress >= 0 && closed.progress <= .01, 'the native reveal must begin at the declared viewport onset');
     check(where, Math.abs(closed.gap) <= 1 && closed.interior.opacity === 0 && !closed.action.centerHit && closed.action.pointerEvents === 'none', 'CLOSED must join the actual clipped halves without an invisible button hit target');
+    check(where, closed.cards.every(card=>card.opacity===0 && card.pointerEvents==='none'), 'zero-opacity directions must reject invisible pointer hits');
     await page.locator('[data-lens-stage] img').evaluateAll(nodes => Promise.all(nodes.map(node => node.decode())));
     await artifact(page, viewport, 'home-lens-closed', page.locator('body'), {scroll: false});
     await page.mouse.move(viewport.width / 2, viewport.height / 2);
@@ -1343,7 +1346,7 @@ async function homeLensTouchFlow(browser, origin, viewport) {
     await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
     check(where, await page.evaluate(() => navigator.maxTouchPoints > 0), 'lens gestures need an actual touch-capable context');
     await page.evaluate(() => {
-      const rect = document.querySelector('[data-home-lens]').getBoundingClientRect();
+      const rect = document.querySelector('[data-lens-stage]').getBoundingClientRect();
       const distance = Math.min(320, Math.max(160, innerHeight * .38));
       const end = Math.min(24, innerHeight - rect.height - 16);
       scrollTo({top: rect.top + scrollY - end - distance, behavior: 'instant'});
@@ -1368,6 +1371,60 @@ async function homeLensTouchFlow(browser, origin, viewport) {
     checkLensLinks(`${where} actual touch activation`, await lensSnapshot(page), viewport);
     checkBrowserHealth(where, seen);
   } finally { await context.close(); }
+}
+
+// The old 844/900px-tall matrix missed both the invisible-card hit and a
+// landscape action that faded in only after scrolling above the viewport.
+async function homeLensViewportFlow(browser, origin, viewport) {
+  const where = `home lens viewport regression @${viewport.name}`;
+  const {context,page,seen} = await open(browser,origin,viewport,'/index.html',{contextOptions:{reducedMotion:'no-preference'}});
+  try {
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state:'attached'});
+    if (viewport.largeText) {
+      const appearance = page.getByRole('button',{name:'Вигляд сайту: тема й розмір тексту',exact:true});
+      await appearance.click();
+      // Appearance exposes button[role=radio], rather than native inputs.
+      await page.getByRole('radio',{name:'Великий',exact:true}).click();
+      check(where,await page.evaluate(()=>document.documentElement.dataset.text==='xl'),'the large-text probe must activate the actual appearance setting');
+      await appearance.click();
+    }
+    await page.evaluate(()=>document.fonts.ready);
+    await positionLensOnset(page);
+    const closed=await lensSnapshot(page);
+    check(where,closed.progress<=.01 && closed.cards.every(card=>card.opacity===0&&card.pointerEvents==='none'),'closed directions must be transparent and pointer-inactive');
+    const blank=await page.locator('#cards').evaluate(cards=>{
+      for(const link of cards.querySelectorAll('a.topic-card')) {
+        const r=link.getBoundingClientRect(),top=Math.max(1,r.top),bottom=Math.min(innerHeight-1,r.bottom);
+        if(bottom-top<4)continue;
+        const x=r.left+r.width/2,y=(top+bottom)/2,hit=document.elementFromPoint(x,y);
+        return {x,y,receivesHit:!!hit&&(hit===link||link.contains(hit))};
+      }
+      return null;
+    });
+    check(where,!blank?.receivesHit,'a visible portion of a transparent card must not intercept a real pointer');
+    if(blank) {
+      const before=page.url();
+      await page.mouse.click(blank.x,blank.y);
+      await page.waitForTimeout(80);
+      check(where,page.url()===before,'clicking the blank card area must keep the visitor on the home page');
+    }
+    const distance=Math.min(320,Math.max(160,viewport.height*.38));
+    await page.mouse.move(viewport.width/2,viewport.height/2);
+    await page.mouse.wheel(0,distance/2);
+    await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-home-lens]')).getPropertyValue('--lens-progress'))>.4);
+    const middle=await lensSnapshot(page);
+    check(where,middle.progress<.65 && middle.interior.opacity>0 && middle.action.onScreen && middle.action.hitPoints.every(Boolean),'the central action must be visible and clickable halfway through short-screen reveal');
+    check(where,middle.action.width>=44&&middle.action.height>=44,'core scaling must preserve the 44px pointer target');
+    await page.mouse.wheel(0,distance/2+1);
+    await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-home-lens]')).getPropertyValue('--lens-progress'))===1);
+    const opened=await lensSnapshot(page);
+    checkLensAction(where,opened,{onScreen:true});
+    checkLensLinks(where,opened,viewport);
+    await artifact(page,viewport,'home-lens-upgrade-open',page.locator('body'),{scroll:false});
+    await page.locator('[data-lens-reveal]').press('Tab');
+    check(where,await page.locator('#cards>a').first().evaluate(node=>document.activeElement===node),'native Tab from the core must reach the first real direction');
+    checkBrowserHealth(where,seen);
+  } finally {await context.close();}
 }
 
 async function homeWaveFlow(browser, origin, viewport, {touch = false, reduced = false} = {}) {
@@ -2267,6 +2324,11 @@ async function baselineScreenshots(browser, origin, viewport) {
 
 async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
+  for (const viewport of [
+    {name:'mobile-short',width:390,height:667},
+    {name:'landscape-short',width:844,height:390},
+    {name:'mobile-large-text',width:390,height:844,largeText:true}
+  ]) await isolatedFlow(homeLensViewportFlow,browser,origin,viewport);
   await isolatedFlow(homeLensTouchFlow, browser, origin, viewports[0]);
   for (const viewport of viewports) await isolatedFlow(homeSpectrumFlow, browser, origin, viewport);
   // The extra narrow phone is home-only; all other pages retain the normal

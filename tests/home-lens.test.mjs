@@ -55,7 +55,7 @@ class Element extends Events {
   }
 }
 
-function fixture({reduced = false, missing = null, failure = null, route = 'home', top = 344, viewportHeight = 1000, sectionHeight = 600} = {}) {
+function fixture({reduced = false, missing = null, failure = null, route = 'home', top = 344, viewportHeight = 1000, sectionHeight = 600, stageHeight = null, stageOffset = 0} = {}) {
   const doc = new Events(), win = new Events(), media = new Events();
   doc.defaultView = win; doc.hidden = false; doc.readyState = 'complete';
   doc.activeElement = null;
@@ -73,7 +73,9 @@ function fixture({reduced = false, missing = null, failure = null, route = 'home
   let rect = {top, bottom: top + sectionHeight, width: 800, height: sectionHeight};
   section.getBoundingClientRect = () => ({...rect});
   section.getClientRects = () => doc.body.dataset.routeView === 'article' ? [] : [rect];
-  section.querySelector = selector => selector === '#cards' ? cards : selector === '[data-lens-reveal]' ? jump : null;
+  const stage = stageHeight === null ? null : new Element('DIV', section);
+  if (stage) stage.getBoundingClientRect = () => ({top: rect.top + stageOffset, height: stageHeight});
+  section.querySelector = selector => selector === '#cards' ? cards : selector === '[data-lens-reveal]' ? jump : selector === '[data-lens-stage]' ? stage : null;
   section.querySelectorAll = selector => selector.includes('.topic-card') ? links : [];
   cards.querySelectorAll = selector => selector.includes('a') ? links : [];
   doc.querySelector = selector => selector.includes('data-home-lens') ? section : null;
@@ -102,6 +104,47 @@ function fixture({reduced = false, missing = null, failure = null, route = 'home
     complete() { return section.hasAttribute('data-lens-complete'); },
   };
 }
+
+// The 818px catalogue must not postpone its 420px artwork until the central
+// action has left a 390px-tall landscape viewport (the audited regression).
+test('landscape reveal follows the stage while the central action is still on screen', () => {
+  const f = fixture({top: 16, viewportHeight: 390, sectionHeight: 818, stageHeight: 420, stageOffset: 18});
+  f.mount();
+  assert.equal(f.progress(), 0.5, 'stage top 34px is halfway through the short-screen window');
+  f.intersect(true); f.move(-64); f.win.fire('scroll'); f.flush();
+  assert.equal(f.progress(), 1, 'stage top -46px completes before its central action leaves the viewport');
+  assert.ok(f.section.getBoundingClientRect().bottom > 390, 'choices below the stage must not delay its action');
+});
+
+test('portrait reveal uses the stage offset instead of its heading and choices', () => {
+  const f = fixture({top: 230, viewportHeight: 844, sectionHeight: 807, stageHeight: 232, stageOffset: 114});
+  f.mount(); assert.equal(f.progress(), 0, 'stage top 344px is the closed onset');
+  f.intersect(true); f.move(70); f.win.fire('scroll'); f.flush();
+  assert.equal(f.progress(), 0.5);
+  f.move(-90); f.win.fire('scroll'); f.flush(); assert.equal(f.progress(), 1);
+});
+
+test('zero-opacity choices lose pointer input individually and stay usable once discovered', () => {
+  const f = fixture(); f.mount();
+  assert.ok(f.links.every(link => link.hasAttribute('data-lens-hidden')), 'closed choices must reject invisible hits');
+  f.intersect(true); f.move(328); f.win.fire('scroll'); f.flush();
+  assert.equal(f.progress(), 0.05);
+  assert.deepEqual(f.links.map(link => link.hasAttribute('data-lens-hidden')), [false, false, true, true, true, true]);
+  f.move(24); f.win.fire('scroll'); f.flush();
+  f.move(344); f.win.fire('scroll'); f.flush();
+  assert.ok(f.links.every(link => !link.hasAttribute('data-lens-hidden')), 'reversal keeps discovered navigation usable');
+});
+
+test('native keyboard reveal and disposal clear every invisible-choice pointer guard', () => {
+  const f = fixture(), dispose = f.mount();
+  assert.ok(f.links[5].hasAttribute('data-lens-hidden'));
+  f.section.fire('focusin', {target: f.links[5]});
+  assert.equal(f.progress(), 1);
+  assert.ok(f.links.every(link => !link.hasAttribute('data-lens-hidden')));
+  dispose();
+  const fresh = fixture(), cleanup = fresh.mount(); cleanup();
+  assert.ok(fresh.links.every(link => !link.hasAttribute('data-lens-hidden')), 'cleanup returns native OPEN links');
+});
 
 test('progress ends with the section inside the viewport after a short native scroll window', () => {
   assert.equal(typeof lensProgress, 'function', 'lensProgress is implemented');

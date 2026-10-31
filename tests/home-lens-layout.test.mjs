@@ -33,6 +33,6 @@ const structure=inspect(page,`{'lens':len(root.xpath('.//section[@class="home-di
 assert.equal(structure.lens,1);assert(structure.routeClosed,'Auxiliary route outlines start compact after the selected lens');
 assert.equal(structure.library,1);assert(structure.libraryClosed);assert.equal(structure.libraryTargets.length,11);
 assert.equal(structure.choicesDirect,1,'Continue/saved insertion anchor must stay outside closed details');
-// The visible-action pointer fix needs a fresh controller for cached visitors.
-assert.deepEqual(structure.styles,['./home-lens.css?v=2']);assert.deepEqual(structure.scripts,['./home-lens.js?v=3']);
+// Owner-approved stage timing and visual polish need fresh assets for returning visitors.
+assert.deepEqual(structure.styles,['./home-lens.css?v=3']);assert.deepEqual(structure.scripts,['./home-lens.js?v=4']);
 console.log('Home lens layout: split lazy art and accessible interior, six canonical native links, accessible jump, compact retained routes/library and cache wiring passed.');

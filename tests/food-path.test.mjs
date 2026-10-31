@@ -52,7 +52,7 @@ assert.equal(new Set(steps.map(s=>s.id)).size,steps.length);assert(foodPathTract
 
 // Page: retained share metadata, shell, reading section and attribution; no third-party scripts.
 const html=fs.readFileSync('dist/nutrition-digestion.html','utf8');
-for(const piece of [`<link rel="canonical" href="${readBase()}nutrition-digestion.html">`,'platform-shell.js?v=104','digestion-viewer.js?v=4','id="eua-evidence-dialog"','data-food-path','Всмоктування ≠ виведення','https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works','https://openstax.org/books/anatomy-and-physiology-2e/pages/23-7-chemical-digestion-and-absorption-a-closer-look','CC BY-SA 4.0','Z-Anatomy','./nutrition-inside.html#nutrition-lab'])assert(html.includes(piece),piece);
+for(const piece of [`<link rel="canonical" href="${readBase()}nutrition-digestion.html">`,'platform-shell.js?v=105','digestion-viewer.js?v=4','id="eua-evidence-dialog"','data-food-path','Всмоктування ≠ виведення','https://www.niddk.nih.gov/health-information/digestive-diseases/digestive-system-how-it-works','https://openstax.org/books/anatomy-and-physiology-2e/pages/23-7-chemical-digestion-and-absorption-a-closer-look','CC BY-SA 4.0','Z-Anatomy','./nutrition-inside.html#nutrition-lab'])assert(html.includes(piece),piece); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 assert(!/<script[^>]+src="https?:/.test(html));
 const viewer=fs.readFileSync('dist/digestion-viewer.js','utf8');
 assert(!/from\s*['"]https?:/.test(viewer));assert(!viewer.includes("from 'three'"));

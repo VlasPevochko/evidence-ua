@@ -1,6 +1,6 @@
 /* Сосново-зелена тема сторінок і смуга-заголовок з японським візерунком. Значення кольорів збігаються з «Добавками».
    Кожна сторінка має свій мотив: data-motif на .pb. Візерунки намальовані лінією, без зовнішніх запитів. */
-body[data-pine]{--pine-bg:#0d1916;--pine-surface:#142520;--pine-line:#26403a;--pine-text:#e9efe9;--pine-muted:#9db1a7;--pine-accent:#e3bd6b;--pine-accent-ink:#1b1608;--pine-ink:#8fae9f;--pine-serif:"Source Serif 4",Georgia,"Times New Roman",serif;background:var(--pine-bg);color:var(--pine-text)}
+body[data-pine]{--pine-bg:var(--c-0d1916,#0d1916);--pine-surface:var(--c-142520,#142520);--pine-line:var(--c-26403a,#26403a);--pine-text:var(--c-e9efe9,#e9efe9);--pine-muted:var(--c-9db1a7,#9db1a7);--pine-accent:var(--c-e3bd6b,#e3bd6b);--pine-accent-ink:var(--c-1b1608,#1b1608);--pine-ink:var(--c-8fae9f,#8fae9f);--pine-serif:"Source Serif 4",Georgia,"Times New Roman",serif;background:var(--pine-bg);color:var(--pine-text)}
 @font-face{font-family:"Source Serif 4";font-style:normal;font-weight:200 900;font-display:swap;src:url("./fonts/source-serif-4-cyrillic-wght-normal.woff2") format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 @font-face{font-family:"Source Serif 4";font-style:normal;font-weight:200 900;font-display:swap;src:url("./fonts/source-serif-4-latin-wght-normal.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 .pb{position:relative;isolation:isolate;overflow:hidden;background:var(--pine-bg);border-bottom:1px solid var(--pine-line)}
@@ -34,20 +34,20 @@ body[data-pine]{--pine-bg:#0d1916;--pine-surface:#142520;--pine-line:#26403a;--p
 @media (prefers-reduced-motion:reduce){.pb *{transition:none!important}}
 
 /* Shared header and the folded tools line follow the pine palette on themed pages (the home page keeps its own). */
-body[data-pine] header.eua-site-header.eua-site-header.eua-site-header{background:#0a1512;border-bottom:1px solid var(--pine-line)}
-body[data-pine] .eua-site-header .eua-header-emblem{background:#e3bd6b14;border-color:#e3bd6b55}
-body[data-pine] .eua-platform-nav{background:#0f1c18;border-bottom-color:var(--pine-line);color:var(--pine-text)}
-body[data-pine] .eua-platform-nav a{color:#c9ddd2}
+body[data-pine] header.eua-site-header.eua-site-header.eua-site-header{background:var(--c-0a1512,#0a1512);border-bottom:1px solid var(--pine-line)}
+body[data-pine] .eua-site-header .eua-header-emblem{background:var(--c-e3bd6b14,#e3bd6b14);border-color:var(--c-e3bd6b55,#e3bd6b55)}
+body[data-pine] .eua-platform-nav{background:var(--c-0f1c18,#0f1c18);border-bottom-color:var(--pine-line);color:var(--pine-text)}
+body[data-pine] .eua-platform-nav a{color:var(--c-c9ddd2,#c9ddd2)}
 body[data-pine] .eua-platform-nav summary{color:var(--pine-muted)}
-body[data-pine] .eua-platform-nav a[aria-current=page]{background:#1b3029;border-color:var(--pine-ink)}
-body[data-pine] .eua-platform-nav .eua-atlas-link,body[data-pine] .eua-platform-nav .eua-exercises-link{background:#1a2b25;border:1px solid #4f7a69;color:#e3bd6b}
-body[data-pine] .eua-site-header nav a svg{stroke:#9fc2b2}
-body[data-pine] .eua-site-header nav a[aria-current=page] svg{stroke:#e3bd6b}
-body[data-pine][data-study-ui]>.eua-platform-nav{background:#0f1c18;border-color:var(--pine-line)}
-body[data-pine][data-study-ui] .eua-platform-nav .eua-tools button,body[data-pine][data-study-ui] .eua-platform-nav .eua-tools a{background:#162622;border-color:#2f4a43;color:#d7e4dc}
-body[data-pine][data-study-ui]{--bg:#0d1211;--panel:#17201e;--line:#364b46;background:radial-gradient(ellipse at 78% 0,#1d3a31,transparent 50%),#0d1211}
-body[data-pine][data-study-ui] button{background:#162622;border-color:#2f4a43}
-body[data-pine][data-study-ui] button[aria-pressed=true]{background:#e3bd6b;border-color:#f0d08a}
+body[data-pine] .eua-platform-nav a[aria-current=page]{background:var(--c-1b3029,#1b3029);border-color:var(--pine-ink)}
+body[data-pine] .eua-platform-nav .eua-atlas-link,body[data-pine] .eua-platform-nav .eua-exercises-link{background:var(--c-1a2b25,#1a2b25);border:1px solid var(--c-4f7a69,#4f7a69);color:var(--c-e3bd6b,#e3bd6b)}
+body[data-pine] .eua-site-header nav a svg{stroke:var(--c-9fc2b2,#9fc2b2)}
+body[data-pine] .eua-site-header nav a[aria-current=page] svg{stroke:var(--c-e3bd6b,#e3bd6b)}
+body[data-pine][data-study-ui]>.eua-platform-nav{background:var(--c-0f1c18,#0f1c18);border-color:var(--pine-line)}
+body[data-pine][data-study-ui] .eua-platform-nav .eua-tools button,body[data-pine][data-study-ui] .eua-platform-nav .eua-tools a{background:var(--c-162622,#162622);border-color:var(--c-2f4a43,#2f4a43);color:var(--c-d7e4dc,#d7e4dc)}
+body[data-pine][data-study-ui]{--bg:var(--c-0d1211,#0d1211);--panel:var(--c-17201e,#17201e);--line:var(--c-364b46,#364b46);background:radial-gradient(ellipse at 78% 0,var(--c-1d3a31,#1d3a31),transparent 50%),var(--c-0d1211,#0d1211)}
+body[data-pine][data-study-ui] button{background:var(--c-162622,#162622);border-color:var(--c-2f4a43,#2f4a43)}
+body[data-pine][data-study-ui] button[aria-pressed=true]{background:var(--c-e3bd6b,#e3bd6b);border-color:var(--c-f0d08a,#f0d08a)}
 body[data-pine] .lab-layout{padding-top:0}
 body[data-pine][data-platform-area="cell"] .pb h1::after{width:170px;height:14px;margin:12px 0 0;border-radius:0;background:var(--pine-accent)}
 .pb h1 em{font-style:normal;color:var(--pine-accent)}
@@ -56,7 +56,7 @@ body[data-pine][data-platform-area="cell"] .pb h1::after{width:170px;height:14px
 .pb-split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.8fr);gap:45px;align-items:center}
 .pb-split .sleep-art{max-width:420px;justify-self:end;width:100%}
 @media (max-width:760px){.pb-split{grid-template-columns:minmax(0,1fr);gap:24px}.pb-split .sleep-art{justify-self:start}}
-body[data-pine][data-platform-area="movement"],body[data-pine][data-platform-area="sleep"]{--bg:#0d1916;background:radial-gradient(ellipse at 75% 5%,#1d3831 0,transparent 48%),#0d1916}
+body[data-pine][data-platform-area="movement"],body[data-pine][data-platform-area="sleep"]{--bg:var(--c-0d1916,#0d1916);background:radial-gradient(ellipse at 75% 5%,var(--c-1d3831,#1d3831) 0,transparent 48%),var(--c-0d1916,#0d1916)}
 body[data-pine]>section.pb,body[data-pine]>.pb{max-width:none;width:100%;margin:0;padding:0}
 body[data-pine] .intro{display:block}
 body[data-pine] .intro>figure{max-width:420px;margin:28px 0 0}
@@ -68,7 +68,7 @@ body[data-pine] .pb-byline{margin-top:8px;font-size:14px}
  body[data-pine][data-study-ui]>.eua-platform-nav>*,body[data-pine][data-pine-tools]>.eua-platform-nav>*,body[data-pine][data-pine-tools]>.eua-platform-nav .eua-tools>*{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal;min-width:max-content}
 }
 /* Cell Lab: the intro card uses the same surface as the cards inside it. */
-body[data-pine][data-platform-area="cell"] .intro{background:#142520;border-color:#26403a}
+body[data-pine][data-platform-area="cell"] .intro{background:var(--c-142520,#142520);border-color:var(--c-26403a,#26403a)}
 /* Рішення власника 2026-10-25 («компактні банери на інших сторінках»), той самий підхід, що на «Харчуванні»:
    смуга «Навігація й інструменти» над банером була майже порожньою і з’їдала 45–65 px. На широких екранах кнопка живе в банері (праворуч угорі),
    смуга не займає місця, список відкривається панеллю поверх сторінки, банер нижчий. На телефоні все як було.
@@ -76,12 +76,12 @@ body[data-pine][data-platform-area="cell"] .intro{background:#142520;border-colo
 @media(min-width:761px){
  body[data-pine]>.eua-platform-nav:has(>.eua-module-menu:only-child){position:relative;z-index:12;height:0;min-height:0;max-width:none;margin:0;padding:0!important;border:0!important;background:none!important;overflow:visible}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child{position:absolute;top:18px;right:max(16px,calc((100% - 1180px)/2));width:auto;margin:0}
- body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 16px;border:1px solid var(--pine-line);border-radius:8px;background:#13261e;color:var(--pine-text);font-size:14px;cursor:pointer;list-style:none}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 16px;border:1px solid var(--pine-line);border-radius:8px;background:var(--c-13261e,#13261e);color:var(--pine-text);font-size:14px;cursor:pointer;list-style:none}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::-webkit-details-marker{display:none}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::marker{content:''}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::after{content:'＋';font-size:18px}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child[open]>summary::after{content:'−'}
- body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>.eua-module-menu-content{position:absolute;inset:calc(100% + 8px) 0 auto auto;width:340px;max-width:calc(100vw - 32px);max-height:70dvh;overflow:auto;padding:12px;border:1px solid var(--pine-line);border-radius:12px;background:#0f1c18;box-shadow:0 18px 40px #0008;display:flex;flex-direction:column;align-items:stretch;gap:6px}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>.eua-module-menu-content{position:absolute;inset:calc(100% + 8px) 0 auto auto;width:340px;max-width:calc(100vw - 32px);max-height:70dvh;overflow:auto;padding:12px;border:1px solid var(--pine-line);border-radius:12px;background:var(--c-0f1c18,#0f1c18);box-shadow:0 18px 40px #0008;display:flex;flex-direction:column;align-items:stretch;gap:6px}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child .eua-module-menu-content>:is(a,button,details>summary){display:flex;align-items:center;min-height:44px;margin:0}
  body[data-pine] .pb-inner{padding:34px 0 30px}
  /* Кнопка стоїть праворуч угорі, тож картинка в банері зі «Сном» не має починатися вище за неї. */

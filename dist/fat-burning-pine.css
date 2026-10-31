@@ -1,23 +1,23 @@
 /* Fat Burning Lab в сосновій системі сайту: смуга заголовка з мотивом «уроко» (риб'ячі луски),
    засічний шрифт заголовків, спокійніші поверхні, коротший телефон (джерела згорнуті). Наукові тексти не змінені. */
-body[data-platform-area="fat-burning"]{background:var(--pine-bg,#0d1916);color:var(--pine-text,#e9efe9)}
-.fb-band{border-bottom:1px solid var(--pine-line,#26403a)}
+body[data-platform-area="fat-burning"]{background:var(--pine-bg,var(--c-0d1916,#0d1916));color:var(--pine-text,var(--c-e9efe9,#e9efe9))}
+.fb-band{border-bottom:1px solid var(--pine-line,var(--c-26403a,#26403a))}
 .fb-band .fb-hero{min-height:0;padding:56px 32px 52px}
 .fb-main h1,.fb-main h2,.fb-main h3{font-family:var(--pine-serif,"Source Serif 4",Georgia,serif);font-weight:700;letter-spacing:-.015em}
 .fb-hero h1{font-size:clamp(40px,5.4vw,76px);line-height:1.05;letter-spacing:-.02em}
 .fb-section-head h2,.fb-next h2{font-size:clamp(28px,3.6vw,48px);line-height:1.12;letter-spacing:-.015em}
-.fb-main em{color:var(--pine-accent,#e3bd6b)}
-.fb-kicker{color:var(--pine-muted,#9db1a7)}
-.fb-primary{background:var(--pine-accent,#e3bd6b)!important;border-color:var(--pine-accent,#e3bd6b)}
-.fb-hero-art{border-color:var(--pine-line,#26403a)}
+.fb-main em{color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b))}
+.fb-kicker{color:var(--pine-muted,var(--c-9db1a7,#9db1a7))}
+.fb-primary{background:var(--pine-accent,var(--c-e3bd6b,#e3bd6b))!important;border-color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b))}
+.fb-hero-art{border-color:var(--pine-line,var(--c-26403a,#26403a))}
 
 /* Згорнуті джерела: службове лишається доступним, але не подовжує сторінку. */
-.fb-sources-fold{margin:0 0 4px;border:1px solid var(--pine-line,#26403a);border-radius:16px;background:var(--pine-surface,#142520);overflow:hidden}
-.fb-sources-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;padding:14px 18px;list-style:none;cursor:pointer;font-weight:650;font-size:16px;color:var(--pine-text,#e9efe9)}
+.fb-sources-fold{margin:0 0 4px;border:1px solid var(--pine-line,var(--c-26403a,#26403a));border-radius:16px;background:var(--pine-surface,var(--c-142520,#142520));overflow:hidden}
+.fb-sources-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;padding:14px 18px;list-style:none;cursor:pointer;font-weight:650;font-size:16px;color:var(--pine-text,var(--c-e9efe9,#e9efe9))}
 .fb-sources-fold>summary::-webkit-details-marker{display:none}
-.fb-sources-fold>summary::after{content:'⌄';flex:none;font-size:20px;color:var(--pine-accent,#e3bd6b);transition:transform .24s}
+.fb-sources-fold>summary::after{content:'⌄';flex:none;font-size:20px;color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b));transition:transform .24s}
 .fb-sources-fold[open]>summary::after{transform:rotate(180deg)}
-.fb-sources-fold>summary:focus-visible{outline:2px solid var(--pine-accent,#e3bd6b);outline-offset:-4px;border-radius:16px}
+.fb-sources-fold>summary:focus-visible{outline:2px solid var(--pine-accent,var(--c-e3bd6b,#e3bd6b));outline-offset:-4px;border-radius:16px}
 .fb-sources-fold .fb-sources{padding:0 14px 14px}
 @media(prefers-reduced-motion:reduce){.fb-sources-fold>summary::after{transition:none}}
 

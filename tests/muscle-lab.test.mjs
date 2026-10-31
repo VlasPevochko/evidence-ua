@@ -26,7 +26,7 @@ for(const gone of ['data-level','reading-level','art-hotspots','art-key','viewer
 assert.equal((html.match(/<h1\b/g)||[]).length,1);
 assert.equal((html.match(/<header\b/g)||[]).length,1,'The shared shell injects navigation after every <header>: only the page header may use that tag');
 assert(html.includes('Механістичні пояснення не встановлюють величину ефекту у людей'));
-assert(html.includes('muscle-lab.js?v=72')&&html.includes('muscle-lab.css?v=74'));
+assert(html.includes('muscle-lab.js?v=72')&&html.includes('muscle-lab.css?v=75')); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 const rendered=renderTopics('university');
 assert(!/<header\b/.test(rendered),'Topic markup must not use <header> (the shell would inject duplicate navigation)');
 assert(!/data-level|reading-level/.test(rendered));

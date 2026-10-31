@@ -28,7 +28,7 @@ assert.equal(countLabel(16,16),'Розборів: 16');assert.equal(countLabel(2
 const html=fs.readFileSync('dist/research.html','utf8');
 assert(/<body[^>]* data-pine[ >]/.test(html)&&html.includes('data-motif="hanabishi"'),'pine band with its own motif');
 assert.equal((html.match(/<h1\b/g)||[]).length,1,'one h1');assert.equal((html.match(/<header\b/g)||[]).length,1,'only the page header uses <header>');
-assert(html.includes('research-page.js?v=5')&&html.includes('research-page.css?v=3')&&html.includes('page-pine.css?v=19'),'assets with versions');
+assert(html.includes('research-page.js?v=6')&&html.includes('research-page.css?v=4')&&html.includes('page-pine.css?v=20'),'assets with versions'); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 assert(html.includes('не оцінка Evidence UA і не медична порада'),'the disclaimer is visible');
 for(const f of fs.readdirSync('dist').filter(n=>n.startsWith('research')&&n.endsWith('.js')))assert(!/https?:\/\/(?!doi\.org\/|pubmed\.ncbi\.nlm\.nih\.gov\/)/.test(fs.readFileSync('dist/'+f,'utf8').replace(/\/\/ .*$/gm,'')),`${f}: only doi.org and PubMed links (opened by the reader's click)`);
 const mats=fs.readFileSync('src/platform/materials.mjs','utf8');assert(mats.includes("'./research.html'")&&mats.includes("'guide-research'"),'the page is in the catalog and the search words');

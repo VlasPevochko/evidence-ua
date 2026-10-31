@@ -46,28 +46,42 @@ export function layoutCard(study,topicLabel,measureFor){
 }
 export const FITS=layout=>layout.bottom<=CARD.height-CARD.pad-70;
 
+// Кольори картки беруться з поточної палітри сторінки (космічної або зеленої), щоб картинка для соцмереж виглядала як сам сайт.
+// Без сторінки (тести) або без значень лишаються колишні зелені.
+const CARD_COLORS={bg:'#0d1916',ink:'#8fae9f',line:'#26403a',muted:'#9db1a7',accent:'#e3bd6b',text:'#e9efe9'};
+export function cardColors(doc){
+  const out={...CARD_COLORS};
+  try{
+    const cs=doc?.defaultView?.getComputedStyle(doc.body);
+    for(const [name,key] of [['--pine-bg','bg'],['--pine-ink','ink'],['--pine-line','line'],['--pine-muted','muted'],['--pine-accent','accent'],['--pine-text','text']]){
+      const v=cs?.getPropertyValue(name).trim();if(/^#[0-9a-f]{6}$/i.test(v))out[key]=v;
+    }
+  }catch{}
+  return out;
+}
 export async function drawCard(study,topicLabel,doc=document){
+  const col=cardColors(doc);
   const c=doc.createElement('canvas');c.width=CARD.width;c.height=CARD.height;const g=c.getContext('2d');
   try{await doc.fonts?.ready;}catch{}
   const serif='"Source Serif 4",Georgia,"Times New Roman",serif',sans='Inter,system-ui,-apple-system,"Segoe UI",sans-serif';
   const fontOf=spec=>spec.replace('serif',serif).replace('sans',sans);
   const measureFor=spec=>t=>{g.font=fontOf(spec);return g.measureText(t).width;};
   const layout=layoutCard(study,topicLabel,measureFor);
-  g.fillStyle='#0d1916';g.fillRect(0,0,CARD.width,CARD.height);
+  g.fillStyle=col.bg;g.fillRect(0,0,CARD.width,CARD.height);
   // Спокійна текстура: ромби лінією, як у смузі сайту.
-  g.strokeStyle='#8fae9f';g.globalAlpha=.1;g.lineWidth=1.2;
+  g.strokeStyle=col.ink;g.globalAlpha=.1;g.lineWidth=1.2;
   for(let x=0;x<CARD.width+60;x+=60)for(let y=0;y<CARD.height+60;y+=60){g.beginPath();g.moveTo(x,y-22);g.lineTo(x+22,y);g.lineTo(x,y+22);g.lineTo(x-22,y);g.closePath();g.stroke();}
   g.globalAlpha=1;g.textBaseline='top';
   // Короткий текст центруємо між позначкою теми й підписом, щоб картинка не була порожньою знизу.
   const shift=Math.max(0,Math.floor((CARD.height-CARD.pad-70-layout.bottom)/2));
   for(const it of layout.items){
     if(it.kind!=='tag')it.y+=shift;
-    if(it.kind==='tag'){g.font=fontOf('600 28px sans');const w=g.measureText(it.text).width+44;g.strokeStyle='#26403a';g.lineWidth=2;g.beginPath();g.roundRect(CARD.pad,it.y,w,52,26);g.stroke();g.fillStyle='#9db1a7';g.fillText(it.text,CARD.pad+22,it.y+11);}
-    else if(it.kind==='rule'){g.fillStyle='#e3bd6b';g.beginPath();g.roundRect(CARD.pad,it.y,200,12,6);g.fill();}
-    else{const spec=it.kind==='q'?'700 '+it.size+'px serif':(it.kind==='a'?'600 '+it.size+'px sans':'500 '+it.size+'px sans');g.font=fontOf(spec);g.fillStyle=it.kind==='q'?'#e9efe9':it.kind==='a'?'#e3bd6b':'#9db1a7';const lh=Math.round(it.size*(it.kind==='q'?1.2:it.kind==='a'?1.3:1.45));it.lines.forEach((l,i)=>g.fillText(l,CARD.pad,it.y+i*lh));}
+    if(it.kind==='tag'){g.font=fontOf('600 28px sans');const w=g.measureText(it.text).width+44;g.strokeStyle=col.line;g.lineWidth=2;g.beginPath();g.roundRect(CARD.pad,it.y,w,52,26);g.stroke();g.fillStyle=col.muted;g.fillText(it.text,CARD.pad+22,it.y+11);}
+    else if(it.kind==='rule'){g.fillStyle=col.accent;g.beginPath();g.roundRect(CARD.pad,it.y,200,12,6);g.fill();}
+    else{const spec=it.kind==='q'?'700 '+it.size+'px serif':(it.kind==='a'?'600 '+it.size+'px sans':'500 '+it.size+'px sans');g.font=fontOf(spec);g.fillStyle=it.kind==='q'?col.text:it.kind==='a'?col.accent:col.muted;const lh=Math.round(it.size*(it.kind==='q'?1.2:it.kind==='a'?1.3:1.45));it.lines.forEach((l,i)=>g.fillText(l,CARD.pad,it.y+i*lh));}
   }
-  g.fillStyle='#e9efe9';g.font=fontOf('700 34px sans');g.fillText('Evidence UA',CARD.pad,CARD.height-CARD.pad-34);
-  g.fillStyle='#9db1a7';g.font=fontOf('500 26px sans');const tail='Наука · Здоров’я · Рух';g.fillText(tail,CARD.width-CARD.pad-g.measureText(tail).width,CARD.height-CARD.pad-30);
+  g.fillStyle=col.text;g.font=fontOf('700 34px sans');g.fillText('Evidence UA',CARD.pad,CARD.height-CARD.pad-34);
+  g.fillStyle=col.muted;g.font=fontOf('500 26px sans');const tail='Наука · Здоров’я · Рух';g.fillText(tail,CARD.width-CARD.pad-g.measureText(tail).width,CARD.height-CARD.pad-30);
   return {canvas:c,layout};
 }
 export async function saveCard(study,topicLabel,doc=document){

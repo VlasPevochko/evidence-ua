@@ -2,7 +2,7 @@
    Сосново-зелена гама, один японський візерунок — сіппо. Шрифт заголовків лежить на сайті. */
 @font-face{font-family:"Source Serif 4";font-style:normal;font-weight:200 900;font-display:swap;src:url("./fonts/source-serif-4-cyrillic-wght-normal.woff2") format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 @font-face{font-family:"Source Serif 4";font-style:normal;font-weight:200 900;font-display:swap;src:url("./fonts/source-serif-4-latin-wght-normal.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-body[data-platform-area="supplements"]{--sp-bg:#0d1916;--sp-surface:#142520;--sp-line:#26403a;--sp-text:#e9efe9;--sp-muted:#9db1a7;--sp-accent:#e3bd6b;--sp-accent-ink:#1b1608;--sp-ink:#4f7a69;--sp-photo:#0b1210;--sp-serif:"Source Serif 4",Georgia,"Times New Roman",serif;background:var(--sp-bg);color:var(--sp-text)}
+body[data-platform-area="supplements"]{--sp-bg:var(--c-0d1916,#0d1916);--sp-surface:var(--c-142520,#142520);--sp-line:var(--c-26403a,#26403a);--sp-text:var(--c-e9efe9,#e9efe9);--sp-muted:var(--c-9db1a7,#9db1a7);--sp-accent:var(--c-e3bd6b,#e3bd6b);--sp-accent-ink:var(--c-1b1608,#1b1608);--sp-ink:var(--c-4f7a69,#4f7a69);--sp-photo:var(--c-0b1210,#0b1210);--sp-serif:"Source Serif 4",Georgia,"Times New Roman",serif;background:var(--sp-bg);color:var(--sp-text)}
 .sp-page{width:100%;margin:0;padding:0 0 72px}
 .sp-layout{width:min(1180px,calc(100% - 48px));margin:0 auto;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:64px;align-items:start}
 .sp-side{position:sticky;top:24px;display:grid;gap:24px}
@@ -27,7 +27,7 @@ body[data-platform-area="supplements"]{--sp-bg:#0d1916;--sp-surface:#142520;--sp
 .sp-row:last-child{border-bottom:1px solid var(--sp-line)}
 .sp-row::before{content:"";position:absolute;left:0;top:-9px;width:64px;height:18px;background:no-repeat left center/64px 18px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 18' fill='none' stroke='%238fae9f' stroke-width='1.2'%3E%3Ccircle cx='9' cy='9' r='8'/%3E%3Ccircle cx='23' cy='9' r='8'/%3E%3Ccircle cx='37' cy='9' r='8'/%3E%3Ccircle cx='51' cy='9' r='8'/%3E%3C/svg%3E")}
 .sp-photo{position:relative;width:132px;aspect-ratio:1;border-radius:16px;background:var(--sp-photo) url("./supplement-backgrounds-v10.webp") no-repeat;background-size:500% 200%;outline:1px solid var(--sp-line);outline-offset:5px}
-.sp-photo::after{content:"";position:absolute;inset:6px;border:1px solid rgba(233,239,233,.22);border-radius:10px;pointer-events:none}
+.sp-photo::after{content:"";position:absolute;inset:6px;border:1px solid var(--c-e9efe938,rgba(233,239,233,.22));border-radius:10px;pointer-events:none}
 .sp-body{min-width:0}
 .sp-tags{margin:0 0 6px;color:var(--sp-muted);font-size:14px}
 .sp-tags b{color:var(--sp-accent);font-weight:600}
@@ -58,4 +58,4 @@ body[data-platform-area="supplements"]{--sp-bg:#0d1916;--sp-surface:#142520;--sp
 }
 @media (prefers-reduced-motion:reduce){.sp-chip,.sp-go{transition:none}html{scroll-behavior:auto}}
 
-.sp-compare{margin:0 0 6px}.sp-compare a{display:inline-flex;align-items:center;min-height:44px;color:var(--pine-accent,#e3bd6b);font-weight:600;text-underline-offset:3px}
+.sp-compare{margin:0 0 6px}.sp-compare a{display:inline-flex;align-items:center;min-height:44px;color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b));font-weight:600;text-underline-offset:3px}

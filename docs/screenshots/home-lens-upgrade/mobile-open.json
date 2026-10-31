@@ -1,0 +1,18 @@
+{
+  "button": {
+    "bottom": 197.4609375,
+    "height": 48,
+    "top": 149.4609375,
+    "width": 151.984375
+  },
+  "cardTextSize": "13px",
+  "hint": "hidden",
+  "hit": true,
+  "onScreen": true,
+  "overflow": -15,
+  "progress": "1",
+  "viewport": [
+    390,
+    667
+  ]
+}

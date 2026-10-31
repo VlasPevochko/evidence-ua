@@ -48,7 +48,9 @@ const structureDeep=fixture('https://evidence.invalid/nutrition.html?nutrient=li
 const html=fs.readFileSync('dist/nutrition-inside.html','utf8'),css=fs.readFileSync('dist/nutrition-lab.css','utf8');
 for(const id of ['nutrition-lab','nutrition-evidence','nutrition-sources','nutrient-time','chart','time','play','reset','detail','digestion-panel','digestion-frame'])assert(html.includes(`id="${id}"`));
 // The h1 now carries an id (it sits in the pine title band), so match the tag, not the exact string.
-assert.equal((html.match(/<h1\b/g)||[]).length,1);assert(css.includes('minmax(0,1fr)'));assert(css.includes('prefers-reduced-motion'));assert(css.includes('min-height:44px'));assert(html.includes('nutrition-timeline.js?v=27'));
+assert.equal((html.match(/<h1\b/g)||[]).length,1);
+// 2026-10-31: вибраний рядок графіка «Від днів до років» був суцільно золотим з невидимою назвою (загальне правило study-UI для button[aria-pressed=true]); окреме правило з вищою специфічністю повертає задуманий вигляд.
+assert(/body\[data-pine\]\[data-study-ui\] \.nl-timeline \.row\[aria-pressed=true\]\{background:var\(--c-192220,#192220\)/.test(css),'the selected timeline row keeps its dark panel with a ring');assert(css.includes('minmax(0,1fr)'));assert(css.includes('prefers-reduced-motion'));assert(css.includes('min-height:44px'));assert(html.includes('nutrition-timeline.js?v=27'));
 // Redesign v72: no depth switch, one play button, one nav, folded evidence, timeline as a section.
 assert(!/data-nl-depth|data-nl-action="(previous|next|reset|pause)"/.test(html),'Retired controls');
 assert.equal((html.match(/data-nl-action="play"/g)||[]).length,1);

@@ -1,6 +1,6 @@
 // «Дослідження простими словами»: картки з однією відповіддю, деталі згорнуті; фільтр за темою.
 import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=4';
-import {shareStudy,saveCard} from './research-share.js?v=2';
+import {shareStudy,saveCard} from './research-share.js?v=3';
 import {renderChart} from './research-chart.js?v=2';
 
 export const countLabel=(shown,total)=>shown===total?`Розборів: ${total}`:`Показано ${shown} із ${total}`;

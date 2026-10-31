@@ -328,6 +328,17 @@ async function nutritionFlow(browser, origin, viewport) {
   await page.locator('.nl-time-fold > summary').click();
   check(where, (await page.locator('#chart .row').first().isVisible()) && (await page.locator('#chart .row').count()) === 3, 'opening the fold must show the three nutrient rows');
   check(where, (await page.locator('#nutrient-time').boundingBox()).height < (phone ? 1700 : 1250), 'the open timeline is not compact');
+  // Вибраний рядок графіка: назва читається на власному тлі (раніше це було золото на золоті).
+  const rowContrast = await page.evaluate(() => {
+    const row = document.querySelector('#chart .row[aria-pressed="true"]');
+    if (!row) return {missing: true};
+    const parse = s => s.match(/[\d.]+/g).map(Number);
+    const lum = ([r, g, b]) => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(r) + .7152 * f(g) + .0722 * f(b); };
+    const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+    const bg = parse(getComputedStyle(row).backgroundColor), name = parse(getComputedStyle(row.querySelector('.name')).color), meta = parse(getComputedStyle(row.querySelector('.meta')).color);
+    return {bg, name: ratio(bg, name), meta: ratio(bg, meta)};
+  });
+  check(where, !rowContrast.missing && rowContrast.name >= 4.5 && rowContrast.meta >= 3, `the selected timeline row must be readable: ${JSON.stringify(rowContrast)}`);
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow with the timeline open');
   // Timeline directly follows the lab, readable on the dark theme.
   const order = await page.evaluate(() => ['nutrition-lab', 'nutrient-time', 'nutrition-evidence'].map(id => document.getElementById(id).getBoundingClientRect().top + scrollY));
@@ -432,6 +443,64 @@ async function appearanceFlow(browser, origin, viewport) {
   check(where, (await html.getAttribute('data-theme')) === null && (await html.getAttribute('data-text')) === null, 'switching back restores the default look');
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'appearance must not raise errors');
   await context.close();
+}
+
+async function paletteFlow(browser, origin, viewport) {
+  // Палітри (рішення власника 2026-10-31): космічна за замовчуванням, зелена — варіант у меню «Аа». Головна лишається власною.
+  const where = `palette @${viewport.name}`;
+  const COSMIC_BG = 'rgb(11, 10, 18)', PINE_BG = 'rgb(13, 25, 22)';
+  const background = page => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const accent = page => page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--pine-accent').trim().toLowerCase());
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  const html = page.locator('html');
+  check(where, (await html.getAttribute('data-palette')) === null, 'first visit: the cosmic palette is the default, no attribute');
+  check(where, (await background(page)) === COSMIC_BG, `the cosmic page background must equal the home background: ${await background(page)}`);
+  check(where, (await accent(page)) === '#d1a5ff', `the cosmic accent must equal the home accent: ${await accent(page)}`);
+  await page.locator('.eua-appearance-toggle').click();
+  const panel = page.locator('.eua-appearance-panel'), group = panel.locator('[data-kind="palette"]');
+  check(where, (await group.count()) === 1 && (await group.getByRole('radio').count()) === 2, 'the panel has one colour group with two choices');
+  check(where, (await group.getByRole('radio', {name: 'Космос', exact: true}).getAttribute('aria-checked')) === 'true' && (await group.getByRole('radio', {name: 'Зелений', exact: true}).getAttribute('aria-checked')) === 'false', 'cosmic is the selected colour at first');
+  const pbox = await panel.boundingBox();
+  check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the panel with the colour group must stay inside the viewport');
+  await artifact(page, viewport, 'palette-panel', panel);
+  await group.getByRole('radio', {name: 'Зелений', exact: true}).click();
+  check(where, (await html.getAttribute('data-palette')) === 'green', 'choosing «Зелений» sets data-palette on the root');
+  check(where, (await background(page)) === PINE_BG, `the green palette shows the former pine background: ${await background(page)}`);
+  check(where, (await accent(page)) === '#e3bd6b', `the green palette shows the former gold accent: ${await accent(page)}`);
+  check(where, (await group.getByRole('radio', {name: 'Зелений', exact: true}).getAttribute('aria-checked')) === 'true', 'the green choice is marked');
+  check(where, await group.getByRole('radio', {name: 'Зелений', exact: true}).evaluate(n => n === document.activeElement), 'focus stays on the chosen colour after the panel is rebuilt');
+  check(where, (await page.evaluate(() => JSON.parse(localStorage.getItem('eua-appearance-v1')).palette)) === 'green', 'the choice is stored in the existing appearance record');
+  // Збережений вибір діє на інших сторінках цього ж браузера.
+  await page.goto(origin + '/fat-burning.html', {waitUntil: 'load'});
+  check(where, (await html.getAttribute('data-palette')) === 'green' && (await background(page)) === PINE_BG, 'the green choice follows the visitor to another page');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the green palette');
+  // Повернення до космосу.
+  await page.locator('.eua-appearance-toggle').click();
+  await page.locator('.eua-appearance-panel [data-kind="palette"]').getByRole('radio', {name: 'Космос', exact: true}).click();
+  check(where, (await html.getAttribute('data-palette')) === null && (await background(page)) === COSMIC_BG, 'switching back restores the cosmic palette');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the cosmic palette');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, `the palette switch must not raise errors or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external].join(' | ')}`);
+  await context.close();
+  // Головна: власні стилі. Вибір кольору там не показується, не змінює її вигляд і файл палітри на ній не вантажиться.
+  const home = await open(browser, origin, viewport, '/index.html', {initScript: () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}))});
+  check(where, (await background(home.page)) === COSMIC_BG, `the home page keeps its own cosmic background even if green is chosen: ${await background(home.page)}`);
+  check(where, !home.seen.requested.some(u => u.startsWith('/palette-cosmic.css')), 'the home page never loads the palette file');
+  await home.page.locator('.eua-appearance-toggle').click();
+  check(where, (await home.page.locator('.eua-appearance-panel [data-kind="palette"]').count()) === 0 && (await home.page.locator('.eua-appearance-panel [data-kind]').count()) === 2, 'the home panel has theme and text size only');
+  check(where, (await home.page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the home page with green chosen');
+  check(where, home.seen.pageErrors.length === 0 && home.seen.console.length === 0, `the home page must not raise errors: ${[...home.seen.pageErrors, ...home.seen.console].join(' | ')}`);
+  await home.context.close();
+  // Ранній скрипт у <head> ставить колір до першого малювання: навіть коли модуль appearance.js не завантажився.
+  const early = await open(browser, origin, viewport, '/glossary.html', {initScript: () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}))});
+  check(where, (await early.page.locator('html').getAttribute('data-palette')) === 'green' && (await background(early.page)) === PINE_BG, 'a stored green choice is applied at load');
+  await early.context.close();
+  const blocked = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
+  await blocked.addInitScript(() => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'})));
+  await blocked.route('**/appearance.js*', r => r.abort());
+  const blockedPage = await blocked.newPage();
+  await blockedPage.goto(origin + '/glossary.html', {waitUntil: 'domcontentloaded'});
+  check(where, (await blockedPage.locator('html').getAttribute('data-palette')) === 'green', 'the inline head script applies the saved palette even when the appearance module never loads');
+  await blocked.close();
 }
 
 async function deniedStorageFlow(browser, origin, viewport) {
@@ -1527,11 +1596,19 @@ async function researchFlow(browser, origin, viewport) {
   const head = png ? (await import('node:fs')).readFileSync(png).subarray(0, 24) : null;
   check(where, /^evidence-ua-[a-z-]+\.png$/.test(download.suggestedFilename()) && head && head.readUInt32BE(16) === 1080 && head.readUInt32BE(20) === 1350, 'the picture is saved as a 1080×1350 PNG');
   const fits = await page.evaluate(async () => {
-    const mod = await import('./research-share.js?v=2'), data = await import('./research-data.js?v=4'), bad = [];
+    const mod = await import('./research-share.js?v=3'), data = await import('./research-data.js?v=4'), bad = [];
     for (const s of data.STUDIES) { const {layout} = await mod.drawCard(s, data.TOPICS[s.topic]); if (!mod.FITS(layout)) bad.push(s.id); }
     return bad;
   });
   check(where, fits.length === 0, 'the text fits on the picture for every write-up' + (fits.length ? ': ' + fits.join(',') : ''));
+  // Палітри (2026-10-31): картинка для соцмереж має кольори поточної палітри сторінки.
+  const cardBg = await page.evaluate(async () => {
+    const mod = await import('./research-share.js?v=3'), data = await import('./research-data.js?v=4'), s = data.STUDIES[0];
+    const read = async () => { const {canvas} = await mod.drawCard(s, data.TOPICS[s.topic]); return Array.from(canvas.getContext('2d').getImageData(2, 2, 1, 1).data.slice(0, 3)); };
+    const cosmic = await read(); document.documentElement.dataset.palette = 'green'; const green = await read(); delete document.documentElement.dataset.palette;
+    return {cosmic, green};
+  });
+  check(where, cardBg.cosmic.join() === '11,10,18' && cardBg.green.join() === '13,25,22', `the share picture follows the palette: ${JSON.stringify(cardBg)}`);
   await page.goto(origin + '/research.html#coffee');
   await page.locator('#rs-coffee[open]').waitFor({state: 'attached'});
   check(where, await page.locator('#rs-coffee').evaluate(el => el.open), 'a link with #id opens that write-up');
@@ -1746,6 +1823,12 @@ async function pineFlow(browser, origin, viewport) {
     const toolsLines = (await page.locator('body[data-study-ui], body[data-pine-tools]').count()) ? 0 : await page.locator('body > .eua-platform-nav').count();
     check(where, toolsLines === 0 || (await page.locator('body > .eua-platform-nav details.eua-module-menu').count()) === 1, 'the tools line must be one folded disclosure');
     check(where, (await page.locator('body > .eua-platform-nav details[open]').count()) === 0, 'the tools line must start folded');
+    // Палітра (2026-10-31): за замовчуванням сторінка космічна (фон як на головній), а сосновий вигляд лишається варіантом «Зелений».
+    // Перемикаємо атрибутом так само, як це робить меню «Аа»: усе має змінитися лише завдяки CSS.
+    // Деякі сторінки мають власний, трохи інший майже чорний фон (наприклад, «Харчування»): у космосі він теж майже чорний із фіолетовим відтінком.
+    const cosmicBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).map(Number));
+    check(where, cosmicBg[0] < 20 && cosmicBg[2] > cosmicBg[1] && cosmicBg[2] >= cosmicBg[0], `the default page background is not the dark purple cosmic one: ${cosmicBg}`);
+    await page.evaluate(() => { document.documentElement.dataset.palette = 'green'; });
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).map(Number));
     check(where, bg[1] > bg[2] && bg[0] < 30, `the page background is not pine-green: ${bg}`);
     check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
@@ -2192,6 +2275,7 @@ try {
     for (const viewport of viewports) await continueFlow(browser, origin, viewport);
     for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
     for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(paletteFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);

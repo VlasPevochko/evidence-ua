@@ -13,6 +13,6 @@ assert(rule.includes(':only-child'),'only pages whose strip is a single menu are
 assert(!/@media\s*\(max-width:760px\)[^}]*:has\(>\.eua-module-menu/.test(css),'the phone layout keeps the strip');
 for(const f of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const html=fs.readFileSync('dist/'+f,'utf8');
- if(html.includes('page-pine.css'))assert(html.includes('page-pine.css?v=19'),`${f} loads the bumped page-pine.css`);
+ if(html.includes('page-pine.css'))assert(html.includes('page-pine.css?v=20'),`${f} loads the bumped page-pine.css`); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 }
 console.log('Compact banners: strip moved into the banner on wide screens, phone layout kept, version bumped passed.');

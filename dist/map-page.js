@@ -1,5 +1,5 @@
 // Карта знань: вузли — сторінки сайту, лінії — ті самі сусідні матеріали, що в блоці «Куди далі».
-import {NEXT_STEPS} from './platform-next-steps.js?v=4';
+import {NEXT_STEPS} from './platform-next-steps.js?v=5';
 
 export const NODES={
   'cell-lab.html':{label:'Клітина',tag:'Cell Lab',x:11,y:30},

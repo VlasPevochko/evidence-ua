@@ -1,4 +1,4 @@
-import './site-header.js?v=11';
+import './site-header.js?v=12';
 import {findMaterials,materials} from './platform-materials.js?v=103';
 import {materialCard} from './platform-tools.js?v=103';
 import {catalog,findAreas} from './platform-catalog.js?v=100';

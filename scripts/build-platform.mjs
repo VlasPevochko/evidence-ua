@@ -21,11 +21,11 @@ fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/mate
 fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=103'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=4'").replace("'./terms.mjs'","'./platform-terms.js?v=2'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=5'").replace("'./terms.mjs'","'./platform-terms.js?v=3'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./site-header.mjs'","'./site-header.js?v=12'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
 fs.writeFileSync('dist/home-picker.js',fs.readFileSync('src/platform/home-picker.mjs','utf8'));
 fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8').replace("'./home-picker.mjs'","'./home-picker.js?v=2'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=11'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=103'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=103'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=12'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -195,3 +195,49 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
 {const path="dist/directions.html",old=fs.readFileSync(path,"utf8"),next=old.replaceAll("directions.js?v=104","directions.js?v=105");if(next!==old)fs.writeFileSync(path,next);}
 // Owner-selected compact home routes; directory renderer unchanged, import cache refreshed.
 {const path="dist/directions.html",old=fs.readFileSync(path,"utf8"),next=old.replaceAll("directions.js?v=105","directions.js?v=106");if(next!==old)fs.writeFileSync(path,next);}
+
+// Палітра (2026-10-31): космічна за замовчуванням, зелена як варіант. Усі сторінки, крім головної (вона має власні стилі), підключають palette-cosmic.css перед appearance.css.
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='index.html')){
+ const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+ if(old.includes('palette-cosmic.css'))continue;
+ const next=old.replace(/<link rel="stylesheet" href="\.\/appearance\.css\?v=\d+">/,m=>'<link rel="stylesheet" href="./palette-cosmic.css?v=1">'+m);
+ if(next!==old)fs.writeFileSync(file,next);
+}
+// Той самий етап: ранній скрипт у <head> тепер знає й про колір (data-palette="green"), тому старий скрипт замінюємо на новий скрізь, де він ще старий.
+{
+ const oldEarly="try{var a=JSON.parse(localStorage.getItem('eua-appearance-v1')||'{}'),d=document.documentElement,t=a.theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';if(t==='light')d.dataset.theme='light';if(a.text==='lg'||a.text==='xl')d.dataset.text=a.text}catch(e){}";
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  const next=old.replaceAll(oldEarly,earlyScript);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Той самий етап: усі таблиці стилів, де колір тепер береться з токенів, і модулі, що їх підключають, отримують нову версію в query-рядку,
+// щоб браузер не змішав старий кеш (зелені літерали) з новою палітрою. Головна не отримує palette-cosmic.css і лишається як була
+// (їй піднято лише версії спільних модулів). Заміна з межею слова: «fat-burning.css» не має чіпати «nutrition-fat-burning.css».
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={
+  'platform-shell.js?v=104':'platform-shell.js?v=105','site-header.js?v=11':'site-header.js?v=12','directions.js?v=106':'directions.js?v=107','appearance.js?v=2':'appearance.js?v=3',
+  'platform-terms.js?v=2':'platform-terms.js?v=3','platform-next-steps.js?v=3':'platform-next-steps.js?v=5','fat-burning.js?v=9':'fat-burning.js?v=10',
+  'glossary-page.js?v=1':'glossary-page.js?v=2','map-page.js?v=2':'map-page.js?v=3','home-spectrum.js?v=1':'home-spectrum.js?v=2',
+  'appearance.css?v=4':'appearance.css?v=5','platform.css?v=63':'platform.css?v=85','platform.css?v=83':'platform.css?v=85','atlas.css?v=8':'atlas.css?v=9','page-pine.css?v=19':'page-pine.css?v=20',
+  'knee-pain-map.css?v=2':'knee-pain-map.css?v=3','shoulder-pain-map.css?v=1':'shoulder-pain-map.css?v=2','atlas-coordinate-map.css?v=3':'atlas-coordinate-map.css?v=4',
+  'cell-lab.css?v=76':'cell-lab.css?v=77','study-ui.css?v=70':'study-ui.css?v=72','study-ui.css?v=71':'study-ui.css?v=72','cell-vcard.css?v=80':'cell-vcard.css?v=81',
+  'changes-page.css?v=2':'changes-page.css?v=3','compare-page.css?v=1':'compare-page.css?v=2','directions-pine.css?v=2':'directions-pine.css?v=3','exercises.css?v=8':'exercises.css?v=9',
+  'fat-burning.css?v=1':'fat-burning.css?v=3','fat-burning.css?v=2':'fat-burning.css?v=3','fat-burning-pine.css?v=3':'fat-burning-pine.css?v=4','glossary-page.css?v=2':'glossary-page.css?v=3',
+  'map-page.css?v=1':'map-page.css?v=2','mechanisms-page.css?v=4':'mechanisms-page.css?v=5','movement.css?v=85':'movement.css?v=86','learning-notes.css?v=86':'learning-notes.css?v=87',
+  'muscle-lab.css?v=74':'muscle-lab.css?v=75','digestion.css?v=3':'digestion.css?v=4','nutrition-lab.css?v=79':'nutrition-lab.css?v=80','nutrition-diets.css?v=89':'nutrition-diets.css?v=90',
+  'nutrition-fat-burning.css?v=1':'nutrition-fat-burning.css?v=2','nutrition-navigation.css?v=1':'nutrition-navigation.css?v=3','nutrition-navigation.css?v=2':'nutrition-navigation.css?v=3',
+  'research-page.css?v=3':'research-page.css?v=4','sleep.css?v=83':'sleep.css?v=84','supplements.css?v=3':'supplements.css?v=4','videos-page.css?v=3':'videos-page.css?v=4','experience.css?v=62':'experience.css?v=63',
+  'evidence/evidence.css?v=57':'evidence/evidence.css?v=58','nutrition-timeline.css?v=29':'nutrition-timeline.css?v=30'
+ };
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+ // Виправлення першої версії цього кроку: заміна без межі слова зачепила nutrition-fat-burning.css (став v=3), а має бути v=2.
+ {const file='dist/nutrition-inside.html',old=fs.readFileSync(file,'utf8'),next=bump(old,'nutrition-fat-burning.css?v=3','nutrition-fat-burning.css?v=2');if(next!==old)fs.writeFileSync(file,next);}
+}

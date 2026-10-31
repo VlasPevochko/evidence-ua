@@ -5,10 +5,21 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
+import {earlyScript} from '../src/platform/appearance.mjs';
 
 const sha=s=>createHash('sha256').update(s).digest('hex');
 const baseline=JSON.parse(fs.readFileSync('tests/fixtures/nutrition-architecture-preservation.json','utf8'));
 const hub=()=>fs.readFileSync('dist/nutrition.html','utf8');
+// 2026-10-31 (палітра «космос / зелений», рішення власника): усі сторінки крім головної отримали <link palette-cosmic.css>, ранній скрипт вигляду
+// тепер знає й про колір, а таблиці стилів і модулі оболонки — нові версії в query-рядку. Зміст сторінок не змінювався. Повертаємо ці зміни назад,
+// а далі працює старий ланцюжок нижче (попередні версії → історичні).
+const EARLY_BEFORE_PALETTE="try{var a=JSON.parse(localStorage.getItem('eua-appearance-v1')||'{}'),d=document.documentElement,t=a.theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';if(t==='light')d.dataset.theme='light';if(a.text==='lg'||a.text==='xl')d.dataset.text=a.text}catch(e){}";
+const beforePalette=html=>html.replace('<link rel="stylesheet" href="./palette-cosmic.css?v=1">','').replaceAll(earlyScript,EARLY_BEFORE_PALETTE)
+ .replaceAll('page-pine.css?v=20','page-pine.css?v=19').replaceAll('evidence/evidence.css?v=58','evidence/evidence.css?v=57').replaceAll('digestion.css?v=4','digestion.css?v=3')
+ .replaceAll('appearance.css?v=5','appearance.css?v=4').replaceAll('appearance.js?v=3','appearance.js?v=2').replaceAll('platform-shell.js?v=105','platform-shell.js?v=104')
+ .replaceAll('fat-burning.css?v=3','fat-burning.css?v=2').replaceAll('fat-burning-pine.css?v=4','fat-burning-pine.css?v=3').replaceAll('site-header.js?v=12','site-header.js?v=11')
+ .replaceAll('platform-next-steps.js?v=5','platform-next-steps.js?v=3').replaceAll('platform-terms.js?v=3','platform-terms.js?v=2');
+
 
 test('the home Nutrition entry opens the hub rather than bypassing it into physiology',()=>{
  const links=JSON.parse(execFileSync('python',['-c',`from pathlib import Path
@@ -54,7 +65,7 @@ test('moved mechanisms, scientific SVGs and source disclosures retain their exac
  }
  // page-pine.css v16 -> v17 (компактні банери, рішення власника 2026-10-25): лише версія в query-рядку, зміст сторінок той самий. fat-burning-pine.css v2 -> v3 (компактний банер, 2026-10-25): так само лише версія.
  // Shared UI cache revisions only: the authored physiology controller is otherwise compared byte-for-byte.
- for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?fs.readFileSync(file,'utf8').replaceAll('fat-burning.js?v=9','fat-burning.js?v=4').replaceAll('fat-burning.js?v=6','fat-burning.js?v=4').replaceAll('fat-burning.js?v=5','fat-burning.js?v=4').replaceAll('appearance.js?v=2','appearance.js?v=1').replaceAll('platform-shell.js?v=104','platform-shell.js?v=97').replaceAll('platform-shell.js?v=101','platform-shell.js?v=97').replaceAll('platform-shell.js?v=100','platform-shell.js?v=97').replaceAll('site-header.js?v=11','site-header.js?v=4').replaceAll('site-header.js?v=8','site-header.js?v=4').replaceAll('site-header.js?v=7','site-header.js?v=4').replaceAll('digestion-viewer.js?v=4','digestion-viewer.js?v=1').replaceAll('digestion-viewer.js?v=3','digestion-viewer.js?v=1').replaceAll('page-pine.css?v=19','page-pine.css?v=16').replaceAll('page-pine.css?v=17','page-pine.css?v=16').replaceAll('fat-burning-pine.css?v=3','fat-burning-pine.css?v=2').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):file==='dist/nutrition-lab.js'?historicalNutritionController(fs.readFileSync(file,'utf8')):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
+ for(const [file,hash] of Object.entries(baseline.files))assert.equal(sha(file.endsWith('.html')?beforePalette(fs.readFileSync(file,'utf8')).replaceAll('fat-burning.js?v=10','fat-burning.js?v=4').replaceAll('fat-burning.js?v=9','fat-burning.js?v=4').replaceAll('fat-burning.js?v=6','fat-burning.js?v=4').replaceAll('fat-burning.js?v=5','fat-burning.js?v=4').replaceAll('appearance.js?v=2','appearance.js?v=1').replaceAll('platform-shell.js?v=104','platform-shell.js?v=97').replaceAll('platform-shell.js?v=101','platform-shell.js?v=97').replaceAll('platform-shell.js?v=100','platform-shell.js?v=97').replaceAll('site-header.js?v=11','site-header.js?v=4').replaceAll('site-header.js?v=8','site-header.js?v=4').replaceAll('site-header.js?v=7','site-header.js?v=4').replaceAll('digestion-viewer.js?v=4','digestion-viewer.js?v=1').replaceAll('digestion-viewer.js?v=3','digestion-viewer.js?v=1').replaceAll('page-pine.css?v=19','page-pine.css?v=16').replaceAll('page-pine.css?v=17','page-pine.css?v=16').replaceAll('fat-burning-pine.css?v=3','fat-burning-pine.css?v=2').replaceAll('./nutrition-inside.html#nutrition-lab','./nutrition.html#nutrition-lab').replaceAll('./nutrition-inside.html?nutrient=','./nutrition.html?nutrient='):file==='dist/nutrition-lab.js'?historicalNutritionController(fs.readFileSync(file,'utf8')):fs.readFileSync(file)),hash,file+' changed outside the authorized move');
  assert(!html.includes('id="nutrition-diets"'));
 });
 

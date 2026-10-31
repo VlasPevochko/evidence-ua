@@ -1,5 +1,5 @@
 // Словник: терміни з підказок (докази, жир) і з модулів «Рух» та «Сон». Дані беруться з тих самих файлів, що й підказки в тексті.
-import {TERMS} from './platform-terms.js?v=3';
+import {TERMS} from './platform-terms.js?v=4';
 import {glossary} from './platform-glossary-data.js';
 
 const GROUPS=[

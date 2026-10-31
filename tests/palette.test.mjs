@@ -103,10 +103,11 @@ assert.equal(tokenizeCss('a{color:#ffffff;border-color:#c8402f}'),'a{color:#ffff
 }
 
 // 5) Згенерований dist/palette-cosmic.css свіжий, містить усі токени й нічого зайвого.
-const {css:fresh,count}=paletteCss(process.cwd());
+const {css:fresh,count,colours,shapes}=paletteCss(process.cwd());
 assert.equal(read(OUTPUT),fresh,'dist/palette-cosmic.css is stale: run node scripts/build-site.mjs');
 const keys=tokenKeys(process.cwd());
-assert.equal(count,keys.length);
+assert.equal(colours,keys.length,'every colour token has a cosmic value');
+assert(count>=colours+shapes,'the cosmic block also carries the shape tokens (see shapes.test.mjs)');
 const defined=new Set([...read(OUTPUT).matchAll(/--c-([0-9a-f]{6}(?:[0-9a-f]{2})?):#[0-9a-f]{6,8}/g)].map(m=>m[1]));
 for(const k of keys)assert(defined.has(k),`token --c-${k} has a cosmic value`);
 assert(read(OUTPUT).includes('html:not([data-palette="green"]){--c-'),'tokens apply unless the green palette is chosen');

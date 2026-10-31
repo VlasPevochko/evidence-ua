@@ -76,12 +76,12 @@ body[data-pine][data-platform-area="cell"] .intro{background:var(--c-142520,#142
 @media(min-width:761px){
  body[data-pine]>.eua-platform-nav:has(>.eua-module-menu:only-child){position:relative;z-index:12;height:0;min-height:0;max-width:none;margin:0;padding:0!important;border:0!important;background:none!important;overflow:visible}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child{position:absolute;top:18px;right:max(16px,calc((100% - 1180px)/2));width:auto;margin:0}
- body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 16px;border:1px solid var(--pine-line);border-radius:8px;background:var(--c-13261e,#13261e);color:var(--pine-text);font-size:14px;cursor:pointer;list-style:none}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 16px;border:1px solid var(--pine-line);border-radius:var(--rd-8,8px);background:var(--c-13261e,#13261e);color:var(--pine-text);font-size:14px;cursor:pointer;list-style:none}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::-webkit-details-marker{display:none}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::marker{content:''}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>summary::after{content:'＋';font-size:18px}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child[open]>summary::after{content:'−'}
- body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>.eua-module-menu-content{position:absolute;inset:calc(100% + 8px) 0 auto auto;width:340px;max-width:calc(100vw - 32px);max-height:70dvh;overflow:auto;padding:12px;border:1px solid var(--pine-line);border-radius:12px;background:var(--c-0f1c18,#0f1c18);box-shadow:0 18px 40px #0008;display:flex;flex-direction:column;align-items:stretch;gap:6px}
+ body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child>.eua-module-menu-content{position:absolute;inset:calc(100% + 8px) 0 auto auto;width:340px;max-width:calc(100vw - 32px);max-height:70dvh;overflow:auto;padding:12px;border:1px solid var(--pine-line);border-radius:var(--rd-12,12px);background:var(--c-0f1c18,#0f1c18);box-shadow:0 18px 40px #0008;display:flex;flex-direction:column;align-items:stretch;gap:6px}
  body[data-pine]>.eua-platform-nav>.eua-module-menu:only-child .eua-module-menu-content>:is(a,button,details>summary){display:flex;align-items:center;min-height:44px;margin:0}
  body[data-pine] .pb-inner{padding:34px 0 30px}
  /* Кнопка стоїть праворуч угорі, тож картинка в банері зі «Сном» не має починатися вище за неї. */

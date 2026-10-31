@@ -503,6 +503,58 @@ async function paletteFlow(browser, origin, viewport) {
   await blocked.close();
 }
 
+async function shapesFlow(browser, origin, viewport) {
+  // Форми (рішення власника 2026-10-31): у космічному стилі картки, кнопки й чипи мають прямі кути головної (3px, великі панелі 5px),
+  // підняті тіні карток зникають, а зелений варіант лишає колишні форми.
+  const where = `shapes @${viewport.name}`;
+  // Малюнки й смуги даних, що не є картками чи кнопками: для них великі радіуси дозволені.
+  const artOnly = '.fb-cell,.fb-cell-edge,.fb-lipid,.fb-bar,.fb-bar span,.mg-fiber-scale,.mg-fib,.sleep-art,.step-dot';
+  // Накладки й світіння малюнків зберігають тінь.
+  const overlays = '.eua-module-menu-content,.eua-nutrition-menu-content,.eua-search,.term-dialog,.eua-term-pop,.eua-appearance-panel,.fb-hero-art,.fb-lipid,.primary-link';
+  const measure = (page) => page.evaluate(([art, over]) => {
+    const rounded = [], raised = []; let big = 0;
+    const label = el => el.tagName.toLowerCase() + '.' + (el.getAttribute('class') || '').split(/\s+/)[0];
+    for (const el of document.querySelectorAll('body *')) {
+      if (el instanceof SVGElement) continue;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 16 || r.height < 16) continue;
+      const rad = Math.max(...[cs.borderTopLeftRadius, cs.borderTopRightRadius, cs.borderBottomRightRadius, cs.borderBottomLeftRadius].map(parseFloat));
+      const circle = rad >= Math.min(r.width, r.height) / 2 - 0.5 && Math.abs(r.width - r.height) <= 3;
+      if (rad > 5 && !circle) { big++; if (!el.matches(art)) rounded.push(label(el) + ' ' + rad); }
+      if (cs.boxShadow !== 'none' && !el.matches(over) && !el.closest(over)) {
+        const parts = []; let depth = 0, cur = '';
+        for (const ch of cs.boxShadow) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && depth === 0) { parts.push(cur.trim()); cur = ''; } else cur += ch; }
+        parts.push(cur.trim());
+        for (const part of parts) {
+          const nums = (part.replace(/rgba?\([^)]*\)/g, '').match(/-?\d+(?:\.\d+)?px/g) || []).map(parseFloat);
+          if (!/inset/.test(part) && nums.length >= 3 && Math.abs(nums[1]) >= 4 && nums[2] >= 12) { raised.push(label(el) + ' ' + part.slice(-30)); break; }
+        }
+      }
+    }
+    return {rounded: [...new Set(rounded)], raised: [...new Set(raised)], big};
+  }, [artOnly, overlays]);
+  for (const file of ['research.html', 'atlas.html', 'muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'nutrition-inside.html', 'supplements.html', 'fat-burning.html', 'exercises.html', 'directions.html']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
+    await page.evaluate(() => document.querySelectorAll('details').forEach(d => { d.open = true; }));
+    await page.waitForTimeout(300);
+    const cosmic = await measure(page);
+    check(`${where} ${file}`, cosmic.rounded.length === 0, `cards, buttons and chips must have the straight corners of the home page: ${cosmic.rounded.slice(0, 6).join(', ')}`);
+    check(`${where} ${file}`, cosmic.raised.length === 0, `cards must be flat like on the home page: ${cosmic.raised.slice(0, 4).join(', ')}`);
+    await page.evaluate(() => { document.documentElement.dataset.palette = 'green'; });
+    const green = await measure(page);
+    check(`${where} ${file}`, green.big >= 5 && green.big > cosmic.big, `the green style must keep the former rounded shapes (${green.big} rounded elements, ${cosmic.big} in the cosmic style)`);
+    check(`${where} ${file}`, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+    check(`${where} ${file}`, seen.pageErrors.length === 0 && seen.console.length === 0, 'shapes must not raise errors');
+    await context.close();
+  }
+  // Головна: форми не змінюються, токенів форм там немає (файл стилю не підключається).
+  const home = await open(browser, origin, viewport, '/index.html');
+  check(where, (await home.page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--rd-14') + getComputedStyle(document.documentElement).getPropertyValue('--sd-card'))) === '', 'the home page defines no shape tokens');
+  await home.context.close();
+}
+
 async function deniedStorageFlow(browser, origin, viewport) {
   // Cover both failures browsers expose: accessing window.localStorage itself,
   // and storage methods that throw. Injection happens before any site script.
@@ -2276,6 +2328,7 @@ try {
     for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
     for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(paletteFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);

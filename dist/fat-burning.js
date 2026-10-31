@@ -1,4 +1,4 @@
-import "./site-header.js?v=12";
+import "./site-header.js?v=13";
 
 export const fatStages = Object.freeze([
   {

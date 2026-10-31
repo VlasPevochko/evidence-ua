@@ -17,7 +17,7 @@ test('featured Fat Burning Lab is prominent in Nutrition and directly navigable'
  assert(!html.includes('id="nutrition-diets"'));
  assert(html.includes('href="#nutrition-fat-burning" class="nf-nav"'),'direct nutrition anchor is present');
  assert.equal((markup.match(/href="\.\/fat-burning\.html"/g)||[]).length,1,'featured card has one real CTA');
- assert(html.includes('href="./nutrition-fat-burning.css?v=2"'),'cache-busted styling'); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
+ assert(html.includes('href="./nutrition-fat-burning.css?v=3"'),'cache-busted styling'); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
  assert(fs.existsSync('dist/fat-burning.html'));
  const css=fs.readFileSync('dist/nutrition-fat-burning.css','utf8');
  assert(css.includes('@media(max-width:760px)'),'mobile layout is required');

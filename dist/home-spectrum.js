@@ -98,7 +98,7 @@ export function mountHomeSpectrum(doc=globalThis.document) {
     const searchButton=doc.querySelector('.eua-header-search');
     if(!searchButton){catalogFallback();return;}
     try{
-      searchModule||=import('./platform-search.js?v=10');
+      searchModule||=import('./platform-search.js?v=11');
       const {mountSearch}=await searchModule;
       if(disposed||current!==request||!homeActive())return;
       const controller=mountSearch(doc,searchButton);

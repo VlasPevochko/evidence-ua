@@ -515,6 +515,41 @@ async function paletteFlow(browser, origin, viewport) {
   await blocked.close();
 }
 
+// Картинки для поширення (рішення власника 2026-10-31): у космічних кольорах сайту, а не в сосново-зелених.
+// Міряємо кути справжніх JPEG (там лише тло й ледь помітний візерунок), а не назви файлів: Node тут JPEG не розбирає.
+async function shareCardsFlow(browser, origin, viewport) {
+  const where = `share cards @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const names = files.map(file => file.replace('.html', ''));
+  const cards = await page.evaluate(list => Promise.all(list.map(name => new Promise(resolve => {
+    const image = new Image();
+    image.onerror = () => resolve({name, error: true});
+    image.onload = () => {
+      const w = image.naturalWidth, h = image.naturalHeight, canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d', {willReadFrequently: true}); ctx.drawImage(image, 0, 0);
+      const sum = [0, 0, 0]; let count = 0;
+      for (const [x, y] of [[0, 0], [w - 40, 0], [0, h - 40], [w - 40, h - 40]]) {
+        const data = ctx.getImageData(x, y, 40, 40).data;
+        for (let i = 0; i < data.length; i += 4) { sum[0] += data[i]; sum[1] += data[i + 1]; sum[2] += data[i + 2]; count++; }
+      }
+      resolve({name, w, h, r: sum[0] / count, g: sum[1] / count, b: sum[2] / count});
+    };
+    image.src = `/og/${name}.jpg`;
+  }))), names);
+  const hueOf = ({r, g, b}) => {
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    if (!d) return 0;
+    const h = 60 * (max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4);
+    return h < 0 ? h + 360 : h;
+  };
+  check(where, cards.length === names.length && cards.every(card => !card.error && card.w === 1200 && card.h === 630), `every page has a decoded 1200x630 card: ${cards.filter(card => card.error).map(card => card.name).join(', ')}`);
+  const wrong = cards.filter(card => !card.error && !(hueOf(card) >= 235 && hueOf(card) <= 290 && card.b > card.g + 3));
+  check(where, wrong.length === 0, `the share cards must sit on the cosmic violet, not on pine green: ${wrong.map(card => `${card.name} ${Math.round(hueOf(card))}°`).join(', ')}`);
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, `measuring the cards must not raise errors or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external].join(' | ')}`);
+  await context.close();
+}
+
 async function shapesFlow(browser, origin, viewport) {
   // Форми (рішення власника 2026-10-31): у космічному стилі картки, кнопки й чипи мають прямі кути головної (3px, великі панелі 5px),
   // підняті тіні карток зникають, а зелений варіант лишає колишні форми.
@@ -1176,6 +1211,22 @@ async function openLensPicker(page) {
   await page.locator('[data-lens-picker][open]').waitFor({state:'visible'});
   await page.locator('[data-lens-picker] img').evaluateAll(nodes=>Promise.all(nodes.map(node=>node.decode())));
 }
+// Owner 2026-10-31: the six picture tiles sit on the cosmic violet of the home, not on teal.
+// Measure the edge of what the browser actually decoded (the backdrop of each picture), not the file names.
+async function lensTileColours(page) {
+  return page.locator('#cards .home-picker-image').evaluateAll(nodes=>nodes.map(node=>{
+    const canvas=document.createElement('canvas'),w=canvas.width=node.naturalWidth,h=canvas.height=node.naturalHeight;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(node,0,0);
+    const band=8,sum=[0,0,0];let count=0;
+    for(const [x,y,bw,bh] of [[0,0,w,band],[0,h-band,w,band],[0,band,band,h-2*band],[w-band,band,band,h-2*band]]){
+      const data=ctx.getImageData(x,y,bw,bh).data;
+      for(let i=0;i<data.length;i+=4){sum[0]+=data[i];sum[1]+=data[i+1];sum[2]+=data[i+2];count++;}
+    }
+    const [r,g,b]=sum.map(value=>value/count/255),max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+    let hue=0;if(d>0)hue=60*(max===r?((g-b)/d)%6:max===g?(b-r)/d+2:(r-g)/d+4);if(hue<0)hue+=360;
+    return {src:node.currentSrc.split('/').pop().replace('card-art-','').replace('.webp',''),hue,sat:max?d/max:0,val:max,width:w};
+  }));
+}
 async function homeLensFlow(browser, origin, viewport) {
   const where=`home lens chooser @${viewport.name}`;
   const {context,page,seen}=await open(browser,origin,viewport,'/index.html',{contextOptions:{reducedMotion:'no-preference'}});
@@ -1195,6 +1246,9 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.mouse.click(middle.action.left+middle.action.width/2,middle.action.top+middle.action.height/2);
     await panel.waitFor({state:'visible'});
     await page.locator('[data-lens-picker] img').evaluateAll(nodes=>Promise.all(nodes.map(node=>node.decode())));
+    const tiles=await lensTileColours(page);
+    check(where,tiles.length===6&&tiles.every(tile=>tile.width>0&&tile.src.endsWith('-cosmic')),`all six direction pictures are the decoded cosmic versions (${tiles.map(tile=>tile.src).join(', ')})`);
+    check(where,tiles.every(tile=>tile.hue>=245&&tile.hue<=290&&tile.sat>=.2&&tile.val<=.6),`the picture backgrounds are violet, not teal (${tiles.map(tile=>`${tile.src} ${Math.round(tile.hue)}°`).join(', ')})`);
     checkLensLinks(where,await lensSnapshot(page),viewport);
     check(where,await panel.evaluate(node=>node.matches(':modal')),'choices must occupy the native modal top layer');
     check(where,await page.locator('[data-lens-picker-close]').evaluate(node=>document.activeElement===node),'opening moves focus to the close control');
@@ -2341,6 +2395,7 @@ try {
     for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(paletteFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
+    await isolatedFlow(shareCardsFlow, browser, origin, viewports[0]);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);

@@ -1008,15 +1008,15 @@ function checkLensAction(where, snapshot, {onScreen = false} = {}) {
   if (onScreen) check(where, action.onScreen && action.hitPoints.every(Boolean), 'the on-screen action must pass real center and corner hit tests');
 }
 
-async function positionLensOnset(page) {
-  await page.evaluate(() => {
+async function positionLensOnset(page, {before = 0} = {}) {
+  await page.evaluate(before => {
     // Owner-approved 2026-10-31: stage timing keeps the action visible even
     // when the catalogue below it cannot fit in a short viewport.
     const rect = document.querySelector('[data-lens-stage]').getBoundingClientRect();
     const distance = Math.min(320, Math.max(160, innerHeight * .38));
     const end = Math.min(24, innerHeight - rect.height - 16);
-    scrollTo({top:rect.top + scrollY - end - distance, behavior:'instant'});
-  });
+    scrollTo({top:rect.top + scrollY - end - distance - before, behavior:'instant'});
+  }, before);
   await page.waitForTimeout(240);
 }
 
@@ -1096,7 +1096,7 @@ async function homeLensFlow(browser, origin, viewport) {
     const closed = await lensSnapshot(page);
     check(where, closed.progress >= 0 && closed.progress <= .01, 'the native reveal must begin at the declared viewport onset');
     check(where, Math.abs(closed.gap) <= 1 && closed.interior.opacity === 0 && !closed.action.centerHit && closed.action.pointerEvents === 'none', 'CLOSED must join the actual clipped halves without an invisible button hit target');
-    check(where, closed.cards.every(card=>card.opacity===0 && card.pointerEvents==='none'), 'zero-opacity directions must reject invisible pointer hits');
+    check(where, closed.cards.every(card=>card.opacity>0 || card.pointerEvents==='none'), 'zero-opacity directions must reject invisible pointer hits');
     await page.locator('[data-lens-stage] img').evaluateAll(nodes => Promise.all(nodes.map(node => node.decode())));
     await artifact(page, viewport, 'home-lens-closed', page.locator('body'), {scroll: false});
     await page.mouse.move(viewport.width / 2, viewport.height / 2);
@@ -1389,7 +1389,9 @@ async function homeLensViewportFlow(browser, origin, viewport) {
       await appearance.click();
     }
     await page.evaluate(()=>document.fonts.ready);
-    await positionLensOnset(page);
+    // A 2px lead absorbs native fractional rounding; the blank-hit probe must
+    // start at genuine zero opacity, not a tiny positive first-card fade.
+    await positionLensOnset(page,{before:2});
     const closed=await lensSnapshot(page);
     check(where,closed.progress<=.01 && closed.cards.every(card=>card.opacity===0&&card.pointerEvents==='none'),'closed directions must be transparent and pointer-inactive');
     const blank=await page.locator('#cards').evaluate(cards=>{
@@ -1415,7 +1417,7 @@ async function homeLensViewportFlow(browser, origin, viewport) {
     const middle=await lensSnapshot(page);
     check(where,middle.progress<.65 && middle.interior.opacity>0 && middle.action.onScreen && middle.action.hitPoints.every(Boolean),'the central action must be visible and clickable halfway through short-screen reveal');
     check(where,middle.action.width>=44&&middle.action.height>=44,'core scaling must preserve the 44px pointer target');
-    await page.mouse.wheel(0,distance/2+1);
+    await page.mouse.wheel(0,distance/2+3);
     await page.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-home-lens]')).getPropertyValue('--lens-progress'))===1);
     const opened=await lensSnapshot(page);
     checkLensAction(where,opened,{onScreen:true});

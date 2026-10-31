@@ -1,3 +1,5 @@
+import {mountHomePicker} from './home-picker.mjs';
+
 // Native links remain the baseline. This controller only advances decorative
 // reversible scroll progress and opens home disclosures for fragment navigation.
 const mounts = new WeakMap();
@@ -24,6 +26,7 @@ export function mountHomeLens(doc = globalThis.document) {
   const links = [...(section.querySelector('#cards')?.querySelectorAll('a.topic-card[data-area]') || [])];
 
   const cleanups = [];
+  cleanups.push(mountHomePicker(doc,section));
   let observer;
   let frame = null;
   let disposed = false;

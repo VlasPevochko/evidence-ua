@@ -74,7 +74,9 @@
 - **Картинки для месенджерів і соцмереж (`dist/og/*.jpg`, 21 картка).** Тепер космічні: `scripts/make-og-cards.mjs` бере кольори з тих самих токенів
   `--pine-*` і з `dist/palette-cosmic.css`, що й сторінки, а шрифти з `dist/fonts.css` і `page-pine.css` (не з системи). Дві картки «Харчування»
   малює `scripts/make-nutrition-share-cards.py` (інший макет), п'ять кольорів у ньому дорівнюють космічним токенам, це перевіряє
-  `tests/share-and-print.test.mjs`. Після зміни палітри: `node scripts/make-og-cards.mjs`, потім `python3 scripts/make-nutrition-share-cards.py`.
+  `tests/share-and-print.test.mjs`. Після зміни палітри: `node scripts/build-site.mjs` (щоб `palette-cosmic.css` був свіжий), потім
+  `node scripts/make-og-cards.mjs` і `python3 scripts/make-nutrition-share-cards.py`. Заголовок і опис картка бере зі сторінки, тож після зміни
+  `<title>` чи опису картку теж перегенерувати (так сталося з Muscle Lab і «Відео від читачів»: їхні картки відставали від сторінок).
   Browser QA (`shareCardsFlow`) міряє кути готових JPEG. Месенджери кешують картинки за адресою, тож уже поширені посилання можуть ще
   деякий час показувати старий зелений вигляд, доки їхній кеш не оновиться (це поза нашим контролем).
 - **Лишилось без змін свідомо:** `og-image.png` (запасна картка бренду, у `<meta>` кожної сторінки підставляється її власна картка; темно-синя, не зелена);

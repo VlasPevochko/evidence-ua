@@ -1605,6 +1605,27 @@ async function mechanismsFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function homeFreshFlow(browser, origin, viewport) {
+  // Рішення власника 2026-10-31: на головній є блок «Нове на сайті»; дрібний текст не менший за 12 px; терміни мають зону дотику 44 px.
+  const where = `home fresh @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  await page.locator('.home-fresh').scrollIntoViewIfNeeded();
+  const cards = await page.locator('.home-fresh-card').evaluateAll(els => els.map(e => ({h: Math.round(e.getBoundingClientRect().height), href: e.getAttribute('href'), right: e.getBoundingClientRect().right})));
+  check(where, cards.length === 3 && cards.every(c => c.h >= 44 && c.right <= viewport.width), 'three cards fit the screen and are tall enough to tap');
+  check(where, cards.map(c => c.href).join() === './research.html,./mechanisms.html,./changes.html', 'they lead to the write-ups, the schemes and the change log');
+  const latest = await page.locator('.home-fresh-latest a').evaluateAll(els => els.map(e => e.getBoundingClientRect().height));
+  check(where, latest.length === 3 && latest.every(h => h >= 44), 'the latest write-up links are tappable');
+  const tiny = await page.evaluate(() => { const vis = e => { const r = e.getBoundingClientRect(), s = getComputedStyle(e); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; };
+    return [...document.querySelectorAll('body *')].filter(e => e.children.length === 0 && e.textContent.trim().length > 2 && vis(e) && parseFloat(getComputedStyle(e).fontSize) < 12).map(e => e.textContent.trim().slice(0, 24)); });
+  check(where, tiny.length === 0, 'no visible text under 12 px on the home page' + (tiny.length ? ': ' + tiny.join(' | ') : ''));
+  await page.evaluate(() => document.querySelectorAll('details').forEach(d => { d.open = true; }));
+  const hit = await page.evaluate(() => { const b = document.querySelector('button.eua-term'); if (!b) return null; b.scrollIntoView({block: 'center'}); const r = b.getBoundingClientRect(), cx = r.x + r.width / 2; return document.elementFromPoint(cx, r.y - 8) === b && document.elementFromPoint(cx, r.bottom + 8) === b; });
+  check(where, hit === true, 'glossary terms react to a touch 8 px above and below the text (44 px area)');
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors');
+  await context.close();
+}
+
 async function compareFlow(browser, origin, viewport) {
   const where = `compare @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/compare.html?a=creatine&b=supplement-caffeine');
@@ -2184,6 +2205,7 @@ try {
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
+  for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
     await homeFlows(browser, origin);
     for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
     for (const viewport of viewports) await videosFlow(browser, origin, viewport);

@@ -70,12 +70,13 @@ assert expected==actual, 'Scientific article HTML changed'
 ids=[n.get('id') for n in root.xpath('//*[@id]')]
 assert len(ids)==len(set(ids)), 'Duplicate HTML IDs'
 assert root.xpath('//*[@id="evidence-card"]'), 'Starter link target absent'
-# Owner 2026-10-28: directions now live in a distinct home chapter; all six
-# native actions still precede the optional examples and work without JS.
+# Owner 2026-10-31: choices now live inside a closed dialog, and the primary
+# action reaches the complete directory when JavaScript is unavailable.
 directory=root.xpath('//*[@id="start-here"]/section[@class="home-directory-section"]')
 assert len(directory)==1, 'The directions need their own clearly labelled section'
-directions=directory[0].xpath('./*[@id="cards"]')
-assert len(directions)==1 and len(directions[0].xpath('./a'))==6, 'Six directions must work without JavaScript'
+directions=directory[0].xpath('./dialog[not(@open)]//*[@id="cards"]')
+assert len(directions)==1 and len(directions[0].xpath('./a'))==6, 'Six directions must remain inside the closed chooser'
+assert directory[0].xpath('.//a[@data-lens-reveal]/@href')==['./directions.html'], 'The no-JS action must reach the directory'
 assert directions[0].xpath('./a/@data-area')==['muscle','cell','nutrition','supplements','movement','sleep']
 start=root.xpath('//*[@id="start-here"]')[0]
 assert list(start).index(directory[0]) < list(start).index(start.xpath('./div[@class="start-choices"]')[0]), 'Directions must precede example questions'

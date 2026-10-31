@@ -17,7 +17,10 @@ assert(parsed.halves.every(n=>n.decorative&&n.art.length===1&&n.art[0]==='./home
 assert.deepEqual(parsed.images.map(n=>n.src),['./home-lens-nebula.webp','./home-lens-core.webp','./home-lens-core.webp']);
 assert(parsed.images.every(n=>n.lazy==='lazy'&&Number(n.width)>0&&Number(n.height)>0&&n.alt===''),'Below-hero decorative art must have stable dimensions and lazy loading');
 assert.equal(parsed.controls,1,'The central jump is the only internal action');
-assert.deepEqual(parsed.jump,[{href:'#cards',stage:1,interior:1,hidden:0,label:'Обрати напрям ↓'}],'A unique native jump sits inside the stage outside hidden decoration');
+// Owner 2026-10-31: choices are a closed dialog; without JS the real link opens the directory.
+assert.deepEqual(parsed.jump,[{href:'./directions.html',stage:1,interior:1,hidden:0,label:'Обрати напрям →'}],'A unique native fallback sits inside the stage outside hidden decoration');
+const chooser=inspect(homeDirectionsHTML(topics),`{'closed':len(root.xpath('.//dialog[@data-lens-picker][not(@open)]')),'inside':len(root.xpath('.//dialog//*[@id="cards"]/a')),'outside':len(root.xpath('.//*[@id="cards"]/a[not(ancestor::dialog)]')),'close':len(root.xpath('.//dialog//button[@data-lens-picker-close]')),'images':len(root.xpath('.//dialog//*[@id="cards"]/a/img[@loading="lazy"]'))}`);
+assert.deepEqual(chooser,{closed:1,inside:6,outside:0,close:1,images:6},'All six choices and their existing art live only inside the closed chooser');
 assert.match(parsed.core,/6 напрямів/,'Readable HTML explains what the light core reveals');
 assert.deepEqual(parsed.actions.map(n=>n.id),topics.map(n=>n.id));
 for(const [i,item] of parsed.actions.entries()){
@@ -34,5 +37,5 @@ assert.equal(structure.lens,1);assert(structure.routeClosed,'Auxiliary route out
 assert.equal(structure.library,1);assert(structure.libraryClosed);assert.equal(structure.libraryTargets.length,11);
 assert.equal(structure.choicesDirect,1,'Continue/saved insertion anchor must stay outside closed details');
 // Owner-approved stage timing and visual polish need fresh assets for returning visitors.
-assert.deepEqual(structure.styles,['./home-lens.css?v=3']);assert.deepEqual(structure.scripts,['./home-lens.js?v=4']);
+assert.deepEqual(structure.styles,['./home-lens.css?v=4']);assert.deepEqual(structure.scripts,['./home-lens.js?v=6']);
 console.log('Home lens layout: split lazy art and accessible interior, six canonical native links, accessible jump, compact retained routes/library and cache wiring passed.');

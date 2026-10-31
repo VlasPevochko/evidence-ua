@@ -420,8 +420,20 @@ async function appearanceFlow(browser, origin, viewport) {
   check(where, (await toggle.count()) === 1 && (await toggle.getAttribute('aria-expanded')) === 'false', 'one appearance button in the header');
   const tbox = await toggle.boundingBox();
   check(where, tbox && tbox.width >= 44 && tbox.height >= 44 && tbox.x + tbox.width <= viewport.width + 1, 'the button must be a tap target inside the viewport');
+  // Рішення власника 2026-10-31: на головній кнопка «Аа», її меню й кнопка меню на телефоні лавандові, а не золоті; розмір дотику той самий.
+  const lavender = 'rgb(209, 165, 255)';
+  const toggleStyle = await toggle.evaluate(n => { const s = getComputedStyle(n); return {color: s.color, radius: s.borderTopLeftRadius, borderWidth: s.borderTopWidth}; });
+  check(where, toggleStyle.color === lavender && toggleStyle.radius === '2px' && toggleStyle.borderWidth === '1px', `the home «Аа» button must be lavender with the home's straight corners: ${JSON.stringify(toggleStyle)}`);
+  if (viewport.width <= 760) {
+    const menu = page.locator('.home-menu-toggle');
+    if (await menu.count() && await menu.first().isVisible()) {
+      const menuStyle = await menu.first().evaluate(n => { const s = getComputedStyle(n), r = n.getBoundingClientRect(); return {color: s.color, radius: s.borderTopLeftRadius, w: r.width, h: r.height}; });
+      check(where, menuStyle.color === lavender && menuStyle.radius === '2px' && menuStyle.w >= 44 && menuStyle.h >= 44, `the home menu button on the phone must be lavender too: ${JSON.stringify(menuStyle)}`);
+    }
+  }
   await toggle.click();
   const panel = page.locator('.eua-appearance-panel');
+  check(where, await panel.getByRole('radio', {name: 'Темна', exact: true}).evaluate(n => getComputedStyle(n).color) === lavender, 'the chosen option in the home menu is lavender, not gold');
   check(where, await panel.isVisible(), 'the panel opens');
   const pbox = await panel.boundingBox();
   check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the panel must stay inside the viewport');

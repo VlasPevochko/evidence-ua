@@ -45,7 +45,7 @@ function mountSavedButton(root,nav){
   print.addEventListener('click',()=>view.print());nav.append(print);
 }
 function ensureStyle(root){
-  const head=root.head;if(head&&!root.querySelector('link[data-next-steps-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./next-steps.css?v=6';css.dataset.nextStepsStyle='';head.append(css);}
+  const head=root.head;if(head&&!root.querySelector('link[data-next-steps-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./next-steps.css?v=7';css.dataset.nextStepsStyle='';head.append(css);}
 }
 export function mountSavedHome(root,start){
   if(!start||start.querySelector('.eua-saved'))return;

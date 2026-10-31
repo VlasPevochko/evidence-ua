@@ -1,7 +1,7 @@
 /* Fat Burning Lab entry on the Nutrition page: one obvious link, one compact visual. */
 body[data-platform-area="nutrition"] .nl-page-nav .nf-nav{border-color:var(--c-b89c62,#b89c62);background:var(--c-dfbd7820,#dfbd7820);color:var(--c-f4d69a,#f4d69a);font-weight:750}
 body[data-platform-area="nutrition"] .nl-page-nav .nf-nav:hover{background:var(--c-dfbd7830,#dfbd7830);border-color:var(--c-e5c588,#e5c588)}
-body[data-platform-area="nutrition"] .nf-feature{--nf-gold:var(--c-e6c482,#e6c482);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr);align-items:center;gap:22px;margin:0 0 30px;padding:clamp(20px,3vw,34px);border-radius:24px;border:1px solid var(--c-bba16c6c,#bba16c6c);background:radial-gradient(ellipse at 85% 20%,var(--c-3564566e,#3564566e) 0,transparent 46%),linear-gradient(120deg,var(--c-1f322d,#1f322d) 0%,var(--c-152622,#152622) 54%,var(--c-102622,#102622) 100%);box-shadow:0 18px 55px #0002;scroll-margin-top:20px}
+body[data-platform-area="nutrition"] .nf-feature{--nf-gold:var(--c-e6c482,#e6c482);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr);align-items:center;gap:22px;margin:0 0 30px;padding:clamp(20px,3vw,34px);border-radius:var(--rd-24,24px);border:1px solid var(--c-bba16c6c,#bba16c6c);background:radial-gradient(ellipse at 85% 20%,var(--c-3564566e,#3564566e) 0,transparent 46%),linear-gradient(120deg,var(--c-1f322d,#1f322d) 0%,var(--c-152622,#152622) 54%,var(--c-102622,#102622) 100%);box-shadow:var(--sd-card,0 18px 55px #0002);scroll-margin-top:20px}
 .nf-feature,.nf-feature *{box-sizing:border-box}
 .nf-feature-copy{min-width:0}
 .nf-feature .nf-eyebrow{display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:10px;letter-spacing:.13em;line-height:1.6;color:var(--c-cde3cd,#cde3cd);font-weight:720}
@@ -9,10 +9,10 @@ body[data-platform-area="nutrition"] .nf-feature{--nf-gold:var(--c-e6c482,#e6c48
 body[data-platform-area="nutrition"] .nf-feature h2{font-size:clamp(28px,3.4vw,46px);line-height:1.13;letter-spacing:-.045em;color:var(--c-f6f5e9,#f6f5e9);margin:0 0 12px;font-weight:730}
 .nf-feature h2 em{font-style:normal;color:var(--nf-gold)}
 body[data-platform-area="nutrition"] .nf-feature .nf-description{color:var(--c-c6d6ce,#c6d6ce);font-size:clamp(13px,1.25vw,15px);line-height:1.65;max-width:650px;margin:0 0 20px}
-.nf-feature .nf-open{display:inline-flex;gap:22px;align-items:center;justify-content:space-between;min-height:48px;padding:11px 17px;border-radius:12px;border:1px solid var(--c-f0d6a5,#f0d6a5);background:var(--c-e9c989,#e9c989);color:var(--c-10231c,#10231c)!important;text-decoration:none;font-size:14px;font-weight:780;transition:background .2s,transform .2s}
+.nf-feature .nf-open{display:inline-flex;gap:22px;align-items:center;justify-content:space-between;min-height:48px;padding:11px 17px;border-radius:var(--rd-12,12px);border:1px solid var(--c-f0d6a5,#f0d6a5);background:var(--c-e9c989,#e9c989);color:var(--c-10231c,#10231c)!important;text-decoration:none;font-size:14px;font-weight:780;transition:background .2s,transform .2s}
 .nf-feature .nf-open:hover{background:var(--c-ffe2a7,#ffe2a7);transform:translateY(-2px)}
 .nf-feature a:focus-visible{outline:3px solid var(--c-ffedbb,#ffedbb);outline-offset:4px}
-.nf-feature-visual{min-width:0;padding:24px 16px 18px;border:1px solid var(--c-8ab79c40,#8ab79c40);border-radius:17px;background:radial-gradient(ellipse at 50% 45%,var(--c-2e6a6273,#2e6a6273),var(--c-0d272a,#0d272a) 72%);overflow:hidden}
+.nf-feature-visual{min-width:0;padding:24px 16px 18px;border:1px solid var(--c-8ab79c40,#8ab79c40);border-radius:var(--rd-17,17px);background:radial-gradient(ellipse at 50% 45%,var(--c-2e6a6273,#2e6a6273),var(--c-0d272a,#0d272a) 72%);overflow:hidden}
 .nf-path{display:flex;align-items:center;justify-content:center;gap:0}
 .nf-node{width:66px;height:66px;flex:none;border:2px solid var(--c-6fa9a0,#6fa9a0);border-radius:50%;display:grid;place-items:center;box-shadow:0 0 28px #7fceb51c,inset 0 0 18px var(--c-7cb8b51d,#7cb8b51d)}
 .nf-node i{display:block;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 34% 30%,var(--c-fff0c1,#fff0c1),#dfb670 48%,#ad7943);box-shadow:0 0 15px #dfac7566}
@@ -27,11 +27,11 @@ body[data-platform-area="nutrition"] .nf-feature + .nd-catalog{margin-top:26px}
 @keyframes nf-flow{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 @keyframes nf-turn{to{transform:rotate(405deg)}}
 @media(max-width:760px){
- body[data-platform-area="nutrition"] .nf-feature{grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:20px;padding:20px;border-radius:19px}
+ body[data-platform-area="nutrition"] .nf-feature{grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:20px;padding:20px;border-radius:var(--rd-19,19px)}
  body[data-platform-area="nutrition"] .nf-feature h2{font-size:clamp(29px,8vw,38px)}
  body[data-platform-area="nutrition"] .nf-feature .nf-description{font-size:14px;line-height:1.55;margin-bottom:16px}
  .nf-feature .nf-open{width:100%;min-height:46px;font-size:13px}
- .nf-feature-visual{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 12px 10px;border-radius:12px}
+ .nf-feature-visual{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 12px 10px;border-radius:var(--rd-12,12px)}
  .nf-path{width:100%;gap:0}
  .nf-node{width:39px;height:39px}
  .nf-node i{width:20px;height:20px}

@@ -9,15 +9,15 @@ html[data-text="xl"]{zoom:1.25}
 @media print{html[data-theme="light"]{filter:none;background:#fff}html[data-text]{zoom:1}}
 
 .eua-appearance{position:relative;order:5;flex:none;display:flex;align-items:center}
-.eua-appearance-toggle{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #ffffff45;border-radius:16px;background:var(--c-071e254d,#071e254d);color:var(--c-ffdc7e,#ffdc7e);font:700 17px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.eua-appearance-toggle{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #ffffff45;border-radius:var(--rd-16,16px);background:var(--c-071e254d,#071e254d);color:var(--c-ffdc7e,#ffdc7e);font:700 17px/1 Inter,system-ui,sans-serif;cursor:pointer}
 .eua-appearance-toggle:hover,.eua-appearance-toggle[aria-expanded="true"]{border-color:var(--c-ffdc7e,#ffdc7e)}
 .eua-appearance-toggle:focus-visible,.eua-appearance-panel button:focus-visible{outline:2px solid var(--c-ffdc7e,#ffdc7e);outline-offset:3px}
-.eua-appearance-panel{position:absolute;top:calc(100% + 10px);right:0;z-index:70;width:min(320px,calc(100vw - 32px));padding:14px;border:1px solid #ffffff30;border-radius:16px;background:var(--c-061d28,#061d28);box-shadow:0 14px 40px #00000066;color:var(--c-f5f5ed,#f5f5ed);font:500 14px/1.4 Inter,system-ui,sans-serif}
+.eua-appearance-panel{position:absolute;top:calc(100% + 10px);right:0;z-index:70;width:min(320px,calc(100vw - 32px));padding:14px;border:1px solid #ffffff30;border-radius:var(--rd-16,16px);background:var(--c-061d28,#061d28);box-shadow:0 14px 40px #00000066;color:var(--c-f5f5ed,#f5f5ed);font:500 14px/1.4 Inter,system-ui,sans-serif}
 .eua-appearance-panel[hidden]{display:none}
 .eua-appearance-group+.eua-appearance-group{margin-top:12px}
 .eua-appearance-group>p{margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--c-e7d9b5,#e7d9b5)}
 .eua-appearance-group>div{display:flex;flex-wrap:wrap;gap:6px}
-.eua-appearance-panel button{flex:1 1 auto;min-height:44px;padding:8px 12px;border:1px solid #ffffff30;border-radius:12px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.eua-appearance-panel button{flex:1 1 auto;min-height:44px;padding:8px 12px;border:1px solid #ffffff30;border-radius:var(--rd-12,12px);background:transparent;color:inherit;font:inherit;cursor:pointer}
 .eua-appearance-panel button[aria-checked="true"]{border-color:var(--c-ffdc7e,#ffdc7e);background:var(--c-ffdc7e1f,#ffdc7e1f);color:var(--c-ffdc7e,#ffdc7e)}
 @media(max-width:1100px){
   .eua-site-header .eua-header-brand{order:0}

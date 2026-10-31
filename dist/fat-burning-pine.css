@@ -12,12 +12,12 @@ body[data-platform-area="fat-burning"]{background:var(--pine-bg,var(--c-0d1916,#
 .fb-hero-art{border-color:var(--pine-line,var(--c-26403a,#26403a))}
 
 /* Згорнуті джерела: службове лишається доступним, але не подовжує сторінку. */
-.fb-sources-fold{margin:0 0 4px;border:1px solid var(--pine-line,var(--c-26403a,#26403a));border-radius:16px;background:var(--pine-surface,var(--c-142520,#142520));overflow:hidden}
+.fb-sources-fold{margin:0 0 4px;border:1px solid var(--pine-line,var(--c-26403a,#26403a));border-radius:var(--rd-16,16px);background:var(--pine-surface,var(--c-142520,#142520));overflow:hidden}
 .fb-sources-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;padding:14px 18px;list-style:none;cursor:pointer;font-weight:650;font-size:16px;color:var(--pine-text,var(--c-e9efe9,#e9efe9))}
 .fb-sources-fold>summary::-webkit-details-marker{display:none}
 .fb-sources-fold>summary::after{content:'⌄';flex:none;font-size:20px;color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b));transition:transform .24s}
 .fb-sources-fold[open]>summary::after{transform:rotate(180deg)}
-.fb-sources-fold>summary:focus-visible{outline:2px solid var(--pine-accent,var(--c-e3bd6b,#e3bd6b));outline-offset:-4px;border-radius:16px}
+.fb-sources-fold>summary:focus-visible{outline:2px solid var(--pine-accent,var(--c-e3bd6b,#e3bd6b));outline-offset:-4px;border-radius:var(--rd-16,16px)}
 .fb-sources-fold .fb-sources{padding:0 14px 14px}
 @media(prefers-reduced-motion:reduce){.fb-sources-fold>summary::after{transition:none}}
 
@@ -49,7 +49,7 @@ body[data-platform-area="fat-burning"]{background:var(--pine-bg,var(--c-0d1916,#
   .fb-hero-actions{flex-wrap:nowrap;gap:8px}
   .fb-hero-actions .fb-button{flex:1 1 0;min-width:0;justify-content:center;padding-left:12px;padding-right:12px}
   .fb-kicker{letter-spacing:.06em}
-  .fb-hero-art{min-height:120px;border-radius:18px}
+  .fb-hero-art{min-height:120px;border-radius:var(--rd-18,18px)}
   .fb-cell{width:min(30%,92px)}
   .fb-art-tag{display:none}
 }

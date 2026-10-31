@@ -420,8 +420,20 @@ async function appearanceFlow(browser, origin, viewport) {
   check(where, (await toggle.count()) === 1 && (await toggle.getAttribute('aria-expanded')) === 'false', 'one appearance button in the header');
   const tbox = await toggle.boundingBox();
   check(where, tbox && tbox.width >= 44 && tbox.height >= 44 && tbox.x + tbox.width <= viewport.width + 1, 'the button must be a tap target inside the viewport');
+  // Рішення власника 2026-10-31: на головній кнопка «Аа», її меню й кнопка меню на телефоні лавандові, а не золоті; розмір дотику той самий.
+  const lavender = 'rgb(209, 165, 255)';
+  const toggleStyle = await toggle.evaluate(n => { const s = getComputedStyle(n); return {color: s.color, radius: s.borderTopLeftRadius, borderWidth: s.borderTopWidth}; });
+  check(where, toggleStyle.color === lavender && toggleStyle.radius === '2px' && toggleStyle.borderWidth === '1px', `the home «Аа» button must be lavender with the home's straight corners: ${JSON.stringify(toggleStyle)}`);
+  if (viewport.width <= 760) {
+    const menu = page.locator('.home-menu-toggle');
+    if (await menu.count() && await menu.first().isVisible()) {
+      const menuStyle = await menu.first().evaluate(n => { const s = getComputedStyle(n), r = n.getBoundingClientRect(); return {color: s.color, radius: s.borderTopLeftRadius, w: r.width, h: r.height}; });
+      check(where, menuStyle.color === lavender && menuStyle.radius === '2px' && menuStyle.w >= 44 && menuStyle.h >= 44, `the home menu button on the phone must be lavender too: ${JSON.stringify(menuStyle)}`);
+    }
+  }
   await toggle.click();
   const panel = page.locator('.eua-appearance-panel');
+  check(where, await panel.getByRole('radio', {name: 'Темна', exact: true}).evaluate(n => getComputedStyle(n).color) === lavender, 'the chosen option in the home menu is lavender, not gold');
   check(where, await panel.isVisible(), 'the panel opens');
   const pbox = await panel.boundingBox();
   check(where, pbox && pbox.x >= 0 && pbox.x + pbox.width <= viewport.width + 1, 'the panel must stay inside the viewport');
@@ -501,6 +513,58 @@ async function paletteFlow(browser, origin, viewport) {
   await blockedPage.goto(origin + '/glossary.html', {waitUntil: 'domcontentloaded'});
   check(where, (await blockedPage.locator('html').getAttribute('data-palette')) === 'green', 'the inline head script applies the saved palette even when the appearance module never loads');
   await blocked.close();
+}
+
+async function shapesFlow(browser, origin, viewport) {
+  // Форми (рішення власника 2026-10-31): у космічному стилі картки, кнопки й чипи мають прямі кути головної (3px, великі панелі 5px),
+  // підняті тіні карток зникають, а зелений варіант лишає колишні форми.
+  const where = `shapes @${viewport.name}`;
+  // Малюнки й смуги даних, що не є картками чи кнопками: для них великі радіуси дозволені.
+  const artOnly = '.fb-cell,.fb-cell-edge,.fb-lipid,.fb-bar,.fb-bar span,.mg-fiber-scale,.mg-fib,.sleep-art,.step-dot';
+  // Накладки й світіння малюнків зберігають тінь.
+  const overlays = '.eua-module-menu-content,.eua-nutrition-menu-content,.eua-search,.term-dialog,.eua-term-pop,.eua-appearance-panel,.fb-hero-art,.fb-lipid,.primary-link';
+  const measure = (page) => page.evaluate(([art, over]) => {
+    const rounded = [], raised = []; let big = 0;
+    const label = el => el.tagName.toLowerCase() + '.' + (el.getAttribute('class') || '').split(/\s+/)[0];
+    for (const el of document.querySelectorAll('body *')) {
+      if (el instanceof SVGElement) continue;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 16 || r.height < 16) continue;
+      const rad = Math.max(...[cs.borderTopLeftRadius, cs.borderTopRightRadius, cs.borderBottomRightRadius, cs.borderBottomLeftRadius].map(parseFloat));
+      const circle = rad >= Math.min(r.width, r.height) / 2 - 0.5 && Math.abs(r.width - r.height) <= 3;
+      if (rad > 5 && !circle) { big++; if (!el.matches(art)) rounded.push(label(el) + ' ' + rad); }
+      if (cs.boxShadow !== 'none' && !el.matches(over) && !el.closest(over)) {
+        const parts = []; let depth = 0, cur = '';
+        for (const ch of cs.boxShadow) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && depth === 0) { parts.push(cur.trim()); cur = ''; } else cur += ch; }
+        parts.push(cur.trim());
+        for (const part of parts) {
+          const nums = (part.replace(/rgba?\([^)]*\)/g, '').match(/-?\d+(?:\.\d+)?px/g) || []).map(parseFloat);
+          if (!/inset/.test(part) && nums.length >= 3 && Math.abs(nums[1]) >= 4 && nums[2] >= 12) { raised.push(label(el) + ' ' + part.slice(-30)); break; }
+        }
+      }
+    }
+    return {rounded: [...new Set(rounded)], raised: [...new Set(raised)], big};
+  }, [artOnly, overlays]);
+  for (const file of ['research.html', 'atlas.html', 'muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'nutrition-inside.html', 'supplements.html', 'fat-burning.html', 'exercises.html', 'directions.html']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
+    await page.evaluate(() => document.querySelectorAll('details').forEach(d => { d.open = true; }));
+    await page.waitForTimeout(300);
+    const cosmic = await measure(page);
+    check(`${where} ${file}`, cosmic.rounded.length === 0, `cards, buttons and chips must have the straight corners of the home page: ${cosmic.rounded.slice(0, 6).join(', ')}`);
+    check(`${where} ${file}`, cosmic.raised.length === 0, `cards must be flat like on the home page: ${cosmic.raised.slice(0, 4).join(', ')}`);
+    await page.evaluate(() => { document.documentElement.dataset.palette = 'green'; });
+    const green = await measure(page);
+    check(`${where} ${file}`, green.big >= 5 && green.big > cosmic.big, `the green style must keep the former rounded shapes (${green.big} rounded elements, ${cosmic.big} in the cosmic style)`);
+    check(`${where} ${file}`, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
+    check(`${where} ${file}`, seen.pageErrors.length === 0 && seen.console.length === 0, 'shapes must not raise errors');
+    await context.close();
+  }
+  // Головна: форми не змінюються, токенів форм там немає (файл стилю не підключається).
+  const home = await open(browser, origin, viewport, '/index.html');
+  check(where, (await home.page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--rd-14') + getComputedStyle(document.documentElement).getPropertyValue('--sd-card'))) === '', 'the home page defines no shape tokens');
+  await home.context.close();
 }
 
 async function deniedStorageFlow(browser, origin, viewport) {
@@ -2276,6 +2340,7 @@ try {
     for (const viewport of viewports) await trainerFlow(browser, origin, viewport);
     for (const viewport of viewports) await appearanceFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(paletteFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);

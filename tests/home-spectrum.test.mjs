@@ -140,3 +140,15 @@ assert(secondaryRule,'all six header destinations stay in the DOM while the home
 assert(secondaryRule[1].trim().startsWith(homeScope));
 assert(secondaryRule[2].split(';').some(declaration=>declaration.trim()==='display:none!important'));
 console.log('Home spectrum: semantic search fallback, canonical links/route, six directions, decorative wave and escaped catalog text passed.');
+
+// Кнопка «Аа», її меню й кнопка меню на телефоні на головній лавандові (рішення власника 2026-10-31): раніше їх фарбував спільний файл у золоте.
+{
+  const blockStart=css.indexOf('Кнопка «Аа», її меню й кнопка меню на телефоні були золотими');
+  assert(blockStart>0,'the lavender header controls block exists');
+  const block=css.slice(blockStart);
+  for(const needle of ['.eua-appearance-toggle,','.eua-appearance-panel{','.eua-appearance-panel button[aria-checked="true"]{','.home-menu-toggle'])assert(block.includes(needle),`${needle} is restyled on the home`);
+  assert(/\.eua-appearance-toggle,[\s\S]*?\{border:1px solid var\(--spectrum-line\);border-radius:2px;background:none;box-shadow:none;color:var\(--spectrum-accent\)\}/.test(block),'the button has a hairline, straight corners and the home accent');
+  assert(/\[aria-checked="true"\]\{border-color:var\(--spectrum-accent\);background:#c293ef24;color:var\(--spectrum-accent\)\}/.test(block),'the chosen option is tinted lavender');
+  assert(!/#(?:ffdc7e|e3bd6b|e7bd46|ffd77e)/i.test(block),'no gold in the lavender block');
+  assert(block.split('\n').filter(l=>/^body\[/.test(l)).every(l=>l.startsWith(homeScope)),'every new rule is scoped to the non-article home');
+}

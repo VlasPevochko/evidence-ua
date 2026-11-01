@@ -1,3 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Схеми, намальовані SVG-атрибутами fill/stroke/stop-color у скриптах і сторінках: токенів у них немає, тому темні плити під схемами перефарбовують
+// правила за атрибутом (scripts/build-palette.mjs). Головна сюди не входить: вона файл палітри не підключає.
+export const SVG_ATTR=/\b(fill|stroke|stop-color)="(#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?)"/g;
+const isHomeOnlyScript=name=>name==='index.html'||/^home-/.test(name)||name==='navigation-v17.js';
+export const plateSources=root=>fs.readdirSync(path.join(root,'dist')).filter(f=>/\.(js|html)$/.test(f)&&!isHomeOnlyScript(f)).sort().map(f=>'dist/'+f);
+
 // Стилі, що слідують за палітрою (космічна за замовчуванням, зелена як варіант). Головна сторінка має власні стилі (home-*.css) і сюди не входить.
 // «src/…» — джерела, з яких збірка копіює файл у dist; решта — авторські файли в dist.
 export const CSS_TARGETS=[

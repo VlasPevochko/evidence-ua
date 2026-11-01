@@ -265,3 +265,15 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Фіолетові малюнки, плити під схемами й журнал (2026-11-01): нова версія файла палітри (нові правила плит і показу малюнків), page-pine.css (базове правило показу
+// пари малюнків), directions.js (мініатюри каталогу мають пару) і сторінки журналу (вона імпортує changes-data.js?v=8). Заміна з межею слова.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'palette-cosmic.css?v=2':'palette-cosmic.css?v=3','page-pine.css?v=21':'page-pine.css?v=22','directions.js?v=108':'directions.js?v=109','changes-page.js?v=7':'changes-page.js?v=8'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

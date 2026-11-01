@@ -515,6 +515,62 @@ async function paletteFlow(browser, origin, viewport) {
   await blocked.close();
 }
 
+// Малюнки й плити у двох палітрах (рішення власника 2026-11-01). Космос (за замовчуванням) показує фіолетову копію малюнка, «Зелений» — оригінал;
+// друга копія не показується й не завантажується. Міряємо те, що справді намальовано: видимість, завантаження, колір тла плиток дієт і плит схем.
+async function artPairsFlow(browser, origin, viewport) {
+  const where = `art pairs @${viewport.name}`;
+  const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
+  const ORIGINAL = /\/(?:diet-art|home-sleep|home-anatomy|home-movement|card-organism|card-nutrition|card-evidence|muscle-lab-art-v1)\.(?:svg|webp)/;
+  const hueOf = ([r, g, b]) => {
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    if (!d) return 0;
+    const h = 60 * (max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4);
+    return h < 0 ? h + 360 : h;
+  };
+  for (const palette of ['cosmic', 'green']) {
+    const mine = palette === 'cosmic' ? 'cosmic' : 'green', other = palette === 'cosmic' ? 'green' : 'cosmic';
+    for (const route of ['/nutrition.html', '/sleep.html', '/atlas.html', '/directions.html']) {
+      const {context, page, seen} = await open(browser, origin, viewport, route, palette === 'green' ? {initScript: green} : {});
+      // Ледачі картинки вантажаться біля екрана: підводимо до екрана кожну показану, а сховані пропускаємо (вони й не мають вантажитись).
+      await page.evaluate(async () => { for (const img of document.querySelectorAll('img[data-art]')) { if (getComputedStyle(img).display === 'none') continue; img.scrollIntoView({block: 'center'}); await Promise.race([img.decode().catch(() => {}), new Promise(r => setTimeout(r, 2500))]); } scrollTo(0, 0); });
+      await page.waitForTimeout(500);
+      const images = await page.evaluate(() => [...document.querySelectorAll('img[data-art]')].map(img => {
+        const box = img.getBoundingClientRect();
+        let corner = null;
+        try { const c = document.createElement('canvas'); c.width = c.height = 40; const x = c.getContext('2d', {willReadFrequently: true}); x.drawImage(img, 0, 0, img.naturalWidth || 480, img.naturalHeight || 300, 0, 0, 40, 40); corner = [...x.getImageData(2, 2, 1, 1).data].slice(0, 3); } catch {}
+        return {art: img.dataset.art, shown: box.width > 0 && getComputedStyle(img).display !== 'none', loaded: img.complete && img.naturalWidth > 0, corner, alt: img.alt};
+      }));
+      const tag = `${palette} ${route}`;
+      check(where, images.length > 0 && images.length % 2 === 0 && images.filter(i => i.art === 'green').length === images.filter(i => i.art === 'cosmic').length, `${tag}: every picture comes as a green/cosmic pair (${images.length})`);
+      check(where, images.filter(i => i.art === mine).every(i => i.shown && i.loaded) && images.some(i => i.art === mine && i.shown), `${tag}: the ${mine} pictures are shown and loaded`);
+      check(where, images.filter(i => i.art === other).every(i => !i.shown), `${tag}: no ${other} picture is shown`);
+      check(where, palette === 'cosmic' ? !seen.requested.some(u => ORIGINAL.test(u)) : !seen.requested.some(u => /-cosmic\.(?:svg|webp)/.test(u)), `${tag}: the hidden copies are not downloaded (${seen.requested.filter(u => ORIGINAL.test(u) || /-cosmic\./.test(u)).join(' ')})`);
+      if (route === '/nutrition.html') {
+        const tiles = images.filter(i => i.art === mine);
+        check(where, tiles.length === 8 && tiles.every(i => i.corner), `${tag}: eight diet tiles can be measured`);
+        const hues = tiles.filter(i => i.corner).map(i => Math.round(hueOf(i.corner)));
+        check(where, palette === 'cosmic' ? hues.every(h => h >= 235 && h <= 295) : hues.every(h => h < 235), `${tag}: the diet tile backgrounds are ${palette === 'cosmic' ? 'violet' : 'the old green/olive/blue-grey'} (${hues.join(', ')}°)`);
+      }
+      if (route === '/atlas.html') {
+        await page.locator('[data-zone="knee"]').first().click();
+        await page.waitForTimeout(400);
+        const left = await page.evaluate(() => [...document.querySelectorAll('img.atlas-figure')].filter(i => i.getBoundingClientRect().width > 0 && getComputedStyle(i).display !== 'none').length);
+        check(where, left === 0, `${tag}: opening the knee map hides the figure whichever copy is shown (${left} left)`);
+      }
+      check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `${tag}: no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+      await context.close();
+    }
+  }
+  // Плити схем: градієнти, намальовані SVG-атрибутами, у космосі фіолетові, у «Зеленому» колишні бірюзові.
+  for (const [palette, route, selector, expected] of [['cosmic', '/muscle-lab.html', '#sa-bg stop', 'rgb(29, 19, 42)'], ['green', '/muscle-lab.html', '#sa-bg stop', 'rgb(13, 34, 48)'], ['cosmic', '/nutrition-inside.html', '#nl-cytoplasm stop', 'rgb(58, 44, 83)'], ['green', '/nutrition-inside.html', '#nl-cytoplasm stop', 'rgb(33, 86, 94)']]) {
+    const {context, page, seen} = await open(browser, origin, viewport, route, palette === 'green' ? {initScript: green} : {});
+    const colour = await page.evaluate(sel => { const stop = document.querySelector(sel); return stop && getComputedStyle(stop).stopColor; }, selector);
+    check(where, colour === expected, `${palette} ${route}: the plate gradient ${selector} is ${expected} (got ${colour})`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `${palette} ${route}: no errors`);
+    await context.close();
+  }
+}
+
 // Картинки для поширення (рішення власника 2026-10-31): у космічних кольорах сайту, а не в сосново-зелених.
 // Міряємо кути справжніх JPEG (там лише тло й ледь помітний візерунок), а не назви файлів: Node тут JPEG не розбирає.
 async function shareCardsFlow(browser, origin, viewport) {
@@ -2396,6 +2452,7 @@ try {
     for (const viewport of viewports) await isolatedFlow(paletteFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
     await isolatedFlow(shareCardsFlow, browser, origin, viewports[0]);
+    for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);

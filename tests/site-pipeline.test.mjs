@@ -18,6 +18,8 @@ try {
   fs.writeFileSync(path.join(temp, 'scripts/build-seo.mjs'), '');
   // The palette builder (dist/palette-cosmic.css, 2026-10-31) is another generated step of build-site; the contract fixture needs a no-op stand-in for it too.
   fs.writeFileSync(path.join(temp, 'scripts/build-palette.mjs'), '');
+  // Космічні копії малюнків-SVG (dist/*-cosmic.svg, 2026-11-01) теж створює окремий крок build-site; фікстурі контракту потрібна порожня заміна.
+  fs.writeFileSync(path.join(temp, 'scripts/build-svg-art.mjs'), '');
   // Follow-up comparison metadata is generated too; retain the full authored snapshot alongside it.
   fs.writeFileSync(path.join(temp, 'scripts/build-comparison-status.mjs'), `import fs from 'node:fs';fs.writeFileSync('dist/compare-status.js','export const comparisonStatus={};');`);
   const result = buildSite(temp, 'a'.repeat(40));

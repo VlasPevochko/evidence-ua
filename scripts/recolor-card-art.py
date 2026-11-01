@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Космічні версії шести картин напрямів головної: темно-бірюзове тло стає темно-фіолетовим.
+"""Космічні версії картин із бірюзовим тлом: шість картин напрямів головної й картинка м'язів у каталозі напрямів. Темно-бірюзове (або темно-синє) тло стає темно-фіолетовим.
 
 Малюнок не редагується: змінюється лише відтінок темних бірюзових тонів (тло, ядро клітини, оболонка волокна).
 Помаранчевий, золотий, зелений, синій і бежевий, а також світлі бірюзові деталі (молекули) лишаються як є.
@@ -21,7 +21,7 @@ TARGET_HUE = 268.0   # градусів: фіолетовий між тлом г
 MUTE = 0.30          # наскільки приглушити насиченість у перефарбованих тонах
 QUALITY = 88         # WebP; нові файли лишаються легкими (<180 КБ, перевіряє tests/card-art.test.mjs)
 
-# (джерело, результат, нижня межа відтінку у градусах).
+# (джерело, результат, нижня межа відтінку у градусах, за потреби якість WebP; типово QUALITY).
 # Зелені тіла (клітина) мають відтінок понад 100°, тому для них межу ставимо 150°. У «Сну» золоті хвилі світяться
 # по краях жовто-зеленим, тож їхній відтінок (70°+) теж треба перефарбувати, інакше довкола золота лишається оливкове світіння.
 JOBS = [
@@ -31,6 +31,8 @@ JOBS = [
     ('card-art-supplements-v1.webp', 'card-art-supplements-v1-cosmic.webp', 150.0),
     ('card-art-movement-v2.webp', 'card-art-movement-v2-cosmic.webp', 150.0),
     ('card-art-sleep-v2.webp', 'card-art-sleep-v2-cosmic.webp', 70.0),
+    # Мініатюра «М'язи та тренування» у каталозі напрямів (сторінка «Напрями»): тло темно-синє (≈ 207°), межа відтінку та сама.
+    ('muscle-lab-art-v1.webp', 'muscle-lab-art-v1-cosmic.webp', 150.0, 78),
 ]
 
 
@@ -79,13 +81,13 @@ def border_hsv(im):
 
 
 def main():
-    for source, result, hue_lo in JOBS:
+    for source, result, hue_lo, *quality in JOBS:
         src, dst = DIST / source, DIST / result
         if not src.exists():
             sys.exit(f'Немає джерела {src}')
         before = Image.open(src)
         after = recolor(before, hue_lo)
-        after.save(dst, 'WEBP', quality=QUALITY, method=6)
+        after.save(dst, 'WEBP', quality=quality[0] if quality else QUALITY, method=6)
         hb, sb, vb = border_hsv(before)
         ha, sa, va = border_hsv(Image.open(dst))
         print(f'{result:40s} {dst.stat().st_size // 1024:4d} КБ  тло: {hb:3.0f}° s={sb:.2f} v={vb:.2f} -> {ha:3.0f}° s={sa:.2f} v={va:.2f}')

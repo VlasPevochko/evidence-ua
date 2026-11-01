@@ -2,7 +2,7 @@
 body[data-platform-area="home"] .hero .copy .desc{max-width:570px;font-size:clamp(17px,1.5vw,20px);line-height:1.65;color:var(--c-e2e0d9,#e2e0d9);margin:18px 0 24px}
 body[data-platform-area="home"] .hero .copy .three{font-size:15px;line-height:1.7;color:#bfc0c5;margin:0 0 20px}
 body[data-platform-area="home"] .hero .copy .eyebrow{color:var(--c-e7bd46,#e7bd46)}
-body[data-platform-area="home"] .hero .copy .hero-search{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 18px;margin:12px 0 0 12px;border:1px solid #64615a;border-radius:8px;font-size:15px;font-weight:600;color:var(--c-f4f2ed,#f4f2ed);text-decoration:none}
+body[data-platform-area="home"] .hero .copy .hero-search{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 18px;margin:12px 0 0 12px;border:1px solid #64615a;border-radius:var(--rd-8,8px);font-size:15px;font-weight:600;color:var(--c-f4f2ed,#f4f2ed);text-decoration:none}
 body[data-platform-area="home"] .hero .copy .hero-search:hover{border-color:var(--c-e7bd46,#e7bd46);background:var(--c-e7bd4612,#e7bd4612)}
 body[data-platform-area="home"] .page header .logo{color:var(--c-f4f2ed,#f4f2ed);text-shadow:none}
 body[data-platform-area="home"] .page header .logo b{color:var(--c-e7bd46,#e7bd46)}

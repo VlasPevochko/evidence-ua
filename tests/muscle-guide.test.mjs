@@ -11,7 +11,7 @@ const html=fs.readFileSync('dist/muscle-lab.html','utf8'),css=fs.readFileSync('d
 for(const [key,content] of Object.entries(guideParts()))assert(html.includes(`<!-- MUSCLE-GUIDE:${key}:START -->${content}<!-- MUSCLE-GUIDE:${key}:END -->`),key+' is stale; run the build');
 // 2026-10-26 (owner «1 так / 2 так»): outcome Claims with their own drawer → the built script differs from the source only by import paths; guide v2, css v74.
 assert.equal(fs.readFileSync('dist/muscle-guide.js','utf8'),fs.readFileSync('src/muscle-lab/guide-ui.mjs','utf8').replace("'../evidence/core/components.mjs'","'./evidence/components.js?v=2.2'").replace("'./practice.mjs'","'./muscle-practice-data.js?v=1'"));
-assert(html.includes('muscle-guide.js?v=4')&&html.includes('muscle-lab.css?v=75')); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
+assert(html.includes('muscle-guide.js?v=4')&&html.includes('muscle-lab.css?v=76')); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 
 // Order: quick summary → model → scenes → guide → existing evidence → related → sources.
 const at=s=>{const i=html.indexOf(s);assert(i>=0,'missing '+s);return i;};

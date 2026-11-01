@@ -1,7 +1,7 @@
-import './site-header.js?v=12';
+import './site-header.js?v=13';
 import {toolsHTML,mountQuickTools} from './platform-tools.js?v=103';
-import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=5';
-import {mountTerms} from './platform-terms.js?v=3';
+import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=6';
+import {mountTerms} from './platform-terms.js?v=4';
 import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=100';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
@@ -42,7 +42,7 @@ export function articleBarHTML(){return '<a class="eua-article-back" href="./sup
 export function mountPlatformNavigation(root=document){
   if(root.defaultView&&root.defaultView.self!==root.defaultView.top)return;
   const head=root.head??root.document?.head;
-  if(head&&typeof head.append==='function'&&!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=85';css.dataset.platformStyle='';head.append(css);}
+  if(head&&typeof head.append==='function'&&!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=86';css.dataset.platformStyle='';head.append(css);}
   const selected=root.body.dataset.platformArea||null;
   // Keep the existing home hero height: compact header entries only.
   if(selected==='home'){

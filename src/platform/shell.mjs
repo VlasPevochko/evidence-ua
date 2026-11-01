@@ -42,7 +42,7 @@ export function articleBarHTML(){return '<a class="eua-article-back" href="./sup
 export function mountPlatformNavigation(root=document){
   if(root.defaultView&&root.defaultView.self!==root.defaultView.top)return;
   const head=root.head??root.document?.head;
-  if(head&&typeof head.append==='function'&&!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=85';css.dataset.platformStyle='';head.append(css);}
+  if(head&&typeof head.append==='function'&&!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=86';css.dataset.platformStyle='';head.append(css);}
   const selected=root.body.dataset.platformArea||null;
   // Keep the existing home hero height: compact header entries only.
   if(selected==='home'){

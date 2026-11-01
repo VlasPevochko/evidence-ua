@@ -330,3 +330,22 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is
 @media(max-width:380px){
   body[data-platform-area="home"]:not([data-route-view="article"]) #categories #cards>.topic-card strong{font-size:20px}
 }
+
+/* Кнопка «Аа», її меню й кнопка меню на телефоні були золотими (їхні кольори задає спільний файл). На головній вони лавандові, як решта керувальних елементів (рішення власника 2026-10-31). */
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-toggle,
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-site-header .eua-header-toggle.home-menu-toggle,
+body[data-platform-area="home"]:not([data-route-view="article"]) .page>header.home-header .home-menu-toggle{border:1px solid var(--spectrum-line);border-radius:2px;background:none;box-shadow:none;color:var(--spectrum-accent)}
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-toggle:hover,
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-toggle[aria-expanded="true"],
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-site-header .eua-header-toggle.home-menu-toggle:hover,
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-site-header .eua-header-toggle.home-menu-toggle[aria-expanded="true"],
+body[data-platform-area="home"]:not([data-route-view="article"]) .page>header.home-header .home-menu-toggle:hover,
+body[data-platform-area="home"]:not([data-route-view="article"]) .page>header.home-header .home-menu-toggle[aria-expanded="true"]{border-color:var(--spectrum-accent);background:#bb87ef24}
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-toggle:focus-visible,
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-panel button:focus-visible,
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-site-header .eua-header-toggle.home-menu-toggle:focus-visible,
+body[data-platform-area="home"]:not([data-route-view="article"]) .page>header.home-header .home-menu-toggle:focus-visible{outline:2px solid var(--spectrum-accent);outline-offset:3px}
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-panel{border:1px solid var(--spectrum-line);border-radius:3px;background:#0d0b14;color:var(--spectrum-text);box-shadow:0 14px 40px #0007}
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-group>p{color:var(--spectrum-muted)}
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-panel button{border:1px solid var(--spectrum-line);border-radius:2px;background:none;color:var(--spectrum-text)}
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-panel button[aria-checked="true"]{border-color:var(--spectrum-accent);background:#c293ef24;color:var(--spectrum-accent)}

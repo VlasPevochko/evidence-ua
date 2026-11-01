@@ -5,7 +5,7 @@ import fs from 'node:fs';
 // Змінено лише оформлення; тексти, кнопки і застереження ті самі.
 const html=fs.readFileSync('dist/fat-burning.html','utf8'),pine=fs.readFileSync('dist/fat-burning-pine.css','utf8');
 const block=pine.slice(pine.indexOf('Рішення власника 2026-10-25'));
-assert(html.includes('fat-burning-pine.css?v=4'),'the stylesheet version was bumped'); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
+assert(html.includes('fat-burning-pine.css?v=5'),'the stylesheet version was bumped'); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 assert(block.includes('.fb-hero-art{min-height:300px}'),'the picture is lower on wide screens');
 const phone=block.slice(block.indexOf('@media(max-width:760px)'));
 assert(phone.includes('.fb-hero-art{min-height:120px')&&phone.includes('.fb-hero-actions{flex-wrap:nowrap'),'on the phone the picture is low and the two buttons share a row');

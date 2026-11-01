@@ -70,7 +70,7 @@ export function mountTerms(root=document){
   let n=0;
   for(const selector of scopes)for(const container of root.querySelectorAll(selector))n+=wrapTerms(container);
   if(!n)return 0;
-  const head=root.head;if(head&&!root.querySelector('link[data-terms-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./terms.css?v=2';css.dataset.termsStyle='';head.append(css);}
+  const head=root.head;if(head&&!root.querySelector('link[data-terms-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./terms.css?v=3';css.dataset.termsStyle='';head.append(css);}
   root.addEventListener('click',event=>{
     const btn=event.target.closest?.('.eua-term');
     if(btn){const wrap=btn.closest('.eua-term-wrap'),term=TERMS.find(t=>t.id===wrap.dataset.euaTerm);

@@ -1,9 +1,9 @@
-// «Вигляд»: тема (темна / світла / як у системі), колір (космос / зелений) і розмір тексту. Вибір лишається тільки в браузері відвідувача.
+// «Вигляд»: тема (темна / світла / як у системі), оформлення (космос / зелений) і розмір тексту. Вибір лишається тільки в браузері відвідувача.
 // Ранній вбудований скрипт у <head> (див. earlyScript) ставить атрибути до першого малювання, щоб не мигало.
 export const APPEARANCE_KEY='eua-appearance-v1';
 export const THEMES=[['dark','Темна'],['light','Світла'],['auto','Як у системі']];
 export const SIZES=[['md','Звичайний'],['lg','Більший'],['xl','Великий']];
-// Колір: космічний (як на головній) за замовчуванням, зелений (колишній сосновий) як варіант. Зелений вмикає html[data-palette="green"].
+// Оформлення: космічне (кольори й форми як на головній) за замовчуванням, зелене (колишнє сосновий вигляд цілком) як варіант. Зелене вмикає html[data-palette="green"].
 export const PALETTES=[['cosmic','Космос'],['green','Зелений']];
 export const earlyScript="try{var a=JSON.parse(localStorage.getItem('eua-appearance-v1')||'{}'),d=document.documentElement,t=a.theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';if(t==='light')d.dataset.theme='light';if(a.text==='lg'||a.text==='xl')d.dataset.text=a.text;if(a.palette==='green')d.dataset.palette='green'}catch(e){}";
 export function normalize(raw){
@@ -38,16 +38,16 @@ export function mountAppearance(doc=document){
   let settings=normalize(stored);
   const wrap=doc.createElement('div');wrap.className='eua-appearance';
   const button=doc.createElement('button');button.type='button';button.className='eua-appearance-toggle';
-  // Колір належить кольоровим сторінкам сайту; головна має власний космічний вигляд, тож перемикач кольору там не показуємо (і в назві кнопки його немає).
+  // Оформлення належить сторінкам сайту; головна має власний космічний вигляд, тож перемикач оформлення там не показуємо (і в назві кнопки його немає).
   const isHome=doc.body?.dataset.platformArea==='home';
-  button.setAttribute('aria-haspopup','true');button.setAttribute('aria-expanded','false');button.setAttribute('aria-label',isHome?'Вигляд сайту: тема й розмір тексту':'Вигляд сайту: тема, колір і розмір тексту');
+  button.setAttribute('aria-haspopup','true');button.setAttribute('aria-expanded','false');button.setAttribute('aria-label',isHome?'Вигляд сайту: тема й розмір тексту':'Вигляд сайту: тема, оформлення і розмір тексту');
   button.innerHTML='<span aria-hidden="true">Аа</span>';
   const panel=doc.createElement('div');panel.className='eua-appearance-panel';panel.hidden=true;panel.setAttribute('role','group');panel.setAttribute('aria-label','Вигляд сайту');
   function save(){try{view.localStorage.setItem(APPEARANCE_KEY,JSON.stringify(settings));}catch{}applyAppearance(doc,settings);}
   function build(){
     panel.replaceChildren(...[
       group(doc,'theme','Тема',THEMES,settings.theme,k=>{settings={...settings,theme:k};save();build();focusCurrent('theme');}),
-      isHome?null:group(doc,'palette','Колір',PALETTES,settings.palette,k=>{settings={...settings,palette:k};save();build();focusCurrent('palette');}),
+      isHome?null:group(doc,'palette','Оформлення',PALETTES,settings.palette,k=>{settings={...settings,palette:k};save();build();focusCurrent('palette');}),
       group(doc,'text','Розмір тексту',SIZES,settings.text,k=>{settings={...settings,text:k};save();build();focusCurrent('text');})
     ].filter(Boolean));
   }

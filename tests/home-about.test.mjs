@@ -19,5 +19,5 @@ assert(js.includes('MutationObserver')&&js.includes('hashchange'),'The group ope
 assert(/min-height:60px/.test(css)&&!/https?:\/\//.test(css+js),'Touch target and no third-party requests');
 // The share tool is mounted inside the group by the shell, so no loose button remains under the cards.
 const shell=fs.readFileSync('dist/platform-shell.js','utf8');
-assert(shell.includes(".home-about-body")&&html.includes('platform-shell.js?v=105'),'The shell mounts the home tools inside the folded group'); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
+assert(shell.includes(".home-about-body")&&html.includes('platform-shell.js?v=106'),'The shell mounts the home tools inside the folded group'); // 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 console.log('Home «Про сайт» group: folded, ids kept, status note visible, auto-opens for nested anchors passed.');

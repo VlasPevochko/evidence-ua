@@ -20,8 +20,8 @@ test("fat-burning page is a discoverable Ukrainian educational route",()=>{
   // v=2: pine recolour, serif headings and folded sources (owner decision 2026-10-20: page aligned with the site standard).
   // v=3: fat-burning.js now imports the header module with the search button (site-header.js?v=3), so its cache version moved.
   // v=5: shared header v7 removes the duplicate primary catalog entry.
-  assert.match(html,/src="\.\/fat-burning\.js\?v=10"/); // v=10 (2026-10-31): fat-burning.js imports site-header.js v12, whose stylesheet moved to palette tokens
-  assert.match(html,/href="\.\/fat-burning\.css\?v=3"/); // v=3 (2026-10-31): colours moved to palette tokens (cosmic / green)
+  assert.match(html,/src="\.\/fat-burning\.js\?v=11"/); // v=10 (2026-10-31, palettes), v=11 (2026-10-31, shapes): fat-burning.js imports site-header.js v13, whose stylesheet moved to palette and shape tokens
+  assert.match(html,/href="\.\/fat-burning\.css\?v=4"/); // v=3 (2026-10-31): colours moved to palette tokens; v=4: radii and shadows moved to shape tokens (cosmic / green)
   assert.match(css,/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert(!/<iframe\b/i.test(html),"no unlicensed third-party media");
   const results=findMaterials("жироспалення");

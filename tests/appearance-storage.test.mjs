@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import {mountAppearance,APPEARANCE_KEY} from '../src/platform/appearance.mjs';
 
 // Exercise the real mounted handlers: storage denial must not remove session controls.
-// 2026-10-31: the panel got a third group «Колір» (cosmic / green) between theme and text, so groups are addressed by their kind, not by position.
+// 2026-10-31: the panel got a third group «Оформлення» (cosmic / green) between theme and text, so groups are addressed by their kind, not by position.
 function fixture(storageMode,stored=null,home=false){
   const events=new Map(),writes=[];
   let doc;

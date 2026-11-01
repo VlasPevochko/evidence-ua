@@ -572,7 +572,8 @@ async function artPairsFlow(browser, origin, viewport) {
 }
 
 // Заголовки карток як на головній (рішення власника 2026-11-01): у космосі h2–h4 усередині main і назви карток («Куди далі», картки дієт, записи журналу)
-// мають шрифт головної (Source Serif 4, звичайна вага, трохи стиснуті літери); у «Зеленому» лишаються колишніми; назва сторінки (h1) і головна не змінюються.
+// мають шрифт головної (Source Serif 4, звичайна вага, трохи стиснуті літери); у «Зеленому» лишаються колишніми; головна не змінюється.
+// Назви сторінок (h1) отримали той самий стиль другим рішенням власника того ж дня (тонкі, із засічками, літери -0,03 em).
 // Міряємо обчислений стиль кожного заголовка (також у згорнутих блоках: обчислений стиль є й у прихованих елементів), а не наявність правила в файлі.
 async function headingsFlow(browser, origin, viewport) {
   const where = `card headings @${viewport.name}`;
@@ -585,7 +586,7 @@ async function headingsFlow(browser, origin, viewport) {
       const cs = getComputedStyle(el), box = el.getBoundingClientRect();
       return {tag: el.tagName.toLowerCase(), cls: String(el.getAttribute('class') || '').split(' ')[0], text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 36), family: first(cs), weight: cs.fontWeight, spacing: parseFloat(cs.letterSpacing), adjust: cs.fontSizeAdjust, clipped: box.width > 0 && el.scrollWidth > el.clientWidth + 1};
     });
-    const titles = [...document.querySelectorAll('h1')].map(el => ({family: first(getComputedStyle(el)), weight: getComputedStyle(el).fontWeight}));
+    const titles = [...document.querySelectorAll('h1')].map(el => ({family: first(getComputedStyle(el)), weight: getComputedStyle(el).fontWeight, spacing: parseFloat(getComputedStyle(el).letterSpacing)}));
     return {rows, titles, adjustSupported: CSS.supports('font-size-adjust', '0.55')};
   };
   let total = 0;
@@ -597,7 +598,8 @@ async function headingsFlow(browser, origin, viewport) {
     const wrong = rows.filter(r => r.family !== 'Source Serif 4' || r.weight !== '400' || !(r.spacing < 0));
     check(where, wrong.length === 0, `cosmic ${file}: all ${rows.length} card headings are Source Serif 4, weight 400, tight letters (wrong: ${wrong.slice(0, 3).map(r => `${r.tag}.${r.cls} «${r.text}» ${r.family} ${r.weight} ${r.spacing}`).join('; ')})`);
     check(where, rows.every(r => !r.clipped), `cosmic ${file}: no card heading is clipped (${rows.filter(r => r.clipped).map(r => r.text).slice(0, 3).join('; ')})`);
-    check(where, titles.length >= 1 && titles.every(t => Number(t.weight) >= 600), `cosmic ${file}: the page title (h1) keeps its bold weight, only card headings changed (${titles.map(t => `${t.family} ${t.weight}`).join(', ')})`);
+    // 2026-11-01, друге рішення власника: назви сторінок теж тонкі, як на головній (до того h1 лишався жирним).
+    check(where, titles.length === 1 && titles.every(t => t.family === 'Source Serif 4' && t.weight === '400' && t.spacing < 0), `cosmic ${file}: the page title (h1) is thin Source Serif 4 with tight letters, like the home (${titles.map(t => `${t.family} ${t.weight} ${t.spacing}`).join(', ')})`);
     if (file === 'muscle-lab.html' && adjustSupported) check(where, rows.filter(r => r.cls === 'mg-ch-title').length > 0 && rows.filter(r => r.cls === 'mg-ch-title').every(r => r.adjust === '0.55'), 'cosmic muscle-lab.html: the small chapter titles get the optical size correction');
     check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `cosmic ${file}: no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
     if (['directions.html', 'glossary.html', 'movement.html'].includes(file)) {
@@ -613,8 +615,9 @@ async function headingsFlow(browser, origin, viewport) {
   for (const [file, [family, weight]] of Object.entries(sentinels)) {
     const {context, page, seen} = await open(browser, origin, viewport, '/' + file, {initScript: green});
     await page.waitForTimeout(500);
-    const {rows} = await page.evaluate(probe);
+    const {rows, titles} = await page.evaluate(probe);
     check(where, rows.length > 0 && rows.every(r => r.weight !== '400'), `green ${file}: no heading became regular weight`);
+    check(where, titles.length === 1 && titles.every(t => Number(t.weight) >= 600), `green ${file}: the page title (h1) stays bold as before (${titles.map(t => t.weight).join(', ')})`);
     const h3s = rows.filter(r => r.tag === 'h3');
     check(where, h3s.length > 0 && h3s.every(r => r.family === family && r.weight === weight), `green ${file}: the h3 headings stay ${family} ${weight} as before (${[...new Set(h3s.map(r => `${r.family} ${r.weight}`))].join(', ')})`);
     check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `green ${file}: no errors`);

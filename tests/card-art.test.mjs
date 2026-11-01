@@ -35,7 +35,10 @@ const shown={};
 for(const match of home.matchAll(/<a class="topic-card" data-area="([a-z]+)"[^>]*><img class="home-picker-image" src="\.\/(card-art-[^"]+)"/g))shown[match[1]]=match[2];
 assert.deepEqual(shown,areas,'every direction card shows its -cosmic picture, not the teal original');
 assert(home.includes('home-coast.css?v=89'),'the stylesheet version was bumped so browsers drop the old cache');
+// 2026-11-01: the owner named the program (Gemini), so the note now records the source. The terms of use are still unconfirmed against Google's own pages,
+// so the test keeps requiring that the note says so (not hidden), and additionally that the source is named and the missing details are listed.
 assert(doc.includes('умови використання')&&doc.includes('підтвердити власнику'),'the licence question is recorded, not hidden');
+assert(doc.includes('створено в Gemini (Google)')&&doc.includes('не записано')&&doc.includes('не юридична консультація'),'the source (Gemini) is recorded together with what is still unknown and the limits of the note');
 assert(doc.includes('scripts/recolor-card-art.py')&&doc.includes('лише темно-бірюзовий'),'the recolouring method is recorded: only dark teal changes, the drawing does not');
 // Old art stays in place for the pages that still use it (history is not deleted).
 for(const old of ['muscle-lab-art-v1.webp','cell-atlas-v2.webp','supplement-backgrounds-v10.webp'])assert(fs.existsSync('dist/'+old),`${old} is kept`);

@@ -587,14 +587,19 @@ async function headingsFlow(browser, origin, viewport) {
       return {tag: el.tagName.toLowerCase(), cls: String(el.getAttribute('class') || '').split(' ')[0], text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 36), family: first(cs), weight: cs.fontWeight, spacing: parseFloat(cs.letterSpacing), adjust: cs.fontSizeAdjust, clipped: box.width > 0 && el.scrollWidth > el.clientWidth + 1};
     });
     const titles = [...document.querySelectorAll('h1')].map(el => ({family: first(getComputedStyle(el)), weight: getComputedStyle(el).fontWeight, spacing: parseFloat(getComputedStyle(el).letterSpacing)}));
-    return {rows, titles, adjustSupported: CSS.supports('font-size-adjust', '0.55')};
+    // Мазок-підкреслення під назвою: псевдоелемент h1::after (усі сторінки зі смугою) або піктограма svg.sp-brush («Добавки»).
+    const brush = document.querySelector('.sp-brush'), h1 = document.querySelector('h1');
+    const stroke = {after: h1 ? getComputedStyle(h1, '::after').content : 'none', brush: !!brush && brush.getBoundingClientRect().width > 0 && getComputedStyle(brush).display !== 'none'};
+    return {rows, titles, stroke, adjustSupported: CSS.supports('font-size-adjust', '0.55')};
   };
   let total = 0;
   for (const file of inner) {
     const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
     await page.waitForTimeout(500);
-    const {rows, titles, adjustSupported} = await page.evaluate(probe);
+    const {rows, titles, stroke, adjustSupported} = await page.evaluate(probe);
     total += rows.length;
+    // 2026-11-01, третє рішення власника: мазок-підкреслення під назвою прибрано (у «Зеленому» лишається).
+    check(where, stroke.after === 'none' && !stroke.brush, `cosmic ${file}: no brush stroke under the page title (${JSON.stringify(stroke)})`);
     const wrong = rows.filter(r => r.family !== 'Source Serif 4' || r.weight !== '400' || !(r.spacing < 0));
     check(where, wrong.length === 0, `cosmic ${file}: all ${rows.length} card headings are Source Serif 4, weight 400, tight letters (wrong: ${wrong.slice(0, 3).map(r => `${r.tag}.${r.cls} «${r.text}» ${r.family} ${r.weight} ${r.spacing}`).join('; ')})`);
     check(where, rows.every(r => !r.clipped), `cosmic ${file}: no card heading is clipped (${rows.filter(r => r.clipped).map(r => r.text).slice(0, 3).join('; ')})`);
@@ -615,12 +620,19 @@ async function headingsFlow(browser, origin, viewport) {
   for (const [file, [family, weight]] of Object.entries(sentinels)) {
     const {context, page, seen} = await open(browser, origin, viewport, '/' + file, {initScript: green});
     await page.waitForTimeout(500);
-    const {rows, titles} = await page.evaluate(probe);
+    const {rows, titles, stroke} = await page.evaluate(probe);
     check(where, rows.length > 0 && rows.every(r => r.weight !== '400'), `green ${file}: no heading became regular weight`);
+    check(where, stroke.after !== 'none', `green ${file}: the brush stroke under the page title stays (${JSON.stringify(stroke)})`);
     check(where, titles.length === 1 && titles.every(t => Number(t.weight) >= 600), `green ${file}: the page title (h1) stays bold as before (${titles.map(t => t.weight).join(', ')})`);
     const h3s = rows.filter(r => r.tag === 'h3');
     check(where, h3s.length > 0 && h3s.every(r => r.family === family && r.weight === weight), `green ${file}: the h3 headings stay ${family} ${weight} as before (${[...new Set(h3s.map(r => `${r.family} ${r.weight}`))].join(', ')})`);
     check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `green ${file}: no errors`);
+    await context.close();
+  }
+  {
+    const {context, page} = await open(browser, origin, viewport, '/supplements.html', {initScript: green});
+    const {stroke} = await page.evaluate(probe);
+    check(where, stroke.brush, `green supplements.html: the brush stroke icon stays (${JSON.stringify(stroke)})`);
     await context.close();
   }
   // Головна не змінюється: вона не вантажить файл палітри, її заголовки лишаються Spectrum Serif.

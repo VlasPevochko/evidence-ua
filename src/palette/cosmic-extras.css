@@ -110,3 +110,11 @@ html:not([data-palette="green"]) .eua-site-header .eua-appearance-panel button[a
 @media(max-width:340px){
   html:not([data-palette="green"]) .eua-site-header .eua-header-wordmark strong{font-size:22px}
 }
+/* Мазок-підкреслення під назвою сторінки (рішення власника 2026-11-01: «можна прибрати»). На головній під назвою такого мазка немає, а з тонким шрифтом він виглядав важчим за сам текст.
+   Без нього назва стоїть чисто, як на головній. Мазок давав 26 px висоти між назвою й описом (12 px відступу й 14 px малюнка); частину повертаємо відступом, щоб опис не липнув до назви.
+   Зелений варіант цього не отримує: там мазок лишається. */
+html:not([data-palette="green"]) .pb h1::after{content:none}
+html:not([data-palette="green"]) .pb h1,
+html:not([data-palette="green"]) .sp-head h1{margin-bottom:8px}
+/* У «Добавках» мазок намальований окремою піктограмою після назви (svg.sp-brush), а не псевдоелементом, тому там своє правило. */
+html:not([data-palette="green"]) .sp-brush{display:none}

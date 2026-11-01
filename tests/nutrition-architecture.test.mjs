@@ -19,8 +19,9 @@ const EARLY_BEFORE_PALETTE="try{var a=JSON.parse(localStorage.getItem('eua-appea
 // 2026-11-01 (заголовки карток як на головній): файл палітри піднято до v=4, бо в ньому з'явилось правило заголовків. Змінилась лише версія в query-рядку, зміст сторінок той самий.
 // 2026-11-01 (назви сторінок як на головній): ще одне правило в тому самому файлі, версія v=5. Знову лише версія в query-рядку.
 // 2026-11-01 (шапка й меню як на головній): ще одне правило в тому самому файлі, версія v=6. Знову лише версія в query-рядку.
+// 2026-11-01 (без мазка під назвою сторінки): ще одне правило в тому самому файлі, версія v=7. Знову лише версія в query-рядку.
 const singleDietArt=text=>text.replace(/ data-art="green"><img src="\.\/diet-art-cosmic\.svg\?v=1#view-(?:[a-z-]+|\$\{esc\(d\.id\)\})"[^>]*data-art="cosmic">/g,'>'); // і для HTML (id у src), і для джерела render.mjs (шаблон ${esc(d.id)})
-const beforePalette=html=>singleDietArt(html).replace('<link rel="stylesheet" href="./palette-cosmic.css?v=6">','').replaceAll(earlyScript,EARLY_BEFORE_PALETTE)
+const beforePalette=html=>singleDietArt(html).replace('<link rel="stylesheet" href="./palette-cosmic.css?v=7">','').replaceAll(earlyScript,EARLY_BEFORE_PALETTE)
  .replaceAll('page-pine.css?v=22','page-pine.css?v=19').replaceAll('evidence/evidence.css?v=59','evidence/evidence.css?v=57').replaceAll('digestion.css?v=5','digestion.css?v=3')
  .replaceAll('appearance.css?v=6','appearance.css?v=4').replaceAll('appearance.js?v=4','appearance.js?v=2').replaceAll('platform-shell.js?v=106','platform-shell.js?v=104')
  .replaceAll('fat-burning.css?v=4','fat-burning.css?v=2').replaceAll('fat-burning-pine.css?v=5','fat-burning-pine.css?v=3').replaceAll('site-header.js?v=13','site-header.js?v=11')

@@ -5,3 +5,9 @@
 Виправлення обмежене спільною шапкою: border-box для її елементів та псевдоелементів. Вміст сторінок і наукові висновки не змінено. Browser QA тепер порівнює координати й розміри шапки, бренду, емблеми, назви та меню на всіх сторінках у desktop і mobile. Підвищені версії кешу.
 
 Змінені файли: src/platform/site-header.css, src/platform/site-header.mjs, scripts/build-platform.mjs, scripts/browser-qa/run.mjs, tests/platform.test.mjs, tests/food-path.test.mjs, tests/exercise-library.test.mjs, tests/muscle-flow.test.mjs, docs/HEADER-GEOMETRY.md; згенеровані dist/site-header.css, dist/site-header.js, dist/platform-shell.js, dist/directions.js та cache-посилання у всіх 12 dist/*.html.
+
+## 2026-11-01: легка шапка в космічному вигляді
+
+Рішення власника («шапка й меню як на головній») замінило вигляд шапки на внутрішніх сторінках, але не принцип цього документа: геометрія однакова на всіх сторінках. Тепер у космосі (за замовчуванням) шапка 78 px на комп'ютері й 76 px на телефоні,
+емблема й підпис приховані (ширина й висота 0), меню текстом в одному рядку; Browser QA далі порівнює координати й розміри на всіх сторінках, а `headerFlow` перевіряє нові числа. У «Зеленому» лишаються колишні числа цього документа
+(110 px, емблема 43 px). Подробиці й межі: `docs/COLORS.md`, розділ «Шапка й меню».

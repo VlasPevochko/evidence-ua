@@ -1083,6 +1083,14 @@ async function searchFlow(browser, origin, viewport) {
   await page.fill('#eua-search-q', 'інтервал');
   await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
   check(where, (await page.locator('.eua-search-results a[href^="./glossary.html#term-"]').count()) >= 1, 'a term result links to the dictionary');
+  // Пошук за ключовими словами (рішення власника 2026-11-01): питання зі службовими словами знаходить матеріал за ключовим словом, поле питає так само, як поле на головній.
+  check(where, (await page.locator('#eua-search-q').getAttribute('placeholder')) === 'Що хочеш зрозуміти?', 'the search field asks the same question as the home page field');
+  await page.fill('#eua-search-q', 'як пити креатин');
+  await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+  check(where, /Креатин/.test(await page.locator('.eua-search-results a').first().innerText()) && (await page.locator('.eua-search-status').innerText()).includes('Знайдено'), 'a question with filler words finds the creatine page by its keyword');
+  await page.fill('#eua-search-q', 'як спати краще');
+  await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+  check(where, (await page.locator('.eua-search-results a').allInnerTexts()).some(text => /сну|Сон/.test(text)), 'a question about sleeping finds a sleep page');
   await page.fill('#eua-search-q', 'білок');
   await page.locator('.eua-search-results a[href$=".html"]').first().waitFor({state: 'visible'});
   const dbox = await dialog.boundingBox();
@@ -1098,7 +1106,7 @@ async function searchFlow(browser, origin, viewport) {
   await dialog.waitFor({state: 'visible'});
   await page.fill('#eua-search-q', '');
   await page.fill('#eua-search-q', 'цццццц');
-  check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайдено'), 'an empty result says so');
+  check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайдено') && (await page.locator('.eua-search-status').innerText()).includes('ключові слова'), 'an empty result says so and tells what to try');
   // Escape behavior was checked above from a result. Close explicitly here:
   // a search input may consume its first Escape to clear the current query.
   await dialog.locator('.eua-search-close').click();
@@ -1711,7 +1719,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     // section anchor; the hub's bare page URL is not an indexed material.
     const sleepStagesHref = areas.find(area => area.id === 'sleep').units.find(unit => unit.id === 'stages').href;
     const sleepStagesURL = new URL(sleepStagesHref, origin + '/index.html');
-    for (const [query, href] of [['креатин', './index.html#creatine'], ['сон', sleepStagesHref]]) {
+    for (const [query, href] of [['креатин', './index.html#creatine'], ['як пити креатин', './index.html#creatine'], ['сон', sleepStagesHref]]) {
       await page.locator('#spectrum-query').fill(query);
       await page.locator('#spectrum-query').press('Enter');
       await search.waitFor({state: 'visible'});

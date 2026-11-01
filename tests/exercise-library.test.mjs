@@ -216,7 +216,8 @@ for (const shell of [shellSource, shellBuilt]) {
 assert.equal(
   shellBuilt,
   // The shared header import is rewritten by the platform builder as well.
-  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=6'").replace("'./terms.mjs'", "'./platform-terms.js?v=4'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=103'").replace("'./site-header.mjs'", "'./site-header.js?v=13'"),
+  // 2026-11-01 (пошук за ключовими словами): каскад версій через materials.mjs (materials 104, tools 104, directions 110, home-feedback 104, shell 107, search 12, header 14). Змінились лише версії в query-рядках.
+  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=6'").replace("'./terms.mjs'", "'./platform-terms.js?v=4'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=104'").replace("'./site-header.mjs'", "'./site-header.js?v=14'"),
   'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
 );
 assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');

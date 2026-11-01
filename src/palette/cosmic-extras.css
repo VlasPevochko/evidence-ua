@@ -25,3 +25,13 @@ html:not([data-palette="green"]) .fb-lipid{background:radial-gradient(circle at 
 html:not([data-palette="green"]) .nf-node i{background:radial-gradient(circle at 34% 30%,var(--c-fff0c1,#fff0c1),#b88af0 48%,#6a47a8);box-shadow:0 0 15px #b88af066}
 /* Вправи: чип обладнання відрізняється від чипів зон тіла відтінком, але лавандовим. */
 html:not([data-palette="green"]) .ex-chip--equipment{border-color:#4b3a6b;color:#d8c0f7}
+/* Заголовки карток і розділів (2026-11-01, рішення власника: «тонкі заголовки з засічками, як на головній»).
+   Source Serif 4 — той самий шрифт, що на головній (там він має ім'я Spectrum Serif); сторінки вже вантажать його для назви сторінки, тож нових завантажень немає.
+   Звичайна вага й трохи стиснуті літери, як у карток головної (400, -0.02em). Розмір, колір і відступи лишаються як на сторінці.
+   Це h2–h4 усередині main, а також назви карток, які не є тегами заголовків: «Куди далі», картки дієт, записи журналу.
+   Назва сторінки (h1), шапка й меню сюди не входять. Зелений варіант цього правила не отримує. */
+html:not([data-palette="green"]) :is(main,[role="main"]) :is(h2,h3,h4),
+html:not([data-palette="green"]) :is(.eua-next strong,.nd-card-title,.ch-title){font-family:var(--pine-serif,"Source Serif 4",Georgia,serif)!important;font-weight:400!important;letter-spacing:-.015em!important}
+/* Дрібні заголовки (15–16 px). У шрифту із засічками нижча висота рядкових літер (0,50 проти 0,55 в Inter), тому колишні 15–16 px виглядали б меншими й слабшими.
+   font-size-adjust вирівнює видимий розмір пропорційно (приблизно на 10 %), а не підставляє фіксований розмір: якщо стиль сторінки змінить розмір, поправка лишиться пропорційною. */
+html:not([data-palette="green"]) :is(.atlas-topic h3,.cell-source-record h4,.cell-source-details h4,.mg-ch-title,.editorial-rules h3){font-size-adjust:.55}

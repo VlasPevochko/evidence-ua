@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 // Заголовки карток як на головній (рішення власника 2026-11-01: «тонкі заголовки карток із засічками, як на головній»).
+// (Того ж дня друге рішення власника додало й назви сторінок: окреме правило, див. tests/page-titles.test.mjs; це правило h1 не чіпає.)
 // Космічний стиль (за замовчуванням) дає h2–h4 усередині main і назвам карток, що не є заголовками (картки «Куди далі», картки дієт, записи журналу),
 // шрифт головної: Source Serif 4, звичайну вагу, трохи стиснуті літери. Зелений варіант, назва сторінки (h1), шапка, меню й головна не змінюються.
 // Цей тест перевіряє файли (правило, шрифт, імена класів, версії, журнал, документи); справжній стиль у браузері міряє headingsFlow у Browser QA.
@@ -45,8 +46,11 @@ assert(!/font-size-adjust/.test(pine)&&!extras.slice(0,extras.indexOf(whole)).in
 // 5) Версії в query-рядках: нова версія файла палітри на всіх 20 внутрішніх сторінках, головна без змін; журнал бере нову версію даних.
 const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
 assert.equal(inner.length,20,'twenty inner pages');
-for(const f of inner)assert(read('dist/'+f).includes('palette-cosmic.css?v=4')&&!read('dist/'+f).includes('palette-cosmic.css?v=3'),`${f} loads palette-cosmic.css?v=4`);
-assert(read('dist/changes.html').includes('changes-page.js?v=9')&&read('dist/changes-page.js').includes("from './changes-data.js?v=9'"),'the journal page and its data have new versions');
+// Версія файла палітри росте з кожною зміною файла (правило заголовків з'явилось на v=4; назви сторінок на v=5 того ж дня), тож тут перевіряємо
+// не конкретне число, а що всі сторінки вантажать одну й ту саму версію, не старішу за ту, де є правило заголовків.
+const paletteVersions=new Set(inner.map(f=>read('dist/'+f).match(/palette-cosmic\.css\?v=(\d+)/)?.[1]));
+assert(paletteVersions.size===1&&[...paletteVersions][0]&&Number([...paletteVersions][0])>=4,`all inner pages load one palette-cosmic.css version, v=4 or newer (${[...paletteVersions].join(', ')})`);
+assert(Number(read('dist/changes.html').match(/changes-page\.js\?v=(\d+)/)?.[1])>=9&&/from '\.\/changes-data\.js\?v=(\d+)'/.test(read('dist/changes-page.js')),'the journal page and its data carry versions');
 // Тест palette.test.mjs пильнує, що файл палітри свіжий; тут лише версія. Якщо зміниться файл палітри, піднімайте число в build-platform.mjs.
 
 // 6) Журнал оновлень і документ.

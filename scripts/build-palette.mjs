@@ -3,10 +3,23 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {toHex} from './palette/css-colors.mjs';
-import {cosmicOf} from './palette/cosmic-map.mjs';
+import {toHex,parseColor} from './palette/css-colors.mjs';
+import {cosmicOf,plateOf} from './palette/cosmic-map.mjs';
 import {shapeOf,CARD_SHADOW_TOKEN,CARD_SHADOW_VALUE} from './shapes/shape-map.mjs';
-import {CSS_TARGETS,HTML_TARGETS,EXTRAS,OUTPUT} from './palette/targets.mjs';
+import {CSS_TARGETS,HTML_TARGETS,EXTRAS,OUTPUT,SVG_ATTR,plateSources} from './palette/targets.mjs';
+
+// Правила для темних плит під схемами (SVG-атрибути без токенів): [fill="#0d2230" i]{fill:#…} лише в космічній палітрі. Зелений варіант їх не має, тож показує оригінал.
+export function plateRules(root=process.cwd()){
+  const found=new Map();
+  for(const f of plateSources(root)){
+    const text=fs.readFileSync(path.join(root,f),'utf8');
+    for(const m of text.matchAll(SVG_ATTR)){
+      const prop=m[1],raw=m[2].toLowerCase(),to=plateOf(parseColor(raw));
+      if(to)found.set(`${prop} ${raw}`,`html:not([data-palette="green"]) [${prop}="${raw}" i]{${prop}:${toHex({...to,a:1})}}`);
+    }
+  }
+  return [...found.entries()].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([,rule])=>rule);
+}
 
 export function tokenKeys(root=process.cwd()){
   const keys=new Set();
@@ -39,8 +52,10 @@ export function paletteCss(root=process.cwd()){
   const usesCardShadow=[...CSS_TARGETS,...HTML_TARGETS].some(f=>fs.existsSync(path.join(root,f))&&fs.readFileSync(path.join(root,f),'utf8').includes(`var(${CARD_SHADOW_TOKEN},`));
   if(usesCardShadow)decls.push(`${CARD_SHADOW_TOKEN}:${CARD_SHADOW_VALUE}`);
   const extras=fs.existsSync(path.join(root,EXTRAS))?fs.readFileSync(path.join(root,EXTRAS),'utf8').trim():'';
-  const css=`/* Космічний стиль (за замовчуванням), як на головній: кольори (--c-*) і форми карток та кнопок (--rd-*). Згенеровано scripts/build-palette.mjs: не редагувати вручну.\n   Токени стоять у стилях сторінок; зелений варіант вмикає html[data-palette="green"] (токенів немає, діють оригінальні кольори й форми). */\nhtml:not([data-palette="green"]){${decls.join(';')}}\n${extras}\n`;
-  return {css,count:decls.length,colours:tokenKeys(root).length,shapes:shapes.length};
+  const plates=plateRules(root);
+  const plateBlock=plates.length?`/* Плити під схемами: темні бірюзові й оливкові тла, намальовані SVG-атрибутами (токенів там немає), у космосі стають фіолетовими. Світлі деталі схем лишаються. */\n${plates.join('\n')}\n`:'';
+  const css=`/* Космічний стиль (за замовчуванням), як на головній: кольори (--c-*) і форми карток та кнопок (--rd-*). Згенеровано scripts/build-palette.mjs: не редагувати вручну.\n   Токени стоять у стилях сторінок; зелений варіант вмикає html[data-palette="green"] (токенів немає, діють оригінальні кольори й форми). */\nhtml:not([data-palette="green"]){${decls.join(';')}}\n${plateBlock}${extras}\n`;
+  return {css,count:decls.length,colours:tokenKeys(root).length,shapes:shapes.length,plates:plates.length};
 }
 export function buildPalette(root=process.cwd()){
   const {css,count}=paletteCss(root);

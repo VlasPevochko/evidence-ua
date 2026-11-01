@@ -17,7 +17,9 @@ const hotspots=[
 const mount=document.getElementById('shoulder-pain-map');
 const kneeMount=document.getElementById('knee-pain-map');
 const wrap=mount?.closest('.atlas-figure-wrap');
-const globalFigure=wrap?.querySelector('.atlas-figure');
+// Фігура Атласу має дві копії за палітрою (img[data-art]): ховаємо й показуємо обидві разом.
+const figures=wrap?[...wrap.querySelectorAll('.atlas-figure')]:[];
+const globalFigure=figures.length?{set hidden(value){figures.forEach(figure=>{figure.hidden=value;});}}:null;
 const zoneButtons=wrap?[...wrap.querySelectorAll('[data-zone]')]:[];
 const legend=wrap?.parentElement?.querySelector('.atlas-legend');
 const content=document.getElementById('atlas-content');

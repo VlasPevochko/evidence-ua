@@ -87,3 +87,7 @@ body[data-pine][data-platform-area="cell"] .intro{background:var(--c-142520,#142
  /* Кнопка стоїть праворуч угорі, тож картинка в банері зі «Сном» не має починатися вище за неї. */
  body[data-pine] .pb-split{padding-top:70px}
 }
+
+/* Малюнки в двох палітрах (2026-11-01): у космосі показується фіолетова копія (data-art="cosmic"), у «Зеленому» оригінал (data-art="green"). Без файлу палітри лишається оригінал.
+   !important потрібен, бо в стилях сторінок на img різні display із вищою специфічністю. */
+html img[data-art="cosmic"]{display:none!important}

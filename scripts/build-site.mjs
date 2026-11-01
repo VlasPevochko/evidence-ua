@@ -8,7 +8,10 @@ import {fileURLToPath} from 'node:url';
 // Everything else in dist is authored source and must retain its exact bytes.
 const generated = new Set([
   // Fat Burning Lab is an authored page; build-platform only injects shared appearance assets.
-  'sitemap.xml', 'robots.txt', 'palette-cosmic.css', 'compare-status.js', 'site-header.js', 'site-header.css', 'platform-search.js', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',
+  'sitemap.xml', 'robots.txt', 'palette-cosmic.css',
+  // Космічні копії малюнків-SVG (scripts/build-svg-art.mjs): сторінка показує оригінал або копію за палітрою.
+  'diet-art-cosmic.svg', 'home-sleep-cosmic.svg', 'home-movement-cosmic.svg', 'home-anatomy-cosmic.svg', 'card-nutrition-cosmic.svg', 'card-evidence-cosmic.svg', 'card-organism-cosmic.svg',
+  'compare-status.js', 'site-header.js', 'site-header.css', 'platform-search.js', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',
   'muscle-lab.html', 'nutrition-digestion.html', 'nutrition.html', 'protein-meta.html',
   'evidence/registry.js', 'evidence/entities.js', 'evidence/components.js',
   'evidence/public-text.js', 'evidence/module-composer.js', 'evidence/muscle-fiber-v1.webp',
@@ -50,7 +53,7 @@ export function buildSite(root, commit) {
   const dist = path.join(root, 'dist');
   const before = inventory(dist);
   if (!before['index.html']) throw Error('The complete authored dist snapshot, including index.html, is required');
-  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-seo.mjs']) {
+  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-seo.mjs']) {
     execFileSync(process.execPath, [script], {cwd:root, stdio:'inherit'});
   }
   const after = inventory(dist);

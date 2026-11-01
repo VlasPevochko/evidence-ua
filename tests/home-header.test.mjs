@@ -44,8 +44,11 @@ assert(read('dist/home-spectrum.css').includes('.eua-site-header .eua-header-wor
 // 3) Версії, журнал, документи.
 const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
 assert.equal(inner.length,20,'twenty inner pages');
-for(const f of inner)assert(read('dist/'+f).includes('palette-cosmic.css?v=6')&&!read('dist/'+f).includes('palette-cosmic.css?v=5'),`${f} loads palette-cosmic.css?v=6`);
-assert(read('dist/changes.html').includes('changes-page.js?v=11')&&read('dist/changes-page.js').includes("from './changes-data.js?v=11'"),'the journal page and its data have new versions');
+// Версія файла палітри росте з кожною зміною файла (правила шапки з'явились на v=6; далі того ж дня росла), тож перевіряємо не конкретне число,
+// а що всі сторінки вантажать одну версію, не старішу за ту, де є правила шапки.
+const paletteVersions=new Set(inner.map(f=>read('dist/'+f).match(/palette-cosmic\.css\?v=(\d+)/)?.[1]));
+assert(paletteVersions.size===1&&Number([...paletteVersions][0])>=6,`all inner pages load one palette-cosmic.css version, v=6 or newer (${[...paletteVersions].join(', ')})`);
+assert(Number(read('dist/changes.html').match(/changes-page\.js\?v=(\d+)/)?.[1])>=11&&/from '\.\/changes-data\.js\?v=(\d+)'/.test(read('dist/changes-page.js')),'the journal page and its data carry versions');
 const changes=read('dist/changes-data.js');
 assert(changes.includes("title:'Шапка й меню як на головній'")&&changes.indexOf("title:'Шапка й меню як на головній'")<changes.indexOf("title:'Назви сторінок тонкі, як на головній'"),'the journal tells about the header change, newest first');
 const colors=read('docs/COLORS.md');

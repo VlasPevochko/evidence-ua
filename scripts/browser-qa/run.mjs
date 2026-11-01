@@ -571,6 +571,62 @@ async function artPairsFlow(browser, origin, viewport) {
   }
 }
 
+// Заголовки карток як на головній (рішення власника 2026-11-01): у космосі h2–h4 усередині main і назви карток («Куди далі», картки дієт, записи журналу)
+// мають шрифт головної (Source Serif 4, звичайна вага, трохи стиснуті літери); у «Зеленому» лишаються колишніми; назва сторінки (h1) і головна не змінюються.
+// Міряємо обчислений стиль кожного заголовка (також у згорнутих блоках: обчислений стиль є й у прихованих елементів), а не наявність правила в файлі.
+async function headingsFlow(browser, origin, viewport) {
+  const where = `card headings @${viewport.name}`;
+  const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
+  const inner = files.filter(f => f !== 'index.html');
+  const probe = () => {
+    const sel = 'main :is(h2,h3,h4), [role="main"] :is(h2,h3,h4), .eua-next strong, .nd-card-title, .ch-title';
+    const first = cs => cs.fontFamily.split(',')[0].replace(/["']/g, '').trim();
+    const rows = [...new Set(document.querySelectorAll(sel))].map(el => {
+      const cs = getComputedStyle(el), box = el.getBoundingClientRect();
+      return {tag: el.tagName.toLowerCase(), cls: String(el.getAttribute('class') || '').split(' ')[0], text: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 36), family: first(cs), weight: cs.fontWeight, spacing: parseFloat(cs.letterSpacing), adjust: cs.fontSizeAdjust, clipped: box.width > 0 && el.scrollWidth > el.clientWidth + 1};
+    });
+    const titles = [...document.querySelectorAll('h1')].map(el => ({family: first(getComputedStyle(el)), weight: getComputedStyle(el).fontWeight}));
+    return {rows, titles, adjustSupported: CSS.supports('font-size-adjust', '0.55')};
+  };
+  let total = 0;
+  for (const file of inner) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
+    await page.waitForTimeout(500);
+    const {rows, titles, adjustSupported} = await page.evaluate(probe);
+    total += rows.length;
+    const wrong = rows.filter(r => r.family !== 'Source Serif 4' || r.weight !== '400' || !(r.spacing < 0));
+    check(where, wrong.length === 0, `cosmic ${file}: all ${rows.length} card headings are Source Serif 4, weight 400, tight letters (wrong: ${wrong.slice(0, 3).map(r => `${r.tag}.${r.cls} «${r.text}» ${r.family} ${r.weight} ${r.spacing}`).join('; ')})`);
+    check(where, rows.every(r => !r.clipped), `cosmic ${file}: no card heading is clipped (${rows.filter(r => r.clipped).map(r => r.text).slice(0, 3).join('; ')})`);
+    check(where, titles.length >= 1 && titles.every(t => Number(t.weight) >= 600), `cosmic ${file}: the page title (h1) keeps its bold weight, only card headings changed (${titles.map(t => `${t.family} ${t.weight}`).join(', ')})`);
+    if (file === 'muscle-lab.html' && adjustSupported) check(where, rows.filter(r => r.cls === 'mg-ch-title').length > 0 && rows.filter(r => r.cls === 'mg-ch-title').every(r => r.adjust === '0.55'), 'cosmic muscle-lab.html: the small chapter titles get the optical size correction');
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `cosmic ${file}: no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+    if (['directions.html', 'glossary.html', 'movement.html'].includes(file)) {
+      // Шрифт справді завантажено (кирилична частина), а не лише названо: без цього заголовки показувались би запасним Georgia.
+      const faces = await page.evaluate(async () => (await document.fonts.load('400 24px "Source Serif 4"', 'Заголовок картки')).map(f => `${f.family}:${f.status}`));
+      check(where, faces.length > 0 && faces.every(f => f.endsWith(':loaded')), `cosmic ${file}: the Source Serif 4 face for Ukrainian letters is loaded (${faces.join(', ')})`);
+    }
+    await context.close();
+  }
+  check(where, total >= 150, `cosmic: the card headings were really found (${total} over ${inner.length} pages)`);
+  // «Зелений» лишає все як було: серед заголовків немає жодного, схожого на нові (колишні були жирні), а три сторінки лишають свої шрифти.
+  const sentinels = {'directions.html': ['Inter', '700'], 'movement.html': ['Arial', '700'], 'glossary.html': ['Source Serif 4', '700']};
+  for (const [file, [family, weight]] of Object.entries(sentinels)) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file, {initScript: green});
+    await page.waitForTimeout(500);
+    const {rows} = await page.evaluate(probe);
+    check(where, rows.length > 0 && rows.every(r => r.weight !== '400'), `green ${file}: no heading became regular weight`);
+    const h3s = rows.filter(r => r.tag === 'h3');
+    check(where, h3s.length > 0 && h3s.every(r => r.family === family && r.weight === weight), `green ${file}: the h3 headings stay ${family} ${weight} as before (${[...new Set(h3s.map(r => `${r.family} ${r.weight}`))].join(', ')})`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `green ${file}: no errors`);
+    await context.close();
+  }
+  // Головна не змінюється: вона не вантажить файл палітри, її заголовки лишаються Spectrum Serif.
+  const home = await open(browser, origin, viewport, '/index.html');
+  const homeFacts = await home.page.evaluate(() => ({palette: !!document.querySelector('link[href*="palette-cosmic"]'), card: getComputedStyle(document.querySelector('.path-card h3')).fontFamily.split(',')[0].replace(/["']/g, '').trim(), weight: getComputedStyle(document.querySelector('.path-card h3')).fontWeight}));
+  check(where, !homeFacts.palette && homeFacts.card === 'Spectrum Serif' && homeFacts.weight === '400', `home: card headings stay Spectrum Serif 400 and the palette file is not loaded (${JSON.stringify(homeFacts)})`);
+  await home.context.close();
+}
+
 // Картинки для поширення (рішення власника 2026-10-31): у космічних кольорах сайту, а не в сосново-зелених.
 // Міряємо кути справжніх JPEG (там лише тло й ледь помітний візерунок), а не назви файлів: Node тут JPEG не розбирає.
 async function shareCardsFlow(browser, origin, viewport) {
@@ -2453,6 +2509,7 @@ try {
     for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
     await isolatedFlow(shareCardsFlow, browser, origin, viewports[0]);
     for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(headingsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);

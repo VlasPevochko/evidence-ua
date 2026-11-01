@@ -28,8 +28,11 @@ for(const f of inner){const html=read('dist/'+f);assert.equal((html.match(/<h1[\
 assert(!read('dist/index.html').includes('palette-cosmic.css'),'the home does not load the palette file, so its title is not affected');
 
 // 4) Версія файла палітри нова на всіх сторінках; журнал розповідає про зміну; документи описують правило.
-for(const f of inner)assert(read('dist/'+f).includes('palette-cosmic.css?v=5')&&!read('dist/'+f).includes('palette-cosmic.css?v=4'),`${f} loads palette-cosmic.css?v=5`);
-assert(read('dist/changes.html').includes('changes-page.js?v=10')&&read('dist/changes-page.js').includes("from './changes-data.js?v=10'"),'the journal page and its data have new versions');
+// Версія файла палітри росте з кожною зміною файла (правило для h1 з'явилось на v=5; шапка того ж дня на v=6), тож перевіряємо не конкретне число,
+// а що всі сторінки вантажать одну версію, не старішу за ту, де є правило для h1.
+const paletteVersions=new Set(inner.map(f=>read('dist/'+f).match(/palette-cosmic\.css\?v=(\d+)/)?.[1]));
+assert(paletteVersions.size===1&&Number([...paletteVersions][0])>=5,`all inner pages load one palette-cosmic.css version, v=5 or newer (${[...paletteVersions].join(', ')})`);
+assert(Number(read('dist/changes.html').match(/changes-page\.js\?v=(\d+)/)?.[1])>=10&&/from '\.\/changes-data\.js\?v=(\d+)'/.test(read('dist/changes-page.js')),'the journal page and its data carry versions');
 const changes=read('dist/changes-data.js');
 assert(changes.includes("title:'Назви сторінок тонкі, як на головній'")&&changes.indexOf("title:'Назви сторінок тонкі, як на головній'")<changes.indexOf("title:'Заголовки карток як на головній'"),'the journal tells about the title change, newest first');
 const colors=read('docs/COLORS.md');

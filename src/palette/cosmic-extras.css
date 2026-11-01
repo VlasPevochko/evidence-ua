@@ -39,3 +39,74 @@ html:not([data-palette="green"]) :is(.atlas-topic h3,.cell-source-record h4,.cel
    літери стиснуті так, як на головній для заголовків такого розміру (від -0,03 до -0,035 em). Розмір, колір і відступи лишаються як на сторінці,
    мазок-підкреслення під назвою теж. Зелений варіант цього правила не отримує. */
 html:not([data-palette="green"]) h1{font-weight:400!important;letter-spacing:-.03em!important}
+/* Шапка й меню як на головній (2026-11-01, рішення власника «в»: «шапка й меню як на головній»).
+   На головній шапка легка: 78 px, прозора, слово «Evidence UA» шрифтом із засічками, текстові посилання без піктограм і рамок, тонка лінія знизу з відступами по боках.
+   Так само тепер на внутрішніх сторінках; кожне посилання, пошук, кнопка «Аа» й меню лишаються (прибрано лише оздоби: квадратну емблему й підпис «Наука · Здоров'я · Рух»,
+   піктограми над словами меню, рамки навколо кнопок, підпис «Пошук» на кнопці). Кольори й шрифти беруться з тих самих змінних --pine-*, що й сторінки, тож світла тема працює як раніше.
+   Розмітку шапки й поведінку (меню на телефоні, Escape, пошук, клавіша «/») не змінено: це лише стилі. Зелений варіант цього не отримує. */
+/* Смуга: прозора, нижче за колишню (було 110–116 px), лінія знизу з відступами по боках замість суцільної рамки на всю ширину. */
+html:not([data-palette="green"]) body header.eua-site-header.eua-site-header,
+html:not([data-palette="green"]) body[data-platform-area] header.eua-site-header.eua-site-header,
+html:not([data-palette="green"]) body[data-pine] header.eua-site-header.eua-site-header.eua-site-header{min-height:78px;padding:14px max(32px,calc((100% - 1344px)/2));gap:24px;border:0;background:transparent;color:var(--pine-text,#f7f3ef)}
+html:not([data-palette="green"]) .eua-site-header::after{content:"";position:absolute;bottom:0;left:max(32px,calc((100% - 1344px)/2));right:max(32px,calc((100% - 1344px)/2));height:1px;background:var(--pine-line,#3b3647)}
+/* Назва: шрифт із засічками, «UA» лавандове; квадратна емблема й підпис ховаються (на головній їх теж немає). */
+html:not([data-palette="green"]) .eua-site-header :is(.eua-header-emblem,.eua-header-wordmark small){display:none}
+html:not([data-palette="green"]) .eua-site-header .eua-header-wordmark strong{font:400 30px/1.2 var(--pine-serif,"Source Serif 4",Georgia,serif);letter-spacing:-1px}
+html:not([data-palette="green"]) .eua-site-header .eua-header-wordmark b{color:var(--pine-accent,#d1a5ff);font-weight:400}
+/* Посилання меню й «Про проєкт»: текст із засічками, без піктограм, рамок і плиток. Поточна сторінка лавандова з тонким підкресленням (раніше її стиль не діяв через слабший селектор). */
+html:not([data-palette="green"]) .eua-site-header .eua-header-links{margin-left:auto;gap:24px}
+html:not([data-palette="green"]) body header.eua-site-header.eua-site-header.eua-site-header nav{gap:22px!important}
+html:not([data-palette="green"]) body header.eua-site-header.eua-site-header.eua-site-header nav a,
+html:not([data-palette="green"]) .eua-site-header .eua-header-about{display:inline-flex;flex-direction:row;min-width:0;min-height:44px;padding:6px 0;border:0;border-radius:0;background:none;box-shadow:none;color:var(--pine-text,#f7f3ef);font:400 17px/1.4 var(--pine-serif,"Source Serif 4",Georgia,serif);text-decoration:none}
+html:not([data-palette="green"]) .eua-site-header nav a svg,
+html:not([data-palette="green"]) .eua-header-about>span{display:none}
+html:not([data-palette="green"]) body header.eua-site-header.eua-site-header.eua-site-header nav a:hover,
+html:not([data-palette="green"]) .eua-site-header .eua-header-about:hover{background:none;color:var(--pine-accent,#d1a5ff)}
+html:not([data-palette="green"]) body header.eua-site-header.eua-site-header.eua-site-header nav a[aria-current=page]{background:none;border:0;color:var(--pine-accent,#d1a5ff);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:8px}
+/* Пошук: кнопка-піктограма тієї ж форми, що «Аа» й меню (рамка-лінія, кут 2 px, лавандовий колір); підпис «Пошук» прибрано, назву читають програми зчитування (aria-label). */
+html:not([data-palette="green"]) .eua-site-header .eua-header-search{width:44px;margin-left:0;padding:10px;justify-content:center;border:1px solid var(--pine-line,#3b3647);border-radius:2px;background:none;color:var(--pine-accent,#d1a5ff)}
+html:not([data-palette="green"]) .eua-site-header .eua-header-search span{display:none}
+html:not([data-palette="green"]) .eua-site-header .eua-header-search svg{stroke:currentColor}
+html:not([data-palette="green"]) .eua-site-header .eua-header-search:hover{border-color:var(--pine-accent,#d1a5ff);background:#bb87ef24}
+/* Кнопки «Аа» і меню на телефоні: як на головній (рамка-лінія, кут 2 px, лавандовий колір, при наведенні лавандова рамка). */
+html:not([data-palette="green"]) .eua-site-header .eua-appearance-toggle,
+html:not([data-palette="green"]) .eua-site-header .eua-header-toggle{border:1px solid var(--pine-line,#3b3647);border-radius:2px;background:none;box-shadow:none;color:var(--pine-accent,#d1a5ff)}
+html:not([data-palette="green"]) .eua-site-header .eua-appearance-toggle:hover,
+html:not([data-palette="green"]) .eua-site-header .eua-appearance-toggle[aria-expanded="true"],
+html:not([data-palette="green"]) .eua-site-header .eua-header-toggle:hover,
+html:not([data-palette="green"]) .eua-site-header .eua-header-toggle[aria-expanded="true"]{border-color:var(--pine-accent,#d1a5ff);background:#bb87ef24}
+/* «Аа» на сторінці «Куди зникає жир?» мала дрібніший шрифт (500 13 px) через загальне правило для кнопок тієї сторінки: вирівнюємо з усіма (700 17 px, як на головній). */
+html:not([data-palette="green"]) .eua-site-header .eua-appearance-toggle{font:700 17px/1 Inter,system-ui,sans-serif}
+html:not([data-palette="green"]) .eua-site-header a:focus-visible,
+html:not([data-palette="green"]) .eua-site-header button:focus-visible{outline-color:var(--pine-accent,#d1a5ff)}
+/* Меню «Аа»: рамка-лінія, кути 3 і 2 px, лавандовий вибраний пункт (як на головній). */
+html:not([data-palette="green"]) .eua-site-header .eua-appearance-panel{border:1px solid var(--pine-line,#3b3647);border-radius:3px;background:#0d0b14;color:var(--pine-text,#f7f3ef);box-shadow:0 14px 40px #0007}
+html:not([data-palette="green"]) .eua-site-header .eua-appearance-panel button{border:1px solid var(--pine-line,#3b3647);border-radius:2px;background:none;color:var(--pine-text,#f7f3ef)}
+html:not([data-palette="green"]) .eua-site-header .eua-appearance-panel button[aria-checked="true"]{border-color:var(--pine-accent,#d1a5ff);background:#c293ef24;color:var(--pine-accent,#d1a5ff)}
+/* Комп'ютер: пошук стоїть праворуч поруч із «Аа», а не біля назви. */
+@media(min-width:1101px){
+  html:not([data-palette="green"]) .eua-site-header .eua-header-search{order:4}
+}
+/* Телефон і планшет: вужча смуга, лінія з відступами 22 px, дрібніше слово, меню-панель як на головній (рамка-лінія, кут 2 px, текстові пункти). */
+@media(max-width:1100px){
+  html:not([data-palette="green"]) body header.eua-site-header.eua-site-header,
+  html:not([data-palette="green"]) body[data-platform-area] header.eua-site-header.eua-site-header,
+  html:not([data-palette="green"]) body[data-pine] header.eua-site-header.eua-site-header.eua-site-header{min-height:76px;padding:12px 22px;gap:12px}
+  html:not([data-palette="green"]) .eua-site-header::after{left:22px;right:22px}
+  html:not([data-palette="green"]) .eua-site-header .eua-header-wordmark strong{font-size:27px}
+  html:not([data-palette="green"]) .eua-site-header .eua-header-links{align-items:stretch;gap:4px;margin-left:0;padding:10px 16px;border:1px solid var(--pine-line,#3b3647);border-radius:2px;background:#100e18}
+  html:not([data-palette="green"]) body header.eua-site-header.eua-site-header.eua-site-header nav{gap:0!important}
+  html:not([data-palette="green"]) .eua-site-header .eua-header-about{justify-content:flex-start;width:auto}
+}
+/* Вузькі телефони (до 370 px, зокрема 360 і 320): пошук, «Аа» й меню разом із назвою не вміщались у один рядок (шапка ставала вдвічі вищою; раніше так було вже на 375 px).
+   Трохи вужчі поля й дрібніше слово, і все стоїть у одному рядку. Ширші телефони (375 і 390) лишаються як на головній. */
+@media(max-width:370px){
+  html:not([data-palette="green"]) body header.eua-site-header.eua-site-header,
+  html:not([data-palette="green"]) body[data-platform-area] header.eua-site-header.eua-site-header,
+  html:not([data-palette="green"]) body[data-pine] header.eua-site-header.eua-site-header.eua-site-header{padding:12px 16px;gap:8px}
+  html:not([data-palette="green"]) .eua-site-header::after{left:16px;right:16px}
+  html:not([data-palette="green"]) .eua-site-header .eua-header-wordmark strong{font-size:24px}
+}
+@media(max-width:340px){
+  html:not([data-palette="green"]) .eua-site-header .eua-header-wordmark strong{font-size:22px}
+}

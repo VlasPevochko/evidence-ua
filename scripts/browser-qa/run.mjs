@@ -630,6 +630,102 @@ async function headingsFlow(browser, origin, viewport) {
   await home.context.close();
 }
 
+// Шапка й меню як на головній (рішення власника 2026-11-01, «в»). У космосі шапка внутрішніх сторінок легка, як на головній: 78 px (76 на телефоні), прозора, назва шрифтом із засічками,
+// текстові посилання без піктограм, кнопки пошуку, «Аа» й меню з рамкою-лінією; квадратної емблеми й підпису немає. Розмітка, посилання й поведінка ті самі. У «Зеленому» лишається колишня шапка.
+// Міряємо обчислений стиль і справжні розміри, а не наявність правил у файлі.
+async function headerFlow(browser, origin, viewport) {
+  const where = `header @${viewport.name}`;
+  const mobile = viewport.name === 'mobile';
+  const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
+  const inner = files.filter(f => f !== 'index.html');
+  const probe = () => {
+    const h = document.querySelector('.eua-site-header');
+    const shown = el => { if (!el) return false; const b = el.getBoundingClientRect(), c = getComputedStyle(el); return b.width > 0 && b.height > 0 && c.display !== 'none' && c.visibility !== 'hidden'; };
+    const font = el => { const c = getComputedStyle(el); return {family: c.fontFamily.split(',')[0].replace(/["']/g, '').trim(), weight: c.fontWeight, size: parseFloat(c.fontSize)}; };
+    const box = el => { const b = el.getBoundingClientRect(); return {x: b.x, y: b.y, w: b.width, h: b.height, right: b.right}; };
+    const after = getComputedStyle(h, '::after');
+    const links = [...h.querySelectorAll('nav a')].filter(shown);
+    const current = [...h.querySelectorAll('nav a[aria-current="page"]')];
+    const aa = document.querySelector('.eua-appearance-toggle'), search = h.querySelector('.eua-header-search'), toggle = h.querySelector('.eua-header-toggle');
+    const style = el => getComputedStyle(el);
+    return {
+      height: h.getBoundingClientRect().height, background: style(h).backgroundColor, borderBottom: parseFloat(style(h).borderBottomWidth),
+      line: after.content !== 'none' ? {height: parseFloat(after.height), position: after.position} : null,
+      emblem: shown(h.querySelector('.eua-header-emblem')), tagline: shown(h.querySelector('.eua-header-wordmark small')),
+      word: font(h.querySelector('.eua-header-wordmark strong')), wordB: font(h.querySelector('.eua-header-wordmark b')),
+      links: links.map(a => ({text: a.textContent.trim(), ...font(a), icon: !!a.querySelector('svg') && shown(a.querySelector('svg')), h: a.getBoundingClientRect().height, y: Math.round(a.getBoundingClientRect().top)})),
+      about: shown(h.querySelector('.eua-header-about')) ? {...font(h.querySelector('.eua-header-about')), border: parseFloat(style(h.querySelector('.eua-header-about')).borderTopWidth), arrow: shown(h.querySelector('.eua-header-about>span'))} : null,
+      current: current.map(a => ({text: a.textContent.trim(), color: style(a).color, underline: style(a).textDecorationLine})),
+      search: shown(search) ? {...box(search), label: shown(search.querySelector('span')), radius: parseFloat(style(search).borderTopLeftRadius), color: style(search).color} : null,
+      aa: shown(aa) ? {...box(aa), radius: parseFloat(style(aa).borderTopLeftRadius), color: style(aa).color, border: parseFloat(style(aa).borderTopWidth), font: `${style(aa).fontWeight} ${style(aa).fontSize}`} : null,
+      toggle: shown(toggle) ? {...box(toggle), radius: parseFloat(style(toggle).borderTopLeftRadius)} : null,
+      accent: style(document.documentElement).getPropertyValue('--pine-accent').trim(),
+      overflow: document.documentElement.scrollWidth - window.innerWidth
+    };
+  };
+  const rows = new Set();
+  for (const file of inner) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
+    await page.evaluate(() => document.fonts.ready);
+    const f = await page.evaluate(probe);
+    const tag = `cosmic ${file}`;
+    check(where, Math.abs(f.height - (mobile ? 76 : 78)) <= 1, `${tag}: the header is as light as the home's (${f.height}px, ${mobile ? 76 : 78} expected)`);
+    check(where, f.background === 'rgba(0, 0, 0, 0)' && f.borderBottom === 0 && f.line && f.line.height === 1, `${tag}: transparent header with a thin inset line below instead of a full-width border (${f.background}, border ${f.borderBottom}, line ${JSON.stringify(f.line)})`);
+    check(where, !f.emblem && !f.tagline, `${tag}: no square emblem and no tagline, as on the home`);
+    check(where, f.word.family === 'Source Serif 4' && f.word.weight === '400' && f.word.size === (mobile ? 27 : 30) && f.wordB.family === 'Source Serif 4', `${tag}: the name is regular Source Serif 4 (${JSON.stringify(f.word)})`);
+    if (!mobile) {
+      check(where, f.links.map(l => l.text).join('|') === 'Напрями|Харчування|Дослідження|Атлас|Вправи|Добавки', `${tag}: all six menu links stay visible (${f.links.map(l => l.text).join(', ')})`);
+      check(where, f.links.every(l => l.family === 'Source Serif 4' && l.weight === '400' && l.size === 17 && !l.icon && l.h >= 44), `${tag}: menu links are 17px serif text without icons and still at least 44px tall`);
+      check(where, new Set(f.links.map(l => l.y)).size === 1, `${tag}: the menu stays in one row`);
+    }
+    if (!mobile) check(where, f.about && f.about.family === 'Source Serif 4' && f.about.border === 0 && !f.about.arrow, `${tag}: "Про проєкт" is plain serif text, as on the home`);
+    check(where, f.search && f.search.w === 44 && f.search.h === 44 && !f.search.label && f.search.radius === 2, `${tag}: search is a 44px icon button with a 2px corner and no label (${JSON.stringify(f.search)})`);
+    check(where, f.aa && f.aa.radius === 2 && f.aa.border === 1 && f.aa.w === 44 && f.aa.h === 44 && f.aa.font === '700 17px', `${tag}: the "Аа" button matches the home (2px corner, thin line, the same 700 17px letters on every page; got ${f.aa && f.aa.font})`);
+    check(where, f.current.every(c => c.underline.includes('underline')), `${tag}: the current page link is underlined and lavender (${JSON.stringify(f.current)})`);
+    const rights = [f.search, f.aa, f.toggle].filter(Boolean);
+    check(where, rights.every(r => r.right <= viewport.width - 16) && f.overflow === 0, `${tag}: the controls fit the screen, no sideways scroll (${f.overflow}px over)`);
+    if (mobile) check(where, f.toggle && f.toggle.w === 44 && f.toggle.radius === 2 && new Set([f.search, f.aa, f.toggle].map(r => Math.round(r.y))).size === 1, `${tag}: search, "Аа" and the menu button sit in one row (${JSON.stringify(f.toggle)})`);
+    rows.add(JSON.stringify([f.height, f.word.size, f.links.length]));
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `${tag}: no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+    await context.close();
+  }
+  check(where, rows.size === 1, `cosmic: every inner page has the same header (${[...rows].join(' / ')})`);
+  // Меню на телефоні: відкрита панель має ті самі пункти текстом із засічками й закривається, як і раніше.
+  if (mobile) {
+    const {context, page} = await open(browser, origin, viewport, '/directions.html');
+    await page.locator('.eua-header-toggle').click();
+    const panel = await page.evaluate(() => { const links = document.querySelector('.eua-header-links'), c = getComputedStyle(links), b = links.getBoundingClientRect(); const items = [...links.querySelectorAll('nav a, .eua-header-about')].map(a => ({text: a.textContent.trim().replace(/\s+/g, ' '), family: getComputedStyle(a).fontFamily.split(',')[0].replace(/["']/g, '').trim(), h: a.getBoundingClientRect().height, icon: !!a.querySelector('svg') && getComputedStyle(a.querySelector('svg')).display !== 'none'})); return {radius: parseFloat(c.borderTopLeftRadius), border: parseFloat(c.borderTopWidth), items, right: b.right}; });
+    check(where, panel.items.length === 7 && panel.items.every(i => i.family === 'Source Serif 4' && !i.icon && i.h >= 44), `the open menu has seven text items in serif, each at least 44px tall (${panel.items.map(i => i.text).join(', ')})`);
+    check(where, panel.radius === 2 && panel.border === 1 && panel.right <= viewport.width, 'the open menu panel is a thin-line box with a 2px corner inside the screen');
+    await context.close();
+  }
+  // Пошук і «Аа» працюють, як і раніше: кнопка пошуку відкриває вікно пошуку, «Аа» відкриває меню вигляду.
+  {
+    const {context, page} = await open(browser, origin, viewport, '/glossary.html');
+    await page.locator('.eua-header-search').click();
+    await page.locator('dialog.eua-search').waitFor({state: 'visible'});
+    check(where, await page.evaluate(() => !!document.querySelector('dialog.eua-search[open]')), 'the search button still opens the search window');
+    await page.locator('dialog.eua-search .eua-search-close').click();
+    await page.locator('.eua-appearance-toggle').click();
+    const panel = await page.evaluate(() => { const p = document.querySelector('.eua-appearance-panel'), b = p.getBoundingClientRect(), c = getComputedStyle(p); return {shown: b.width > 0 && !p.hidden, radius: parseFloat(c.borderTopLeftRadius), inside: b.left >= 0 && b.right <= innerWidth}; });
+    check(where, panel.shown && panel.inside && panel.radius === 3, `the "Аа" button still opens the appearance menu, styled as on the home (${JSON.stringify(panel)})`);
+    await context.close();
+  }
+  // «Зелений» і головна лишаються як були.
+  for (const file of ['directions.html', 'sleep.html']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file, {initScript: green});
+    const f = await page.evaluate(probe);
+    check(where, f.height > 79 && f.emblem && f.tagline && f.word.family === 'Inter' && f.word.weight === '800' && f.search && f.search.radius > 2 && (mobile || f.links.every(l => l.icon)), `green ${file}: the old header stays (height ${f.height}, emblem ${f.emblem}, name ${f.word.family} ${f.word.weight}, icons ${f.links.map(l => l.icon).join('/')})`);
+    check(where, f.borderBottom === 1 && f.line === null, `green ${file}: the old full-width border stays`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `green ${file}: no errors`);
+    await context.close();
+  }
+  const home = await open(browser, origin, viewport, '/index.html');
+  const hf = await home.page.evaluate(probe);
+  check(where, !hf.emblem && hf.word.family === 'Spectrum Serif' && Math.abs(hf.height - (mobile ? 80 : 78)) <= 4, `home: its own header is not touched (${JSON.stringify({emblem: hf.emblem, word: hf.word, height: hf.height})})`);
+  await home.context.close();
+}
+
 // Картинки для поширення (рішення власника 2026-10-31): у космічних кольорах сайту, а не в сосново-зелених.
 // Міряємо кути справжніх JPEG (там лише тло й ледь помітний візерунок), а не назви файлів: Node тут JPEG не розбирає.
 async function shareCardsFlow(browser, origin, viewport) {
@@ -2513,6 +2609,7 @@ try {
     await isolatedFlow(shareCardsFlow, browser, origin, viewports[0]);
     for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headingsFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(headerFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shareFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(outcomeEvidenceFlow, browser, origin, viewport);

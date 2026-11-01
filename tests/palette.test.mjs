@@ -119,7 +119,8 @@ assert(build.includes("'palette-cosmic.css'")&&build.includes("'scripts/build-pa
 
 // 6) Доповнення діють лише в космічній палітрі, не чіпають зелену й тримають кольори даних у схемах.
 const extras=read(EXTRAS).replace(/\/\*[\s\S]*?\*\//g,'');
-for(const rule of extras.split('}').map(r=>r.trim()).filter(Boolean))assert(rule.startsWith('html:not([data-palette="green"])'),`extras never apply to the green palette: ${rule.slice(0,60)}`);
+// 2026-11-01: у доповненнях з'явились блоки @media (шапка на телефоні й на комп'ютері). Відкривальний рядок @media(...){ відкидаємо, а правило всередині, як і раніше, мусить починатися з виключення зеленого.
+for(const rule of extras.split('}').map(r=>r.trim().replace(/^@media[^{]*\{\s*/,'')).filter(Boolean))assert(rule.startsWith('html:not([data-palette="green"])'),`extras never apply to the green palette: ${rule.slice(0,60)}`);
 // Текст називає колір («золотий круг», «золота — ліва нога моделі»), тож ці кольори даних лишаються золотими й у космічній палітрі.
 assert(read('dist/mechanisms.html').includes('аденозин (золотий круг)'));
 assert(extras.includes('.mc-key-ad')&&extras.includes('--c-e3bd6b:#e3bd6b'),'adenosine stays gold');

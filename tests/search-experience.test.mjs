@@ -9,7 +9,8 @@ assert(findMaterials('енергія').some(m=>m.id==='cell-mitochondrion'));
 assert(findMaterials('енергія','evidence').some(m=>m.id==='supplements-atp-pcr'));
 assert(findMaterials('білок','nutrition').every(m=>m.areaId==='nutrition'));
 assert(!findMaterials('білок','nutrition').some(m=>m.id==='supplements-protein'));
-assert.equal(findMaterials('неіснуюча-тема').length,0);
+// 2026-11-01: дефіс розділяє слова, а слово «тема» справді є серед слів для пошуку (сторінка «Карта знань», «між темами»), тож «неіснуюча-тема» уже не безглуздий запит. Намір той самий: запит без жодного справжнього слова нічого не знаходить.
+assert.equal(findMaterials('неіснуюча-ццццц').length,0);
 
 function fixture(state={existing:'preserved'}){
  const nodes=new Map(),events=new Map();

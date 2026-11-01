@@ -1,11 +1,20 @@
 // Пошук по сайту: кнопка в шапці відкриває вікно з полем. Шукає по назвах матеріалів і словнику термінів, нічого не надсилає.
 // Дані підвантажуються лише при першому відкритті, щоб не обтяжувати сторінки.
 const fold=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
-export const SUGGESTIONS=['білок','сон','кофеїн','жир','інтервал'];
+export const SUGGESTIONS=['білок','креатин','сон','кофеїн','жир','інтервал'];
 
 // Pure: rank materials and terms for a query. Title starts-with beats title contains beats other fields.
-export function searchSite({materials=[],terms=[],findMaterials=null},query,limit=8){
+export function searchSite({materials=[],terms=[],findMaterials=null,scoreFields=null,searchKeywords=null,enoughMatches=null},query,limit=8){
   const q=fold(query);if(!q)return {materials:[],terms:[]};
+  // Пошук за ключовими словами (2026-11-01): службові слова відкидаються, збіг хоча б половини слів, результати за вагою (див. materials.mjs).
+  // Матеріали вже відранжовані findMaterials; терміни оцінюємо так само за назвою (вага 4) і означенням (вага 1).
+  if(findMaterials&&scoreFields&&searchKeywords&&enoughMatches){
+    const keys=searchKeywords(query);
+    const mats=findMaterials(query).slice(0,limit);
+    const trm=terms.map((t,i)=>({t,i,...scoreFields(keys,[[4,t.title],[1,t.definition]])})).filter(x=>x.score>0&&enoughMatches(x.matched,keys.length))
+      .sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,Math.max(2,limit-mats.length)).map(x=>x.t);
+    return {materials:mats,terms:trm};
+  }
   const words=q.split(' ');
   const rank=(title,text)=>{const t=fold(title);return t.startsWith(q)?0:t.includes(q)?1:words.every(w=>t.includes(w))?2:3;};
   const found=(findMaterials?findMaterials(query):materials.filter(m=>words.every(w=>fold(m.title+' '+m.areaTitle).includes(w))));
@@ -17,9 +26,9 @@ export function searchSite({materials=[],terms=[],findMaterials=null},query,limi
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Loaded from dist/, where the generated copies of the catalogue modules live.
 const defaultLoader=async()=>{
-  const [mat,terms,gl]=await Promise.all([import('./platform-materials.js?v=103'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js')]);
+  const [mat,terms,gl]=await Promise.all([import('./platform-materials.js?v=104'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js')]);
   const extra=[...(gl.glossary?.movement||[]),...(gl.glossary?.sleep||[])];
-  return {materials:mat.materials,findMaterials:mat.findMaterials,kinds:mat.materialKinds,terms:[...terms.TERMS,...extra]};
+  return {materials:mat.materials,findMaterials:mat.findMaterials,scoreFields:mat.scoreFields,searchKeywords:mat.searchKeywords,enoughMatches:mat.enoughMatches,kinds:mat.materialKinds,terms:[...terms.TERMS,...extra]};
 };
 // The header and a page's search form share one lazy controller and shortcut.
 const controllers=new WeakMap();
@@ -35,7 +44,7 @@ export function mountSearch(doc=document,button,loader=defaultLoader){
   const configuredFocus=()=>button.dataset.searchFocus?doc.getElementById(button.dataset.searchFocus):null;
   const build=()=>{
     dialog=doc.createElement('dialog');dialog.className='eua-search';dialog.setAttribute('aria-label','Пошук по сайту');
-    dialog.innerHTML=`<form method="dialog" class="eua-search-form">${doc.body.dataset?.platformArea==='home'?'<h2 class="eua-search-title">Пошук по сайту</h2>':''}<div class="eua-search-bar"><input type="search" id="eua-search-q" placeholder="Матеріал або термін" autocomplete="off" aria-label="Пошук по сайту"><button type="submit" class="eua-search-close" aria-label="Закрити пошук">×</button></div><p class="eua-search-status" role="status" aria-live="polite"></p><div class="eua-search-results"></div></form>`;
+    dialog.innerHTML=`<form method="dialog" class="eua-search-form">${doc.body.dataset?.platformArea==='home'?'<h2 class="eua-search-title">Пошук по сайту</h2>':''}<div class="eua-search-bar"><input type="search" id="eua-search-q" placeholder="Що хочеш зрозуміти?" autocomplete="off" aria-label="Пошук по сайту"><button type="submit" class="eua-search-close" aria-label="Закрити пошук">×</button></div><p class="eua-search-status" role="status" aria-live="polite"></p><div class="eua-search-results"></div></form>`;
     doc.body.append(dialog);
     input=dialog.querySelector('input');list=dialog.querySelector('.eua-search-results');status=dialog.querySelector('.eua-search-status');
     dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
@@ -62,7 +71,7 @@ export function mountSearch(doc=document,button,loader=defaultLoader){
       return;
     }
     const r=searchSite(data,q),n=r.materials.length+r.terms.length;
-    status.textContent=n?`Знайдено: ${n}`:'Нічого не знайдено. Спробуйте інше слово.';
+    status.textContent=n?`Знайдено: ${n}`:'Нічого не знайдено. Спробуйте одне-два ключові слова, наприклад «креатин» або «сон».';
     const kind=m=>data.kinds?.[m.kind]||'Матеріал';
     const mats=r.materials.length?`<h2>Матеріали</h2><ul>${r.materials.map(m=>`<li><a href="${esc(m.href)}"><strong>${esc(m.title)}</strong><span>${esc(kind(m))} · ${esc(m.areaTitle||'')}</span></a></li>`).join('')}</ul>`:'';
     const trm=r.terms.length?`<h2>Терміни</h2><ul>${r.terms.map(t=>`<li><a href="./glossary.html#term-${esc(t.id)}"><strong>${esc(t.title)}</strong><span>Словник термінів</span></a></li>`).join('')}</ul>`:'';

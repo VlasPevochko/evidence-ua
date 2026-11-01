@@ -28,11 +28,44 @@ const structureMaterials=[
 ].flatMap(config=>config.ids.map(id=>{const area=catalog.getArea(config.areaId);return {id:config.areaId+'-'+id.toLowerCase(),title:entityRegistry.get(id).label,href:`./${config.file}.html?${config.param}=${id}#${config.hash}`,areaId:area.id,areaTitle:area.title,review:area.review,group:area.group,kind:'interactive'};})).filter(m=>!listedMaterials.some(old=>old.href===m.href));
 export const materials=listedMaterials.concat(structureMaterials,navigationMaterials,guides.map(g=>({...g,areaTitle:catalog.getArea(g.areaId).title,review:catalog.getArea(g.areaId).review,group:'evidence'})));
 export const normalizeSearch=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
+// Пошук за ключовими словами (рішення власника 2026-11-01: «чому воно не шукає по ключовим словам?»).
+// Раніше всі слова запиту мусили стояти в назві матеріалу, тож «як пити креатин» не знаходило нічого: «як» і «пити» там немає.
+// Тепер службові слова («як», «що», «чи», «для»…) відкидаються, решта слів шукається в назві, у словах для пошуку, у назві напрямку й у виді матеріалу;
+// слово знаходить і свої відмінки (креатин, креатину), а результати стоять за кількістю й вагою збігів. Це лише навігація: нових тверджень пошук не робить.
+export const STOP_WORDS=new Set(['як','що','чи','де','коли','чому','який','яка','яке','які','яких','якого','яку','таке','такий','така','такі','для','при','про','від','до','на','в','у','і','й','та','а','або','це','цей','ця','ці','той','те','то','за','з','із','зі','по','під','над','між','без','не','ні','є','бути','мені','мене','можна','треба','потрібно','скільки','чим','кого','мій','свій','саме','тільки','також']);
+// Поля матеріалів не обрізаємо (normalizeSearch лишає лише 120 літер, і це добре для запиту, але довгі списки слів для пошуку втрачали б кінець).
+const foldText=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().replace(/'/g,'');
+const tokensOf=text=>foldText(text).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+// Основа слова: відкидаємо до двох літер закінчення, щоб «креатину» знаходило «креатин» (більше не можна: «інтервал» без трьох літер збігався б з «інтерактив»). Короткі слова (до 3 літер) шукаємо як є.
+const stemOf=word=>word.length>=6?word.slice(0,-2):word.length>=4?word.slice(0,-1):word;
+export function searchKeywords(query){
+  const words=foldText(normalizeSearch(query)).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const keys=words.filter(word=>!STOP_WORDS.has(word));
+  return keys.length?keys:words;
+}
+// 2 — слово починає слово поля (так працює й набір «на льоту»: «креа» знаходить «креатин»), або основа слова починає його відмінок («креатину» → «креатин»);
+// 1 — основа (від 5 літер) є всередині довшого слова (так «креатин» знаходить «фосфокреатин»); 0 — немає. Коротка основа (3 літери) годиться лише для слів
+// такої самої довжини, щоб «пити» не знаходило «питання». Слова до 3 літер шукаються точно.
+function hitField(word,field){
+  if(word.length<3)return field.tokens.includes(word)?2:0;
+  const stem=stemOf(word);
+  if(field.tokens.some(token=>token.startsWith(word)||(stem.length>=4?token.startsWith(stem):token.startsWith(stem)&&token.length<=word.length+2)))return 2;
+  return stem.length>=5&&field.text.includes(stem)?1:0;
+}
+// fields: [[вага, текст], …]. Кожне ключове слово дає вагу свого найкращого збігу; matched — скільки слів запиту знайдено.
+export function scoreFields(keys,fields){
+  const prepared=fields.map(([weight,text])=>({weight,text:foldText(text),tokens:tokensOf(text)}));
+  let score=0,matched=0;
+  for(const key of keys){let best=0;for(const field of prepared){const hit=hitField(key,field);if(hit)best=Math.max(best,field.weight*hit);}if(best){score+=best;matched++;}}
+  return {score,matched};
+}
+// Для запиту з кількох слів досить половини збігів (округлено вгору): «як пити креатин» → «пити» й «креатин», знайдено «креатин» — цього досить.
+export const enoughMatches=(matched,total)=>matched>=Math.max(1,Math.ceil(total/2));
 // Alternative topic names for discovery only; scientific content is not changed.
 const searchTerms={
  'navigation-exercises':'вправи вправа бібліотека практика рухові практики',
  'supplements-protein':'білок білка білки білкові протеїнові protein сила безжирова маса',
- 'supplements-creatine':'креатину сила силу безжирова маса нирки креатинін витривалість пам’ять',
+ 'supplements-creatine':'креатину сила силу безжирова маса нирки креатинін витривалість пам’ять пити приймати прийом доза дозування',
  'supplements-caffeine':'кофеїну кава енергетики витривалість сила сон тиск вагітність',
  'supplements-magnesium':'магнію судоми судом тиск сон безсоння діарея',
  'supplements-collagen':'колагену суглоби коліна остеоартрит сухожилля шкіра',
@@ -53,7 +86,7 @@ const searchTerms={
  'supplements-atp-pcr':'енергія енергії енергетичний атф ATP фосфокреатин',
  'nutrition-glucose':'вуглеводи вуглеводів цукор цукру засвоєння',
  'nutrition-lipids':'жир жири жирів ліпіди засвоєння',
- 'muscle-growth':'гіпертрофія гіпертрофії ріст м’язів збільшення м’язів',
+ 'muscle-growth':'гіпертрофія гіпертрофії ріст рости росте ростуть м’язів збільшення м’язів',
  'muscle-atrophy':'втрата м’язів зменшення м’язів',
  'muscle-signal':'нерв мотонейрон ацетилхолін кальцій тропонін тріада ретикулум serca атф розслаблення',
  'muscle-training':'тренування силові підходи обсяг відмова вага кардіо витривалість білок вуглеводи сон гіпертрофія',
@@ -62,8 +95,9 @@ const searchTerms={
  'muscle-faq':'м’язова пам’ять крепатура біль після тренування відмова igf-1 mtor питання',
  'supplements-omega':'омега 3 omega-3 риб’ячий жир тригліцериди серце фібриляція',
  'supplements-vitd':'вітамін д vitamin d переломи кістки падіння інфекції застуда',
+ 'nutrition-diets':'дієта дієти режим харчування середземноморська dash кетогенна кето низьковуглеводна високобілкова вегетаріанська веганська інтервальне голодування',
  'nutrition-digestion':'травлення їжі перетравлення засвоєння',
- 'nutrition-fat-loss':'жироспалення спалювання жиру fat burning fat loss схуднення жир жирів ліполіз окиснення жирової маси',
+ 'nutrition-fat-loss':'жироспалення спалювання жиру fat burning fat loss схуднення схуднути худнути жир жирів ліполіз окиснення жирової маси',
  'movement-elbow':'лікоть ліктя біцепс згинання розгинання',
  'movement-shoulder':'плече плеча рука відведення приведення',
  'movement-walk':'крок крокування ходьба суглоби коліно',
@@ -71,15 +105,18 @@ const searchTerms={
  'movement-team':'агоніст синергіст антагоніст стабілізатор біцепс трицепс команда м’язів',
  'movement-questions':'запитання завдання перевір себе біомеханіка рух',
  'sleep-stages':'фази стадії сну nrem rem циркадний ритм',
- 'sleep-performance':'недосипання недосип сонливість втома працездатність',
- 'sleep-habits':'звички режим кофеїн світло відпочинок'
+ 'sleep-performance':'недосипання недосип сонливість втома працездатність спати висипатися',
+ 'sleep-habits':'звички режим кофеїн світло відпочинок спати засинати безсоння'
 };
+// Порожній запит дає всі матеріали в порядку каталогу. Інакше матеріали стоять за вагою збігів: назва (4) > слова для пошуку (3) > назва напрямку (2) > вид матеріалу (1);
+// назва, що починається з усього запиту, піднімається вище («Кофеїн» перед «Про сон і кофеїн»).
 export function findMaterials(query='',group='all'){
- const words=normalizeSearch(query).split(' ').filter(Boolean);
- return materials.filter(m=>{
-  const text=normalizeSearch(m.title+' '+m.areaTitle+' '+materialKinds[m.kind])+' '+normalizeSearch(searchTerms[m.id]);
-  return (group==='all'||m.group===group)&&words.every(w=>text.includes(w));
- });
+ const keys=searchKeywords(query),whole=foldText(normalizeSearch(query)),inGroup=m=>group==='all'||m.group===group;
+ if(!keys.length)return materials.filter(inGroup);
+ return materials.map((m,index)=>({m,index,...scoreFields(keys,[[4,m.title],[3,searchTerms[m.id]],[2,m.areaTitle],[1,materialKinds[m.kind]]])}))
+  .filter(x=>inGroup(x.m)&&x.score>0&&enoughMatches(x.matched,keys.length))
+  .map(x=>({...x,score:x.score+(whole&&foldText(x.m.title).startsWith(whole)?3:0)}))
+  .sort((a,b)=>b.score-a.score||a.index-b.index).map(x=>x.m);
 }
 export function materialContext(href){
  const url=new URL(href),route=p=>p.replace(/\/index\.html$/,'/').replace(/\.html$/,'').replace(/\/$/,'')||'/';

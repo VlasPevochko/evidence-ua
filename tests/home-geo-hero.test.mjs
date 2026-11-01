@@ -8,7 +8,7 @@ const html=fs.readFileSync('dist/index.html','utf8');
 const css=fs.readFileSync('dist/home-spectrum.css','utf8');
 const entry=fs.readFileSync('dist/home-spectrum.js','utf8');
 const motion=fs.readFileSync('dist/home-spectrum-wave.mjs','utf8');
-assert(html.includes('home-spectrum.css?v=4')&&html.includes('home-spectrum.js?v=3'),'selected hero assets are wired');
+assert(html.includes('home-spectrum.css?v=4')&&html.includes('home-spectrum.js?v=4'),'selected hero assets are wired'); // 2026-11-01: home-spectrum.js v=3 -> v=4 (контролер імпортує пошук v=12: каскад версій пошуку за ключовими словами)
 for(const name of ['home-geo-hero.js','home-mobile-header.js','home-directions.js'])assert(!html.includes('src="./'+name),'obsolete home controllers are detached');
 assert(entry.includes('home-spectrum-wave.mjs?v=1'),'the active controller imports the tested ribbon renderer');
 assert(css.includes('home-spectrum-ribbon.webp')&&css.includes('radial-gradient'),'decorative static fallback survives missing Canvas/JavaScript');

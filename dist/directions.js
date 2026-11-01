@@ -1,6 +1,6 @@
-import './site-header.js?v=13';
-import {findMaterials,materials} from './platform-materials.js?v=103';
-import {materialCard} from './platform-tools.js?v=103';
+import './site-header.js?v=14';
+import {findMaterials,materials} from './platform-materials.js?v=104';
+import {materialCard} from './platform-tools.js?v=104';
 import {catalog,findAreas} from './platform-catalog.js?v=100';
 import {pathCard} from './platform-learning.js?v=87';
 export {pathCard};

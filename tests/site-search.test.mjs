@@ -1,3 +1,4 @@
+// 2026-11-01: пошук за ключовими словами (materials.mjs і search.mjs змінились) → каскад: materials 104, tools 104, directions 110, home-feedback 104, shell 107, search 12, header 14; тут лише версія пошуку в шапці.
 // Owner-selected Spectrum home (2026-10-27): refresh shared header/search cache parents; historical scientific fixtures stay unchanged.
 // Follow-up audit fixes refresh shared imports; these wiring expectations follow the cache cascade.
 // 2026-10-26 Muscle Lab guide: catalog/materials gained muscle units and search words → versions cascade (catalog/materials/tools/shell/directions/home-feedback 98→99, site-header 5→6, search 3→4).
@@ -33,7 +34,7 @@ assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|https?:\/
 assert(src.includes("e.key!=='/'")&&src.includes('isContentEditable'),'the / shortcut ignores typing fields');
 assert(fs.readFileSync('src/platform/site-header.css','utf8').includes('.eua-search::backdrop'),'the dialog is styled');
 assert.equal(fs.readFileSync('dist/platform-search.js','utf8'),src,'the built copy equals the source');
-assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=11')"),'the header loads search lazily');
+assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=12')"),'the header loads search lazily');
 console.log('Site search: ranking, terms, suggestions, accessible button and no-network source passed.');
 
 // 2026-10-22: supplement cards are found by the topics of their approved Claims, not only by name.

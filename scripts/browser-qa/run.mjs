@@ -2250,6 +2250,49 @@ async function mechanismsFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function homeFreshCardsFlow(browser, origin, viewport) {
+  // Бриф T4 (2026-11-02): три картки різної форми в блоці «Нове на сайті». Висота блоку на телефоні до зміни: 950 px (390), бюджет брифу +150.
+  const where = `home fresh cards @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('.home-fresh').scrollIntoViewIfNeeded();
+    const info = await page.evaluate(() => {
+      const box = node => { const rect = node.getBoundingClientRect(); return {x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height), right: Math.round(rect.right)}; };
+      const cards = [...document.querySelectorAll('.home-fresh-card')];
+      const visible = node => { const rect = node.getBoundingClientRect(), style = getComputedStyle(node); return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'; };
+      const small = cards.flatMap(card => [...card.querySelectorAll('*')].filter(node => node.children.length === 0 && node.textContent.trim().length > 2 && visible(node) && parseFloat(getComputedStyle(node).fontSize) < 12).map(node => node.textContent.trim().slice(0, 24)));
+      return {
+        block: box(document.querySelector('.home-fresh')), cards: cards.map(box), kinds: cards.map(card => card.className.replace('home-fresh-card ', '')),
+        thumb: box(cards[0].querySelector('.eua-mini')), frames: [...cards[1].querySelectorAll('.fp-svg')].map(box), captions: [...cards[1].querySelectorAll('.home-fresh-cap')].map(node => node.textContent.trim()),
+        days: [...cards[2].querySelectorAll('.home-fresh-day time')].map(node => node.textContent.trim()), entries: [...cards[2].querySelectorAll('.home-fresh-day li')].map(node => ({text: node.textContent.trim(), visible: visible(node), height: Math.round(node.getBoundingClientRect().height)})),
+        question: cards[0].querySelector('.home-fresh-question').textContent.trim(), links: cards.map(card => (card.tagName === 'A' ? 1 : 0) + card.querySelectorAll('a').length), small,
+        overflow: document.documentElement.scrollWidth - innerWidth
+      };
+    });
+    check(where, info.cards.length === 3 && new Set(info.kinds).size === 3 && info.kinds.join() === 'home-fresh-card--study,home-fresh-card--scheme,home-fresh-card--journal', `three cards with three different forms: ${info.kinds.join()}`);
+    check(where, info.cards.every(card => card.height >= 44 && card.right <= viewport.width) && info.overflow <= 1, `every card is tall enough to tap and fits the screen: ${JSON.stringify(info.cards)}`);
+    check(where, info.thumb.width >= 100 && info.thumb.height >= 30, `the chart thumbnail is readable: ${JSON.stringify(info.thumb)}`);
+    check(where, info.frames.length === 2 && info.frames.every(frame => frame.width >= 90 && frame.height >= 36), `the two scheme frames are readable: ${JSON.stringify(info.frames)}`);
+    check(where, info.captions.length === 2 && info.captions.every(text => text.length > 8), `both frames have a text caption: ${info.captions.join(' | ')}`);
+    check(where, info.days.length >= 1 && info.entries.length === 3 && info.entries.every(entry => entry.visible && entry.height >= 14 && entry.text.length > 10), `three journal entries with a date heading: ${info.days.join(', ')}`);
+    check(where, info.links.every(count => count === 1), `one link per card: ${info.links.join()}`);
+    check(where, info.small.length === 0, `no text under 12px in the cards: ${info.small.join(' | ')}`);
+    if (viewport.width >= 1100) {
+      // Комп’ютер: три картки в один ряд, середня найширша, форми справді різні.
+      check(where, new Set(info.cards.map(card => card.y)).size === 1 && info.cards[0].x < info.cards[1].x && info.cards[1].x < info.cards[2].x, 'on the desktop the three cards stand in one row');
+      check(where, info.cards[1].width > info.cards[0].width * 1.3 && info.cards[1].width > info.cards[2].width * 1.3, `the scheme card is the wide one: ${info.cards.map(card => card.width).join(' / ')}`);
+    } else {
+      // Телефон: картки одна під одною, блок вищий не більш ніж на 150 px.
+      check(where, new Set(info.cards.map(card => card.x)).size === 1 && info.cards[0].y < info.cards[1].y && info.cards[1].y < info.cards[2].y, 'on the phone the cards are stacked');
+      if (viewport.width === 390) check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
+    }
+    await artifact(page, viewport, 'home-fresh-cards', page.locator('.home-fresh'));
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally {
+    await context.close();
+  }
+}
+
 async function homeFreshFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-31: на головній є блок «Нове на сайті»; дрібний текст не менший за 12 px; терміни мають зону дотику 44 px.
   const where = `home fresh @${viewport.name}`;
@@ -2994,6 +3037,7 @@ try {
     for (const viewport of viewports) await isolatedFlow(intervalMotifFlow, browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
+  for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow, browser, origin, viewport);
     await homeFlows(browser, origin);
     for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
     for (const viewport of viewports) await videosFlow(browser, origin, viewport);

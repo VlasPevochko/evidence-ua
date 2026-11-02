@@ -82,7 +82,7 @@ assert.equal(rules.length,2,'two interval rules: before «Нове на сайт
 assert(home.indexOf('<hr class="eua-interval-rule" aria-hidden="true"><section class="home-fresh"')>0&&/<hr class="eua-interval-rule" aria-hidden="true">\s*<section class="home-library-section"/.test(home),'the rules stand between the big blocks');
 assert(!/<hr[^>]*eua-interval-rule[^>]*>[\s\S]{0,5}<hr/.test(home),'no two rules in a row');
 assert(/\.eua-interval-rule\{[^}]*height:14px[^}]*radial-gradient[^}]*linear-gradient/.test(fresh)&&!/animation|transition/.test(fresh.slice(fresh.indexOf('T1 (2026-11-02)'))),'the rule is a hairline with a point and whisker caps, without motion');
-assert(home.includes('./home-fresh.css?v=2'),'the home stylesheet version was raised');
+assert(Number((home.match(/home-fresh\.css\?v=(\d+)/)||[])[1])>=2,'the home stylesheet version was raised (at least 2)'); // 2026-11-02: «не нижча за 2», бо наступні зміни стилів блоку «Нове» піднімають версію далі (T4: v=3)
 
 // Журнал і документ.
 assert(fs.readFileSync('dist/changes-data.js','utf8').includes('Мініатюри графіків у розборах і знак інтервалу на головній'),'the change log has a record');

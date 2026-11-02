@@ -420,3 +420,14 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Значки типів джерел у розборах (T2, 2026-11-02): сторінка розборів (research-page.js v=9, research-page.css v=7; новий research-types.js v=1), палітра з новими токенами --st-N (palette-cosmic.css v=8), журнал (v=20).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'research-page.js?v=8':'research-page.js?v=9','research-page.css?v=6':'research-page.css?v=7','palette-cosmic.css?v=7':'palette-cosmic.css?v=8','changes-page.js?v=19':'changes-page.js?v=20'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

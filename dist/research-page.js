@@ -2,6 +2,7 @@
 import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=4';
 import {shareStudy,saveCard} from './research-share.js?v=3';
 import {renderChart,miniInterval} from './research-chart.js?v=3';
+import {chipHTML,legendHTML} from './research-types.js?v=1';
 
 export const countLabel=(shown,total)=>shown===total?`Розборів: ${total}`:`Показано ${shown} із ${total}`;
 export const filterStudies=(topic,studies=STUDIES)=>topic==='all'?studies.slice():studies.filter(s=>s.topic===topic);
@@ -17,7 +18,9 @@ export function render(root=document){
     for(const s of items){
       const card=make('details','rs-card');
       const head=make('summary','');
-      head.append(make('span','rs-tag rs-tag-'+s.topic,TOPICS[s.topic]),make('span','rs-question',s.question),make('span','rs-answer',s.answer),make('span','rs-more','Докладніше'));
+      // T2: тема й тип джерела стоять в одному рядку; тип показує значок родини й точний рядок типу з даних (це не оцінка якості).
+      const meta=make('span','rs-meta');meta.append(make('span','rs-tag rs-tag-'+s.topic,TOPICS[s.topic]));meta.insertAdjacentHTML('beforeend',chipHTML(s.type));
+      head.append(meta,make('span','rs-question',s.question),make('span','rs-answer',s.answer),make('span','rs-more','Докладніше'));
       // T1: розбір з графіком показує в шапці мініатюру того самого інтервального графіка; без графіка нічого не додаємо.
       if(s.chart){card.classList.add('has-mini');head.insertAdjacentHTML('beforeend',miniInterval(s.chart));}
       const body=make('div','rs-body');const dl=make('dl','rs-rows');
@@ -40,6 +43,7 @@ export function render(root=document){
   };
   const topics=[['all','Усі'],...Object.entries(TOPICS)];
   for(const [id,label] of topics){const b=make('button','rs-chip',label);b.type='button';b.dataset.topic=id;b.addEventListener('click',()=>draw(id));filters.append(b);}
+  const legend=root.getElementById('rs-legend');if(legend)legend.innerHTML=legendHTML(STUDIES);
   draw('all');
   const openFromHash=()=>{
     const id=(root.defaultView?.location.hash||'').replace(/^#rs-?/,'').replace(/^#/,'');

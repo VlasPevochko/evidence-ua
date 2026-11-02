@@ -67,7 +67,8 @@ const page=fs.readFileSync('dist/research-page.js','utf8');
 assert(page.includes("import {renderChart,miniInterval} from './research-chart.js?v=3';"),'the page imports the thumbnail with a raised module version');
 assert(page.includes("if(s.chart){card.classList.add('has-mini');head.insertAdjacentHTML('beforeend',miniInterval(s.chart));}"),'only studies with a chart get a thumbnail');
 const research=fs.readFileSync('dist/research.html','utf8');
-assert(research.includes('research-page.css?v=6')&&research.includes('research-page.js?v=8'),'the page versions were raised');
+const ver=name=>Number((research.match(new RegExp(name.replace('.','\\.')+'\\?v=(\\d+)'))||[])[1]);
+assert(ver('research-page.css')>=6&&ver('research-page.js')>=8,'the page versions were raised (at least css 6, js 8)'); // 2026-11-02: «не нижчі за», бо наступні зміни сторінки розборів піднімають версії далі (T2: css v=7, js v=9)
 
 // Стилі: токени палітри, як у повному графіку; нічого нового за кольором; ряд без перетину не лише сірий (порожній кружок).
 const css=fs.readFileSync('dist/research-page.css','utf8').slice(fs.readFileSync('dist/research-page.css','utf8').indexOf('T1 (2026-11-02)'));

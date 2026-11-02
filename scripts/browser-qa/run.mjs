@@ -2138,6 +2138,52 @@ async function intervalMotifFlow(browser, origin, viewport) {
   } finally { await home.context.close(); }
 }
 
+async function studyTypeChipsFlow(browser, origin, viewport) {
+  // Бриф T2 (2026-11-02): значок типу джерела в кожній картці розбору. Фігура й точний рядок типу первинні, колір другорядний; це не рейтинг.
+  const where = `study type chips @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  try {
+    await page.locator('.rs-card').first().waitFor({state: 'attached'});
+    const data = await page.evaluate(async () => { const m = await import('./research-data.js?v=4'), t = await import('./research-types.js?v=1'); return {types: m.STUDIES.map(s => s.type), families: m.STUDIES.map(s => (t.familyOf(s.type) || {}).id)}; });
+    const read = () => page.evaluate(() => {
+      const channel = value => { const v = value / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+      const luminance = rgb => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b); };
+      const ratio = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+      return [...document.querySelectorAll('.rs-card')].map(card => {
+        const chip = card.querySelector('.rs-meta .rs-type'); if (!chip) return null;
+        const glyph = chip.querySelector('.rs-glyph'), box = chip.getBoundingClientRect(), cardBox = card.getBoundingClientRect(), g = getComputedStyle(glyph), text = getComputedStyle(chip);
+        return {text: chip.querySelector('span').textContent, family: [...chip.classList].find(name => name.startsWith('rs-type--')).slice(9), right: Math.round(box.right), cardRight: Math.round(cardBox.right), left: Math.round(box.left), cardLeft: Math.round(cardBox.left), height: Math.round(box.height),
+          color: g.backgroundColor, radius: g.borderRadius, clip: g.clipPath, hidden: glyph.getAttribute('aria-hidden'), border: text.borderTopColor, textContrast: ratio(text.color, getComputedStyle(card).backgroundColor)};
+      });
+    });
+    const chips = await read();
+    check(where, chips.length === data.types.length && chips.every(Boolean), `every card has a chip: ${chips.length} of ${data.types.length}`);
+    check(where, chips.every((chip, i) => chip && chip.text === data.types[i]), 'every chip shows the exact type string from the data, in the data order');
+    check(where, chips.every((chip, i) => chip && chip.family === data.families[i]), 'every chip belongs to the family the table gives its type');
+    const expected = {meta: 'rgb(153, 217, 115)', systematic: 'rgb(58, 223, 215)', umbrella: 'rgb(255, 163, 207)', review: 'rgb(203, 193, 196)'};
+    check(where, chips.every(chip => chip && chip.color === expected[chip.family] && chip.border === expected[chip.family]), 'the shape and the border carry the family colour (cosmic palette)');
+    check(where, chips.every(chip => chip && chip.hidden === 'true'), 'every shape is decorative');
+    const shapeOk = chip => chip.family === 'meta' ? chip.radius === '50%' : chip.family === 'systematic' ? chip.clip === 'none' && chip.radius === '0px' : chip.clip !== 'none';
+    check(where, chips.every(chip => chip && shapeOk(chip)), 'each family has its own shape (circle, square, triangle, diamond)');
+    check(where, new Set(chips.map(chip => chip.family + ':' + chip.clip + ':' + chip.radius)).size === 4, 'four shapes are told apart without colour');
+    check(where, chips.every(chip => chip && chip.right <= chip.cardRight && chip.left >= chip.cardLeft && chip.height >= 20), 'chips stay inside their cards');
+    check(where, chips.every(chip => chip && chip.textContrast >= 4.5), `chip text contrast in the cosmic palette: ${Math.min(...chips.map(chip => chip.textContrast)).toFixed(2)}:1`);
+    // Зелена палітра: ті самі фігури й ті самі запасні кольори, текст не менш контрастний.
+    await page.evaluate(() => { document.documentElement.dataset.palette = 'green'; });
+    const green = await read();
+    check(where, green.every((chip, i) => chip && chip.family === chips[i].family && chip.color === expected[chip.family]), 'the green palette shows the same families with the fallback colours');
+    check(where, green.every(chip => chip && chip.textContrast >= 4.5), `chip text contrast in the green palette: ${Math.min(...green.map(chip => chip.textContrast)).toFixed(2)}:1`);
+    await page.evaluate(() => { delete document.documentElement.dataset.palette; });
+    const legend = await page.evaluate(() => ({rows: [...document.querySelectorAll('#rs-legend li')].map(li => li.textContent.replace(/\s+/g, ' ').trim()), visible: document.querySelector('#rs-legend').getBoundingClientRect().height > 0, sentence: document.body.innerText.split('Колір і значок показують лише тип джерела, а не рівень впевненості.').length - 1, overflow: document.documentElement.scrollWidth - innerWidth}));
+    check(where, legend.rows.length === 4 && legend.visible && legend.rows[0].includes('Мета-аналіз') && legend.rows[3].startsWith('Огляд'), `the legend has one row per family: ${legend.rows.join(' | ')}`);
+    check(where, legend.sentence === 1, 'the sentence that colour and shape show only the type appears once');
+    check(where, legend.overflow <= 1, 'the research page must not scroll sideways');
+    await artifact(page, viewport, 'study-type-chips-legend', page.locator('.rs-note'));
+    await artifact(page, viewport, 'study-type-chips-card', page.locator('.rs-card').nth(1));
+    check(where, seen.pageErrors.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally { await context.close(); }
+}
+
 async function researchFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-27: розбори дослідження коротко й ясно; відповідь видно одразу, деталі згорнуті.
   const where = `research @${viewport.name}`;
@@ -3035,6 +3081,7 @@ try {
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(provenanceStampFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(intervalMotifFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(studyTypeChipsFlow, browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow, browser, origin, viewport);

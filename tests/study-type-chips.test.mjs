@@ -45,8 +45,9 @@ const html=fs.readFileSync('dist/research.html','utf8'),note=html.match(/<div cl
 assert.equal(html.split(LEGEND_SENTENCE).length-1,1,'the disclaimer sentence appears once on the page');
 assert(note.includes(LEGEND_SENTENCE)&&note.includes('id="rs-legend"')&&note.includes('не оцінка Evidence UA і не медична порада'),'the legend sits in the «Як це читати» note, next to the existing disclaimer');
 const page=fs.readFileSync('dist/research-page.js','utf8');
-assert(page.includes("import {chipHTML,legendHTML} from './research-types.js?v=1';")&&page.includes('legend.innerHTML=legendHTML(STUDIES)')&&page.includes('meta.insertAdjacentHTML(\'beforeend\',chipHTML(s.type))'),'the page draws the chips and the legend from the table');
-assert(html.includes('research-page.js?v=9')&&html.includes('research-page.css?v=7'),'page versions raised');
+assert(page.includes("import {chipHTML,legendHTML} from './research-types.js?v=1';")&&page.includes('legend.innerHTML=legendHTML(STUDIES)')&&/meta\.insertAdjacentHTML\('beforeend',chipHTML\(s\.type\)/.test(page),'the page draws the chips and the legend from the table'); // 2026-11-02 (T3): після значка типу в тому самому рядку стоїть позначка приміток (markHTML), тому рядок вставки довший; перевіряємо початок
+const pageVer=name=>Number((html.match(new RegExp(name.replace('.','\\.')+'\\?v=(\\d+)'))||[])[1]);
+assert(pageVer('research-page.js')>=9&&pageVer('research-page.css')>=7,'page versions raised (at least js 9, css 7)'); // 2026-11-02: «не нижчі за», бо наступні зміни сторінки розборів піднімають версії далі (T3: js v=10, css v=8)
 
 // 4. Кольори. Токени --st-1..4: космічні значення в cosmic-extras.css (і в згенерованому palette-cosmic.css), у зеленому запасні значення в research-page.css.
 const hex=value=>{const m=/#([0-9a-f]{6})\b/i.exec(value);return m&&('#'+m[1].toLowerCase());};

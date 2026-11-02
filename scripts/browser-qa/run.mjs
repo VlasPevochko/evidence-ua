@@ -2075,7 +2075,8 @@ async function provenanceStampFlow(browser, origin, viewport) {
   const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
   try {
     await page.locator('.rs-card summary').first().click();
-    const line = page.locator('.rs-card[open] .rs-source.eua-stamp').first();
+    // T3: від 1360 px рядок джерела в картці схований, а «Перевірено …» стоїть у бічній примітці (той самий клас eua-stamp).
+    const line = viewport.width >= 1360 ? page.locator('.rs-item:has(.rs-card[open]) .eua-sidenote.eua-stamp').first() : page.locator('.rs-card[open] .rs-source.eua-stamp').first();
     await line.waitFor({state: 'visible'});
     const info = await line.evaluate(measure);
     check(where, /Перевірено \d{2}\.\d{2}\.2026\.$/.test(info.text), `research: the sentence ends with the check date: ${info.text}`);
@@ -2180,6 +2181,59 @@ async function studyTypeChipsFlow(browser, origin, viewport) {
     check(where, legend.overflow <= 1, 'the research page must not scroll sideways');
     await artifact(page, viewport, 'study-type-chips-legend', page.locator('.rs-note'));
     await artifact(page, viewport, 'study-type-chips-card', page.locator('.rs-card').nth(1));
+    check(where, seen.pageErrors.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally { await context.close(); }
+}
+
+async function sidenotesFlow(browser, origin, viewport) {
+  // Бриф T3 (2026-11-02, рішення D5): бічні примітки з джерелами від 1360 px; нижче лишається рядок джерела в картці. Колонку 860 px не зсуваємо.
+  const where = `sidenotes @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  try {
+    await page.locator('.rs-item').first().waitFor({state: 'attached'});
+    const margin = viewport.width >= 1360;
+    const read = () => page.evaluate(() => {
+      const visible = node => { const rect = node.getBoundingClientRect(), style = getComputedStyle(node); return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'; };
+      return [...document.querySelectorAll('.rs-item')].map(item => {
+        const card = item.querySelector(':scope > .rs-card'), note = item.querySelector(':scope > .eua-sidenote'), inline = card.querySelector('.rs-source'), a = note.querySelector('a'), b = inline.querySelector('a');
+        const c = card.getBoundingClientRect(), n = note.getBoundingClientRect();
+        return {id: card.id, noteVisible: visible(note), inlineVisible: visible(inline), sibling: note.previousElementSibling === card, insideCard: !!card.querySelector('.eua-sidenote'),
+          same: a.href === b.href && a.target === '_blank' && a.rel === 'noopener noreferrer' && a.textContent.replace(/\s+/g, ' ') === b.textContent.replace(/\s+/g, ' '),
+          top: Math.round(n.top - c.top), left: Math.round(n.left), right: Math.round(n.right), cardRight: Math.round(c.right), noteTop: Math.round(n.top + scrollY), noteBottom: Math.round(n.bottom + scrollY), width: Math.round(n.width), cardBottom: Math.round(c.bottom + scrollY)};
+      });
+    });
+    const overlaps = items => items.slice(1).filter((item, i) => item.noteTop < items[i].noteBottom - 1).map(item => item.id);
+    let items = await read();
+    check(where, items.length === 16, `sixteen items, sixteen notes: ${items.length}`);
+    check(where, items.every(item => item.sibling && !item.insideCard), 'every note is the sibling of its card, not inside it');
+    check(where, items.every(item => item.same), 'every note link equals the link in its card (address, target, rel, label)');
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the research page must not scroll sideways');
+    if (margin) {
+      check(where, items.every(item => item.noteVisible), 'from 1360 px every note is visible next to its card');
+      check(where, items.every(item => Math.abs(item.top) <= 2), `each note starts at the top of its card: ${JSON.stringify(items.filter(item => Math.abs(item.top) > 2).map(item => [item.id, item.top]))}`);
+      check(where, items.every(item => item.left >= item.cardRight + 8 && item.right <= viewport.width - 4 && item.width >= 220), `notes stay in the margin, inside the window, at least 220px wide: ${JSON.stringify(items.slice(0, 1))}`);
+      check(where, overlaps(items).length === 0, `notes do not overlap each other: ${overlaps(items).join(',')}`);
+      // Картку відкрито: рядок джерела в картці схований, примітка на місці, сусідні примітки не накладаються, колонка не зсунулась.
+      const before = await page.locator('.rs-card').first().evaluate(card => Math.round(card.getBoundingClientRect().left));
+      await page.locator('.rs-card summary').first().click();
+      await page.waitForTimeout(450);
+      items = await read();
+      check(where, !items[0].inlineVisible && items[0].noteVisible && Math.abs(items[0].top) <= 2, 'the open card hides its own source line and keeps its note');
+      check(where, overlaps(items).length === 0 && items[1].noteTop >= items[0].cardBottom - 1, 'the next note moved down with the opened card');
+      check(where, Math.round(await page.locator('.rs-card').first().evaluate(card => card.getBoundingClientRect().left)) === before, 'the column did not shift');
+      // Порядок табуляції: картка, потім її примітка.
+      await page.locator('.rs-card summary').first().click();
+      await page.locator('.rs-card summary').first().focus();
+      await page.keyboard.press('Tab');
+      check(where, await page.evaluate(() => document.activeElement && document.activeElement.closest('.eua-sidenote') !== null && document.activeElement.closest('.rs-item') === document.querySelector('.rs-item')), 'after the card the focus goes to its note');
+      await artifact(page, viewport, 'sidenotes', page.locator('#rs-list'));
+    } else {
+      check(where, items.every(item => !item.noteVisible), 'below 1360 px no note is shown');
+      await page.locator('.rs-card summary').first().click();
+      await page.waitForTimeout(450);
+      items = await read();
+      check(where, items[0].inlineVisible && !items[0].noteVisible, 'below 1360 px the source line stays in the card');
+    }
     check(where, seen.pageErrors.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
   } finally { await context.close(); }
 }
@@ -3082,6 +3136,9 @@ try {
     for (const viewport of viewports) await isolatedFlow(provenanceStampFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(intervalMotifFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(studyTypeChipsFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(sidenotesFlow, browser, origin, viewport);
+    // T3: ширини навколо порогу 1360 px: до нього приміток немає, від нього вони видимі й нічого не накладається.
+    for (const width of [1100, 1280, 1360]) await isolatedFlow(sidenotesFlow, browser, origin, {name: 'wide-' + width, width, height: 900});
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow, browser, origin, viewport);

@@ -431,3 +431,14 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Бічні примітки з джерелами на сторінці розборів (T3, 2026-11-02): research-page.js v=10, research-page.css v=8 (новий research-sidenote.js v=1), журнал (v=21).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'research-page.js?v=9':'research-page.js?v=10','research-page.css?v=7':'research-page.css?v=8','changes-page.js?v=20':'changes-page.js?v=21'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

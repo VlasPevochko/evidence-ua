@@ -3,6 +3,7 @@ import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=4';
 import {shareStudy,saveCard} from './research-share.js?v=3';
 import {renderChart,miniInterval} from './research-chart.js?v=3';
 import {chipHTML,legendHTML} from './research-types.js?v=1';
+import {sourceHref,markHTML,sidenoteHTML} from './research-sidenote.js?v=1';
 
 export const countLabel=(shown,total)=>shown===total?`Розборів: ${total}`:`Показано ${shown} із ${total}`;
 export const filterStudies=(topic,studies=STUDIES)=>topic==='all'?studies.slice():studies.filter(s=>s.topic===topic);
@@ -15,18 +16,20 @@ export function render(root=document){
   const draw=topic=>{
     const items=filterStudies(topic);
     list.replaceChildren();
+    let n=0;
     for(const s of items){
-      const card=make('details','rs-card');
+      n++;
+      const item=make('div','rs-item'),card=make('details','rs-card');
       const head=make('summary','');
       // T2: тема й тип джерела стоять в одному рядку; тип показує значок родини й точний рядок типу з даних (це не оцінка якості).
-      const meta=make('span','rs-meta');meta.append(make('span','rs-tag rs-tag-'+s.topic,TOPICS[s.topic]));meta.insertAdjacentHTML('beforeend',chipHTML(s.type));
+      const meta=make('span','rs-meta');meta.append(make('span','rs-tag rs-tag-'+s.topic,TOPICS[s.topic]));meta.insertAdjacentHTML('beforeend',chipHTML(s.type)+markHTML(n));
       head.append(meta,make('span','rs-question',s.question),make('span','rs-answer',s.answer),make('span','rs-more','Докладніше'));
       // T1: розбір з графіком показує в шапці мініатюру того самого інтервального графіка; без графіка нічого не додаємо.
       if(s.chart){card.classList.add('has-mini');head.insertAdjacentHTML('beforeend',miniInterval(s.chart));}
       const body=make('div','rs-body');const dl=make('dl','rs-rows');
       dl.append(row('Хто досліджувався',s.who),row('Що знайшли',s.found),row('Чого це не доводить',s.limits));
       const src=make('p','rs-source eua-stamp');src.append(make('span','',s.type+'. '));
-      const a=make('a','',s.source.label+' ↗');a.href=s.source.doi?'https://doi.org/'+s.source.doi:'https://pubmed.ncbi.nlm.nih.gov/'+s.source.pmid+'/';a.target='_blank';a.rel='noopener noreferrer';
+      const a=make('a','',s.source.label+' ↗');a.href=sourceHref(s.source);a.target='_blank';a.rel='noopener noreferrer';
       src.append(a,make('span','rs-checked',' Перевірено '+CHECKED+'.'));
       const actions=make('div','rs-actions'),status=make('p','rs-status');status.setAttribute('role','status');
       const shareBtn=make('button','rs-btn','Поділитись');shareBtn.type='button';
@@ -36,7 +39,9 @@ export function render(root=document){
       actions.append(shareBtn,imgBtn);
       card.id='rs-'+s.id;
       card.addEventListener('toggle',()=>{const f=card.querySelector('.rs-chart');if(!f)return;f.classList.remove('is-in');if(card.open)root.defaultView.requestAnimationFrame(()=>root.defaultView.requestAnimationFrame(()=>f.classList.add('is-in')));});
-      if(s.chart)body.append(dl,renderChart(root,s.chart),src,actions,status);else body.append(dl,src,actions,status);card.append(head,body);list.append(card);
+      if(s.chart)body.append(dl,renderChart(root,s.chart),src,actions,status);else body.append(dl,src,actions,status);card.append(head,body);
+      // T3: джерело ще й окремою приміткою поруч із карткою (не всередині неї): від 1360 px вона стоїть у правому полі навпроти картки, нижче схована.
+      item.append(card);item.insertAdjacentHTML('beforeend',sidenoteHTML(s,n,CHECKED));list.append(item);
     }
     if(summary)summary.textContent=countLabel(items.length,STUDIES.length);
     for(const b of filters.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.topic===topic));

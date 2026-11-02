@@ -53,24 +53,27 @@ assert(findMaterials('','evidence').every(m=>m.group==='evidence')&&findMaterial
 assert(SUGGESTIONS.includes('креатин'),'creatine is a suggestion chip');
 for(const s of SUGGESTIONS)assert(all(s).length>0,`suggestion «${s}» finds something`);
 const src=fs.readFileSync('src/platform/search.mjs','utf8'),mat=fs.readFileSync('src/platform/materials.mjs','utf8');
-assert(src.includes('placeholder="Що хочеш зрозуміти?"')&&!src.includes('placeholder="Матеріал або термін"'),'the search field asks the same question as the home page field');
-assert(src.includes('Спробуйте одне-два ключові слова, наприклад «креатин» або «сон».'),'an empty result tells what to try');
+// 2026-11-02 (пошук у шапці головної, T7): підказка одна для поля на головній і вікна пошуку («Знайти розбір або перевірити твердження», рішення D3); її бере стала SEARCH_PLACEHOLDER, див. tests/claim-search.test.mjs.
+assert(src.includes('placeholder="${esc(SEARCH_PLACEHOLDER)}"')&&src.includes("export const SEARCH_PLACEHOLDER='Знайти розбір або перевірити твердження'")&&!src.includes('placeholder="Матеріал або термін"'),'the search field shows the same hint as the home page field');
+// 2026-11-02 (пошук у шапці головної, T7): новий текст порожнього результату (рішення D3): «Нічого не знайшли. Спробуйте інше слово або відкрийте всі напрями.»
+assert(src.includes("const EMPTY_BEFORE='Нічого не знайшли. Спробуйте інше слово або відкрийте ',EMPTY_LINK='всі напрями'"),'an empty result tells what to try');
 assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|https?:\/\//.test(src+mat.slice(mat.indexOf('// Пошук за ключовими словами'),mat.indexOf('export function findMaterials')+1200)),'search still stores and sends nothing');
 
 // 7) Зібрані копії свіжі й версії каскадом змінені (браузер не покаже старий кеш).
 const dist=f=>fs.readFileSync('dist/'+f,'utf8');
 assert.equal(dist('platform-search.js'),src,'the built search copy equals the source');
 assert(dist('platform-materials.js').includes('export function searchKeywords')&&dist('platform-materials.js').includes('export function scoreFields'),'the built materials copy has the keyword helpers');
-assert(dist('platform-search.js').includes("import('./platform-materials.js?v=104')"),'search loads materials v=104');
-assert(dist('site-header.js').includes("import('./platform-search.js?v=13')"),'the header loads search v=13'); // 2026-11-02: v=12 -> v=13 (розділи сторінок у вікні пошуку, tests/search-sections.test.mjs)
+assert(dist('platform-search.js').includes("import('./platform-materials.js?v=105')"),'search loads materials v=105'); // 2026-11-02 (пошук у шапці головної, T7): 104 -> 105 (слова «сном» для кофеїну й магнію)
+assert(dist('site-header.js').includes("import('./platform-search.js?v=14')"),'the header loads search v=14'); // 2026-11-02 (пошук у шапці головної, T7): 13 -> 14 (група «Розбори», новий порожній результат).
+// // 2026-11-02: v=12 -> v=13 (розділи сторінок у вікні пошуку, tests/search-sections.test.mjs)
 for(const f of ['platform-tools.js','directions.js','home-feedback.js','platform-shell.js'])assert(!dist(f).includes('platform-materials.js?v=103')&&!dist(f).includes('platform-tools.js?v=103'),`${f} no longer points to the old materials/tools versions`);
-for(const f of ['platform-tools.js','directions.js','home-feedback.js'])assert(dist(f).includes('platform-materials.js?v=104'),`${f} loads materials v=104`);
-assert(dist('platform-shell.js').includes('platform-tools.js?v=104'),'the page shell loads tools v=104');
+for(const f of ['platform-tools.js','directions.js','home-feedback.js'])assert(dist(f).includes('platform-materials.js?v=105'),`${f} loads materials v=105`);
+assert(dist('platform-shell.js').includes('platform-tools.js?v=105'),'the page shell loads tools v=105'); // 2026-11-02 (пошук у шапці головної, T7): 104 -> 105 (tools імпортує materials v=105)
 const pageVersions=(file,mod)=>[...new Set([...dist(file).matchAll(new RegExp(`${mod}\\.js\\?v=(\\d+)`,'g'))].map(m=>m[1]))];
-assert.deepEqual(pageVersions('directions.html','directions'),['111'],'the catalogue page loads directions v=111'); // 2026-11-02: 110 -> 111 (шапка v=15)
-assert.deepEqual(pageVersions('index.html','home-feedback'),['104'],'the home loads home-feedback v=104');
-assert.deepEqual(pageVersions('atlas.html','platform-shell'),['108'],'pages load the shell v=108'); // 2026-11-02: 107 -> 108 (шапка v=15)
-for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(pageVersions(f,'site-header'),['15'],`${f} loads the header v=15`);
+assert.deepEqual(pageVersions('directions.html','directions'),['112'],'the catalogue page loads directions v=112'); // 2026-11-02 (пошук у шапці головної, T7): 111 -> 112 (materials 105, tools 105, шапка v=16). 2026-11-02: 110 -> 111 (шапка v=15)
+assert.deepEqual(pageVersions('index.html','home-feedback'),['105'],'the home loads home-feedback v=105'); // 2026-11-02 (пошук у шапці головної, T7): 104 -> 105 (materials v=105)
+assert.deepEqual(pageVersions('atlas.html','platform-shell'),['109'],'pages load the shell v=109'); // 2026-11-02 (пошук у шапці головної, T7): 108 -> 109 (шапка v=16, tools v=105). 2026-11-02: 107 -> 108 (шапка v=15)
+for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(pageVersions(f,'site-header'),['16'],`${f} loads the header v=16`); // 2026-11-02 (пошук у шапці головної, T7): 15 -> 16 (шапка імпортує пошук v=14 і стилі v=8)
 
 // 8) Журнал оновлень і документи.
 const changes=dist('changes-data.js');

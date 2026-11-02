@@ -1,4 +1,8 @@
 import {catalog,learningHref} from './catalog.mjs';
+// Рішення власника D3 (2026-11-02, бриф T7): підказка поля пошуку одна для головної й вікна пошуку, тож береться з src/platform/search.mjs.
+// Мітка поля (label) стоїть після поля й дорівнює підказці: на комп’ютері вона прихована для зору, на телефоні (CSS у dist/home-spectrum.css) показується замість
+// підказки у два рядки, бо довга підказка в одному рядку там не вміщається. Кнопка називає дію словом «Знайти», а не лише стрілкою.
+import {SEARCH_PLACEHOLDER} from './search.mjs';
 
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const arrow='<span aria-hidden="true">→</span>';
@@ -26,9 +30,8 @@ export function homeSpectrumHTML(){
   <div class="spectrum-intro">
     <h1 id="spectrum-title">Почни з питання.</h1>
     <form id="spectrum-search" class="spectrum-search" role="search" action="./directions.html" method="get">
-      <label class="spectrum-sr-only" for="spectrum-query">Що хочеш зрозуміти?</label>
-      ${searchIcon}<input id="spectrum-query" name="q" type="search" placeholder="Що хочеш зрозуміти?" autocomplete="off" maxlength="120">
-      <button class="spectrum-search-submit" type="submit" aria-label="Знайти матеріал">${arrow}</button>
+      ${searchIcon}<span class="spectrum-search-field"><input id="spectrum-query" name="q" type="search" placeholder="${escapeHTML(SEARCH_PLACEHOLDER)}" autocomplete="off" enterkeyhint="search" maxlength="120"><label class="spectrum-sr-only spectrum-search-label" for="spectrum-query">${escapeHTML(SEARCH_PLACEHOLDER)}</label></span>
+      <button class="spectrum-search-submit" type="submit">Знайти</button>
     </form>
   </div>
   <div class="spectrum-questions" aria-label="З чого почати">${questions}</div>

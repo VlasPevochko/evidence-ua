@@ -7,6 +7,8 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {SKIP_PAGES,SKIP_ANCHOR,WRAPPER_ANCHOR,SKIP_KEYS,SKIP_TITLES,SKIP_INSIDE_CLASS,TITLE_WORDS,ANCHOR_WORDS} from './sections-config.mjs';
 import {normalizeTitle} from '../src/platform/anchor-reveal.mjs';
+// Дані сторінки «Дослідження простими словами» (рішення D3, бриф T7): розбори малює скрипт сторінки, у готовому HTML їх немає, тому беремо з тих самих даних.
+import {STUDIES,TOPICS} from '../dist/research-data.js';
 
 const VOID=new Set(['area','base','br','col','embed','hr','img','input','link','meta','source','track','wbr']);
 const RAW=/<(script|style|template|textarea|title|svg|noscript)\b[\s\S]*?<\/\1>/gi;
@@ -147,6 +149,13 @@ export function buildSections(root=process.cwd(),materials){
   // Один і той самий розділ двічі не показуємо.
   const seen=new Set();
   const unique=rows.filter(r=>{const id=`${r.href}|${normalizeTitle(r.title)}`;if(seen.has(id))return false;seen.add(id);return true;});
+  // Розбори досліджень (kind «study»): назва це питання з даних, посилання research.html#rs-<id> (id картки; відкриває її research-page.js), слова це назва теми з картки
+  // («Рух», «Сон», «Харчування», «Добавки»). Відповідей і висновків в індекс не беремо: пошук лише веде до сторінки й нічого не стверджує.
+  const researchTitle=materials?.find(m=>m.href==='./research.html')?.title;
+  if(researchTitle)for(const study of STUDIES){
+    const href=`research.html#rs-${study.id}`; // справжній id картки (dist/research-page.js: card.id='rs-'+s.id); сторінка розуміє й «#<id>», але якір має існувати в документі
+    unique.push({href,title:study.question,parent:researchTitle,kind:'study',words:String(TOPICS[study.topic]||'').toLocaleLowerCase('uk'),key:href,needsTitle:false});
+  }
   // Слова для окремого розділу мусять вказувати на реальний розділ (інакше слово залишилось би після зміни сторінки).
   const keys=new Set(unique.map(r=>r.key));
   for(const k of Object.keys(ANCHOR_WORDS))if(!keys.has(k))throw Error(`scripts/sections-config.mjs: ANCHOR_WORDS has no section for ${k}`);
@@ -155,7 +164,7 @@ export function buildSections(root=process.cwd(),materials){
 
 export function renderModule(rows){
   const lines=rows.map(r=>JSON.stringify([r.href,r.title,r.parent,r.kind,r.words]));
-  return `// Згенеровано scripts/build-sections.mjs з готових сторінок dist/*.html. Не редагувати вручну: зміни робляться в сторінках або в scripts/sections-config.mjs.\n// Рядок: [посилання, назва розділу, матеріал, вид (section | block | claim), слова для пошуку].\nexport const sections=[\n${lines.join(',\n')}\n];\n`;
+  return `// Згенеровано scripts/build-sections.mjs з готових сторінок dist/*.html. Не редагувати вручну: зміни робляться в сторінках або в scripts/sections-config.mjs.\n// Рядок: [посилання, назва розділу, матеріал, вид (section | block | claim | study), слова для пошуку]. Вид study це розбір дослідження зі сторінки research.html (дані dist/research-data.js).\nexport const sections=[\n${lines.join(',\n')}\n];\n`;
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){

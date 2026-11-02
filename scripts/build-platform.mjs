@@ -22,16 +22,16 @@ const positions={muscle:'18.5%',nutrition:'34%',supplements:'50%',cell:'3%',move
 const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.title,subtitle:a.lab,href:a.id==='supplements'?'#supplement-library':a.href,state:a.state,position:positions[a.id]||'50%'}));
 const homeDirections=homeDirectionsHTML(homeTopics);
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
-fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=104'"));
+fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=105'"));
 fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
-fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=104'"));
+fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=105'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=104'").replace("'./site-header.mjs'","'./site-header.js?v=15'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=105'").replace("'./site-header.mjs'","'./site-header.js?v=16'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
 fs.writeFileSync('dist/home-picker.js',fs.readFileSync('src/platform/home-picker.mjs','utf8'));
 fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8').replace("'./home-picker.mjs'","'./home-picker.js?v=2'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=104'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=104'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=15'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=105'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=105'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=16'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -436,6 +436,18 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  const updates={'research-page.js?v=9':'research-page.js?v=10','research-page.css?v=7':'research-page.css?v=8','changes-page.js?v=20':'changes-page.js?v=21'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Пошук у шапці головної (T7, рішення D3, 2026-11-02): матеріали (v=105) → інструменти (v=105), каталог напрямів, відгук на головній, оболонка; пошук (v=14) → шапка (v=16) → сторінки, оболонка, каталог, fat-burning;
+// головна: home-spectrum.js v=6 (імпортує пошук v=14), home-spectrum.css v=7 (поле й кнопка «Знайти»); індекс розділів (platform-sections.js v=2) бере в search.mjs; журнал (v=22).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'site-header.js?v=15':'site-header.js?v=16','platform-shell.js?v=108':'platform-shell.js?v=109','directions.js?v=111':'directions.js?v=112','home-feedback.js?v=104':'home-feedback.js?v=105','home-spectrum.js?v=5':'home-spectrum.js?v=6','home-spectrum.css?v=6':'home-spectrum.css?v=7','fat-burning.js?v=13':'fat-burning.js?v=14','changes-page.js?v=21':'changes-page.js?v=22'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

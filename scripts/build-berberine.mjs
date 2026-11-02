@@ -5,6 +5,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {berberineBase, berberineModule} from '../src/evidence/supplements/berberine/module.mjs';
 import {ConfidenceBadge, SourceCard, claimButton, escapeHTML as e} from '../src/evidence/core/components.mjs';
+import {provenanceStatus} from '../src/evidence/core/provenance.mjs';
+
+// Дата погодження формулювань картки (раніше була вписана в сам рядок). Науковий перегляд досі не завершено: це лише дата редакторського погодження.
+export const approvedOn = '2026-10-21';
 
 const root = process.cwd();
 const indexPath = path.join(root, 'dist/index.html');
@@ -58,7 +62,7 @@ export function BerberineCard() {
 <section class="pc-not" aria-labelledby="bc-not-title"><h2 id="bc-not-title">Чого ми не стверджуємо</h2>${berberineModule.notClaimed.map(n => `<article><h3>${e(n.topic)}</h3><p>${e(n.reason)}</p></article>`).join('')}</section>
 <details class="pc-more"><summary>Межі всіх досліджень</summary><ul>${berberineModule.commonLimits.map(l => `<li>${e(l)}</li>`).join('')}</ul></details>
 <details class="pc-more"><summary>Джерела (${berberineBase.sources.length})</summary><div class="eua-source-grid">${sources}</div></details>
-<p class="pc-status">Науковий перегляд: не завершено · Формулювання погоджено 21 жовтня 2026 року · Матеріал освітній і не є персональною медичною рекомендацією.</p>
+${provenanceStatus(approvedOn)}
 <dialog class="eua-dialog" data-berberine-dialog aria-label="Докази до твердження про берберин"><div data-evidence-content></div></dialog>
 </div>`;
 }

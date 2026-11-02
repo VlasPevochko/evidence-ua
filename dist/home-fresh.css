@@ -20,3 +20,43 @@ body[data-platform-area="home"] .start-eyebrow,body[data-platform-area="home"] .
 body[data-platform-area="home"] .eua-term{position:relative}
 body[data-platform-area="home"] .eua-term::after{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:44px;transform:translateY(-50%)}
 @media(prefers-reduced-motion:reduce){body[data-platform-area="home"] .home-fresh-card{transition:none}}
+/* T1 (2026-11-02): «лінія інтервалу» — знак сайту з графіка розборів (точка = оцінка, лінія = інтервал, засічки на кінцях) між великими блоками головної. Лише оздоба, без руху. */
+body[data-platform-area="home"] .eua-interval-rule{display:block;width:min(280px,72%);height:14px;margin:12px auto -6px;padding:0;border:0;background:radial-gradient(circle at 50% 50%,#d1a5ff 0 3.5px,transparent 4px),linear-gradient(#b294c866,#b294c866) 50% 50%/100% 1px no-repeat,linear-gradient(#b294c8aa,#b294c8aa) 0 50%/1px 10px no-repeat,linear-gradient(#b294c8aa,#b294c8aa) 100% 50%/1px 10px no-repeat}
+/* T4 (2026-11-02): три картки різної форми. А: питання великим шрифтом і мініатюра графіка. Б: два кадри схеми кофеїну. В: три останні записи журналу.
+   Колір головної лишається (фіолетовий); золотий круг (аденозин) і бірюзовий шестикутник (кофеїн) мають ті самі кольори, що й на сторінці схем. */
+body[data-platform-area="home"] .home-fresh-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.55fr) minmax(0,1fr)}
+body[data-platform-area="home"] .home-fresh-card--study .home-fresh-question{font:400 clamp(20px,2.3vw,29px)/1.2 var(--spectrum-serif,Georgia,serif);letter-spacing:-.005em;color:#f7f3ef}
+body[data-platform-area="home"] .home-fresh-card--study .home-fresh-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:2px}
+body[data-platform-area="home"] .home-fresh-foot .eua-mini{flex:none;width:112px;height:auto}
+body[data-platform-area="home"] .eua-mi-null{stroke:#8d7aa6;stroke-width:1}
+body[data-platform-area="home"] .eua-mi-ci{stroke:#d1a5ff;stroke-width:2;stroke-linecap:round}
+body[data-platform-area="home"] .eua-mi-cap{stroke:#d1a5ff;stroke-width:1}
+body[data-platform-area="home"] .eua-mi-dot{fill:#d1a5ff}
+body[data-platform-area="home"] .eua-mi-cross .eua-mi-ci,body[data-platform-area="home"] .eua-mi-cross .eua-mi-cap{stroke:#8d7aa6}
+body[data-platform-area="home"] .eua-mi-cross .eua-mi-dot{fill:#100e18;stroke:#8d7aa6;stroke-width:1.5}
+body[data-platform-area="home"] .home-fresh-card--scheme .home-fresh-frames{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:4px 6px;padding:6px;border:1px solid #b294c826;background:#0a0910}
+body[data-platform-area="home"] .home-fresh-frame{display:grid;gap:4px}
+body[data-platform-area="home"] .home-fresh-then{font-size:16px;color:#d1a5ff}
+body[data-platform-area="home"] .home-fresh-card--scheme .home-fresh-cap{font-size:12px;line-height:1.3;color:#c3b9d1;text-align:center}
+body[data-platform-area="home"] .fp-svg{display:block;width:100%;height:auto}
+body[data-platform-area="home"] .fp-space{fill:#0e0c16}
+body[data-platform-area="home"] .fp-membrane{fill:#2b2140}
+body[data-platform-area="home"] .fp-cell{fill:#0a0910}
+body[data-platform-area="home"] .fp-socket{fill:#0b0a12;stroke:#8a78a4;stroke-width:3}
+body[data-platform-area="home"] .fp-lamp{fill:#e3bd6b}
+body[data-platform-area="home"] .fp-ad circle,body[data-platform-area="home"] .fp-ad rect{fill:#e3bd6b}
+body[data-platform-area="home"] .fp-cf polygon,body[data-platform-area="home"] .fp-cf rect{fill:#62c0ae}
+body[data-platform-area="home"] .home-fresh-card--journal .home-fresh-journal{display:grid;gap:6px;padding:0;font-size:14px;line-height:1.4;color:#e7dcf3}
+body[data-platform-area="home"] .home-fresh-day{display:grid;gap:2px}
+body[data-platform-area="home"] .home-fresh-day time{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#d1a5ff}
+body[data-platform-area="home"] .home-fresh-day ul{display:grid;gap:3px;margin:0;padding:0;list-style:none}
+body[data-platform-area="home"] .home-fresh-day li{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-left:12px;position:relative}
+@media(min-width:861px){body[data-platform-area="home"] .home-fresh-day li{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}}
+body[data-platform-area="home"] .home-fresh-day li::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:#d1a5ff}
+body[data-platform-area="home"] .home-fresh-card--journal .home-fresh-note{font-size:12px;line-height:1.4;color:#c3b9d1}
+/* Дії внизу карток стоять на одній лінії, коли картки розтягнуті в один ряд. */
+body[data-platform-area="home"] :is(.home-fresh-card--study,.home-fresh-card--scheme,.home-fresh-card--journal){display:flex;flex-direction:column;gap:8px}
+body[data-platform-area="home"] .home-fresh-card--study .home-fresh-foot,body[data-platform-area="home"] .home-fresh-card--scheme .home-fresh-go,body[data-platform-area="home"] .home-fresh-card--journal .home-fresh-go{margin-top:auto}
+@media(max-width:860px){body[data-platform-area="home"] .home-fresh-grid{grid-template-columns:1fr}body[data-platform-area="home"] .home-fresh-card{padding:14px 16px 14px;gap:6px}}
+/* T4: на телефоні поле блоку вужче (24 → 14 px), щоб картки були ширшими й текст у них займав менше рядків. */
+@media(max-width:560px){body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh{padding:22px 14px 18px}}

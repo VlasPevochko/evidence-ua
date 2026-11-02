@@ -349,3 +349,13 @@ body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-group>p{color:var(--spectrum-muted)}
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-panel button{border:1px solid var(--spectrum-line);border-radius:2px;background:none;color:var(--spectrum-text)}
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-appearance-panel button[aria-checked="true"]{border-color:var(--spectrum-accent);background:#c293ef24;color:var(--spectrum-accent)}
+/* T6 (2026-11-02): згорнуті рядки головної показують під назвою, що всередині (підказка .home-row-hint). «+» і «−» лишаються псевдоелементами summary. */
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(.home-path-outline,#home-about,#home-overview,#home-feedback)>summary .home-row-text{display:grid;gap:3px;min-width:0}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(.home-path-outline,#home-about,#home-overview,#home-feedback)>summary .home-row-title{color:var(--spectrum-text)}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(.home-path-outline,#home-about,#home-overview,#home-feedback)>summary .home-row-hint{display:block;color:var(--spectrum-muted);font:400 12px/1.5 Inter,system-ui,sans-serif}
+/* T6 (2026-11-02): рядок відгуку тримав застарілу округлу рамку з home-lower.css (її специфічність вища за правило для вкладених рядків вище), і текст упирався в рамку. Тепер він такий самий, як сусідні рядки: тонка лінія зверху, без рамки й заливки. */
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories #start-here .home-about-body>#home-feedback{margin:0;padding:0;border:0;border-top:1px solid var(--spectrum-line);border-radius:0;background:none;box-shadow:none}
+/* T5 (2026-11-02): підпис кнопки маршруту став «текст + стрілка в окремому aria-hidden span» (раніше стрілка була частиною тексту); відступ між ними задає gap. */
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories .path-card[data-home-path]>.path-start{gap:8px}
+/* T5 (2026-11-02): довші підписи питань угорі переносяться порівну, без висячого слова на другому рядку; де властивість не підтримано, лишається звичайний перенос. */
+body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-question-open{text-wrap:balance}

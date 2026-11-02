@@ -7,6 +7,12 @@ import {homeLearningHTML} from '../src/platform/learning-ui.mjs';
 import {homeSpectrumHTML} from '../src/platform/home-spectrum.mjs';
 import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
+import {homeFreshGridHTML} from '../src/platform/home-fresh.mjs';
+// Дані, з яких збирається блок «Нове на сайті» (T4): ті самі модулі, що вантажать сторінки розборів, схем і журналу.
+import {STUDIES} from '../dist/research-data.js';
+import {miniInterval} from '../dist/research-chart.js';
+import {CHANGES,SCIENCE} from '../dist/changes-data.js';
+import {SCENES} from '../dist/mechanisms-page.js';
 for(const area of catalog.areas.filter(a=>a.available))for(const href of [area.href,...area.units.map(u=>u.href)]){
   const file='dist/'+href.replace(/^\.\//,'').split(/[?#]/)[0];
   if(!fs.existsSync(file))throw Error('Catalog page missing: '+file);
@@ -32,6 +38,18 @@ const homeFile='dist/index.html';
 const home=fs.readFileSync(homeFile,'utf8');
 const withRoutes=home.replace(/<!-- EUA_HOME_SPECTRUM_START -->[\s\S]*?<!-- EUA_HOME_SPECTRUM_END -->/,'<!-- EUA_HOME_SPECTRUM_START -->'+homeSpectrumHTML()+'<!-- EUA_HOME_SPECTRUM_END -->').replace(/<!-- EUA_HOME_LEARNING_START -->[\s\S]*?<!-- EUA_HOME_LEARNING_END -->/,'<!-- EUA_HOME_LEARNING_START -->'+homeLearningHTML()+'<!-- EUA_HOME_LEARNING_END -->').replace(/<!-- EUA_HOME_DIRECTIONS_START -->[\s\S]*?<!-- EUA_HOME_DIRECTIONS_END -->/,'<!-- EUA_HOME_DIRECTIONS_START -->'+homeDirections+'<!-- EUA_HOME_DIRECTIONS_END -->');
 if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
+// Блок «Нове на сайті» (T4): три картки з даних. Яке дослідження показати в картці А, береться з ручного списку «Останні розбори» на самій головній
+// (рішення власника D6): перше з тих, що мають графік. Нового поля дати в дослідженнях немає й не потрібно.
+{
+ const html=fs.readFileSync(homeFile,'utf8');
+ if(!html.includes('<!-- EUA_HOME_FRESH_START -->')||!html.includes('<!-- EUA_HOME_FRESH_END -->'))throw Error('EUA_HOME_FRESH markers are missing in dist/index.html');
+ const latest=(html.match(/<ul class="home-fresh-latest"[\s\S]*?<\/ul>/)||[''])[0];
+ const featured=[...latest.matchAll(/research\.html#([a-z0-9-]+)/g)].map(match=>match[1]).find(id=>STUDIES.some(study=>study.id===id&&study.chart));
+ if(!featured)throw Error('The «Останні розбори» list on the home has no write-up with a chart');
+ const grid=homeFreshGridHTML({studies:STUDIES,latestStudyId:featured,changes:CHANGES,science:SCIENCE,scenes:SCENES,miniInterval});
+ const next=html.replace(/<!-- EUA_HOME_FRESH_START -->[\s\S]*?<!-- EUA_HOME_FRESH_END -->/,()=>'<!-- EUA_HOME_FRESH_START -->'+grid+'<!-- EUA_HOME_FRESH_END -->');
+ if(next!==html)fs.writeFileSync(homeFile,next);
+}
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
  const next=old.replaceAll('platform-shell.js?v=59','platform-shell.js?v=60').replaceAll('home-feedback.js?v=59','home-feedback.js?v=60').replaceAll('home-entry.css?v=57','home-entry.css?v=60').replaceAll('directions.js?v=59','directions.js?v=60');
@@ -341,6 +359,83 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  const updates={'site-header.js?v=14':'site-header.js?v=15','platform-shell.js?v=107':'platform-shell.js?v=108','directions.js?v=110':'directions.js?v=111','home-spectrum.js?v=4':'home-spectrum.js?v=5','fat-burning.js?v=12':'fat-burning.js?v=13','changes-page.js?v=13':'changes-page.js?v=14'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Згорнуті рядки головної з підказками (T6, 2026-11-02): стилі головної (v=5) і сторінка журналу (v=15).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-spectrum.css?v=4':'home-spectrum.css?v=5','changes-page.js?v=14':'changes-page.js?v=15'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Підписи кнопок-посилань на головній (T5, 2026-11-02): стилі головної (v=6: відступ у кнопці маршруту), стилі меню напрямів (home-lens v=5: стрілка не осиротіє) і сторінка журналу (v=16).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-spectrum.css?v=5':'home-spectrum.css?v=6','home-lens.css?v=4':'home-lens.css?v=5','changes-page.js?v=15':'changes-page.js?v=16'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Єдиний рядок «хто й коли перевірив» (T8, 2026-11-02): сторінка досліджень (research-page.js v=7: клас eua-stamp) і журнал (v=17). Стилі eua-stamp.css нові (v=1).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'research-page.js?v=6':'research-page.js?v=7','changes-page.js?v=16':'changes-page.js?v=17'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Мініатюри інтервальних графіків і «лінія інтервалу» (T1, 2026-11-02): сторінка розборів (research-page.js v=8, research-page.css v=6), стилі «Нове» (home-fresh.css v=2), журнал (v=18).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'research-page.js?v=7':'research-page.js?v=8','research-page.css?v=5':'research-page.css?v=6','home-fresh.css?v=1':'home-fresh.css?v=2','changes-page.js?v=17':'changes-page.js?v=18'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Три картки різної форми в блоці «Нове на сайті» (T4, 2026-11-02): стилі (home-fresh.css v=3) і журнал (v=19).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-fresh.css?v=2':'home-fresh.css?v=3','changes-page.js?v=18':'changes-page.js?v=19'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Значки типів джерел у розборах (T2, 2026-11-02): сторінка розборів (research-page.js v=9, research-page.css v=7; новий research-types.js v=1), палітра з новими токенами --st-N (palette-cosmic.css v=8), журнал (v=20).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'research-page.js?v=8':'research-page.js?v=9','research-page.css?v=6':'research-page.css?v=7','palette-cosmic.css?v=7':'palette-cosmic.css?v=8','changes-page.js?v=19':'changes-page.js?v=20'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Бічні примітки з джерелами на сторінці розборів (T3, 2026-11-02): research-page.js v=10, research-page.css v=8 (новий research-sidenote.js v=1), журнал (v=21).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'research-page.js?v=9':'research-page.js?v=10','research-page.css?v=7':'research-page.css?v=8','changes-page.js?v=20':'changes-page.js?v=21'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

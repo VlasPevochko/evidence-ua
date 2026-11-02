@@ -13,6 +13,7 @@ import {betaAlanineBase, betaAlanineModule} from '../src/evidence/supplements/be
 import {citrullineBase, citrullineModule} from '../src/evidence/supplements/citrulline/module.mjs';
 import {electrolytesBase, electrolytesModule} from '../src/evidence/supplements/electrolytes/module.mjs';
 import {ConfidenceBadge, SourceCard, claimButton, escapeHTML as e} from '../src/evidence/core/components.mjs';
+import {provenanceStatus} from '../src/evidence/core/provenance.mjs';
 
 const root = process.cwd();
 const indexPath = path.join(root, 'dist/index.html');
@@ -22,7 +23,7 @@ const types = {efficacy: 'Ефект', safety: 'Безпека'};
 const layers = {human_outcome: 'люди', mechanistic: 'лабораторія'};
 
 export const cards = [
-  {key: 'omega', base: omegaBase, module: omegaModule, art: '--base-x:75%;--base-y:0%', file: 'src/evidence/supplements/omega/module.mjs', exportName: 'omegaBase',
+  {key: 'omega', base: omegaBase, module: omegaModule, art: '--base-x:75%;--base-y:0%', file: 'src/evidence/supplements/omega/module.mjs', exportName: 'omegaBase', approvedOn: '2026-10-21',
     headline: 'Знижує тригліцериди. Серце майже не захищає',
     definition: 'Омега-3 — група жирних кислот. EPA і DHA містяться в жирній рибі й риб’ячому жирі, рослинна ALA — у льоні, волоських горіхах, ріпаковій олії.',
     lead: 'У великих дослідженнях капсули EPA і DHA майже не змінили ризик інфарктів, інсультів і смертність, але знизили тригліцериди. У дозах понад 1 г на добу зростав ризик фібриляції передсердь.',
@@ -32,7 +33,7 @@ export const cards = [
     safetyTitle: 'Перш ніж приймати',
     safety: ['<b>Є фібриляція передсердь чи ризик її?</b> У великих дослідженнях омега-3 підвищувала цей ризик, сильніше — у дозах понад 1 г на добу. Порадься з лікарем.', '<b>Хочеш знизити тригліцериди?</b> Це питання до лікаря: зниження тригліцеридів саме по собі не довело менше серцевих подій.', '<b>Рослинна ALA (льон, горіхи)</b> — інша речовина. Висновки про EPA і DHA на неї не переносимо.'],
     facts: [['Тригліцериди', '≈ −15%', 'що більша доза, то сильніше'], ['Події ІХС', '1 з ~167', 'стільки людей мають приймати, щоб уникнути однієї події; низька певність'], ['Рівень впевненості', 'попередній', 'біля кожного твердження; формального наукового перегляду ще не було']]},
-  {key: 'vitd', base: vitdBase, module: vitdModule, art: '--base-x:100%;--base-y:0%', file: 'src/evidence/supplements/vitd/module.mjs', exportName: 'vitdBase',
+  {key: 'vitd', base: vitdBase, module: vitdModule, art: '--base-x:100%;--base-y:0%', file: 'src/evidence/supplements/vitd/module.mjs', exportName: 'vitdBase', approvedOn: '2026-10-21',
     headline: 'Без дефіциту від переломів не захищає',
     definition: 'Вітамін D допомагає засвоювати кальцій. Він утворюється в шкірі під сонцем і надходить із деяких продуктів.',
     lead: 'У дорослих, яких не відбирали за дефіцитом, сам вітамін D не зменшив переломів і не змінив загальної смертності. Інфекцій дихальних шляхів було трохи менше. Дуже великі разові дози шкодили.',
@@ -42,7 +43,7 @@ export const cards = [
     safetyTitle: 'Перш ніж приймати',
     safety: ['<b>Не бери великих разових доз.</b> 500 000 МО раз на рік у жінок від 70 років підвищили частоту падінь і переломів.', '<b>Підозрюєш дефіцит?</b> Це перевіряють аналізом крові й лікують з лікарем. Висновки цієї картки — про прийом без відбору за дефіцитом.', '<b>Більше — не краще.</b> Надлишок вітаміну D може шкодити.'],
     facts: [['Переломи', '1,00', 'відношення ризиків для самого вітаміну D (69 РКД, 2026)'], ['Інфекції', '61,3% проти 62,3%', 'мали хоча б одну інфекцію за час досліджень'], ['Рівень впевненості', 'попередній', 'біля кожного твердження; формального наукового перегляду ще не було']]},
-  {key: 'caffeine', base: caffeineBase, module: caffeineModule, art: '--base-x:50%;--base-y:0%', file: 'src/evidence/supplements/caffeine/module.mjs', exportName: 'caffeineBase', scale: 'linear',
+  {key: 'caffeine', base: caffeineBase, module: caffeineModule, art: '--base-x:50%;--base-y:0%', file: 'src/evidence/supplements/caffeine/module.mjs', exportName: 'caffeineBase', scale: 'linear', approvedOn: '2026-10-21',
     headline: 'Допомагає на витривалість. Ціна — сон',
     definition: 'Кофеїн — стимулятор, який міститься в каві, чаї, енергетиках і деяких добавках. Він впливає на відчуття бадьорості й навантаження.',
     lead: 'Кофеїн приблизно за годину до навантаження допомагає швидше пройти дистанцію й трохи додає сили. Увечері він скорочує сон, а енергетики тимчасово підвищують тиск.',
@@ -52,7 +53,7 @@ export const cards = [
     safetyTitle: 'Перш ніж приймати',
     safety: ['<b>Тренуєшся ввечері?</b> Кофеїн скорочує сон у середньому на 35–45 хв. За розрахунком авторів огляду каву варто пити щонайменше за 8,8 год до сну, порцію передтренувальної добавки — за 13,2 год.', '<b>Вагітність або годування груддю</b> — не більше 200 мг на добу з усіх джерел.', '<b>Підвищений тиск чи хвороба серця?</b> Енергетики підвищують тиск, особливо під час навантаження. Спершу порадься з лікарем.', '<b>Підлітки</b> — не більше 3 мг на кілограм маси тіла на добу.'],
     facts: [['Доза', '3–6 мг/кг', 'приблизно за 60 хв до навантаження (ISSN 2021)'], ['Безпечно за добу', 'до 400 мг', 'дорослим; за раз — до 200 мг (EFSA 2015)'], ['Рівень впевненості', 'попередній', 'біля кожного твердження; формального наукового перегляду ще не було']]},
-  {key: 'magnesium', base: magnesiumBase, module: magnesiumModule, art: '--base-x:0%;--base-y:100%', file: 'src/evidence/supplements/magnesium/module.mjs', exportName: 'magnesiumBase', scale: 'linear', approvedOn: '22 жовтня 2026 року',
+  {key: 'magnesium', base: magnesiumBase, module: magnesiumModule, art: '--base-x:0%;--base-y:100%', file: 'src/evidence/supplements/magnesium/module.mjs', exportName: 'magnesiumBase', scale: 'linear', approvedOn: '2026-10-22',
     headline: 'Тиск — трохи нижчий. Від судом не рятує',
     definition: 'Магній — мінерал, потрібний для роботи нервів, м’язів та багатьох ферментів. Його можна отримувати з горіхів, насіння, бобових і цільнозернових.',
     lead: 'Добавки магнію трохи знижують тиск і, можливо, допомагають швидше засинати літнім людям з безсонням. Нічних судом у літніх вони не зменшують. Найчастіший побічний ефект — діарея.',
@@ -62,7 +63,7 @@ export const cards = [
     safetyTitle: 'Перш ніж приймати',
     safety: ['<b>Діарея й скарги на кишківник</b> — найчастіші побічні ефекти: у дослідженнях їх мали 11–37% тих, хто приймав магній.', '<b>Не більше 350 мг на добу з добавок</b> — це офіційна верхня межа (магній з їжі сюди не входить).', '<b>Лікуєш тиск або маєш хворобу нирок?</b> Добавка не замінює лікування — порадься з лікарем.'],
     facts: [['Тиск', '−2,0 / −1,8', 'мм рт. ст., медіана 368 мг/добу протягом 3 місяців'], ['Межа з добавок', '350 мг', 'на добу для дорослих'], ['Рівень впевненості', 'попередній', 'біля кожного твердження; формального наукового перегляду ще не було']]},
-  {key: 'collagen', base: collagenBase, module: collagenModule, art: '--base-x:25%;--base-y:100%', file: 'src/evidence/supplements/collagen/module.mjs', exportName: 'collagenBase', scale: 'linear', approvedOn: '22 жовтня 2026 року', scaleNote: 'Крапка — середня оцінка, смуга — 95% довірчий інтервал; кожен рядок має власну шкалу. Порожня крапка — інтервалу в джерелі немає, є лише значущість.',
+  {key: 'collagen', base: collagenBase, module: collagenModule, art: '--base-x:25%;--base-y:100%', file: 'src/evidence/supplements/collagen/module.mjs', exportName: 'collagenBase', scale: 'linear', approvedOn: '2026-10-22', scaleNote: 'Крапка — середня оцінка, смуга — 95% довірчий інтервал; кожен рядок має власну шкалу. Порожня крапка — інтервалу в джерелі немає, є лише значущість.',
     headline: 'Малий плюс до тренувань. Докази слабкі',
     definition: 'Колаген — білок сполучної тканини. Добавки часто містять його фрагменти — колагенові пептиди.',
     lead: 'Разом із тренуваннями колаген дає трохи більше безжирової маси й сили. При остеоартриті колін біль зменшується, а шкіра стає зволоженішою, але дослідження дуже різні й частина з них упереджена.',
@@ -72,7 +73,7 @@ export const cards = [
     safetyTitle: 'Перш ніж приймати',
     safety: ['<b>Болять суглоби?</b> Дані про біль — у людей з остеоартритом колін, і результати досліджень дуже різняться. Причину болю з’ясуй з лікарем.', '<b>Травма сухожилля чи зв’язки?</b> Колаген не замінює реабілітацію: дані про сухожилля мають дуже низьку певність.', '<b>Ефект на шкіру</b> показано в дослідженнях з упередженнями — очікування варто тримати скромними.'],
     facts: [['Безжирова маса', 'SMD 0,48', 'разом із тренуваннями; помірна певність'], ['Сила', 'SMD 0,19', 'разом із тренуваннями; низька певність'], ['Рівень впевненості', 'попередній', 'біля кожного твердження; формального наукового перегляду ще не було']]},
-  {key: 'beta-alanine', base: betaAlanineBase, module: betaAlanineModule, art: '--base-x:50%;--base-y:100%', file: 'src/evidence/supplements/beta-alanine/module.mjs', exportName: 'betaAlanineBase', scale: 'linear', approvedOn: '22 жовтня 2026 року',
+  {key: 'beta-alanine', base: betaAlanineBase, module: betaAlanineModule, art: '--base-x:50%;--base-y:100%', file: 'src/evidence/supplements/beta-alanine/module.mjs', exportName: 'betaAlanineBase', scale: 'linear', approvedOn: '2026-10-22',
     headline: 'Для зусиль на 1–10 хвилин. Склад тіла не змінює',
     definition: 'Бета-аланін — амінокислота, з якої організм утворює карнозин у м’язах. Карнозин допомагає протидіяти зміні кислотності під час інтенсивної роботи.',
     lead: 'Після кількох тижнів щоденного прийому бета-аланін трохи подовжує виснажливі зусилля на 0,5–10 хвилин. На склад тіла не впливає. Єдиний підтверджений побічний ефект — поколювання шкіри.',
@@ -82,7 +83,7 @@ export const cards = [
     safetyTitle: 'Перш ніж приймати',
     safety: ['<b>Поколювання шкіри</b> після прийому — очікуваний ефект; воно менше, якщо ділити дозу на прийоми по 1,6 г.', '<b>Ефект не з першої дози:</b> карнозин у м’язах накопичується тижнями щоденного прийому.', '<b>Тренуєшся на силу чи масу?</b> Склад тіла бета-аланін не змінює.'],
     facts: [['Доза', '4–6 г/добу', 'щонайменше 2–4 тижні (ISSN 2015)'], ['Поколювання', '× 8,9', 'шанси порівняно з плацебо'], ['Рівень впевненості', 'попередній', 'біля кожного твердження; формального наукового перегляду ще не було']]},
-  {key: 'citrulline', base: citrullineBase, module: citrullineModule, art: '--base-x:75%;--base-y:100%', file: 'src/evidence/supplements/citrulline/module.mjs', exportName: 'citrullineBase', scale: 'linear', approvedOn: '22 жовтня 2026 року', scaleNote: 'Крапка — середня оцінка, смуга — 95% довірчий інтервал; кожен рядок має власну шкалу. Порожня крапка — інтервалу в джерелі немає, є лише значущість.',
+  {key: 'citrulline', base: citrullineBase, module: citrullineModule, art: '--base-x:75%;--base-y:100%', file: 'src/evidence/supplements/citrulline/module.mjs', exportName: 'citrullineBase', scale: 'linear', approvedOn: '2026-10-22', scaleNote: 'Крапка — середня оцінка, смуга — 95% довірчий інтервал; кожен рядок має власну шкалу. Порожня крапка — інтервалу в джерелі немає, є лише значущість.',
     headline: 'Ефект малий або відсутній',
     definition: 'Цитрулін — амінокислота, яку організм може перетворювати на аргінін. Аргінін бере участь в утворенні оксиду азоту — сигнальної молекули для судин.',
     lead: 'У найбільшому метааналізі цитрулін-малат дав лише малий загальний ефект зі слабкими доказами. На витривалість і силу різниці не виявлено. Біль через добу після тренування трохи менший, але далі — ні.',
@@ -92,7 +93,7 @@ export const cards = [
     safetyTitle: 'Перш ніж приймати',
     safety: ['<b>Не чекай великого ефекту:</b> у найбільшому огляді певність низька або дуже низька, надійної дози й часу прийому не встановлено.', '<b>Тиск:</b> метааналіз про зниження тиску відкликано — на цитрулін як на засіб від тиску не розраховуй.', '<b>Склад добавок</b> цитрулін-малату в дослідженнях не завжди перевіряли.'],
     facts: [['Загальний ефект', 'g 0,16', 'низька або дуже низька певність'], ['Витривалість і сила', 'без різниці', 'інтервали перетинають нуль'], ['Рівень впевненості', 'попередній', 'біля кожного твердження; формального наукового перегляду ще не було']]},
-  {key: 'electrolytes', base: electrolytesBase, module: electrolytesModule, art: '--base-x:100%;--base-y:100%', file: 'src/evidence/supplements/electrolytes/module.mjs', exportName: 'electrolytesBase', scale: 'linear', approvedOn: '22 жовтня 2026 року', scaleNote: 'Крапка — середня оцінка, смуга — 90% інтервал (так подано в джерелі); кожен рядок має власну шкалу.',
+  {key: 'electrolytes', base: electrolytesBase, module: electrolytesModule, art: '--base-x:100%;--base-y:100%', file: 'src/evidence/supplements/electrolytes/module.mjs', exportName: 'electrolytesBase', scale: 'linear', approvedOn: '2026-10-22', scaleNote: 'Крапка — середня оцінка, смуга — 90% інтервал (так подано в джерелі); кожен рядок має власну шкалу.',
     headline: 'Для довгих навантажень і відновлення',
     definition: 'Електроліти — мінеральні іони, зокрема натрій і калій. Вони беруть участь у водному балансі та роботі нервів і м’язів.',
     lead: 'Після зневоднення спортивний напій з вуглеводами й електролітами відновлює рідину краще за воду. Під час довгого навантаження гіпотонічний напій трохи краще зберігає рідину. Пити забагато — теж ризик.',
@@ -171,7 +172,7 @@ export function SupplementCard(card) {
 <section class="pc-not" aria-labelledby="${k}-not-title"><h2 id="${k}-not-title">Чого ми не стверджуємо</h2>${m.notClaimed.map(n => `<article><h3>${e(n.topic)}</h3><p>${e(n.reason)}</p></article>`).join('')}</section>
 <details class="pc-more"><summary>Межі всіх досліджень</summary><ul>${m.commonLimits.map(l => `<li>${e(l)}</li>`).join('')}</ul></details>
 <details class="pc-more"><summary>Джерела (${b.sources.length})</summary><div class="eua-source-grid">${sources}</div></details>
-<p class="pc-status">Науковий перегляд: не завершено · Формулювання погоджено ${e(card.approvedOn || '21 жовтня 2026 року')} · Матеріал освітній і не є персональною медичною рекомендацією.</p>
+${provenanceStatus(card.approvedOn)}
 <dialog class="eua-dialog" data-supplement-dialog="${k}" aria-label="Докази до твердження: ${e(m.title)}"><div data-evidence-content></div></dialog>
 </div>`;
 }

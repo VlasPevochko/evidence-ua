@@ -4,6 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {proteinBase, proteinModule} from '../src/evidence/supplements/protein/module.mjs';
 import {ConfidenceBadge, SourceCard, claimButton, escapeHTML as e} from '../src/evidence/core/components.mjs';
+import {provenanceStatus} from '../src/evidence/core/provenance.mjs';
+
+// Дата погодження формулювань картки (раніше була вписана в сам рядок). Науковий перегляд досі не завершено: це лише дата редакторського погодження.
+export const approvedOn = '2026-10-18';
 
 const root = process.cwd();
 const indexPath = path.join(root, 'dist/index.html');
@@ -44,7 +48,7 @@ export function ProteinCard() {
 <section class="pc-not" aria-labelledby="pc-not-title"><h2 id="pc-not-title">Чого ми не стверджуємо</h2>${proteinModule.notClaimed.map(n => `<article><h3>${e(n.topic)}</h3><p>${e(n.reason)}</p></article>`).join('')}</section>
 <details class="pc-more"><summary>Практично: чи потрібна добавка</summary><ul><li><strong>Білка в раціоні вистачає?</strong> Порошок може бути необов’язковим. Звичайна їжа теж постачає білок.</li><li><strong>Незручно добирати білок їжею?</strong> Добавка може допомогти закрити цю прогалину.</li><li><strong>На упаковці написано «protein»?</strong> Подивися, скільки грамів білка містить порція і який склад. Сам напис не показує, чи потрібна покупка.</li><li><strong>Хочеш витратити розумно?</strong> Порівняй вартість однакової кількості білка у звичайних продуктах і добавках.</li></ul><p class="pc-note">Це практичні орієнтири редакції, а не результат досліджень: метааналізи не порівнювали ціни й продукти.</p></details>
 <details class="pc-more"><summary>Джерела (${proteinBase.sources.length})</summary><div class="eua-source-grid">${sources}</div><p class="pc-links"><a href="protein-meta.html">Простою мовою: як читати метааналіз Morton</a><a href="https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional/" target="_blank" rel="noopener noreferrer">NIH ODS — білок і спортивні добавки ↗</a></p></details>
-<p class="pc-status">Науковий перегляд: не завершено · Формулювання погоджено 18 жовтня 2026 року · Матеріал освітній і не є персональною медичною рекомендацією.</p>
+${provenanceStatus(approvedOn)}
 <dialog class="eua-dialog" data-protein-dialog aria-label="Докази до твердження про протеїн"><div data-evidence-content></div></dialog>
 </div>`;
 }

@@ -32,5 +32,6 @@ export const EXCLUDED_CSS={
   'dist/fonts.css':'лише підключення шрифтів',
   'dist/palette-cosmic.css':'сам згенерований файл палітри',
   'dist/site-header.css':'копія src/platform/site-header.css (ціль палітри там)',
-  'dist/evidence/evidence.css':'копія src/evidence/evidence.css (ціль палітри там)'
+  'dist/evidence/evidence.css':'копія src/evidence/evidence.css (ціль палітри там)',
+  'dist/eua-stamp.css':'лише currentColor (колір береться від тексту рядка, а той уже слідує палітрі) і запасний сірий для браузерів без color-mix; власних кольорів палітри немає'
 };

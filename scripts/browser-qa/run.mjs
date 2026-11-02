@@ -2043,6 +2043,201 @@ async function compactBannerFlow(browser, origin, viewport) {
   }
 }
 
+async function provenanceStampFlow(browser, origin, viewport) {
+  // Бриф T8 (2026-11-02): рядок «хто й коли перевірив» має однаковий вигляд під досьє добавок і в картці розбору, слова не змінені.
+  // Дивимось у браузері: рядок видимий, не виходить за ширину, лінія ліворуч є, контраст не менший за 4,5:1.
+  const where = `provenance stamp @${viewport.name}`;
+  const measure = node => {
+    const channel = value => { const v = value / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+    const luminance = rgb => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b); };
+    let background = 'rgb(0, 0, 0)';
+    for (let el = node; el; el = el.parentElement) { const color = getComputedStyle(el).backgroundColor; const alpha = color.match(/[\d.]+/g)[3]; if (alpha === undefined || Number(alpha) > 0.9) { background = color; break; } }
+    const [hi, lo] = [luminance(getComputedStyle(node).color), luminance(background)].sort((a, b) => b - a);
+    const box = node.getBoundingClientRect(), style = getComputedStyle(node);
+    return {text: node.textContent.replace(/\s+/g, ' ').trim(), right: Math.round(box.right), width: Math.round(box.width), height: Math.round(box.height), rule: style.borderLeftWidth, ruleStyle: style.borderLeftStyle, contrast: (hi + 0.05) / (lo + 0.05), fontSize: parseFloat(style.fontSize)};
+  };
+  for (const id of ['supplement-caffeine', 'supplement-protein']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/index.html#' + id);
+    try {
+      const line = page.locator(`#${id} .pc-status`);
+      await line.waitFor({state: 'attached'});
+      await line.scrollIntoViewIfNeeded();
+      const info = await line.evaluate(measure);
+      check(where, /^Науковий перегляд: не завершено · Формулювання погоджено \d{1,2} жовтня 2026 року · Матеріал освітній і не є персональною медичною рекомендацією\.$/.test(info.text), `${id}: the sentence is unchanged: ${info.text}`);
+      check(where, info.rule === '2px' && info.ruleStyle === 'solid', `${id}: the shared rule on the left is drawn (${info.rule} ${info.ruleStyle})`);
+      check(where, info.right <= viewport.width && info.fontSize >= 12, `${id}: the line fits the screen width and is at least 12px`);
+      check(where, info.contrast >= 4.5, `${id}: contrast ${info.contrast.toFixed(2)}:1 is below 4.5:1`);
+      check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, `${id}: no sideways scrolling`);
+      if (id === 'supplement-caffeine') await artifact(page, viewport, 'provenance-stamp-dossier', line);
+      check(where, seen.pageErrors.length === 0 && seen.external.length === 0, `${id}: no errors and no third-party requests`);
+    } finally { await context.close(); }
+  }
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  try {
+    await page.locator('.rs-card summary').first().click();
+    // T3: від 1360 px рядок джерела в картці схований, а «Перевірено …» стоїть у бічній примітці (той самий клас eua-stamp).
+    const line = viewport.width >= 1360 ? page.locator('.rs-item:has(.rs-card[open]) .eua-sidenote.eua-stamp').first() : page.locator('.rs-card[open] .rs-source.eua-stamp').first();
+    await line.waitFor({state: 'visible'});
+    const info = await line.evaluate(measure);
+    check(where, /Перевірено \d{2}\.\d{2}\.2026\.$/.test(info.text), `research: the sentence ends with the check date: ${info.text}`);
+    check(where, info.rule === '2px' && info.ruleStyle === 'solid', `research: the shared rule on the left is drawn (${info.rule} ${info.ruleStyle})`);
+    check(where, info.right <= viewport.width && info.contrast >= 4.5, `research: the line fits (${info.right}px) and has contrast ${info.contrast.toFixed(2)}:1`);
+    await artifact(page, viewport, 'provenance-stamp-research', line);
+    check(where, seen.pageErrors.length === 0 && seen.external.length === 0, 'research: no errors and no third-party requests');
+  } finally { await context.close(); }
+}
+
+async function intervalMotifFlow(browser, origin, viewport) {
+  // Бриф T1 (2026-11-02): мініатюри інтервальних графіків у згорнутих картках розборів і «лінія інтервалу» між великими блоками головної.
+  const where = `interval motif @${viewport.name}`;
+  const research = await open(browser, origin, viewport, '/research.html');
+  try {
+    const page = research.page;
+    await page.locator('.rs-card').first().waitFor({state: 'attached'});
+    const minis = await page.evaluate(() => [...document.querySelectorAll('.rs-card')].map(card => {
+      const mini = card.querySelector(':scope > summary > .eua-mini'), more = card.querySelector(':scope > summary > .rs-more');
+      if (!mini) return {id: card.id, mini: false, open: card.open};
+      const box = mini.getBoundingClientRect(), cardBox = card.getBoundingClientRect(), moreBox = more.getBoundingClientRect();
+      return {id: card.id, mini: true, open: card.open, hidden: mini.getAttribute('aria-hidden') === 'true', width: Math.round(box.width), height: Math.round(box.height),
+        insideCard: box.left >= cardBox.left && box.right <= cardBox.right, sameRowAsMore: box.top < moreBox.bottom && box.bottom > moreBox.top,
+        rows: mini.querySelectorAll('.eua-mi-row').length, texts: mini.querySelectorAll('text').length, nullInside: (() => { const n = mini.querySelector('.eua-mi-null'); return !!n && n.x1.baseVal.value >= 0 && n.x1.baseVal.value <= 132; })()};
+    }));
+    const withMini = minis.filter(item => item.mini);
+    check(where, minis.length >= 16 && withMini.length === 5, `exactly the five write-ups with a chart show a thumbnail, found ${withMini.length} of ${minis.length}`);
+    check(where, withMini.every(item => item.hidden && item.width >= 100 && item.height >= 40 && item.insideCard && item.sameRowAsMore), `every thumbnail is decorative, readable in size, inside its card and in the row of «Докладніше»: ${JSON.stringify(withMini.filter(item => !(item.hidden && item.insideCard && item.sameRowAsMore)))}`);
+    check(where, withMini.every(item => item.rows >= 2 && item.rows <= 4 && item.texts === 0 && item.nullInside), 'every thumbnail has two to four rows, a null line inside the plot and no text');
+    check(where, minis.filter(item => !item.mini).length === minis.length - 5, 'write-ups without a chart get no thumbnail and no placeholder');
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the research page must not scroll sideways');
+    // Згорнута картка з мініатюрою лишається компактною: мініатюра в одному рядку з «Докладніше», а не окремим рядком під ним.
+    const heights = await page.evaluate(() => {
+      const h = el => Math.round(el.getBoundingClientRect().height);
+      const withMini = document.querySelector('.rs-card.has-mini'), without = [...document.querySelectorAll('.rs-card')].find(card => !card.classList.contains('has-mini'));
+      return {withMini: h(withMini), without: h(without)};
+    });
+    check(where, heights.withMini - heights.without < 140, `a folded card with a thumbnail stays compact: ${JSON.stringify(heights)}`);
+    await artifact(page, viewport, 'interval-thumbnail-card', page.locator('.rs-card.has-mini').first());
+    // Відкриття картки не зламано: графік у тілі повний (усі ряди), а мініатюра лишається в шапці.
+    await page.locator('.rs-card.has-mini > summary').first().click();
+    const opened = await page.evaluate(() => { const card = document.querySelector('.rs-card.has-mini[open]'); return {full: card.querySelectorAll('.rs-crow:not(.rs-caxisrow)').length, mini: card.querySelectorAll('.eua-mi-row').length}; });
+    check(where, opened.full >= opened.mini && opened.mini >= 2, `the full chart keeps all rows while the thumbnail shows at most four: ${JSON.stringify(opened)}`);
+    check(where, research.seen.pageErrors.length === 0 && research.seen.external.length === 0, 'research: no errors and no third-party requests');
+  } finally { await research.context.close(); }
+  const home = await open(browser, origin, viewport, '/index.html');
+  try {
+    const page = home.page;
+    await page.locator('.home-fresh').scrollIntoViewIfNeeded();
+    const rules = await page.evaluate(() => [...document.querySelectorAll('.eua-interval-rule')].map(rule => {
+      const box = rule.getBoundingClientRect(), style = getComputedStyle(rule), next = rule.nextElementSibling;
+      return {width: Math.round(box.width), right: Math.round(box.right), height: Math.round(box.height), hidden: rule.getAttribute('aria-hidden') === 'true', drawn: style.backgroundImage.includes('radial-gradient') && style.backgroundImage.includes('linear-gradient'), next: next && (next.className || next.tagName), animated: style.animationName !== 'none' || parseFloat(style.transitionDuration) > 0};
+    }));
+    check(where, rules.length === 2, `two interval rules on the home, found ${rules.length}`);
+    check(where, rules.every(rule => rule.hidden && rule.drawn && !rule.animated && rule.width >= 120 && rule.right <= viewport.width && rule.height >= 10 && rule.height <= 20), `the rules are decorative, drawn, still and fit the screen: ${JSON.stringify(rules)}`);
+    check(where, rules.map(rule => rule.next).join('|') === 'home-fresh|home-library-section', `the rules stand before «Нове на сайті» and before the library: ${rules.map(rule => rule.next).join('|')}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
+    await artifact(page, viewport, 'interval-rule-home', page.locator('.eua-interval-rule').first());
+    check(where, home.seen.pageErrors.length === 0 && home.seen.external.length === 0, 'home: no errors and no third-party requests');
+  } finally { await home.context.close(); }
+}
+
+async function studyTypeChipsFlow(browser, origin, viewport) {
+  // Бриф T2 (2026-11-02): значок типу джерела в кожній картці розбору. Фігура й точний рядок типу первинні, колір другорядний; це не рейтинг.
+  const where = `study type chips @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  try {
+    await page.locator('.rs-card').first().waitFor({state: 'attached'});
+    const data = await page.evaluate(async () => { const m = await import('./research-data.js?v=4'), t = await import('./research-types.js?v=1'); return {types: m.STUDIES.map(s => s.type), families: m.STUDIES.map(s => (t.familyOf(s.type) || {}).id)}; });
+    const read = () => page.evaluate(() => {
+      const channel = value => { const v = value / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+      const luminance = rgb => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b); };
+      const ratio = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+      return [...document.querySelectorAll('.rs-card')].map(card => {
+        const chip = card.querySelector('.rs-meta .rs-type'); if (!chip) return null;
+        const glyph = chip.querySelector('.rs-glyph'), box = chip.getBoundingClientRect(), cardBox = card.getBoundingClientRect(), g = getComputedStyle(glyph), text = getComputedStyle(chip);
+        return {text: chip.querySelector('span').textContent, family: [...chip.classList].find(name => name.startsWith('rs-type--')).slice(9), right: Math.round(box.right), cardRight: Math.round(cardBox.right), left: Math.round(box.left), cardLeft: Math.round(cardBox.left), height: Math.round(box.height),
+          color: g.backgroundColor, radius: g.borderRadius, clip: g.clipPath, hidden: glyph.getAttribute('aria-hidden'), border: text.borderTopColor, textContrast: ratio(text.color, getComputedStyle(card).backgroundColor)};
+      });
+    });
+    const chips = await read();
+    check(where, chips.length === data.types.length && chips.every(Boolean), `every card has a chip: ${chips.length} of ${data.types.length}`);
+    check(where, chips.every((chip, i) => chip && chip.text === data.types[i]), 'every chip shows the exact type string from the data, in the data order');
+    check(where, chips.every((chip, i) => chip && chip.family === data.families[i]), 'every chip belongs to the family the table gives its type');
+    const expected = {meta: 'rgb(153, 217, 115)', systematic: 'rgb(58, 223, 215)', umbrella: 'rgb(255, 163, 207)', review: 'rgb(203, 193, 196)'};
+    check(where, chips.every(chip => chip && chip.color === expected[chip.family] && chip.border === expected[chip.family]), 'the shape and the border carry the family colour (cosmic palette)');
+    check(where, chips.every(chip => chip && chip.hidden === 'true'), 'every shape is decorative');
+    const shapeOk = chip => chip.family === 'meta' ? chip.radius === '50%' : chip.family === 'systematic' ? chip.clip === 'none' && chip.radius === '0px' : chip.clip !== 'none';
+    check(where, chips.every(chip => chip && shapeOk(chip)), 'each family has its own shape (circle, square, triangle, diamond)');
+    check(where, new Set(chips.map(chip => chip.family + ':' + chip.clip + ':' + chip.radius)).size === 4, 'four shapes are told apart without colour');
+    check(where, chips.every(chip => chip && chip.right <= chip.cardRight && chip.left >= chip.cardLeft && chip.height >= 20), 'chips stay inside their cards');
+    check(where, chips.every(chip => chip && chip.textContrast >= 4.5), `chip text contrast in the cosmic palette: ${Math.min(...chips.map(chip => chip.textContrast)).toFixed(2)}:1`);
+    // Зелена палітра: ті самі фігури й ті самі запасні кольори, текст не менш контрастний.
+    await page.evaluate(() => { document.documentElement.dataset.palette = 'green'; });
+    const green = await read();
+    check(where, green.every((chip, i) => chip && chip.family === chips[i].family && chip.color === expected[chip.family]), 'the green palette shows the same families with the fallback colours');
+    check(where, green.every(chip => chip && chip.textContrast >= 4.5), `chip text contrast in the green palette: ${Math.min(...green.map(chip => chip.textContrast)).toFixed(2)}:1`);
+    await page.evaluate(() => { delete document.documentElement.dataset.palette; });
+    const legend = await page.evaluate(() => ({rows: [...document.querySelectorAll('#rs-legend li')].map(li => li.textContent.replace(/\s+/g, ' ').trim()), visible: document.querySelector('#rs-legend').getBoundingClientRect().height > 0, sentence: document.body.innerText.split('Колір і значок показують лише тип джерела, а не рівень впевненості.').length - 1, overflow: document.documentElement.scrollWidth - innerWidth}));
+    check(where, legend.rows.length === 4 && legend.visible && legend.rows[0].includes('Мета-аналіз') && legend.rows[3].startsWith('Огляд'), `the legend has one row per family: ${legend.rows.join(' | ')}`);
+    check(where, legend.sentence === 1, 'the sentence that colour and shape show only the type appears once');
+    check(where, legend.overflow <= 1, 'the research page must not scroll sideways');
+    await artifact(page, viewport, 'study-type-chips-legend', page.locator('.rs-note'));
+    await artifact(page, viewport, 'study-type-chips-card', page.locator('.rs-card').nth(1));
+    check(where, seen.pageErrors.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally { await context.close(); }
+}
+
+async function sidenotesFlow(browser, origin, viewport) {
+  // Бриф T3 (2026-11-02, рішення D5): бічні примітки з джерелами від 1360 px; нижче лишається рядок джерела в картці. Колонку 860 px не зсуваємо.
+  const where = `sidenotes @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  try {
+    await page.locator('.rs-item').first().waitFor({state: 'attached'});
+    const margin = viewport.width >= 1360;
+    const read = () => page.evaluate(() => {
+      const visible = node => { const rect = node.getBoundingClientRect(), style = getComputedStyle(node); return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'; };
+      return [...document.querySelectorAll('.rs-item')].map(item => {
+        const card = item.querySelector(':scope > .rs-card'), note = item.querySelector(':scope > .eua-sidenote'), inline = card.querySelector('.rs-source'), a = note.querySelector('a'), b = inline.querySelector('a');
+        const c = card.getBoundingClientRect(), n = note.getBoundingClientRect();
+        return {id: card.id, noteVisible: visible(note), inlineVisible: visible(inline), sibling: note.previousElementSibling === card, insideCard: !!card.querySelector('.eua-sidenote'),
+          same: a.href === b.href && a.target === '_blank' && a.rel === 'noopener noreferrer' && a.textContent.replace(/\s+/g, ' ') === b.textContent.replace(/\s+/g, ' '),
+          top: Math.round(n.top - c.top), left: Math.round(n.left), right: Math.round(n.right), cardRight: Math.round(c.right), noteTop: Math.round(n.top + scrollY), noteBottom: Math.round(n.bottom + scrollY), width: Math.round(n.width), cardBottom: Math.round(c.bottom + scrollY)};
+      });
+    });
+    const overlaps = items => items.slice(1).filter((item, i) => item.noteTop < items[i].noteBottom - 1).map(item => item.id);
+    let items = await read();
+    check(where, items.length === 16, `sixteen items, sixteen notes: ${items.length}`);
+    check(where, items.every(item => item.sibling && !item.insideCard), 'every note is the sibling of its card, not inside it');
+    check(where, items.every(item => item.same), 'every note link equals the link in its card (address, target, rel, label)');
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the research page must not scroll sideways');
+    if (margin) {
+      check(where, items.every(item => item.noteVisible), 'from 1360 px every note is visible next to its card');
+      check(where, items.every(item => Math.abs(item.top) <= 2), `each note starts at the top of its card: ${JSON.stringify(items.filter(item => Math.abs(item.top) > 2).map(item => [item.id, item.top]))}`);
+      check(where, items.every(item => item.left >= item.cardRight + 8 && item.right <= viewport.width - 4 && item.width >= 220), `notes stay in the margin, inside the window, at least 220px wide: ${JSON.stringify(items.slice(0, 1))}`);
+      check(where, overlaps(items).length === 0, `notes do not overlap each other: ${overlaps(items).join(',')}`);
+      // Картку відкрито: рядок джерела в картці схований, примітка на місці, сусідні примітки не накладаються, колонка не зсунулась.
+      const before = await page.locator('.rs-card').first().evaluate(card => Math.round(card.getBoundingClientRect().left));
+      await page.locator('.rs-card summary').first().click();
+      await page.waitForTimeout(450);
+      items = await read();
+      check(where, !items[0].inlineVisible && items[0].noteVisible && Math.abs(items[0].top) <= 2, 'the open card hides its own source line and keeps its note');
+      check(where, overlaps(items).length === 0 && items[1].noteTop >= items[0].cardBottom - 1, 'the next note moved down with the opened card');
+      check(where, Math.round(await page.locator('.rs-card').first().evaluate(card => card.getBoundingClientRect().left)) === before, 'the column did not shift');
+      // Порядок табуляції: картка, потім її примітка.
+      await page.locator('.rs-card summary').first().click();
+      await page.locator('.rs-card summary').first().focus();
+      await page.keyboard.press('Tab');
+      check(where, await page.evaluate(() => document.activeElement && document.activeElement.closest('.eua-sidenote') !== null && document.activeElement.closest('.rs-item') === document.querySelector('.rs-item')), 'after the card the focus goes to its note');
+      await artifact(page, viewport, 'sidenotes', page.locator('#rs-list'));
+    } else {
+      check(where, items.every(item => !item.noteVisible), 'below 1360 px no note is shown');
+      await page.locator('.rs-card summary').first().click();
+      await page.waitForTimeout(450);
+      items = await read();
+      check(where, items[0].inlineVisible && !items[0].noteVisible, 'below 1360 px the source line stays in the card');
+    }
+    check(where, seen.pageErrors.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally { await context.close(); }
+}
+
 async function researchFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-27: розбори дослідження коротко й ясно; відповідь видно одразу, деталі згорнуті.
   const where = `research @${viewport.name}`;
@@ -2153,6 +2348,49 @@ async function mechanismsFlow(browser, origin, viewport) {
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow');
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'no errors');
   await context.close();
+}
+
+async function homeFreshCardsFlow(browser, origin, viewport) {
+  // Бриф T4 (2026-11-02): три картки різної форми в блоці «Нове на сайті». Висота блоку на телефоні до зміни: 950 px (390), бюджет брифу +150.
+  const where = `home fresh cards @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('.home-fresh').scrollIntoViewIfNeeded();
+    const info = await page.evaluate(() => {
+      const box = node => { const rect = node.getBoundingClientRect(); return {x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height), right: Math.round(rect.right)}; };
+      const cards = [...document.querySelectorAll('.home-fresh-card')];
+      const visible = node => { const rect = node.getBoundingClientRect(), style = getComputedStyle(node); return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'; };
+      const small = cards.flatMap(card => [...card.querySelectorAll('*')].filter(node => node.children.length === 0 && node.textContent.trim().length > 2 && visible(node) && parseFloat(getComputedStyle(node).fontSize) < 12).map(node => node.textContent.trim().slice(0, 24)));
+      return {
+        block: box(document.querySelector('.home-fresh')), cards: cards.map(box), kinds: cards.map(card => card.className.replace('home-fresh-card ', '')),
+        thumb: box(cards[0].querySelector('.eua-mini')), frames: [...cards[1].querySelectorAll('.fp-svg')].map(box), captions: [...cards[1].querySelectorAll('.home-fresh-cap')].map(node => node.textContent.trim()),
+        days: [...cards[2].querySelectorAll('.home-fresh-day time')].map(node => node.textContent.trim()), entries: [...cards[2].querySelectorAll('.home-fresh-day li')].map(node => ({text: node.textContent.trim(), visible: visible(node), height: Math.round(node.getBoundingClientRect().height)})),
+        question: cards[0].querySelector('.home-fresh-question').textContent.trim(), links: cards.map(card => (card.tagName === 'A' ? 1 : 0) + card.querySelectorAll('a').length), small,
+        overflow: document.documentElement.scrollWidth - innerWidth
+      };
+    });
+    check(where, info.cards.length === 3 && new Set(info.kinds).size === 3 && info.kinds.join() === 'home-fresh-card--study,home-fresh-card--scheme,home-fresh-card--journal', `three cards with three different forms: ${info.kinds.join()}`);
+    check(where, info.cards.every(card => card.height >= 44 && card.right <= viewport.width) && info.overflow <= 1, `every card is tall enough to tap and fits the screen: ${JSON.stringify(info.cards)}`);
+    check(where, info.thumb.width >= 100 && info.thumb.height >= 30, `the chart thumbnail is readable: ${JSON.stringify(info.thumb)}`);
+    check(where, info.frames.length === 2 && info.frames.every(frame => frame.width >= 90 && frame.height >= 36), `the two scheme frames are readable: ${JSON.stringify(info.frames)}`);
+    check(where, info.captions.length === 2 && info.captions.every(text => text.length > 8), `both frames have a text caption: ${info.captions.join(' | ')}`);
+    check(where, info.days.length >= 1 && info.entries.length === 3 && info.entries.every(entry => entry.visible && entry.height >= 14 && entry.text.length > 10), `three journal entries with a date heading: ${info.days.join(', ')}`);
+    check(where, info.links.every(count => count === 1), `one link per card: ${info.links.join()}`);
+    check(where, info.small.length === 0, `no text under 12px in the cards: ${info.small.join(' | ')}`);
+    if (viewport.width >= 1100) {
+      // Комп’ютер: три картки в один ряд, середня найширша, форми справді різні.
+      check(where, new Set(info.cards.map(card => card.y)).size === 1 && info.cards[0].x < info.cards[1].x && info.cards[1].x < info.cards[2].x, 'on the desktop the three cards stand in one row');
+      check(where, info.cards[1].width > info.cards[0].width * 1.3 && info.cards[1].width > info.cards[2].width * 1.3, `the scheme card is the wide one: ${info.cards.map(card => card.width).join(' / ')}`);
+    } else {
+      // Телефон: картки одна під одною, блок вищий не більш ніж на 150 px.
+      check(where, new Set(info.cards.map(card => card.x)).size === 1 && info.cards[0].y < info.cards[1].y && info.cards[1].y < info.cards[2].y, 'on the phone the cards are stacked');
+      if (viewport.width === 390) check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
+    }
+    await artifact(page, viewport, 'home-fresh-cards', page.locator('.home-fresh'));
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally {
+    await context.close();
+  }
 }
 
 async function homeFreshFlow(browser, origin, viewport) {
@@ -2705,6 +2943,127 @@ async function baselineScreenshots(browser, origin, viewport) {
   await context.close();
 }
 
+async function homeRowsFlow(browser, origin, viewport) {
+  // Рішення власника 2026-11-02 (бриф T6): згорнуті рядки головної показують під назвою, що всередині (.home-row-hint).
+  // У справжньому браузері перевіряємо: підказка видима, не менша за 12 px і контрастна; рядок не стає абзацом (до 3 рядків підказки),
+  // не виходить за ширину; Enter і Пробіл відкривають та закривають рядок; рядок відгуку без застарілої округлої рамки (home-lower.css).
+  const where = `home rows preview @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('#home-about').waitFor({state: 'attached'});
+    // Рядки всередині закритих блоків не мають розмірів: спершу відкриваємо зовнішні, з клавіатури (так перевіряється й сам рядок «Про сайт»).
+    const about = page.locator('#home-about');
+    await about.locator(':scope > summary').scrollIntoViewIfNeeded();
+    await about.locator(':scope > summary').focus();
+    await page.keyboard.press('Enter');
+    check(where, await about.evaluate(node => node.open), 'Enter opens the «Про сайт» row');
+    await page.keyboard.press('Space');
+    check(where, !(await about.evaluate(node => node.open)), 'Space closes the «Про сайт» row');
+    await page.keyboard.press('Space');
+    check(where, await about.evaluate(node => node.open), 'Space opens the «Про сайт» row again');
+    await toggleHomeFold(page, '#home-learning-paths', true);
+    await page.waitForTimeout(450);
+    const rows = await page.evaluate(() => {
+      const channel = value => { const v = value / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+      const luminance = rgb => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b); };
+      const ratio = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+      const pageBackground = getComputedStyle(document.body).backgroundColor;
+      const panel = getComputedStyle(document.querySelector('#home-about')).backgroundColor;
+      return [...document.querySelectorAll('body > .page details')].filter(d => d.querySelector(':scope > summary .home-row-hint')).map(d => {
+        const summary = d.querySelector(':scope > summary'), hint = summary.querySelector('.home-row-hint'), title = summary.querySelector('.home-row-title');
+        const box = summary.getBoundingClientRect(), hintBox = hint.getBoundingClientRect(), style = getComputedStyle(hint), own = getComputedStyle(d);
+        return {
+          name: d.id || 'outline', height: Math.round(box.height), right: Math.round(box.right),
+          hintLines: Math.round(hintBox.height / parseFloat(style.lineHeight)), hintFont: parseFloat(style.fontSize),
+          hintVisible: hintBox.width > 0 && hintBox.height > 0 && style.visibility !== 'hidden' && style.display !== 'none',
+          hintOverflow: hint.scrollWidth - hint.clientWidth, titleAbove: title.getBoundingClientRect().bottom <= hintBox.top + 1,
+          contrast: Math.min(ratio(style.color, pageBackground), ratio(style.color, panel.startsWith('rgba(0, 0, 0, 0)') ? pageBackground : panel)),
+          borderLeft: own.borderLeftWidth, radius: own.borderTopLeftRadius
+        };
+      });
+    });
+    check(where, rows.length === 6, `six rows carry a preview, found ${rows.length}`);
+    for (const row of rows) {
+      const name = `${row.name} (${row.height}px)`;
+      check(where, row.hintVisible && row.titleAbove, `${name}: the preview is visible under the title`);
+      check(where, row.hintFont >= 12, `${name}: the preview is ${row.hintFont}px, under 12px`);
+      check(where, row.hintLines <= 3, `${name}: the preview takes ${row.hintLines} lines, it must stay a short line`);
+      check(where, row.height <= 100, `${name}: the folded row is ${row.height}px tall, over 100px`);
+      check(where, row.right <= viewport.width && row.hintOverflow <= 0, `${name}: the row must fit the screen width`);
+      check(where, row.contrast >= 4.5, `${name}: preview contrast ${row.contrast.toFixed(2)}:1 is below 4.5:1`);
+    }
+    // Рядок відгуку такий самий, як сусідні: без округлої рамки зі старого home-lower.css (текст упирався в рамку).
+    const feedback = rows.find(row => row.name === 'home-feedback');
+    check(where, feedback && feedback.borderLeft === '0px' && feedback.radius === '0px', `the feedback row must be flat like its neighbours: ${JSON.stringify(feedback && {border: feedback.borderLeft, radius: feedback.radius})}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
+    await artifact(page, viewport, 'home-rows-preview', page.locator('#home-about'));
+    // Той самий рядок відкривається з клавіатури, і вміст стає видимим: Enter відкриває, Пробіл закриває.
+    for (const [selector, inner, least] of [['#home-overview', '.home-overview-grid article', 3], ['#home-feedback', '#feedback-useful', 1], ['#home-learning-paths .home-path-outline', 'ol a', 3]]) {
+      const row = page.locator(selector).first(), summary = row.locator(':scope > summary');
+      await summary.scrollIntoViewIfNeeded();
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(450);
+      check(where, await row.evaluate(node => node.open) && await row.locator(inner + ':visible').count() >= least, `${selector}: Enter opens the row and its content becomes visible`);
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(150);
+      check(where, !(await row.evaluate(node => node.open)), `${selector}: Space closes the row again`);
+    }
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally {
+    await context.close();
+  }
+}
+
+async function homeLinkTextFlow(browser, origin, viewport) {
+  // Рішення власника 2026-11-02 (бриф T5): підписи кнопок-посилань називають, куди вони ведуть, і не повторюються.
+  // Дивимось на справжній видимий текст у браузері: верхні питання, кнопка маршруту, маршрути, блок «Нове» і (після відкриття) меню напрямів.
+  const where = `home link text @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('.spectrum-question-open').first().waitFor({state: 'visible'});
+    await toggleHomeFold(page, '#home-learning-paths', true);
+    await page.waitForTimeout(450);
+    const read = () => page.evaluate(() => {
+      const visible = node => { const box = node.getBoundingClientRect(), style = getComputedStyle(node); return box.width > 0 && box.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'; };
+      const label = node => { const copy = node.cloneNode(true); copy.querySelectorAll('[aria-hidden="true"]').forEach(inner => inner.remove()); return copy.textContent.replace(/\s+/g, ' ').replace(/[\s→↗]+$/u, '').trim(); };
+      return [...document.querySelectorAll('.spectrum-question-open, .spectrum-route-start, .path-start, .home-fresh-go, .topic-open, .se-cta')].filter(visible).map(node => {
+        const link = node.closest('a'), box = (link || node).getBoundingClientRect();
+        return {kind: node.className.split(' ')[0], label: label(node), href: link && link.getAttribute('href'), right: Math.round(box.right), height: Math.round(box.height), selfHidden: node.getAttribute('aria-hidden') === 'true', hiddenArrows: [...node.querySelectorAll('[aria-hidden="true"]')].map(inner => inner.textContent.trim())};
+      });
+    });
+    const generic = /^(відкрити|читати|дивитись|дивитися|докладніше|детальніше|перейти|більше|далі|почати|почати маршрут|розібрати)$/iu;
+    const verify = (labels, expected, stage) => {
+      for (const [kind, count] of Object.entries(expected)) check(where, labels.filter(item => item.kind === kind).length === count, `${stage}: ${count} visible «${kind}» labels expected, found ${labels.filter(item => item.kind === kind).length}`);
+      for (const item of labels) {
+        check(where, !generic.test(item.label) && item.label.split(' ').length >= 2, `${stage}: «${item.label}» is a bare generic label`);
+        check(where, item.right <= viewport.width && item.height >= 24, `${stage}: «${item.label}» must fit the screen width (right edge ${item.right})`);
+        if (!item.selfHidden) check(where, item.hiddenArrows.every(arrow => /^[→↗]$/u.test(arrow)) && !/[→↗]/u.test(item.label), `${stage}: the arrow of «${item.label}» must sit in an aria-hidden span`);
+      }
+      const byLabel = new Map();
+      for (const item of labels) byLabel.set(item.label, (byLabel.get(item.label) || new Set()).add(item.href));
+      for (const [text, hrefs] of byLabel) check(where, hrefs.size === 1, `${stage}: «${text}» names more than one destination`);
+      for (const kind of Object.keys(expected)) { const set = labels.filter(item => item.kind === kind).map(item => item.label); check(where, new Set(set).size === set.length, `${stage}: the «${kind}» labels must differ from each other: ${set.join(' | ')}`); }
+    };
+    const home = await read();
+    verify(home, {'spectrum-question-open': 3, 'spectrum-route-start': 1, 'path-start': 3, 'home-fresh-go': 3}, 'home');
+    check(where, home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').every(item => item.height >= 44), 'route start buttons must stay tappable (44px)');
+    const routeLabels = home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').map(item => item.label);
+    check(where, routeLabels.every(text => /^Почати маршрут: .{4,}/u.test(text)), `route buttons must name the first step: ${routeLabels.join(' | ')}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
+    await artifact(page, viewport, 'home-link-text-hero', page.locator('.spectrum-questions'));
+    await artifact(page, viewport, 'home-link-text-routes', page.locator('#home-learning-paths .start-paths'));
+    await openLensPicker(page);
+    const picker = await read();
+    verify(picker.filter(item => item.kind === 'topic-open'), {'topic-open': 6}, 'picker');
+    check(where, picker.filter(item => item.kind === 'topic-open').every(item => /^Відкрити «.+»$/u.test(item.label)), 'every direction card must name its direction');
+    await artifact(page, viewport, 'home-link-text-picker', page.locator('[data-lens-picker]'));
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally {
+    await context.close();
+  }
+}
+
 async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
   for (const viewport of [
@@ -2718,6 +3077,10 @@ async function homeFlows(browser, origin) {
   // two-viewport matrix instead of silently tripling the entire suite.
   await isolatedFlow(homeSpectrumFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
+  // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
+  // T5 (2026-11-02): підписи кнопок-посилань; 360 включено, бо довгі підписи там переносяться.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLinkTextFlow, browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
   await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});
@@ -2770,8 +3133,15 @@ try {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(provenanceStampFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(intervalMotifFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(studyTypeChipsFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(sidenotesFlow, browser, origin, viewport);
+    // T3: ширини навколо порогу 1360 px: до нього приміток немає, від нього вони видимі й нічого не накладається.
+    for (const width of [1100, 1280, 1360]) await isolatedFlow(sidenotesFlow, browser, origin, {name: 'wide-' + width, width, height: 900});
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
+  for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow, browser, origin, viewport);
     await homeFlows(browser, origin);
     for (const viewport of viewports) await compactBannerFlow(browser, origin, viewport);
     for (const viewport of viewports) await videosFlow(browser, origin, viewport);

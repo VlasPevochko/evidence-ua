@@ -129,7 +129,7 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
   display:block;margin-top:auto;padding-top:2px;color:#dab9f5;font:500 13px/1.4 Inter,system-ui,sans-serif;
   text-decoration:none;
 }
-body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] #cards>.topic-card .topic-open>span{display:inline-block;margin-left:4px}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] #cards>.topic-card .topic-open>span{display:inline;margin-left:0}/* 2026-11-02 (T5): було inline-block + 4px; відступ дає нерозривний пробіл у розмітці, а стрілка не лишається сама на новому рядку, коли довга назва переноситься */
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] #cards>.topic-card:hover,
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] #cards>.topic-card:focus-visible{
   border-color:#e0bdff;background:none!important;box-shadow:none;

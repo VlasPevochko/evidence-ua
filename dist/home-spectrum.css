@@ -355,3 +355,7 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(.home-path-outline,#home-about,#home-overview,#home-feedback)>summary .home-row-hint{display:block;color:var(--spectrum-muted);font:400 12px/1.5 Inter,system-ui,sans-serif}
 /* T6 (2026-11-02): рядок відгуку тримав застарілу округлу рамку з home-lower.css (її специфічність вища за правило для вкладених рядків вище), і текст упирався в рамку. Тепер він такий самий, як сусідні рядки: тонка лінія зверху, без рамки й заливки. */
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories #start-here .home-about-body>#home-feedback{margin:0;padding:0;border:0;border-top:1px solid var(--spectrum-line);border-radius:0;background:none;box-shadow:none}
+/* T5 (2026-11-02): підпис кнопки маршруту став «текст + стрілка в окремому aria-hidden span» (раніше стрілка була частиною тексту); відступ між ними задає gap. */
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories .path-card[data-home-path]>.path-start{gap:8px}
+/* T5 (2026-11-02): довші підписи питань угорі переносяться порівну, без висячого слова на другому рядку; де властивість не підтримано, лишається звичайний перенос. */
+body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-question-open{text-wrap:balance}

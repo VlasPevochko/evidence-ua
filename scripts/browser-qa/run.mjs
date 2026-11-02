@@ -2777,6 +2777,55 @@ async function homeRowsFlow(browser, origin, viewport) {
   }
 }
 
+async function homeLinkTextFlow(browser, origin, viewport) {
+  // Рішення власника 2026-11-02 (бриф T5): підписи кнопок-посилань називають, куди вони ведуть, і не повторюються.
+  // Дивимось на справжній видимий текст у браузері: верхні питання, кнопка маршруту, маршрути, блок «Нове» і (після відкриття) меню напрямів.
+  const where = `home link text @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('.spectrum-question-open').first().waitFor({state: 'visible'});
+    await toggleHomeFold(page, '#home-learning-paths', true);
+    await page.waitForTimeout(450);
+    const read = () => page.evaluate(() => {
+      const visible = node => { const box = node.getBoundingClientRect(), style = getComputedStyle(node); return box.width > 0 && box.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'; };
+      const label = node => { const copy = node.cloneNode(true); copy.querySelectorAll('[aria-hidden="true"]').forEach(inner => inner.remove()); return copy.textContent.replace(/\s+/g, ' ').replace(/[\s→↗]+$/u, '').trim(); };
+      return [...document.querySelectorAll('.spectrum-question-open, .spectrum-route-start, .path-start, .home-fresh-go, .topic-open, .se-cta')].filter(visible).map(node => {
+        const link = node.closest('a'), box = (link || node).getBoundingClientRect();
+        return {kind: node.className.split(' ')[0], label: label(node), href: link && link.getAttribute('href'), right: Math.round(box.right), height: Math.round(box.height), selfHidden: node.getAttribute('aria-hidden') === 'true', hiddenArrows: [...node.querySelectorAll('[aria-hidden="true"]')].map(inner => inner.textContent.trim())};
+      });
+    });
+    const generic = /^(відкрити|читати|дивитись|дивитися|докладніше|детальніше|перейти|більше|далі|почати|почати маршрут|розібрати)$/iu;
+    const verify = (labels, expected, stage) => {
+      for (const [kind, count] of Object.entries(expected)) check(where, labels.filter(item => item.kind === kind).length === count, `${stage}: ${count} visible «${kind}» labels expected, found ${labels.filter(item => item.kind === kind).length}`);
+      for (const item of labels) {
+        check(where, !generic.test(item.label) && item.label.split(' ').length >= 2, `${stage}: «${item.label}» is a bare generic label`);
+        check(where, item.right <= viewport.width && item.height >= 24, `${stage}: «${item.label}» must fit the screen width (right edge ${item.right})`);
+        if (!item.selfHidden) check(where, item.hiddenArrows.every(arrow => /^[→↗]$/u.test(arrow)) && !/[→↗]/u.test(item.label), `${stage}: the arrow of «${item.label}» must sit in an aria-hidden span`);
+      }
+      const byLabel = new Map();
+      for (const item of labels) byLabel.set(item.label, (byLabel.get(item.label) || new Set()).add(item.href));
+      for (const [text, hrefs] of byLabel) check(where, hrefs.size === 1, `${stage}: «${text}» names more than one destination`);
+      for (const kind of Object.keys(expected)) { const set = labels.filter(item => item.kind === kind).map(item => item.label); check(where, new Set(set).size === set.length, `${stage}: the «${kind}» labels must differ from each other: ${set.join(' | ')}`); }
+    };
+    const home = await read();
+    verify(home, {'spectrum-question-open': 3, 'spectrum-route-start': 1, 'path-start': 3, 'home-fresh-go': 3}, 'home');
+    check(where, home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').every(item => item.height >= 44), 'route start buttons must stay tappable (44px)');
+    const routeLabels = home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').map(item => item.label);
+    check(where, routeLabels.every(text => /^Почати маршрут: .{4,}/u.test(text)), `route buttons must name the first step: ${routeLabels.join(' | ')}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
+    await artifact(page, viewport, 'home-link-text-hero', page.locator('.spectrum-questions'));
+    await artifact(page, viewport, 'home-link-text-routes', page.locator('#home-learning-paths .start-paths'));
+    await openLensPicker(page);
+    const picker = await read();
+    verify(picker.filter(item => item.kind === 'topic-open'), {'topic-open': 6}, 'picker');
+    check(where, picker.filter(item => item.kind === 'topic-open').every(item => /^Відкрити «.+»$/u.test(item.label)), 'every direction card must name its direction');
+    await artifact(page, viewport, 'home-link-text-picker', page.locator('[data-lens-picker]'));
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally {
+    await context.close();
+  }
+}
+
 async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
   for (const viewport of [
@@ -2792,6 +2841,8 @@ async function homeFlows(browser, origin) {
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
   // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
+  // T5 (2026-11-02): підписи кнопок-посилань; 360 включено, бо довгі підписи там переносяться.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLinkTextFlow, browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
   await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});

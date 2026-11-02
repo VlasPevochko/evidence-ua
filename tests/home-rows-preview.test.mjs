@@ -71,7 +71,7 @@ assert(/\.home-row-hint\{[^}]*var\(--spectrum-muted\)/.test(block)&&/\.home-row-
 assert(!/https?:\/\//.test(block),'No third-party requests in the new styles');
 // Поруч виправлено давній дефект: рядок відгуку тримав застарілу округлу рамку з home-lower.css, і текст упирався в рамку. Тепер він плоский, як сусідні (перевіряє й Browser QA: обчислена рамка 0 і радіус 0).
 assert(/#start-here \.home-about-body>#home-feedback\{[^}]*border:0;border-top:1px solid var\(--spectrum-line\);border-radius:0/.test(block),'The feedback row is flat like its neighbours, the old rounded frame no longer shows');
-assert(index.includes('./home-spectrum.css?v=5'),'The stylesheet version is raised so browsers drop the cached copy');
+assert(Number((index.match(/home-spectrum\.css\?v=(\d+)/)||[])[1])>=5,'The stylesheet version is raised (at least 5) so browsers drop the cached copy'); // 2026-11-02: «не нижча за 5», бо наступні зміни стилів головної піднімають версію далі (T5: v=6)
 
 // 7. Журнал оновлень: запис про зміну є, без наукових тверджень.
 assert(journal.includes('Згорнуті рядки на головній підказують, що всередині'),'The change log has a record about the previews');

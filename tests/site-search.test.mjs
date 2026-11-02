@@ -13,7 +13,7 @@ import {TERMS} from '../src/platform/terms.mjs';
 // Пошук по сайту (рішення власника 2026-10-21): кнопка в шапці, вікно з результатами, нічого не надсилається.
 const data={materials,findMaterials,terms:TERMS};
 const titles=r=>r.materials.map(m=>m.title);
-assert.deepEqual(searchSite(data,'   '),{materials:[],terms:[]},'an empty query finds nothing');
+assert.deepEqual(searchSite(data,'   '),{materials:[],sections:[],terms:[]},'an empty query finds nothing'); // 2026-11-02: результат має ще й групу розділів (sections), порожню без індексу
 const protein=searchSite(data,'білок');
 assert(protein.materials.length>=2&&protein.materials.length<=8,'materials for protein, capped');
 assert(searchSite(data,'інтервал').terms.some(t=>t.id==='ci'),'the confidence interval term is found');
@@ -34,7 +34,7 @@ assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|https?:\/
 assert(src.includes("e.key!=='/'")&&src.includes('isContentEditable'),'the / shortcut ignores typing fields');
 assert(fs.readFileSync('src/platform/site-header.css','utf8').includes('.eua-search::backdrop'),'the dialog is styled');
 assert.equal(fs.readFileSync('dist/platform-search.js','utf8'),src,'the built copy equals the source');
-assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=12')"),'the header loads search lazily');
+assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=13')"),'the header loads search lazily');
 console.log('Site search: ranking, terms, suggestions, accessible button and no-network source passed.');
 
 // 2026-10-22: supplement cards are found by the topics of their approved Claims, not only by name.

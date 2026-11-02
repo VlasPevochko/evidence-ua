@@ -1,6 +1,6 @@
 // Browser QA for the static site. Run from the repository root:
 //   npm ci --prefix scripts/browser-qa --ignore-scripts && node scripts/browser-qa/run.mjs
-// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs
+// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_SECTIONS_ONLY=1 (search by page sections)
 // The default run and CI still execute every page and regression flow.
 // Uses the Chrome already installed on the machine (BROWSER_EXECUTABLE overrides the path).
 // Everything is served from a throw-away local server and third-party requests are blocked, so
@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium} from 'playwright-core';
 import {areas} from '../../src/platform/catalog.mjs';
 
@@ -1129,6 +1129,129 @@ async function searchFlow(browser, origin, viewport) {
   await context.close();
 }
 
+// Пошук по розділах сторінок (рішення власника 2026-11-02): вікно показує розділи, перехід відкриває потрібне місце на екрані.
+// Усі посилання з dist/platform-sections.js перевіряє tests/search-sections.test.mjs на рівні сторінок і окремий прогін у Chromium при створенні індексу;
+// тут справжні сценарії (вікно пошуку, клік, положення, згорнутий блок, підсвічування) і вибірка: перше посилання кожної сторінки.
+async function sectionsFlow(browser, origin, viewport) {
+  const where = `sections @${viewport.name}`;
+  const {sections} = await import(pathToFileURL(path.join(dist, 'platform-sections.js')).href);
+  check(where, sections.length >= 120, 'the section index is not empty');
+  // Де стоїть ціль переходу, знайдена тим самим способом, що й на сторінці (findTarget із anchor-reveal.js).
+  const measure = page => page.evaluate(async () => {
+    const {findTarget} = await import('./anchor-reveal.js?v=1');
+    const {el, byTitle} = findTarget(document, {hash: location.hash, search: location.search});
+    if (!el) return {status: 'MISSING'};
+    const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
+    const outer = el.parentElement ? el.parentElement.closest('details') : null;
+    const hiddenInDetails = !!(outer && !outer.open && !(el.tagName === 'SUMMARY' && el.parentElement === outer));
+    const visible = r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && !hiddenInDetails;
+    const atEnd = scrollY >= document.documentElement.scrollHeight - innerHeight - 2;
+    const from = byTitle ? 8 : -2, to = byTitle ? Math.min(160, innerHeight * 0.3) : innerHeight * 0.62;
+    const inBand = (r.top >= from && r.top <= to) || (atEnd && r.top >= 0 && r.top < innerHeight * 0.8);
+    return {status: !visible ? (hiddenInDetails ? 'HIDDEN_IN_DETAILS' : 'NOT_VISIBLE') : inBand ? 'OK' : 'NOT_IN_VIEW', top: Math.round(r.top), vh: innerHeight, text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40), overflow: document.documentElement.scrollWidth - innerWidth};
+  });
+  const settle = page => page.waitForTimeout(3000); // anchor-reveal.js пробує до ~2,6 с, поки сторінка дозавантажується
+  const openSearch = async (page, query) => {
+    await page.locator('.eua-header-search').click();
+    await page.locator('dialog.eua-search').waitFor({state: 'visible'});
+    await page.fill('#eua-search-q', query);
+    await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+  };
+
+  // 1) «дозування» → «Як приймати» у креатині (питання власника): група в вікні, перехід на інший сторінці, розділ видно вгорі.
+  let {context, page, seen} = await open(browser, origin, viewport, '/sleep.html');
+  await openSearch(page, 'дозування');
+  const group = page.locator('.eua-search-results h2', {hasText: 'Розділи на сторінках'});
+  check(where, await group.count() === 1, 'the dialog has a group «Розділи на сторінках»');
+  const dosing = page.locator('.eua-search-results a[href="./index.html#creatine-dosing"]');
+  check(where, await dosing.count() === 1, '«дозування» finds the creatine dosing section');
+  const dosingText = await dosing.innerText();
+  check(where, /Як приймати/.test(dosingText) && /Розділ · Креатин/.test(dosingText), 'the result names the section, says it is a section and names the material');
+  check(where, await page.evaluate(() => { const h = [...document.querySelectorAll('.eua-search-results h2')].find(x => /Розділи/.test(x.textContent)); const l = h?.nextElementSibling?.querySelector('a'); return !!l && /creatine-dosing/.test(l.getAttribute('href')); }), 'the dosing section is the first in its group');
+  await artifact(page, viewport, 'sections-dosing', page.locator('dialog.eua-search'));
+  await dosing.click();
+  await page.waitForURL('**/index.html#creatine-dosing');
+  await settle(page);
+  let at = await measure(page);
+  check(where, at.status === 'OK', `the dosing section is visible near the top after the jump (${JSON.stringify(at)})`);
+  check(where, await page.evaluate(() => document.body.dataset.routeView === 'article'), 'the creatine dossier is open');
+  check(where, at.overflow <= 1, 'no horizontal overflow after the jump');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the jump raises no errors');
+  await context.close();
+
+  // 2) Картка твердження без власного id («Вагітність» у кофеїні): посилання з назвою, заголовок підсвічено й стоїть угорі.
+  ({context, page, seen} = await open(browser, origin, viewport, '/sleep.html'));
+  await openSearch(page, 'вагітність');
+  const claim = page.locator('.eua-search-results a[href*="supplement-caffeine"][href*="section="]');
+  check(where, await claim.count() === 1, '«вагітність» finds the caffeine claim');
+  check(where, /Твердження · Кофеїн/.test(await claim.innerText()), 'a claim card is labelled «Твердження»');
+  await claim.click();
+  await page.waitForURL('**/index.html?section=*');
+  await page.locator('.eua-landed').waitFor({state: 'attached', timeout: 5000});
+  check(where, (await page.locator('.eua-landed').first().innerText()).trim() === 'Вагітність', 'the found heading is highlighted');
+  // Підсвічування саме зникає (воно живе трохи менше трьох секунд від першого входу); після цього міряємо остаточне положення.
+  await page.waitForFunction(() => !document.querySelector('.eua-landed'), null, {timeout: 9000});
+  await page.waitForTimeout(300);
+  at = await measure(page);
+  check(where, at.status === 'OK' && /Вагітність/.test(at.text), `the claim «Вагітність» stands near the top (${JSON.stringify(at)})`);
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the claim jump raises no errors');
+  await context.close();
+
+  // 3) Згорнутий блок відкривається сам: міфи про креатин.
+  ({context, page, seen} = await open(browser, origin, viewport, '/sleep.html'));
+  await openSearch(page, 'кава і креатин');
+  const myth = page.locator('.eua-search-results a[href="./index.html#creatine-myths"]');
+  check(where, await myth.count() === 1, 'the myth about coffee and creatine is a section');
+  check(where, await page.evaluate(() => { const d = document.querySelector('.eua-search-results'); return d.querySelectorAll('a').length >= 1; }), 'the results are not empty');
+  await myth.click();
+  await page.waitForURL('**/index.html#creatine-myths');
+  await settle(page);
+  check(where, await page.evaluate(() => document.getElementById('creatine-myths').open === true), 'the folded block of myths opened by itself');
+  at = await measure(page);
+  check(where, at.status === 'OK', `the opened block is near the top (${JSON.stringify(at)})`);
+  await context.close();
+
+  // 4) Перехід на тій самій сторінці (змінюється лише #якір), без перезавантаження.
+  ({context, page, seen} = await open(browser, origin, viewport, '/fat-burning.html'));
+  await openSearch(page, 'стійкий раціон');
+  const same = page.locator('.eua-search-results a[href="./fat-burning.html#practice"]');
+  check(where, await same.count() === 1, 'the fat-burning practice section is found');
+  await page.evaluate(() => { window.__sameDocument = true; });
+  await same.click();
+  await page.waitForFunction(() => location.hash === '#practice');
+  await page.waitForTimeout(900);
+  check(where, await page.evaluate(() => window.__sameDocument === true), 'a link to the same page does not reload it');
+  at = await measure(page);
+  check(where, at.status === 'OK', `the section on the same page is near the top (${JSON.stringify(at)})`);
+  await context.close();
+
+  // 5) Сторінка без якорів: розділ знаходиться за назвою.
+  ({context, page, seen} = await open(browser, origin, viewport, '/sleep.html'));
+  await openSearch(page, 'що показали результати');
+  const meta = page.locator('.eua-search-results a[href^="./protein-meta.html?section="]');
+  check(where, await meta.count() >= 1, 'a section of the page without anchors is found');
+  await meta.first().click();
+  await page.waitForURL('**/protein-meta.html?section=*');
+  await settle(page);
+  at = await measure(page);
+  check(where, at.status === 'OK' && /результати/i.test(at.text), `the section found by name stands near the top (${JSON.stringify(at)})`);
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the page without anchors raises no errors');
+  await context.close();
+
+  // 6) Вибірка: перше посилання кожної сторінки індексу приводить у видиме місце.
+  ({context, page, seen} = await open(browser, origin, viewport, '/sleep.html'));
+  const firsts = [...new Map(sections.map(row => [row[0].split(/[?#]/)[0], row])).values()];
+  check(where, firsts.length >= 8, `sections come from at least eight pages (${firsts.length})`);
+  for (const [href, title] of firsts) {
+    await page.goto(`${origin}/${href}`, {waitUntil: 'load'});
+    await settle(page);
+    at = await measure(page);
+    check(where, at.status === 'OK', `${href} («${title}») lands in view (${JSON.stringify(at)})`);
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'sample jumps raise no errors and no third-party requests');
+  await context.close();
+}
+
 async function changesFlow(browser, origin, viewport) {
   const where = `changes @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/changes.html');
@@ -1137,7 +1260,8 @@ async function changesFlow(browser, origin, viewport) {
   check(where, days >= 4, 'the log lists several days');
   check(where, (await page.locator('.ch-day[open]').count()) === 1, 'only the newest day is open');
   const links = await page.locator('.ch-day[open] .ch-title').count();
-  check(where, links >= 3, 'the open day lists its records');
+  // 2026-11-02: найновіший день може мати і один запис (пошук по розділах), тому перевіряємо, що день не порожній; раніше було «не менше трьох».
+  check(where, links >= 1, 'the open day lists its records');
   check(where, (await page.locator('.ch-science').first().innerText()).length > 10, 'every record states whether the science changed');
   await page.locator('.ch-day').nth(1).locator('summary').click();
   check(where, (await page.locator('.ch-day[open]').count()) === 2, 'another day opens on tap');
@@ -2600,6 +2724,7 @@ async function homeFlows(browser, origin) {
 }
 
 const homeOnly = process.env.QA_HOME_ONLY === '1';
+const sectionsOnly = process.env.QA_SECTIONS_ONLY === '1';
 const webgl = [];
 const server = await serve();
 const origin = `http://127.0.0.1:${server.address().port}`;
@@ -2610,6 +2735,8 @@ const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
 try {
   if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
+  } else if (sectionsOnly) {
+    for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
   } else if (homeOnly) {
     await homeFlows(browser, origin);
     for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);
@@ -2640,6 +2767,7 @@ try {
     for (const viewport of viewports) await compareFlow(browser, origin, viewport);
     for (const viewport of viewports) await mapFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(searchFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);

@@ -17,6 +17,8 @@ const generated = new Set([
   'evidence/public-text.js', 'evidence/module-composer.js', 'evidence/muscle-fiber-v1.webp',
   'evidence/data.js', 'evidence/ui.js', 'evidence/evidence.css',
   'platform-catalog.js', 'home-catalog.js', 'home-feedback.js', 'platform-materials.js',
+  // Пошук по розділах сторінок (scripts/build-sections.mjs) і спільний модуль переходу до розділу (src/platform/anchor-reveal.mjs).
+  'platform-sections.js', 'anchor-reveal.js',
   'platform-tools.js', 'platform-shell.js', 'platform-next-steps.js', 'platform-terms.js', 'appearance.js', 'platform-learning.js', 'directions.js', 'home-lens.js', 'home-picker.js',
   'nutrition-inside.html', 'nutrition-navigation.js', 'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
@@ -53,7 +55,7 @@ export function buildSite(root, commit) {
   const dist = path.join(root, 'dist');
   const before = inventory(dist);
   if (!before['index.html']) throw Error('The complete authored dist snapshot, including index.html, is required');
-  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-seo.mjs']) {
+  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-seo.mjs', 'scripts/build-sections.mjs']) {
     execFileSync(process.execPath, [script], {cwd:root, stdio:'inherit'});
   }
   const after = inventory(dist);

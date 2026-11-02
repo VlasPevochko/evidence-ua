@@ -21,11 +21,11 @@ fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/mate
 fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=104'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=104'").replace("'./site-header.mjs'","'./site-header.js?v=14'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=104'").replace("'./site-header.mjs'","'./site-header.js?v=15'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
 fs.writeFileSync('dist/home-picker.js',fs.readFileSync('src/platform/home-picker.mjs','utf8'));
 fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8').replace("'./home-picker.mjs'","'./home-picker.js?v=2'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=104'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=104'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=14'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=104'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=104'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=15'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -107,6 +107,10 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const f
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=1','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=2','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=3','appearance.css?v=4');if(next!==old)fs.writeFileSync(file,next);}
+
+// Посилання на розділ приводить саме до розділу (2026-11-02): відкриває згорнутий блок, доводить ціль до верху вікна, знаходить заголовок за ?section=.
+fs.copyFileSync('src/platform/anchor-reveal.mjs','dist/anchor-reveal.js');
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');if(old.includes('anchor-reveal.js'))continue;const next=old.replace('</head>','<script type="module" src="./anchor-reveal.js?v=1"></script></head>');if(next!==old)fs.writeFileSync(file,next);}
 
 // «Куди далі» внизу сторінок (модуль підключає shell): нова версія оболонки.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=91','platform-shell.js?v=92');if(next!==old)fs.writeFileSync(file,next);}
@@ -326,6 +330,17 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  const updates={'site-header.js?v=13':'site-header.js?v=14','platform-shell.js?v=106':'platform-shell.js?v=107','directions.js?v=109':'directions.js?v=110','home-feedback.js?v=103':'home-feedback.js?v=104','home-spectrum.js?v=3':'home-spectrum.js?v=4','fat-burning.js?v=11':'fat-burning.js?v=12','changes-page.js?v=12':'changes-page.js?v=13'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Пошук по розділах сторінок (2026-11-02): пошук (v=13) → шапка (v=15) → сторінки, каталог напрямів, оболонка; головна (v=5) бере новий пошук; fat-burning бере нову шапку.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'site-header.js?v=14':'site-header.js?v=15','platform-shell.js?v=107':'platform-shell.js?v=108','directions.js?v=110':'directions.js?v=111','home-spectrum.js?v=4':'home-spectrum.js?v=5','fat-burning.js?v=12':'fat-burning.js?v=13','changes-page.js?v=13':'changes-page.js?v=14'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

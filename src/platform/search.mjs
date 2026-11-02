@@ -1,11 +1,38 @@
-// Пошук по сайту: кнопка в шапці відкриває вікно з полем. Шукає по назвах матеріалів і словнику термінів, нічого не надсилає.
+// Пошук по сайту: кнопка в шапці відкриває вікно з полем. Шукає по назвах матеріалів, розділах усередині сторінок і словнику термінів, нічого не надсилає.
 // Дані підвантажуються лише при першому відкритті, щоб не обтяжувати сторінки.
 const fold=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
 export const SUGGESTIONS=['білок','креатин','сон','кофеїн','жир','інтервал'];
 
-// Pure: rank materials and terms for a query. Title starts-with beats title contains beats other fields.
-export function searchSite({materials=[],terms=[],findMaterials=null,scoreFields=null,searchKeywords=null,enoughMatches=null},query,limit=8){
-  const q=fold(query);if(!q)return {materials:[],terms:[]};
+// Розділи всередині сторінок (2026-11-02). Рядок індексу: [посилання, назва, матеріал, вид, слова для пошуку] (див. scripts/build-sections.mjs).
+// Слова запиту, що лише називають матеріал («креатин» у запиті «як пити креатин»), для розділу є контекстом, а не змістом: збіг мусить бути
+// ще хоча б за одним словом у назві розділу чи його словах. Для запиту з кількох слів потрібно 60% збігів, а розділи, що збіглись більшою
+// кількістю слів, стоять вище. Однакових назв (у кожної добавки є «Перш ніж приймати») показуємо не більше двох, один розділ не повторюється.
+const needed=total=>Math.max(1,Math.ceil(total*0.6));
+export function findSections(rows,keys,{scoreFields,exclude=new Set(),limit=6,perTitle=2}){
+  if(!keys.length||!rows.length)return [];
+  const scored=[];
+  rows.forEach(([href,title,parent,kind,words],i)=>{
+    if(exclude.has(href))return;
+    const own=keys.filter(key=>!scoreFields([key],[[1,parent]]).matched);
+    if(!own.length||!scoreFields(own,[[4,title],[3,words||'']]).matched)return;
+    const all=scoreFields(keys,[[4,title],[3,words||''],[1,parent]]);
+    if(all.matched<needed(keys.length))return;
+    scored.push({section:{href,title,parent,kind},i,matched:all.matched,score:all.score});
+  });
+  scored.sort((a,b)=>b.matched-a.matched||b.score-a.score||a.i-b.i);
+  const titles=new Map(),hrefs=new Set(),out=[];
+  for(const {section} of scored){
+    const t=fold(section.title);
+    if(hrefs.has(section.href)||(titles.get(t)||0)>=perTitle)continue;
+    hrefs.add(section.href);titles.set(t,(titles.get(t)||0)+1);out.push(section);
+    if(out.length>=limit)break;
+  }
+  return out;
+}
+
+// Pure: rank materials, sections and terms for a query. Title starts-with beats title contains beats other fields.
+export function searchSite({materials=[],terms=[],sections=[],findMaterials=null,scoreFields=null,searchKeywords=null,enoughMatches=null},query,limit=8){
+  const q=fold(query);if(!q)return {materials:[],sections:[],terms:[]};
   // Пошук за ключовими словами (2026-11-01): службові слова відкидаються, збіг хоча б половини слів, результати за вагою (див. materials.mjs).
   // Матеріали вже відранжовані findMaterials; терміни оцінюємо так само за назвою (вага 4) і означенням (вага 1).
   if(findMaterials&&scoreFields&&searchKeywords&&enoughMatches){
@@ -13,22 +40,25 @@ export function searchSite({materials=[],terms=[],findMaterials=null,scoreFields
     const mats=findMaterials(query).slice(0,limit);
     const trm=terms.map((t,i)=>({t,i,...scoreFields(keys,[[4,t.title],[1,t.definition]])})).filter(x=>x.score>0&&enoughMatches(x.matched,keys.length))
       .sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,Math.max(2,limit-mats.length)).map(x=>x.t);
-    return {materials:mats,terms:trm};
+    // Розділ, що веде туди ж, куди вже показаний матеріал (той самий якір), не повторюємо.
+    const exclude=new Set(mats.map(m=>String(m.href).replace(/^\.\//,'')));
+    return {materials:mats,sections:findSections(sections,keys,{scoreFields,exclude}),terms:trm};
   }
   const words=q.split(' ');
   const rank=(title,text)=>{const t=fold(title);return t.startsWith(q)?0:t.includes(q)?1:words.every(w=>t.includes(w))?2:3;};
   const found=(findMaterials?findMaterials(query):materials.filter(m=>words.every(w=>fold(m.title+' '+m.areaTitle).includes(w))));
   const mats=found.map((m,i)=>({m,r:rank(m.title),i})).sort((a,b)=>a.r-b.r||a.i-b.i).slice(0,limit).map(x=>x.m);
   const trm=terms.filter(t=>words.every(w=>fold(t.title+' '+t.definition).includes(w))).map((t,i)=>({t,r:rank(t.title),i})).sort((a,b)=>a.r-b.r||a.i-b.i).slice(0,Math.max(2,limit-mats.length)).map(x=>x.t);
-  return {materials:mats,terms:trm};
+  return {materials:mats,sections:[],terms:trm};
 }
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Loaded from dist/, where the generated copies of the catalogue modules live.
 const defaultLoader=async()=>{
-  const [mat,terms,gl]=await Promise.all([import('./platform-materials.js?v=104'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js')]);
+  // Розділи сторінок необов’язкові: якщо файл не завантажився, пошук працює по матеріалах і термінах.
+  const [mat,terms,gl,sec]=await Promise.all([import('./platform-materials.js?v=104'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js'),import('./platform-sections.js?v=1').catch(()=>({sections:[]}))]);
   const extra=[...(gl.glossary?.movement||[]),...(gl.glossary?.sleep||[])];
-  return {materials:mat.materials,findMaterials:mat.findMaterials,scoreFields:mat.scoreFields,searchKeywords:mat.searchKeywords,enoughMatches:mat.enoughMatches,kinds:mat.materialKinds,terms:[...terms.TERMS,...extra]};
+  return {materials:mat.materials,findMaterials:mat.findMaterials,scoreFields:mat.scoreFields,searchKeywords:mat.searchKeywords,enoughMatches:mat.enoughMatches,kinds:mat.materialKinds,sections:sec.sections,terms:[...terms.TERMS,...extra]};
 };
 // The header and a page's search form share one lazy controller and shortcut.
 const controllers=new WeakMap();
@@ -70,12 +100,14 @@ export function mountSearch(doc=document,button,loader=defaultLoader){
       list.innerHTML=`<p class="eua-search-hint">Часті запити</p><div class="eua-search-chips">${SUGGESTIONS.map(s=>`<button type="button" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div>`;
       return;
     }
-    const r=searchSite(data,q),n=r.materials.length+r.terms.length;
+    const r=searchSite(data,q),n=r.materials.length+r.sections.length+r.terms.length;
     status.textContent=n?`Знайдено: ${n}`:'Нічого не знайдено. Спробуйте одне-два ключові слова, наприклад «креатин» або «сон».';
     const kind=m=>data.kinds?.[m.kind]||'Матеріал';
     const mats=r.materials.length?`<h2>Матеріали</h2><ul>${r.materials.map(m=>`<li><a href="${esc(m.href)}"><strong>${esc(m.title)}</strong><span>${esc(kind(m))} · ${esc(m.areaTitle||'')}</span></a></li>`).join('')}</ul>`:'';
+    // Розділи: посилання відносні, усі сторінки лежать в одній теці. Вид показуємо словом: «Твердження» (картка з рівнем впевненості) або «Розділ».
+    const secs=r.sections.length?`<h2>Розділи на сторінках</h2><ul>${r.sections.map(s=>`<li><a href="./${esc(s.href)}"><strong>${esc(s.title)}</strong><span>${s.kind==='claim'?'Твердження':'Розділ'} · ${esc(s.parent||'')}</span></a></li>`).join('')}</ul>`:'';
     const trm=r.terms.length?`<h2>Терміни</h2><ul>${r.terms.map(t=>`<li><a href="./glossary.html#term-${esc(t.id)}"><strong>${esc(t.title)}</strong><span>Словник термінів</span></a></li>`).join('')}</ul>`:'';
-    list.innerHTML=mats+trm;
+    list.innerHTML=mats+secs+trm;
   }
   async function open(query,focusTarget){
     const activeDialog=doc.querySelector?.('dialog[open]');

@@ -55,9 +55,11 @@ assert.equal(page.inputs.length,1);
 assert.equal(page.inputs[0].type,'search');
 assert.equal(page.inputs[0].id,'spectrum-query');
 assert.equal(page.inputs[0].name,'q');
-assert(page.labels.some(l=>l.for==='spectrum-query'&&l.text==='Що хочеш зрозуміти?'));
+// 2026-11-02 (пошук у шапці головної, T7, рішення D3): мітка поля дорівнює новій підказці «Знайти розбір або перевірити твердження» (раніше «Що хочеш зрозуміти?»); докладно в tests/claim-search.test.mjs.
+assert(page.labels.some(l=>l.for==='spectrum-query'&&l.text==='Знайти розбір або перевірити твердження'));
 assert.equal(page.submit.length,1);
-assert.equal(page.submit[0]['aria-label']||page.submit[0].text,'Знайти матеріал');
+// 2026-11-02 (пошук у шапці головної, T7, рішення D3): кнопка називає дію словом «Знайти» (раніше стрілка з назвою «Знайти матеріал» для диктора); видиме слово і є назва.
+assert.equal(page.submit[0]['aria-label']||page.submit[0].text,'Знайти');
 
 const questions=page.links.filter(link=>link['data-spectrum-question']);
 assert.deepEqual(questions.map(link=>link['data-spectrum-question']),['muscle','fat','creatine']);

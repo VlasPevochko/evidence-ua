@@ -15,10 +15,13 @@ body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-intro
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-intro h1{margin:0;color:var(--spectrum-text);font:400 clamp(3.8rem,6.1vw,6.5rem)/1.12 var(--spectrum-serif);letter-spacing:-.045em;text-wrap:balance}
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search{display:flex;align-items:center;gap:15px;width:min(540px,100%);min-height:52px;margin:25px auto 0;padding:0 0 2px;border:0;border-bottom:1px solid #d8cde29c;background:none;border-radius:0;box-shadow:none}
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search>svg{flex:none;width:23px;height:23px;fill:none;stroke:var(--spectrum-text);stroke-width:1.35;stroke-linecap:round}
-body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search input{flex:1;min-width:0;min-height:48px;width:100%;margin:0;padding:8px 0;border:0;border-radius:0;outline:none;background:none;box-shadow:none;color:var(--spectrum-text);font:400 17px/1.5 Inter,system-ui,sans-serif;letter-spacing:-.02em}
+body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search input{display:block;min-width:0;min-height:48px;width:100%;margin:0;padding:8px 0;border:0;border-radius:0;outline:none;background:none;box-shadow:none;color:var(--spectrum-text);font:400 17px/1.5 Inter,system-ui,sans-serif;letter-spacing:-.02em}
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search input::placeholder{color:#b9afc7;opacity:1}
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search:focus-within{border-bottom-color:var(--spectrum-accent);box-shadow:0 1px 0 var(--spectrum-accent)}
-body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search-submit{display:grid;place-items:center;flex:none;width:44px;min-height:44px;margin:0;padding:0;border:0;border-radius:2px;background:none;color:var(--spectrum-accent);font:300 27px/1 Inter,system-ui,sans-serif;cursor:pointer}
+body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search-field{position:relative;display:block;flex:1;min-width:0}
+body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search-submit{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:44px;min-height:44px;margin:0;padding:0 16px;border:1px solid var(--spectrum-line);border-radius:2px;background:none;color:var(--spectrum-accent);font:400 16px/1 Inter,system-ui,sans-serif;letter-spacing:-.01em;cursor:pointer}
+body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search-submit:hover{border-color:var(--spectrum-accent);color:#ecd9ff}
+body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search-submit:focus-visible{outline:2px solid var(--spectrum-accent);outline-offset:2px}
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-ribbon{pointer-events:none;position:absolute;z-index:-1;top:132px;left:50%;width:max(100%,1100px);height:362px;transform:translateX(-50%);background-image:url(./home-spectrum-ribbon.webp);background-position:center;background-size:cover;background-repeat:no-repeat;opacity:.91;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(transparent,#000 16%,#000 79%,transparent);mask-image:linear-gradient(transparent,#000 16%,#000 79%,transparent)}
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-wave{display:block;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.82}
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-questions{display:grid;grid-template-columns:1.12fr 1fr .9fr;column-gap:9%;position:relative;z-index:1;min-height:310px;margin:153px 0 0;padding:0 0 48px 10.5%;align-items:start}
@@ -71,6 +74,7 @@ body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-bar
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-close{width:44px;min-height:44px;border:0;border-radius:2px;background:none;color:var(--spectrum-text);font:300 32px/1 Inter,system-ui,sans-serif}
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-status,
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-hint{color:var(--spectrum-muted);font:400 14px/1.5 Inter,system-ui,sans-serif}
+body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-status a{color:var(--spectrum-accent)}
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-results h2{margin:7px 0 8px;color:var(--spectrum-muted);font:400 16px/1.5 Inter,system-ui,sans-serif;text-transform:none;letter-spacing:0}
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-results ul{gap:0}
 body[data-platform-area="home"]:not([data-route-view="article"]) .eua-search-results a{position:relative;gap:6px;min-height:81px;padding:16px 40px 16px 20px;border-bottom:1px solid var(--spectrum-line);border-radius:0;color:var(--spectrum-text)}
@@ -359,3 +363,16 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories #st
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories .path-card[data-home-path]>.path-start{gap:8px}
 /* T5 (2026-11-02): довші підписи питань угорі переносяться порівну, без висячого слова на другому рядку; де властивість не підтримано, лишається звичайний перенос. */
 body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-question-open{text-wrap:balance}
+
+/* T7 (2026-11-02, рішення D3): довга підказка поля «Знайти розбір або перевірити твердження» (близько 330 px) в один рядок не вміщається, поки поле вужче за неї:
+   до 700 px ширини форма має не більше 450 px, а на телефоні й менше. Тому до 700 px справжня підказка прозора, а мітка поля (та сама фраза) лягає на поле
+   у два рядки й зникає, щойно людина щось пише. Висота рядка поля лишається 48 px, тож композиція героя не зсувається. Лупа на телефоні (до 560 px) прихована:
+   слово на кнопці вже каже, що це пошук, а місце потрібне тексту. */
+@media(max-width:700px){
+  body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search input::placeholder{color:transparent}
+  body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search-label{inset:0;width:auto;height:auto;margin:0;padding:0;overflow:visible;clip-path:none;display:flex;align-items:center;white-space:normal;pointer-events:none;color:#b9afc7;font:400 16px/1.25 Inter,system-ui,sans-serif;letter-spacing:-.02em;text-align:left;text-wrap:balance}
+  body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search input:not(:placeholder-shown)+.spectrum-search-label{display:none}
+}
+@media(max-width:560px){
+  body[data-platform-area="home"]:not([data-route-view="article"]) .spectrum-search>svg{display:none}
+}

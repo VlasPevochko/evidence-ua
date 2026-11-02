@@ -1084,7 +1084,8 @@ async function searchFlow(browser, origin, viewport) {
   await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
   check(where, (await page.locator('.eua-search-results a[href^="./glossary.html#term-"]').count()) >= 1, 'a term result links to the dictionary');
   // Пошук за ключовими словами (рішення власника 2026-11-01): питання зі службовими словами знаходить матеріал за ключовим словом, поле питає так само, як поле на головній.
-  check(where, (await page.locator('#eua-search-q').getAttribute('placeholder')) === 'Що хочеш зрозуміти?', 'the search field asks the same question as the home page field');
+  // T7 (2026-11-02, рішення D3): підказка «Знайти розбір або перевірити твердження» одна для поля на головній і вікна пошуку.
+  check(where, (await page.locator('#eua-search-q').getAttribute('placeholder')) === 'Знайти розбір або перевірити твердження', 'the search field shows the same hint as the home page field');
   await page.fill('#eua-search-q', 'як пити креатин');
   await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
   check(where, /Креатин/.test(await page.locator('.eua-search-results a').first().innerText()) && (await page.locator('.eua-search-status').innerText()).includes('Знайдено'), 'a question with filler words finds the creatine page by its keyword');
@@ -1106,7 +1107,8 @@ async function searchFlow(browser, origin, viewport) {
   await dialog.waitFor({state: 'visible'});
   await page.fill('#eua-search-q', '');
   await page.fill('#eua-search-q', 'цццццц');
-  check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайдено') && (await page.locator('.eua-search-status').innerText()).includes('ключові слова'), 'an empty result says so and tells what to try');
+  // T7 (2026-11-02, рішення D3): новий текст порожнього результату.
+  check(where, (await page.locator('.eua-search-status').innerText()).includes('Нічого не знайшли') && (await page.locator('.eua-search-status').innerText()).includes('відкрийте всі напрями'), 'an empty result says so and tells what to try');
   // Escape behavior was checked above from a result. Close explicitly here:
   // a search input may consume its first Escape to clear the current query.
   await dialog.locator('.eua-search-close').click();
@@ -3064,6 +3066,101 @@ async function homeLinkTextFlow(browser, origin, viewport) {
   }
 }
 
+// T7 (2026-11-02, рішення D3): поле пошуку в героєві головної. Підказка «Знайти розбір або перевірити твердження», кнопка зі словом «Знайти», жодних ознак чату.
+// До 560 px довга підказка не вміщається в один рядок, тому йде у два рядки всередині поля (мітка поля лягає на поле), а рядок поля лишається 52 px: композиція героя не зсувається.
+async function heroSearchFlow(browser, origin, viewport) {
+  const where = `hero search @${viewport.name}`;
+  const hint = 'Знайти розбір або перевірити твердження';
+  const emptyText = 'Нічого не знайшли. Спробуйте інше слово або відкрийте всі напрями.';
+  const overlay = viewport.width <= 700, iconHidden = viewport.width <= 560; // до 700 px підказка лежить на полі у два рядки, до 560 px лупа прихована
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const ready = async () => {
+    await page.locator('#spectrum-query').waitFor({state: 'visible'});
+    await page.waitForFunction(() => document.querySelector('.eua-site-header .eua-header-search') && document.getElementById('spectrum-search'));
+    await page.waitForTimeout(300);
+  };
+  try {
+    await ready();
+    const read = () => page.evaluate(() => {
+      const form = document.getElementById('spectrum-search'), input = document.getElementById('spectrum-query'), label = form.querySelector('.spectrum-search-label'), button = form.querySelector('.spectrum-search-submit'), icon = form.querySelector(':scope > svg');
+      const rect = node => { const box = node.getBoundingClientRect(); return {x: box.x, y: box.y, w: box.width, h: box.height, r: box.right, b: box.bottom}; };
+      const shown = node => { if (!node) return false; const style = getComputedStyle(node), box = node.getBoundingClientRect(); return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 1 && box.height > 1; };
+      const range = document.createRange(); range.selectNodeContents(label);
+      const lines = [...range.getClientRects()], inputBox = input.getBoundingClientRect();
+      const ctx = document.createElement('canvas').getContext('2d'); ctx.font = getComputedStyle(input).font;
+      return {placeholder: input.placeholder, labelText: label.textContent.trim(), labelFor: label.htmlFor, enter: input.getAttribute('enterkeyhint'), type: input.type,
+        form: rect(form), input: rect(input), button: rect(button), buttonText: button.textContent.trim(), buttonAria: button.getAttribute('aria-label'), buttonType: button.type,
+        labelShown: shown(label), iconShown: shown(icon), placeholderColor: getComputedStyle(input, '::placeholder').color,
+        labelLineCount: new Set(lines.map(box => Math.round(box.top))).size,
+        labelInside: lines.length > 0 && lines.every(box => box.left >= inputBox.left - 1 && box.right <= inputBox.right + 1 && box.top >= inputBox.top - 1 && box.bottom <= inputBox.bottom + 1),
+        textWidth: ctx.measureText(input.placeholder).width, overflow: document.documentElement.scrollWidth - innerWidth};
+    });
+    const info = await read();
+    check(where, info.placeholder === hint && info.labelText === hint && info.labelFor === 'spectrum-query', `the field shows the approved hint and its label says the same: ${info.placeholder} / ${info.labelText}`);
+    check(where, info.buttonText === 'Знайти' && info.buttonAria === null && info.buttonType === 'submit', `the button names the action with a word: ${info.buttonText}`);
+    check(where, info.button.w >= 44 && info.button.h >= 44 && info.button.x >= 0 && info.button.r <= viewport.width + 1, `the button is a 44px target inside the window: ${Math.round(info.button.w)}x${Math.round(info.button.h)}`);
+    check(where, info.type === 'search' && info.enter === 'search', 'a phone keyboard offers a search key');
+    check(where, info.form.h >= 51 && info.form.h <= 53 && Math.round(info.input.h) === 48, `the row of the field keeps its height (52px), so the hero does not move: ${info.form.h}`);
+    check(where, info.overflow <= 1 && info.input.x >= 0 && info.input.r <= viewport.width + 1, 'nothing sticks out sideways');
+    check(where, info.iconShown === !iconHidden, `the magnifier is ${iconHidden ? 'hidden on a phone' : 'shown'}`);
+    if (overlay) {
+      check(where, info.labelShown, 'the hint label lies over the field');
+      check(where, /^rgba\(0, 0, 0, 0\)$|transparent/.test(info.placeholderColor), `the real placeholder is transparent here (the label shows instead): ${info.placeholderColor}`);
+      check(where, info.labelLineCount >= 1 && info.labelLineCount <= 2 && info.labelInside, `the whole hint fits in the field in at most two lines: ${info.labelLineCount} lines, inside=${info.labelInside}`);
+    } else {
+      check(where, !info.labelShown, 'on a wide screen the label is hidden for the eye');
+      check(where, !/rgba\(0, 0, 0, 0\)|transparent/.test(info.placeholderColor) && info.textWidth <= info.input.w, `the hint fits in one line and is visible: needs ${Math.round(info.textWidth)}px of ${Math.round(info.input.w)}px`);
+    }
+    await artifact(page, viewport, 'hero-search-field', page.locator('.spectrum-intro'));
+    if (overlay) {
+      // Щойно в полі є текст, мітка-підказка зникає й нічого не лишається поверх тексту; порожнє поле повертає її.
+      await page.locator('#spectrum-query').fill('к');
+      check(where, !(await read()).labelShown, 'text in the field hides the hint label');
+      await page.locator('#spectrum-query').fill('');
+      check(where, (await read()).labelShown, 'an empty field shows the hint label again');
+    }
+    // Розбір знаходиться за словом із питання, показується окремою групою «Розбори» без відповіді; клік відкриває його картку.
+    const dialog = page.locator('dialog.eua-search');
+    await page.locator('#spectrum-query').fill('підсолоджувачі');
+    await page.locator('#spectrum-query').press('Enter');
+    await dialog.waitFor({state: 'visible'});
+    const link = dialog.locator('.eua-search-results a[href="./research.html#rs-sweeteners"]');
+    await link.waitFor({state: 'visible'});
+    check(where, await dialog.locator('#eua-search-q').getAttribute('placeholder') === hint, 'the dialog field shows the same hint');
+    check(where, (await dialog.locator('.eua-search-results h2').allInnerTexts()).includes('Розбори'), 'write-ups are a group of their own');
+    check(where, await link.evaluate(node => node.children.length === 2 && /підсолоджувач/i.test(node.querySelector('strong').textContent)), 'a write-up result shows only its question and the page, no answer');
+    await artifact(page, viewport, 'hero-search-results', dialog);
+    await link.click();
+    await page.waitForURL('**/research.html#rs-sweeteners');
+    const card = page.locator('#rs-sweeteners');
+    await card.waitFor({state: 'visible'});
+    check(where, await card.evaluate(node => node.open && node.getBoundingClientRect().top >= -1 && node.getBoundingClientRect().top < innerHeight), 'the card of the write-up is open and in view');
+    // Безглуздий запит: затверджений текст, посилання на всі напрями, у списку нічого.
+    await page.goto(origin + '/index.html');
+    await ready();
+    await page.locator('#spectrum-query').fill('детокс виводить токсини');
+    await page.locator('#spectrum-query').press('Enter');
+    await dialog.waitFor({state: 'visible'});
+    const status = dialog.locator('.eua-search-status');
+    await page.waitForFunction(() => /Нічого не знайшли/.test(document.querySelector('.eua-search-status')?.textContent || ''));
+    check(where, (await status.innerText()).replace(/\s+/g, ' ').trim() === emptyText, `an unsupported claim gives the approved text: ${await status.innerText()}`);
+    check(where, await status.locator('a').evaluate(node => node.getAttribute('href') === './directions.html' && node.textContent === 'всі напрями' && getComputedStyle(node).textDecorationLine.includes('underline')), 'the words «всі напрями» are an underlined link to the directory');
+    check(where, await dialog.locator('.eua-search-results li').count() === 0, 'nothing is listed for an unsupported claim');
+    await artifact(page, viewport, 'hero-search-empty', dialog);
+    // Те, що написав відвідувач, ніколи не стає розміткою.
+    await dialog.locator('#eua-search-q').fill('<img src=x onerror=window.__pwned=1>');
+    await page.waitForTimeout(150);
+    check(where, await page.evaluate(() => window.__pwned === undefined && !document.querySelector('dialog.eua-search img')), 'a query with markup stays plain text');
+    // «Кофеїн перед сном» знаходить матеріал про кофеїн.
+    await dialog.locator('#eua-search-q').fill('кофеїн перед сном');
+    await dialog.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+    check(where, /^Кофеїн/.test(await dialog.locator('.eua-search-results a strong').first().innerText()), 'the caffeine material comes first for «кофеїн перед сном»');
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, `no errors and no third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external].join(' | ')}`);
+  } finally {
+    await context.close();
+  }
+}
+
 async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
   for (const viewport of [
@@ -3081,6 +3178,8 @@ async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
   // T5 (2026-11-02): підписи кнопок-посилань; 360 включено, бо довгі підписи там переносяться.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLinkTextFlow, browser, origin, viewport);
+  // T7 (2026-11-02): поле пошуку в героєві; 360 і 320 px (підказка у два рядки, найвужчі телефони) і 600 px (підказка в один рядок, найвужчий «широкий» вигляд).
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}, {name: 'mobile-tiny', width: 320, height: 640}, {name: 'tablet-small', width: 600, height: 900}, {name: 'tablet', width: 720, height: 900}]) await isolatedFlow(heroSearchFlow, browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
   await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});

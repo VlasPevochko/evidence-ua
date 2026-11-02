@@ -51,9 +51,11 @@ assert(sections.length>=120&&sections.length<=400,`a reasonable number of sectio
 for(const row of sections){
   assert.equal(row.length,5,`${row[1]} has five fields`);
   const [href,title,parent,kind,words]=row;
-  assert(title.length>=3&&title.length<=90&&parent&&['section','block','claim'].includes(kind)&&typeof words==='string',`${href} is well formed`);
+  // 2026-11-02 (пошук у шапці головної, T7): з’явився вид «study» (розбір дослідження з dist/research-data.js, посилання research.html#<id>); докладно в tests/claim-search.test.mjs.
+  assert(title.length>=3&&title.length<=90&&parent&&['section','block','claim','study'].includes(kind)&&typeof words==='string',`${href} is well formed`);
   assert(/^[a-z-]+\.html(\?section=[^#&]+(&n=\d+)?)?(#[A-Za-z0-9_-]+)?$/.test(href),`${href} is a plain page link`);
-  assert(!SKIP_PAGES.has(href.split(/[?#]/)[0]),`${href} is not on a skipped page`);
+  // Сторінку розборів і далі не розбираємо за заголовками (SKIP_PAGES): на неї ведуть лише рядки «study» з даних.
+  assert(kind==='study'?href.startsWith('research.html#'):!SKIP_PAGES.has(href.split(/[?#]/)[0]),`${href} is not on a skipped page`);
   const anchor=href.split('#')[1];
   assert(!anchor||!SKIP_ANCHOR.test(anchor),`${href} is not an anchor of sources, tabs, the dictionary or dialogs`);
 }
@@ -71,7 +73,8 @@ const findById=(root,id)=>{let found=null;walk(root,n=>{if(!found&&n.attrs.id===
 const hidden=n=>[n,...ancestors(n)].some(a=>['dialog','nav','header','footer'].includes(a.tag)||'hidden' in a.attrs||a.attrs['aria-hidden']==='true');
 const textOf=n=>n.text!==undefined?n.text:n.kids.map(textOf).join(' ');
 const decodeText=s=>s.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
-for(const [href,title] of sections){
+for(const [href,title,,kind] of sections){
+  if(kind==='study')continue; // 2026-11-02 (пошук у шапці головної, T7): картки розборів малює скрипт сторінки, у готовому HTML їх немає; що посилання відкриває картку, перевіряє tests/claim-search.test.mjs
   const [beforeHash,hash=''] =href.split('#');
   const [file,query='']=beforeHash.split('?');
   const root=pageTree(file);
@@ -131,18 +134,18 @@ for(const s of ['білок','креатин','сон','кофеїн','жир','
 // 7) Вікно пошуку, завантаження й каскад версій.
 const src=read('src/platform/search.mjs'),dist=f=>read('dist/'+f);
 assert(src.includes('<h2>Розділи на сторінках</h2>')&&src.includes("s.kind==='claim'?'Твердження':'Розділ'"),'the dialog has its own group «Розділи на сторінках» and says whether it is a claim or a section');
-assert(src.includes("import('./platform-sections.js?v=1').catch(()=>({sections:[]}))"),'the index loads only when the search opens, and the search still works without it');
+assert(src.includes("import('./platform-sections.js?v=2').catch(()=>({sections:[]}))"),'the index loads only when the search opens, and the search still works without it');
 assert.equal(dist('platform-search.js'),src,'the built search copy equals the source');
 assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage/.test(src+read('scripts/sections-config.mjs')+text),'the sections search stores and sends nothing');
-assert(dist('site-header.js').includes("import('./platform-search.js?v=13')"),'the header loads search v=13');
-assert(dist('home-spectrum.js').includes("import('./platform-search.js?v=13')"),'the home search form loads search v=13');
+assert(dist('site-header.js').includes("import('./platform-search.js?v=14')"),'the header loads search v=14'); // 2026-11-02 (пошук у шапці головної, T7): 13 -> 14 (група «Розбори», новий порожній результат)
+assert(dist('home-spectrum.js').includes("import('./platform-search.js?v=14')"),'the home search form loads search v=14');
 const versions=(file,mod)=>[...new Set([...dist(file).matchAll(new RegExp(`${mod}\\.js\\?v=(\\d+)`,'g'))].map(m=>m[1]))];
-assert.deepEqual(versions('index.html','home-spectrum'),['5'],'the home loads home-spectrum v=5');
-assert.deepEqual(versions('directions.html','directions'),['111'],'the catalogue loads directions v=111');
-assert.deepEqual(versions('atlas.html','platform-shell'),['108'],'pages load the shell v=108');
-for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(versions(f,'site-header'),['15'],`${f} loads the header v=15`);
-assert(dist('platform-shell.js').includes('./site-header.js?v=15'),'the shell loads the header v=15');
-assert(dist('fat-burning.js').includes('./site-header.js?v=15'),'the fat-burning page loads the header v=15');
+assert.deepEqual(versions('index.html','home-spectrum'),['6'],'the home loads home-spectrum v=6'); // 2026-11-02 (пошук у шапці головної, T7): 5 -> 6
+assert.deepEqual(versions('directions.html','directions'),['112'],'the catalogue loads directions v=112'); // 2026-11-02 (пошук у шапці головної, T7): 111 -> 112
+assert.deepEqual(versions('atlas.html','platform-shell'),['109'],'pages load the shell v=109'); // 2026-11-02 (пошук у шапці головної, T7): 108 -> 109
+for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(versions(f,'site-header'),['16'],`${f} loads the header v=16`); // 2026-11-02 (пошук у шапці головної, T7): 15 -> 16
+assert(dist('platform-shell.js').includes('./site-header.js?v=16'),'the shell loads the header v=16');
+assert(dist('fat-burning.js').includes('./site-header.js?v=16'),'the fat-burning page loads the header v=16');
 
 // 8) Журнал оновлень і документи.
 const changes=dist('changes-data.js');

@@ -1,7 +1,15 @@
-// Пошук по сайту: кнопка в шапці відкриває вікно з полем. Шукає по назвах матеріалів, розділах усередині сторінок і словнику термінів, нічого не надсилає.
+// Пошук по сайту: кнопка в шапці відкриває вікно з полем. Шукає по назвах матеріалів, розборах досліджень, розділах усередині сторінок і словнику термінів, нічого не надсилає.
 // Дані підвантажуються лише при першому відкритті, щоб не обтяжувати сторінки.
 const fold=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
 export const SUGGESTIONS=['білок','креатин','сон','кофеїн','жир','інтервал'];
+
+// Рішення власника D3 (2026-11-02, бриф T7): підказка в полі й текст порожнього результату. Підказку беруть і поле на головній (src/platform/home-spectrum.mjs),
+// і це вікно, тож вони не розійдуться. Посилання в порожньому результаті стоїть на словах «всі напрями», видимий текст той самий. Слів «так», «ні», «міф» тут нема:
+// пошук нічого не оцінює, він лише веде до сторінок.
+export const SEARCH_PLACEHOLDER='Знайти розбір або перевірити твердження';
+const EMPTY_BEFORE='Нічого не знайшли. Спробуйте інше слово або відкрийте ',EMPTY_LINK='всі напрями';
+export const EMPTY_RESULT_TEXT=`${EMPTY_BEFORE}${EMPTY_LINK}.`;
+const emptyResultHTML=()=>`${EMPTY_BEFORE}<a href="./directions.html">${EMPTY_LINK}</a>.`;
 
 // Розділи всередині сторінок (2026-11-02). Рядок індексу: [посилання, назва, матеріал, вид, слова для пошуку] (див. scripts/build-sections.mjs).
 // Слова запиту, що лише називають матеріал («креатин» у запиті «як пити креатин»), для розділу є контекстом, а не змістом: збіг мусить бути
@@ -32,7 +40,7 @@ export function findSections(rows,keys,{scoreFields,exclude=new Set(),limit=6,pe
 
 // Pure: rank materials, sections and terms for a query. Title starts-with beats title contains beats other fields.
 export function searchSite({materials=[],terms=[],sections=[],findMaterials=null,scoreFields=null,searchKeywords=null,enoughMatches=null},query,limit=8){
-  const q=fold(query);if(!q)return {materials:[],sections:[],terms:[]};
+  const q=fold(query);if(!q)return {materials:[],studies:[],sections:[],terms:[]};
   // Пошук за ключовими словами (2026-11-01): службові слова відкидаються, збіг хоча б половини слів, результати за вагою (див. materials.mjs).
   // Матеріали вже відранжовані findMaterials; терміни оцінюємо так само за назвою (вага 4) і означенням (вага 1).
   if(findMaterials&&scoreFields&&searchKeywords&&enoughMatches){
@@ -42,21 +50,24 @@ export function searchSite({materials=[],terms=[],sections=[],findMaterials=null
       .sort((a,b)=>b.score-a.score||a.i-b.i).slice(0,Math.max(2,limit-mats.length)).map(x=>x.t);
     // Розділ, що веде туди ж, куди вже показаний матеріал (той самий якір), не повторюємо.
     const exclude=new Set(mats.map(m=>String(m.href).replace(/^\.\//,'')));
-    return {materials:mats,sections:findSections(sections,keys,{scoreFields,exclude}),terms:trm};
+    // Розбори (16 коротких розборів досліджень, kind «study») шукаються тим самим способом, але виходять окремою групою: підказка в полі обіцяє «знайти розбір».
+    // Показуємо лише назву-питання; відповідей і висновків пошук не показує й не оцінює.
+    const studies=findSections(sections.filter(row=>row[3]==='study'),keys,{scoreFields,exclude,limit:4,perTitle:1});
+    return {materials:mats,studies,sections:findSections(sections.filter(row=>row[3]!=='study'),keys,{scoreFields,exclude}),terms:trm};
   }
   const words=q.split(' ');
   const rank=(title,text)=>{const t=fold(title);return t.startsWith(q)?0:t.includes(q)?1:words.every(w=>t.includes(w))?2:3;};
   const found=(findMaterials?findMaterials(query):materials.filter(m=>words.every(w=>fold(m.title+' '+m.areaTitle).includes(w))));
   const mats=found.map((m,i)=>({m,r:rank(m.title),i})).sort((a,b)=>a.r-b.r||a.i-b.i).slice(0,limit).map(x=>x.m);
   const trm=terms.filter(t=>words.every(w=>fold(t.title+' '+t.definition).includes(w))).map((t,i)=>({t,r:rank(t.title),i})).sort((a,b)=>a.r-b.r||a.i-b.i).slice(0,Math.max(2,limit-mats.length)).map(x=>x.t);
-  return {materials:mats,sections:[],terms:trm};
+  return {materials:mats,studies:[],sections:[],terms:trm};
 }
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Loaded from dist/, where the generated copies of the catalogue modules live.
 const defaultLoader=async()=>{
   // Розділи сторінок необов’язкові: якщо файл не завантажився, пошук працює по матеріалах і термінах.
-  const [mat,terms,gl,sec]=await Promise.all([import('./platform-materials.js?v=104'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js'),import('./platform-sections.js?v=1').catch(()=>({sections:[]}))]);
+  const [mat,terms,gl,sec]=await Promise.all([import('./platform-materials.js?v=105'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js'),import('./platform-sections.js?v=2').catch(()=>({sections:[]}))]);
   const extra=[...(gl.glossary?.movement||[]),...(gl.glossary?.sleep||[])];
   return {materials:mat.materials,findMaterials:mat.findMaterials,scoreFields:mat.scoreFields,searchKeywords:mat.searchKeywords,enoughMatches:mat.enoughMatches,kinds:mat.materialKinds,sections:sec.sections,terms:[...terms.TERMS,...extra]};
 };
@@ -74,7 +85,7 @@ export function mountSearch(doc=document,button,loader=defaultLoader){
   const configuredFocus=()=>button.dataset.searchFocus?doc.getElementById(button.dataset.searchFocus):null;
   const build=()=>{
     dialog=doc.createElement('dialog');dialog.className='eua-search';dialog.setAttribute('aria-label','Пошук по сайту');
-    dialog.innerHTML=`<form method="dialog" class="eua-search-form">${doc.body.dataset?.platformArea==='home'?'<h2 class="eua-search-title">Пошук по сайту</h2>':''}<div class="eua-search-bar"><input type="search" id="eua-search-q" placeholder="Що хочеш зрозуміти?" autocomplete="off" aria-label="Пошук по сайту"><button type="submit" class="eua-search-close" aria-label="Закрити пошук">×</button></div><p class="eua-search-status" role="status" aria-live="polite"></p><div class="eua-search-results"></div></form>`;
+    dialog.innerHTML=`<form method="dialog" class="eua-search-form">${doc.body.dataset?.platformArea==='home'?'<h2 class="eua-search-title">Пошук по сайту</h2>':''}<div class="eua-search-bar"><input type="search" id="eua-search-q" placeholder="${esc(SEARCH_PLACEHOLDER)}" autocomplete="off" enterkeyhint="search" aria-label="Пошук по сайту"><button type="submit" class="eua-search-close" aria-label="Закрити пошук">×</button></div><p class="eua-search-status" role="status" aria-live="polite"></p><div class="eua-search-results"></div></form>`;
     doc.body.append(dialog);
     input=dialog.querySelector('input');list=dialog.querySelector('.eua-search-results');status=dialog.querySelector('.eua-search-status');
     dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
@@ -100,14 +111,17 @@ export function mountSearch(doc=document,button,loader=defaultLoader){
       list.innerHTML=`<p class="eua-search-hint">Часті запити</p><div class="eua-search-chips">${SUGGESTIONS.map(s=>`<button type="button" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div>`;
       return;
     }
-    const r=searchSite(data,q),n=r.materials.length+r.sections.length+r.terms.length;
-    status.textContent=n?`Знайдено: ${n}`:'Нічого не знайдено. Спробуйте одне-два ключові слова, наприклад «креатин» або «сон».';
+    const r=searchSite(data,q),n=r.materials.length+r.studies.length+r.sections.length+r.terms.length;
+    // Порожній результат (рішення D3): готовий текст зі сталої, запит у ньому не повторюється, тож написане в полі ніколи не стає розміткою.
+    if(n)status.textContent=`Знайдено: ${n}`;else status.innerHTML=emptyResultHTML();
     const kind=m=>data.kinds?.[m.kind]||'Матеріал';
     const mats=r.materials.length?`<h2>Матеріали</h2><ul>${r.materials.map(m=>`<li><a href="${esc(m.href)}"><strong>${esc(m.title)}</strong><span>${esc(kind(m))} · ${esc(m.areaTitle||'')}</span></a></li>`).join('')}</ul>`:'';
+    // Розбори: показуємо лише питання-назву й сторінку, на якій розбір лежить (без відповіді): рядок індексу веде на research.html#<id>, картку відкриває сторінка розборів.
+    const stu=r.studies.length?`<h2>Розбори</h2><ul>${r.studies.map(s=>`<li><a href="./${esc(s.href)}"><strong>${esc(s.title)}</strong><span>${esc(s.parent||'')}</span></a></li>`).join('')}</ul>`:'';
     // Розділи: посилання відносні, усі сторінки лежать в одній теці. Вид показуємо словом: «Твердження» (картка з рівнем впевненості) або «Розділ».
     const secs=r.sections.length?`<h2>Розділи на сторінках</h2><ul>${r.sections.map(s=>`<li><a href="./${esc(s.href)}"><strong>${esc(s.title)}</strong><span>${s.kind==='claim'?'Твердження':'Розділ'} · ${esc(s.parent||'')}</span></a></li>`).join('')}</ul>`:'';
     const trm=r.terms.length?`<h2>Терміни</h2><ul>${r.terms.map(t=>`<li><a href="./glossary.html#term-${esc(t.id)}"><strong>${esc(t.title)}</strong><span>Словник термінів</span></a></li>`).join('')}</ul>`:'';
-    list.innerHTML=mats+secs+trm;
+    list.innerHTML=mats+stu+secs+trm;
   }
   async function open(query,focusTarget){
     const activeDialog=doc.querySelector?.('dialog[open]');

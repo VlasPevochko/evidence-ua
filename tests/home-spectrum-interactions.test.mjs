@@ -145,7 +145,8 @@ async function homeModule(searchImport=new URL('../src/platform/search.mjs',impo
   const wave='data:text/javascript,export const mountSpectrumWave=()=>()=>{};';
   const source=(await fs.readFile(new URL('../dist/home-spectrum.js',import.meta.url),'utf8'))
     .replace('./home-spectrum-wave.mjs?v=1',wave)
-    .replace('./platform-search.js?v=13',searchImport);
+    // 2026-11-02 (пошук у шапці головної, T7): пошук піднято до v=14, тож підміняється саме він.
+    .replace('./platform-search.js?v=14',searchImport);
   return import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 }
 
@@ -176,7 +177,7 @@ function homeFixture({modal=true,header=true}={}) {
 
 test('the unloaded header search shortcut leaves an existing modal in control',async()=>{
   const controller='data:text/javascript,export const mountSearch=()=>({open(){}});';
-  const source=(await fs.readFile(new URL('../src/platform/site-header.mjs',import.meta.url),'utf8')).replace('./platform-search.js?v=13',controller);
+  const source=(await fs.readFile(new URL('../src/platform/site-header.mjs',import.meta.url),'utf8')).replace('./platform-search.js?v=14',controller); // 2026-11-02 (T7): v=14
   const {mountSiteHeader}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
   const f=homeFixture({header:false}),view=f.doc.defaultView,query=f.doc.querySelector,create=f.doc.createElement;
   view.self=view.top=view;view.location.pathname='/index.html';view.Event=Event;

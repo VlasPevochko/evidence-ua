@@ -2705,6 +2705,78 @@ async function baselineScreenshots(browser, origin, viewport) {
   await context.close();
 }
 
+async function homeRowsFlow(browser, origin, viewport) {
+  // Рішення власника 2026-11-02 (бриф T6): згорнуті рядки головної показують під назвою, що всередині (.home-row-hint).
+  // У справжньому браузері перевіряємо: підказка видима, не менша за 12 px і контрастна; рядок не стає абзацом (до 3 рядків підказки),
+  // не виходить за ширину; Enter і Пробіл відкривають та закривають рядок; рядок відгуку без застарілої округлої рамки (home-lower.css).
+  const where = `home rows preview @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('#home-about').waitFor({state: 'attached'});
+    // Рядки всередині закритих блоків не мають розмірів: спершу відкриваємо зовнішні, з клавіатури (так перевіряється й сам рядок «Про сайт»).
+    const about = page.locator('#home-about');
+    await about.locator(':scope > summary').scrollIntoViewIfNeeded();
+    await about.locator(':scope > summary').focus();
+    await page.keyboard.press('Enter');
+    check(where, await about.evaluate(node => node.open), 'Enter opens the «Про сайт» row');
+    await page.keyboard.press('Space');
+    check(where, !(await about.evaluate(node => node.open)), 'Space closes the «Про сайт» row');
+    await page.keyboard.press('Space');
+    check(where, await about.evaluate(node => node.open), 'Space opens the «Про сайт» row again');
+    await toggleHomeFold(page, '#home-learning-paths', true);
+    await page.waitForTimeout(450);
+    const rows = await page.evaluate(() => {
+      const channel = value => { const v = value / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+      const luminance = rgb => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b); };
+      const ratio = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+      const pageBackground = getComputedStyle(document.body).backgroundColor;
+      const panel = getComputedStyle(document.querySelector('#home-about')).backgroundColor;
+      return [...document.querySelectorAll('body > .page details')].filter(d => d.querySelector(':scope > summary .home-row-hint')).map(d => {
+        const summary = d.querySelector(':scope > summary'), hint = summary.querySelector('.home-row-hint'), title = summary.querySelector('.home-row-title');
+        const box = summary.getBoundingClientRect(), hintBox = hint.getBoundingClientRect(), style = getComputedStyle(hint), own = getComputedStyle(d);
+        return {
+          name: d.id || 'outline', height: Math.round(box.height), right: Math.round(box.right),
+          hintLines: Math.round(hintBox.height / parseFloat(style.lineHeight)), hintFont: parseFloat(style.fontSize),
+          hintVisible: hintBox.width > 0 && hintBox.height > 0 && style.visibility !== 'hidden' && style.display !== 'none',
+          hintOverflow: hint.scrollWidth - hint.clientWidth, titleAbove: title.getBoundingClientRect().bottom <= hintBox.top + 1,
+          contrast: Math.min(ratio(style.color, pageBackground), ratio(style.color, panel.startsWith('rgba(0, 0, 0, 0)') ? pageBackground : panel)),
+          borderLeft: own.borderLeftWidth, radius: own.borderTopLeftRadius
+        };
+      });
+    });
+    check(where, rows.length === 6, `six rows carry a preview, found ${rows.length}`);
+    for (const row of rows) {
+      const name = `${row.name} (${row.height}px)`;
+      check(where, row.hintVisible && row.titleAbove, `${name}: the preview is visible under the title`);
+      check(where, row.hintFont >= 12, `${name}: the preview is ${row.hintFont}px, under 12px`);
+      check(where, row.hintLines <= 3, `${name}: the preview takes ${row.hintLines} lines, it must stay a short line`);
+      check(where, row.height <= 100, `${name}: the folded row is ${row.height}px tall, over 100px`);
+      check(where, row.right <= viewport.width && row.hintOverflow <= 0, `${name}: the row must fit the screen width`);
+      check(where, row.contrast >= 4.5, `${name}: preview contrast ${row.contrast.toFixed(2)}:1 is below 4.5:1`);
+    }
+    // Рядок відгуку такий самий, як сусідні: без округлої рамки зі старого home-lower.css (текст упирався в рамку).
+    const feedback = rows.find(row => row.name === 'home-feedback');
+    check(where, feedback && feedback.borderLeft === '0px' && feedback.radius === '0px', `the feedback row must be flat like its neighbours: ${JSON.stringify(feedback && {border: feedback.borderLeft, radius: feedback.radius})}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
+    await artifact(page, viewport, 'home-rows-preview', page.locator('#home-about'));
+    // Той самий рядок відкривається з клавіатури, і вміст стає видимим: Enter відкриває, Пробіл закриває.
+    for (const [selector, inner, least] of [['#home-overview', '.home-overview-grid article', 3], ['#home-feedback', '#feedback-useful', 1], ['#home-learning-paths .home-path-outline', 'ol a', 3]]) {
+      const row = page.locator(selector).first(), summary = row.locator(':scope > summary');
+      await summary.scrollIntoViewIfNeeded();
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(450);
+      check(where, await row.evaluate(node => node.open) && await row.locator(inner + ':visible').count() >= least, `${selector}: Enter opens the row and its content becomes visible`);
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(150);
+      check(where, !(await row.evaluate(node => node.open)), `${selector}: Space closes the row again`);
+    }
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
+  } finally {
+    await context.close();
+  }
+}
+
 async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
   for (const viewport of [
@@ -2718,6 +2790,8 @@ async function homeFlows(browser, origin) {
   // two-viewport matrix instead of silently tripling the entire suite.
   await isolatedFlow(homeSpectrumFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
+  // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
   await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});

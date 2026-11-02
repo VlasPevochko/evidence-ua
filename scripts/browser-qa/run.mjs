@@ -2043,6 +2043,49 @@ async function compactBannerFlow(browser, origin, viewport) {
   }
 }
 
+async function provenanceStampFlow(browser, origin, viewport) {
+  // Бриф T8 (2026-11-02): рядок «хто й коли перевірив» має однаковий вигляд під досьє добавок і в картці розбору, слова не змінені.
+  // Дивимось у браузері: рядок видимий, не виходить за ширину, лінія ліворуч є, контраст не менший за 4,5:1.
+  const where = `provenance stamp @${viewport.name}`;
+  const measure = node => {
+    const channel = value => { const v = value / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+    const luminance = rgb => { const [r, g, b] = rgb.match(/[\d.]+/g).map(Number); return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b); };
+    let background = 'rgb(0, 0, 0)';
+    for (let el = node; el; el = el.parentElement) { const color = getComputedStyle(el).backgroundColor; const alpha = color.match(/[\d.]+/g)[3]; if (alpha === undefined || Number(alpha) > 0.9) { background = color; break; } }
+    const [hi, lo] = [luminance(getComputedStyle(node).color), luminance(background)].sort((a, b) => b - a);
+    const box = node.getBoundingClientRect(), style = getComputedStyle(node);
+    return {text: node.textContent.replace(/\s+/g, ' ').trim(), right: Math.round(box.right), width: Math.round(box.width), height: Math.round(box.height), rule: style.borderLeftWidth, ruleStyle: style.borderLeftStyle, contrast: (hi + 0.05) / (lo + 0.05), fontSize: parseFloat(style.fontSize)};
+  };
+  for (const id of ['supplement-caffeine', 'supplement-protein']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/index.html#' + id);
+    try {
+      const line = page.locator(`#${id} .pc-status`);
+      await line.waitFor({state: 'attached'});
+      await line.scrollIntoViewIfNeeded();
+      const info = await line.evaluate(measure);
+      check(where, /^Науковий перегляд: не завершено · Формулювання погоджено \d{1,2} жовтня 2026 року · Матеріал освітній і не є персональною медичною рекомендацією\.$/.test(info.text), `${id}: the sentence is unchanged: ${info.text}`);
+      check(where, info.rule === '2px' && info.ruleStyle === 'solid', `${id}: the shared rule on the left is drawn (${info.rule} ${info.ruleStyle})`);
+      check(where, info.right <= viewport.width && info.fontSize >= 12, `${id}: the line fits the screen width and is at least 12px`);
+      check(where, info.contrast >= 4.5, `${id}: contrast ${info.contrast.toFixed(2)}:1 is below 4.5:1`);
+      check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, `${id}: no sideways scrolling`);
+      if (id === 'supplement-caffeine') await artifact(page, viewport, 'provenance-stamp-dossier', line);
+      check(where, seen.pageErrors.length === 0 && seen.external.length === 0, `${id}: no errors and no third-party requests`);
+    } finally { await context.close(); }
+  }
+  const {context, page, seen} = await open(browser, origin, viewport, '/research.html');
+  try {
+    await page.locator('.rs-card summary').first().click();
+    const line = page.locator('.rs-card[open] .rs-source.eua-stamp').first();
+    await line.waitFor({state: 'visible'});
+    const info = await line.evaluate(measure);
+    check(where, /Перевірено \d{2}\.\d{2}\.2026\.$/.test(info.text), `research: the sentence ends with the check date: ${info.text}`);
+    check(where, info.rule === '2px' && info.ruleStyle === 'solid', `research: the shared rule on the left is drawn (${info.rule} ${info.ruleStyle})`);
+    check(where, info.right <= viewport.width && info.contrast >= 4.5, `research: the line fits (${info.right}px) and has contrast ${info.contrast.toFixed(2)}:1`);
+    await artifact(page, viewport, 'provenance-stamp-research', line);
+    check(where, seen.pageErrors.length === 0 && seen.external.length === 0, 'research: no errors and no third-party requests');
+  } finally { await context.close(); }
+}
+
 async function researchFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-27: розбори дослідження коротко й ясно; відповідь видно одразу, деталі згорнуті.
   const where = `research @${viewport.name}`;
@@ -2895,6 +2938,7 @@ try {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(provenanceStampFlow, browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
     await homeFlows(browser, origin);

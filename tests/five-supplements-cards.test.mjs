@@ -1,5 +1,6 @@
 // Magnesium, collagen, beta-alanine, citrulline, electrolytes (owner «Всі» and «Так», 22.10.2026).
 // Shared card checks (approved wording, unassessed confidence, safety before Claims) live in omega-vitd-cards.test.mjs.
+import {approvalDate} from '../src/evidence/core/provenance.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {cards, SupplementCard} from '../scripts/build-supplement-cards.mjs';
@@ -16,7 +17,7 @@ for (const k of keys) {
   const card = cards.find(c => c.key === k), sec = section(k);
   assert(card, k);
   assert.equal(card.module.claimIds.length, counts[k], k);
-  assert.equal(card.approvedOn, '22 жовтня 2026 року');
+  assert.equal(approvalDate(card.approvedOn), '22 жовтня 2026 року'); // 2026-11-02 (T8): approvedOn тепер записано як РРРР-ММ-ДД, а текст на сторінці той самий («22 жовтня 2026 року»)
   assert(sec.includes(`<!-- CARD:${k}:START -->` + SupplementCard(card) + `<!-- CARD:${k}:END -->`), k + ' card is stale; run the build');
   assert(!html.includes(`<!-- DOSSIER:${card.module.replacesDossier} -->`), k + ' preliminary dossier is gone');
   assert(sec.includes('class="d-nav"') && sec.includes('href="#supplement-berberine"'), k + ' keeps the supplement switcher');

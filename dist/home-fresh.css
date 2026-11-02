@@ -20,3 +20,5 @@ body[data-platform-area="home"] .start-eyebrow,body[data-platform-area="home"] .
 body[data-platform-area="home"] .eua-term{position:relative}
 body[data-platform-area="home"] .eua-term::after{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:44px;transform:translateY(-50%)}
 @media(prefers-reduced-motion:reduce){body[data-platform-area="home"] .home-fresh-card{transition:none}}
+/* T1 (2026-11-02): «лінія інтервалу» — знак сайту з графіка розборів (точка = оцінка, лінія = інтервал, засічки на кінцях) між великими блоками головної. Лише оздоба, без руху. */
+body[data-platform-area="home"] .eua-interval-rule{display:block;width:min(280px,72%);height:14px;margin:12px auto -6px;padding:0;border:0;background:radial-gradient(circle at 50% 50%,#d1a5ff 0 3.5px,transparent 4px),linear-gradient(#b294c866,#b294c866) 50% 50%/100% 1px no-repeat,linear-gradient(#b294c8aa,#b294c8aa) 0 50%/1px 10px no-repeat,linear-gradient(#b294c8aa,#b294c8aa) 100% 50%/1px 10px no-repeat}

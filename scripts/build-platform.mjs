@@ -380,3 +380,14 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Мініатюри інтервальних графіків і «лінія інтервалу» (T1, 2026-11-02): сторінка розборів (research-page.js v=8, research-page.css v=6), стилі «Нове» (home-fresh.css v=2), журнал (v=18).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'research-page.js?v=7':'research-page.js?v=8','research-page.css?v=5':'research-page.css?v=6','home-fresh.css?v=1':'home-fresh.css?v=2','changes-page.js?v=17':'changes-page.js?v=18'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

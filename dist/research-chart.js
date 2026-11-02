@@ -26,6 +26,22 @@ export function chartGeometry(chart){
       text:`${fmt(r.v,dec)} (${fmt(r.lo,dec)}…${fmt(r.hi,dec)})`}))};
 }
 
+// Мініатюра інтервального графіка для згорнутої картки й головної (бриф T1, 2026-11-02): ті самі позиції, що й у повному графіку (chartGeometry),
+// перші 4 ряди за порядком даних, вертикальна лінія «немає різниці», жодного тексту всередині SVG (підписи лишаються HTML).
+// Ряд, інтервал якого перетинає лінію «немає різниці», малюється порожнім кружком і сірим: колір не єдина ознака.
+// За замовчуванням малюнок декоративний (aria-hidden): числа стоять у тілі картки; з {decorative:false} він отримує role="img" і опис із даних.
+const escAttr=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export const MINI_ROWS=4;
+export function miniInterval(chart,{width=132,height=48,decorative=true}={}){
+  const g=chartGeometry(chart),rows=g.rows.slice(0,MINI_ROWS),n=rows.length,pad=5,plotW=width-2*pad,rowH=(height-2*pad)/n,cap=3;
+  const r1=v=>Math.round(v*10)/10,X=p=>r1(pad+p/100*plotW),Y=i=>r1(pad+rowH*(i+0.5));
+  const body=rows.map((r,i)=>{const y=Y(i);
+    return `<g class="eua-mi-row${r.crosses?' eua-mi-cross':''}"><line class="eua-mi-ci" x1="${X(r.pLo)}" y1="${y}" x2="${X(r.pHi)}" y2="${y}"/><line class="eua-mi-cap" x1="${X(r.pLo)}" y1="${r1(y-cap)}" x2="${X(r.pLo)}" y2="${r1(y+cap)}"/><line class="eua-mi-cap" x1="${X(r.pHi)}" y1="${r1(y-cap)}" x2="${X(r.pHi)}" y2="${r1(y+cap)}"/><circle class="eua-mi-dot" cx="${X(r.p)}" cy="${y}" r="3"/></g>`;}).join('');
+  const crossing=rows.filter(r=>r.crosses).length;
+  const access=decorative?'aria-hidden="true"':`role="img" aria-label="${escAttr(`Інтервальна діаграма: ${chart.title}. Рядків: ${n}, з них перетинають лінію «немає різниці»: ${crossing}.`)}"`;
+  return `<svg class="eua-mini" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" focusable="false" ${access}><line class="eua-mi-null" x1="${X(g.nullPos)}" y1="${pad}" x2="${X(g.nullPos)}" y2="${height-pad}"/>${body}</svg>`;
+}
+
 export function renderChart(doc,chart){
   const g=chartGeometry(chart),make=(tag,cls,text)=>{const n=doc.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const fig=make('figure','rs-chart');

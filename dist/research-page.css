@@ -62,3 +62,16 @@ body[data-platform-area="research"]{margin:0;font-family:Inter,system-ui,-apple-
 [hidden]{display:none!important}
 @media(max-width:600px){.rs-card>summary{padding:14px 16px}.rs-body{padding:0 16px 14px}.rs-question{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.rs-card *{transition:none!important}}
+/* T1 (2026-11-02): мініатюра інтервального графіка в шапці згорнутої картки. Вона в останньому рядку шапки, праворуч від «Докладніше»: картка підвищується лише на висоту мініатюри (≈ 16 px).
+   Колір беремо з тих самих змінних, що й повний графік; ряд, що перетинає лінію «немає різниці», порожній кружок і сірий. */
+.rs-card.has-mini>summary{grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.rs-card.has-mini>summary>*{grid-column:1/-1}
+.rs-card.has-mini>summary>.rs-more{grid-column:1;grid-row:4}
+.rs-card.has-mini>summary>.eua-mini{grid-column:2;grid-row:4;justify-self:end}
+.eua-mini{display:block;width:132px;height:48px;max-width:100%;overflow:visible}
+.eua-mi-null{stroke:var(--c-5d7a70,#5d7a70);stroke-width:1}
+.eua-mi-ci{stroke:var(--pine-accent,var(--c-e3bd6b,#e3bd6b));stroke-width:2;stroke-linecap:round}
+.eua-mi-cap{stroke:var(--pine-accent,var(--c-e3bd6b,#e3bd6b));stroke-width:1}
+.eua-mi-dot{fill:var(--pine-accent,var(--c-e3bd6b,#e3bd6b))}
+.eua-mi-cross .eua-mi-ci,.eua-mi-cross .eua-mi-cap{stroke:var(--c-8aa398,#8aa398)}
+.eua-mi-cross .eua-mi-dot{fill:var(--c-10201b,#10201b);stroke:var(--c-8aa398,#8aa398);stroke-width:1.5}

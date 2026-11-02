@@ -1,7 +1,7 @@
 // «Дослідження простими словами»: картки з однією відповіддю, деталі згорнуті; фільтр за темою.
 import {STUDIES,TOPICS,CHECKED} from './research-data.js?v=4';
 import {shareStudy,saveCard} from './research-share.js?v=3';
-import {renderChart} from './research-chart.js?v=2';
+import {renderChart,miniInterval} from './research-chart.js?v=3';
 
 export const countLabel=(shown,total)=>shown===total?`Розборів: ${total}`:`Показано ${shown} із ${total}`;
 export const filterStudies=(topic,studies=STUDIES)=>topic==='all'?studies.slice():studies.filter(s=>s.topic===topic);
@@ -18,6 +18,8 @@ export function render(root=document){
       const card=make('details','rs-card');
       const head=make('summary','');
       head.append(make('span','rs-tag rs-tag-'+s.topic,TOPICS[s.topic]),make('span','rs-question',s.question),make('span','rs-answer',s.answer),make('span','rs-more','Докладніше'));
+      // T1: розбір з графіком показує в шапці мініатюру того самого інтервального графіка; без графіка нічого не додаємо.
+      if(s.chart){card.classList.add('has-mini');head.insertAdjacentHTML('beforeend',miniInterval(s.chart));}
       const body=make('div','rs-body');const dl=make('dl','rs-rows');
       dl.append(row('Хто досліджувався',s.who),row('Що знайшли',s.found),row('Чого це не доводить',s.limits));
       const src=make('p','rs-source eua-stamp');src.append(make('span','',s.type+'. '));

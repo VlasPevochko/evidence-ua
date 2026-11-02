@@ -2086,6 +2086,58 @@ async function provenanceStampFlow(browser, origin, viewport) {
   } finally { await context.close(); }
 }
 
+async function intervalMotifFlow(browser, origin, viewport) {
+  // Бриф T1 (2026-11-02): мініатюри інтервальних графіків у згорнутих картках розборів і «лінія інтервалу» між великими блоками головної.
+  const where = `interval motif @${viewport.name}`;
+  const research = await open(browser, origin, viewport, '/research.html');
+  try {
+    const page = research.page;
+    await page.locator('.rs-card').first().waitFor({state: 'attached'});
+    const minis = await page.evaluate(() => [...document.querySelectorAll('.rs-card')].map(card => {
+      const mini = card.querySelector(':scope > summary > .eua-mini'), more = card.querySelector(':scope > summary > .rs-more');
+      if (!mini) return {id: card.id, mini: false, open: card.open};
+      const box = mini.getBoundingClientRect(), cardBox = card.getBoundingClientRect(), moreBox = more.getBoundingClientRect();
+      return {id: card.id, mini: true, open: card.open, hidden: mini.getAttribute('aria-hidden') === 'true', width: Math.round(box.width), height: Math.round(box.height),
+        insideCard: box.left >= cardBox.left && box.right <= cardBox.right, sameRowAsMore: box.top < moreBox.bottom && box.bottom > moreBox.top,
+        rows: mini.querySelectorAll('.eua-mi-row').length, texts: mini.querySelectorAll('text').length, nullInside: (() => { const n = mini.querySelector('.eua-mi-null'); return !!n && n.x1.baseVal.value >= 0 && n.x1.baseVal.value <= 132; })()};
+    }));
+    const withMini = minis.filter(item => item.mini);
+    check(where, minis.length >= 16 && withMini.length === 5, `exactly the five write-ups with a chart show a thumbnail, found ${withMini.length} of ${minis.length}`);
+    check(where, withMini.every(item => item.hidden && item.width >= 100 && item.height >= 40 && item.insideCard && item.sameRowAsMore), `every thumbnail is decorative, readable in size, inside its card and in the row of «Докладніше»: ${JSON.stringify(withMini.filter(item => !(item.hidden && item.insideCard && item.sameRowAsMore)))}`);
+    check(where, withMini.every(item => item.rows >= 2 && item.rows <= 4 && item.texts === 0 && item.nullInside), 'every thumbnail has two to four rows, a null line inside the plot and no text');
+    check(where, minis.filter(item => !item.mini).length === minis.length - 5, 'write-ups without a chart get no thumbnail and no placeholder');
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the research page must not scroll sideways');
+    // Згорнута картка з мініатюрою лишається компактною: мініатюра в одному рядку з «Докладніше», а не окремим рядком під ним.
+    const heights = await page.evaluate(() => {
+      const h = el => Math.round(el.getBoundingClientRect().height);
+      const withMini = document.querySelector('.rs-card.has-mini'), without = [...document.querySelectorAll('.rs-card')].find(card => !card.classList.contains('has-mini'));
+      return {withMini: h(withMini), without: h(without)};
+    });
+    check(where, heights.withMini - heights.without < 140, `a folded card with a thumbnail stays compact: ${JSON.stringify(heights)}`);
+    await artifact(page, viewport, 'interval-thumbnail-card', page.locator('.rs-card.has-mini').first());
+    // Відкриття картки не зламано: графік у тілі повний (усі ряди), а мініатюра лишається в шапці.
+    await page.locator('.rs-card.has-mini > summary').first().click();
+    const opened = await page.evaluate(() => { const card = document.querySelector('.rs-card.has-mini[open]'); return {full: card.querySelectorAll('.rs-crow:not(.rs-caxisrow)').length, mini: card.querySelectorAll('.eua-mi-row').length}; });
+    check(where, opened.full >= opened.mini && opened.mini >= 2, `the full chart keeps all rows while the thumbnail shows at most four: ${JSON.stringify(opened)}`);
+    check(where, research.seen.pageErrors.length === 0 && research.seen.external.length === 0, 'research: no errors and no third-party requests');
+  } finally { await research.context.close(); }
+  const home = await open(browser, origin, viewport, '/index.html');
+  try {
+    const page = home.page;
+    await page.locator('.home-fresh').scrollIntoViewIfNeeded();
+    const rules = await page.evaluate(() => [...document.querySelectorAll('.eua-interval-rule')].map(rule => {
+      const box = rule.getBoundingClientRect(), style = getComputedStyle(rule), next = rule.nextElementSibling;
+      return {width: Math.round(box.width), right: Math.round(box.right), height: Math.round(box.height), hidden: rule.getAttribute('aria-hidden') === 'true', drawn: style.backgroundImage.includes('radial-gradient') && style.backgroundImage.includes('linear-gradient'), next: next && (next.className || next.tagName), animated: style.animationName !== 'none' || parseFloat(style.transitionDuration) > 0};
+    }));
+    check(where, rules.length === 2, `two interval rules on the home, found ${rules.length}`);
+    check(where, rules.every(rule => rule.hidden && rule.drawn && !rule.animated && rule.width >= 120 && rule.right <= viewport.width && rule.height >= 10 && rule.height <= 20), `the rules are decorative, drawn, still and fit the screen: ${JSON.stringify(rules)}`);
+    check(where, rules.map(rule => rule.next).join('|') === 'home-fresh|home-library-section', `the rules stand before «Нове на сайті» and before the library: ${rules.map(rule => rule.next).join('|')}`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
+    await artifact(page, viewport, 'interval-rule-home', page.locator('.eua-interval-rule').first());
+    check(where, home.seen.pageErrors.length === 0 && home.seen.external.length === 0, 'home: no errors and no third-party requests');
+  } finally { await home.context.close(); }
+}
+
 async function researchFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-27: розбори дослідження коротко й ясно; відповідь видно одразу, деталі згорнуті.
   const where = `research @${viewport.name}`;
@@ -2939,6 +2991,7 @@ try {
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(provenanceStampFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(intervalMotifFlow, browser, origin, viewport);
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
     await homeFlows(browser, origin);

@@ -62,20 +62,21 @@ const dist=f=>fs.readFileSync('dist/'+f,'utf8');
 assert.equal(dist('platform-search.js'),src,'the built search copy equals the source');
 assert(dist('platform-materials.js').includes('export function searchKeywords')&&dist('platform-materials.js').includes('export function scoreFields'),'the built materials copy has the keyword helpers');
 assert(dist('platform-search.js').includes("import('./platform-materials.js?v=104')"),'search loads materials v=104');
-assert(dist('site-header.js').includes("import('./platform-search.js?v=12')"),'the header loads search v=12');
+assert(dist('site-header.js').includes("import('./platform-search.js?v=13')"),'the header loads search v=13'); // 2026-11-02: v=12 -> v=13 (розділи сторінок у вікні пошуку, tests/search-sections.test.mjs)
 for(const f of ['platform-tools.js','directions.js','home-feedback.js','platform-shell.js'])assert(!dist(f).includes('platform-materials.js?v=103')&&!dist(f).includes('platform-tools.js?v=103'),`${f} no longer points to the old materials/tools versions`);
 for(const f of ['platform-tools.js','directions.js','home-feedback.js'])assert(dist(f).includes('platform-materials.js?v=104'),`${f} loads materials v=104`);
 assert(dist('platform-shell.js').includes('platform-tools.js?v=104'),'the page shell loads tools v=104');
 const pageVersions=(file,mod)=>[...new Set([...dist(file).matchAll(new RegExp(`${mod}\\.js\\?v=(\\d+)`,'g'))].map(m=>m[1]))];
-assert.deepEqual(pageVersions('directions.html','directions'),['110'],'the catalogue page loads directions v=110');
+assert.deepEqual(pageVersions('directions.html','directions'),['111'],'the catalogue page loads directions v=111'); // 2026-11-02: 110 -> 111 (шапка v=15)
 assert.deepEqual(pageVersions('index.html','home-feedback'),['104'],'the home loads home-feedback v=104');
-assert.deepEqual(pageVersions('atlas.html','platform-shell'),['107'],'pages load the shell v=107');
-for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(pageVersions(f,'site-header'),['14'],`${f} loads the header v=14`);
+assert.deepEqual(pageVersions('atlas.html','platform-shell'),['108'],'pages load the shell v=108'); // 2026-11-02: 107 -> 108 (шапка v=15)
+for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(pageVersions(f,'site-header'),['15'],`${f} loads the header v=15`);
 
 // 8) Журнал оновлень і документи.
 const changes=dist('changes-data.js');
 assert(changes.includes("title:'Пошук шукає за ключовими словами'")&&changes.indexOf("title:'Пошук шукає за ключовими словами'")<changes.indexOf("title:'Без мазка під назвою сторінки'"),'the journal tells about it, newest first');
-assert(dist('changes.html').includes('changes-page.js?v=13')&&dist('changes-page.js').includes("from './changes-data.js?v=13'"),'the journal page and its data have new versions');
+// 2026-11-02: журнал піднято до v=14 записом про пошук по розділах, тож тут перевіряємо «не нижче 13» (так само для сторінки й для даних).
+assert(Number(dist('changes.html').match(/changes-page\.js\?v=(\d+)/)?.[1])>=13&&Number(dist('changes-page.js').match(/changes-data\.js\?v=(\d+)/)?.[1])>=13,'the journal page and its data have new versions');
 const doc=fs.readFileSync('docs/SEARCH.md','utf8');
 assert(doc.includes('ключов')&&doc.includes('searchTerms')&&doc.includes('tests/search-keywords.test.mjs')&&doc.includes('searchFlow'),'docs/SEARCH.md explains the search, how to add words, and its checks');
 console.log('Search by keywords: filler words dropped, weighted matches, inflections, no noise, long word lists whole, field and message, cascade versions, journal and docs passed.');

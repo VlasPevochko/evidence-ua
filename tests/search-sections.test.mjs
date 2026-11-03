@@ -134,18 +134,18 @@ for(const s of ['білок','креатин','сон','кофеїн','жир','
 // 7) Вікно пошуку, завантаження й каскад версій.
 const src=read('src/platform/search.mjs'),dist=f=>read('dist/'+f);
 assert(src.includes('<h2>Розділи на сторінках</h2>')&&src.includes("s.kind==='claim'?'Твердження':'Розділ'"),'the dialog has its own group «Розділи на сторінках» and says whether it is a claim or a section');
-assert(src.includes("import('./platform-sections.js?v=2').catch(()=>({sections:[]}))"),'the index loads only when the search opens, and the search still works without it');
+assert(src.includes("import('./platform-sections.js?v=3').catch(()=>({sections:[]}))"),'the index loads only when the search opens, and the search still works without it'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
 assert.equal(dist('platform-search.js'),src,'the built search copy equals the source');
 assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage/.test(src+read('scripts/sections-config.mjs')+text),'the sections search stores and sends nothing');
-assert(dist('site-header.js').includes("import('./platform-search.js?v=14')"),'the header loads search v=14'); // 2026-11-02 (пошук у шапці головної, T7): 13 -> 14 (група «Розбори», новий порожній результат)
-assert(dist('home-spectrum.js').includes("import('./platform-search.js?v=14')"),'the home search form loads search v=14');
+assert(dist('site-header.js').includes("import('./platform-search.js?v=15')"),'the header loads search v=15'); // 2026-11-02 (пошук у шапці головної, T7): 13 -> 14 (група «Розбори», новий порожній результат) 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert(dist('home-spectrum.js').includes("import('./platform-search.js?v=15')"),'the home search form loads search v=15'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
 const versions=(file,mod)=>[...new Set([...dist(file).matchAll(new RegExp(`${mod}\\.js\\?v=(\\d+)`,'g'))].map(m=>m[1]))];
-assert.deepEqual(versions('index.html','home-spectrum'),['6'],'the home loads home-spectrum v=6'); // 2026-11-02 (пошук у шапці головної, T7): 5 -> 6
-assert.deepEqual(versions('directions.html','directions'),['112'],'the catalogue loads directions v=112'); // 2026-11-02 (пошук у шапці головної, T7): 111 -> 112
-assert.deepEqual(versions('atlas.html','platform-shell'),['109'],'pages load the shell v=109'); // 2026-11-02 (пошук у шапці головної, T7): 108 -> 109
-for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(versions(f,'site-header'),['16'],`${f} loads the header v=16`); // 2026-11-02 (пошук у шапці головної, T7): 15 -> 16
-assert(dist('platform-shell.js').includes('./site-header.js?v=16'),'the shell loads the header v=16');
-assert(dist('fat-burning.js').includes('./site-header.js?v=16'),'the fat-burning page loads the header v=16');
+assert.deepEqual(versions('index.html','home-spectrum'),['7'],'the home loads home-spectrum v=7'); // 2026-11-02 (пошук у шапці головної, T7): 5 -> 6 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert.deepEqual(versions('directions.html','directions'),['113'],'the catalogue loads directions v=113'); // 2026-11-02 (пошук у шапці головної, T7): 111 -> 112 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert.deepEqual(versions('atlas.html','platform-shell'),['110'],'pages load the shell v=110'); // 2026-11-02 (пошук у шапці головної, T7): 108 -> 109 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(versions(f,'site-header'),['17'],`${f} loads the header v=17`); // 2026-11-02 (пошук у шапці головної, T7): 15 -> 16 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert(dist('platform-shell.js').includes('./site-header.js?v=17'),'the shell loads the header v=17'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert(dist('fat-burning.js').includes('./site-header.js?v=17'),'the fat-burning page loads the header v=17'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
 
 // 8) Журнал оновлень і документи.
 const changes=dist('changes-data.js');

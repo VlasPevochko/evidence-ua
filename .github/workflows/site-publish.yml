@@ -80,7 +80,9 @@ jobs:
   browser-qa:
     name: Browser QA
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # 2026-11-03: перевірка в браузері триває близько 14 хвилин (понад 6000 перевірок) плюс повна вибірка гілок на початку (до хвилини). Ліміт у 15 хвилин
+    # скасовував задачу за часом, хоча всі перевірки встигали пройти («Browser QA passed» і одразу «The operation was canceled»). Ліміт піднято до 25 хвилин.
+    timeout-minutes: 25
     steps:
       - name: Checkout GitHub source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

@@ -497,3 +497,14 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Заголовки розборів добавок тонкі, із засічками (2026-11-03): home-article-cosmic.css 1 → 2 (нові правила заголовків), журнал (changes-page.js 24 → 25, він імпортує changes-data.js?v=25).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-article-cosmic.css?v=1':'home-article-cosmic.css?v=2','changes-page.js?v=24':'changes-page.js?v=25'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

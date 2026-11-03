@@ -2,3 +2,10 @@
    Решту (золото → лаванда, 16px → 3px, 30px → 5px) генерує scripts/palette/article-overrides.mjs зі стилів розборів у index.html і home-article.css. Тут лише те, чого в тих стилях немає. */
 /* Тло під статтею (смуга із застереженням унизу): на головній воно старе бірюзове (#041722), у космосі темно-фіолетове, як тло розбору. */
 @s {background:#0c0b0f}
+/* Заголовки розборів (2026-11-03): те саме рішення власника про тонкі заголовки з засічками (2026-11-01), що діє на решті сайту (див. cosmic-extras.css):
+   Source Serif 4 звичайної ваги, літери -0.03em для h1 і -0.015em для h2–h4. Розмір, колір і відступи заголовків лишаються як були. Заголовки-підписи (великі літери з розрядкою,
+   .pc-bar-group > h3) і назви-згортки (summary) не чіпаємо: це підписи й керування, а не заголовки карток. */
+@s :is(#creatine,[id^="supplement-"]) h1{font-weight:400!important;letter-spacing:-.03em!important}
+@s :is(#creatine,[id^="supplement-"]) :is(h2,h3,h4):not(.pc-bar-group>h3){font-family:var(--pine-serif,"Source Serif 4",Georgia,serif)!important;font-weight:400!important;letter-spacing:-.015em!important}
+/* Дрібні заголовки (17–18 px): у шрифту із засічками нижча висота рядкових літер, font-size-adjust вирівнює видимий розмір, як у правилі решти сайту. */
+@s :is(#creatine,[id^="supplement-"]) :is(.eua-source h3,article h3,h3.eua-reaction-label){font-size-adjust:.55}

@@ -87,3 +87,8 @@ html:not([data-palette="green"]) body[data-route-view="article"] .eua-article-ba
 html:not([data-palette="green"]) body[data-route-view="article"] .eua-article-bar .eua-tools>*{border:1px solid #ffffff26;border-radius:3px;background:transparent;color:#d8d5dc}
 html:not([data-palette="green"]) body[data-route-view="article"] .eua-article-bar .eua-tools>*:hover{border-color:#bb81ef;color:#ddc3f3}
 html:not([data-palette="green"]) body[data-route-view="article"] {background:#0c0b0f}
+
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) h1{font-weight:400!important;letter-spacing:-.03em!important}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) :is(h2,h3,h4):not(.pc-bar-group>h3){font-family:var(--pine-serif,"Source Serif 4",Georgia,serif)!important;font-weight:400!important;letter-spacing:-.015em!important}
+
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) :is(.eua-source h3,article h3,h3.eua-reaction-label){font-size-adjust:.55}

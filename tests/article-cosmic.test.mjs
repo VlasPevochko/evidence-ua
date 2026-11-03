@@ -29,10 +29,14 @@ for(const m of flat.matchAll(/([^{}]+)\{[^{}]*\}/g)){
 assert.equal(ARTICLE_SCOPE,'html:not([data-palette="green"]) body[data-route-view="article"]');
 
 // 4) Лише малювання: жодної розкладки, типографіки, змісту чи зовнішніх адрес; тексти й розмітка не змінюються.
-const props=new Set();
-for(const m of flat.matchAll(/\{([^{}]*)\}/g))for(const d of m[1].split(';')){const k=d.indexOf(':');if(k>0)props.add(d.slice(0,k).trim().toLowerCase());}
+// Виняток: заголовки (h1–h4) мають лише шрифт, вагу й літери, як на решті сайту (рішення власника 2026-11-01); розмір, відступи й колір не чіпаємо.
 const allowed=/^(--c-[0-9a-f]+|--rd-\d+|--sd-card|--pc-[a-z-]+|color|background(-color|-image)?|border(-[a-z]+)*|outline(-color)?|box-shadow|fill|stroke)$/;
-for(const p of props)assert(allowed.test(p),`only paint properties are set in the article palette (found ${p})`);
+const typography=/^(font-family|font-weight|letter-spacing|font-size-adjust)$/;
+for(const m of flat.matchAll(/([^{}]+)\{([^{}]*)\}/g))for(const d of m[2].split(';')){
+  const k=d.indexOf(':');if(k<=0)continue;const p=d.slice(0,k).trim().toLowerCase();
+  if(typography.test(p))assert(/\bh[1-4]\b|h3\.eua-reaction-label/.test(m[1]),`typography is set only on headings (found ${p} on ${m[1].trim().slice(-70)})`);
+  else assert(allowed.test(p),`only paint properties are set in the article palette (found ${p})`);
+}
 assert(!/url\(|@import|https?:\/\//.test(body),'no external or image addresses');
 
 // 5) Результат: космічні значення форм і кольорів, смуги даних лишаються округлими.
@@ -46,7 +50,14 @@ for(const f of ARTICLE_CSS)assert(fs.existsSync(f),`${f} exists`);
 const used=new Set();for(const f of ARTICLE_CSS)for(const m of read(f).matchAll(/var\((--c-[0-9a-f]+),/g))used.add(m[1]);
 for(const t of used)assert(css.includes(t+':'),`${t} has a cosmic value in the article palette`);
 
+// 6b) Заголовки розборів: те саме тонке письмо із засічками, що на решті сайту; підписи з розрядкою (.pc-bar-group > h3) не чіпаємо.
+assert(css.includes(`${ARTICLE_SCOPE} :is(#creatine,[id^="supplement-"]) h1{font-weight:400!important;letter-spacing:-.03em!important}`),'article h1 is regular weight with the shared tracking');
+assert(css.includes(':is(h2,h3,h4):not(.pc-bar-group>h3){font-family:var(--pine-serif,"Source Serif 4",Georgia,serif)!important;font-weight:400!important;letter-spacing:-.015em!important}'),'article h2–h4 are regular Source Serif 4 with the shared tracking, except tracked labels');
+assert(!/font-size\s*:|line-height\s*:|margin|padding/.test(body),'headings keep their sizes, line heights and spacing');
+assert(read('src/palette/cosmic-extras.css').includes('font-weight:400!important;letter-spacing:-.015em!important'),'the shared heading rule this one repeats still exists');
+
 // 7) Версія і запис у журналі.
 assert(/home-article-cosmic\.css\?v=\d+/.test(html),'the stylesheet link is versioned');
 assert(read('dist/changes-data.js').includes('Розбори добавок у кольорах і формах решти сайту'),'the change log mentions it');
+assert(read('dist/changes-data.js').includes('Заголовки розборів добавок тонкі, із засічками'),'the change log mentions the headings');
 console.log('article palette: scoped to the article view, paint only, fresh, home and green unchanged');

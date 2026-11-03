@@ -512,3 +512,14 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Один перемикач рівня на сторінці «Клітина людини» на телефоні (2026-11-03, власник: «28 +»): стилі cell-vcard.css v=84, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=27) v=27.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'cell-vcard.css?v=83':'cell-vcard.css?v=84','changes-page.js?v=26':'changes-page.js?v=27'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

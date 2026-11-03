@@ -44,7 +44,8 @@ assert.deepEqual([...new Set(orders)].sort(), [1, 2, 3, 4, 5, 6], 'the blocks ar
 // 3) Версії: стилі піднято, щоб браузер не показав кеш; сторінка журналу й запис про зміну на місці.
 assert(Number((html.match(/cell-vcard\.css\?v=(\d+)/) || [])[1]) >= 83, 'cell-vcard.css carries a version after this change (cache busting)');
 assert(read('dist/changes-data.js').includes('Картина клітини першою на телефоні'), 'the change log has a record of this change');
-assert(Number((read('dist/changes.html').match(/changes-page\.js\?v=(\d+)/) || [])[1]) >= 26 && read('dist/changes-page.js').includes("changes-data.js?v=26"), 'the journal page loads the new journal data');
+// 2026-11-03 («28 +»): версію даних журналу піднято далі (27), тому тут перевіряємо «не нижче 26», а не точне число.
+assert(Number((read('dist/changes.html').match(/changes-page\.js\?v=(\d+)/) || [])[1]) >= 26 && Number((read('dist/changes-page.js').match(/changes-data\.js\?v=(\d+)/) || [])[1]) >= 26, 'the journal page loads the new journal data');
 
 // 4) Примітка й межі: що змінено, чого не змінено, як це перевірено й як повернути.
 const note = read('docs/CELL_LAB_PHONE_LAYOUT.md');

@@ -55,7 +55,9 @@ body[data-platform-area="cell"] :focus-visible{outline:2px solid var(--c-e3bd6b,
 /* Головна картина першою на телефоні (2026-11-03, власник: «27 так»). До 800 px колонка одна, і картина зі станом, кнопками «Назад / Далі» та швидким вибором структури йде
    одразу після назви сторінки; далі все як було: кроки й рівень, примітка про перегляд, пояснення, список структур. Змінено лише порядок показу (CSS order, .explorer стає
    display:contents): розмітка й порядок табуляції не змінені, а від 801 px нічого не міняється. Кнопку «До пояснення ↓» над картиною на телефоні сховано: той самий перехід дає
-   крок «02 Прочитай функцію» нижче (один елемент керування на одну дію). Рядок маршруту (.eua-learning-nav, лише з ?path=) стоїть після картини, а не перед нею. */
+   крок «02 Прочитай функцію» нижче (один елемент керування на одну дію). Рядок маршруту (.eua-learning-nav, лише з ?path=) стоїть після картини, а не перед нею.
+   Перемикач рівня («Школа / Університет / Поглиблено») у блоці кроків на телефоні сховано (рішення власника «28 +», 2026-11-03): такий самий перемикач стоїть у поясненні одразу над текстом, який він міняє,
+   і обидва керуються одним станом (cell-lab.js оновлює всі [data-level]), тож лишається один елемент керування на одну дію. */
 @media(max-width:800px){
  body[data-platform-area="cell"] main{display:flex;flex-direction:column;gap:16px}
  body[data-platform-area="cell"] main>*{order:6}
@@ -68,4 +70,5 @@ body[data-platform-area="cell"] :focus-visible{outline:2px solid var(--c-e3bd6b,
  body[data-platform-area="cell"] .explorer>.panel{order:4;margin:0}
  body[data-platform-area="cell"] .explorer>.structure-list{order:5;margin:0}
  body[data-platform-area="cell"] .context{margin-top:20px}
+ body[data-platform-area="cell"] .intro .levels{display:none}
 }

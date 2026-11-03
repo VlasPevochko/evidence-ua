@@ -45,7 +45,7 @@ assert(!/font-size-adjust/.test(pine)&&!extras.slice(0,extras.indexOf(whole)).in
 
 // 5) Версії в query-рядках: нова версія файла палітри на всіх 20 внутрішніх сторінках, головна без змін; журнал бере нову версію даних.
 const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
-assert.equal(inner.length,20,'twenty inner pages');
+assert.equal(inner.length,21,'twenty-one inner pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (внутрішніх було 20).
 // Версія файла палітри росте з кожною зміною файла (правило заголовків з'явилось на v=4; назви сторінок на v=5 того ж дня), тож тут перевіряємо
 // не конкретне число, а що всі сторінки вантажать одну й ту саму версію, не старішу за ту, де є правило заголовків.
 const paletteVersions=new Set(inner.map(f=>read('dist/'+f).match(/palette-cosmic\.css\?v=(\d+)/)?.[1]));

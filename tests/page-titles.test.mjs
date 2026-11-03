@@ -24,7 +24,7 @@ assert(/\.sp-head h1\{[^}]*var\(--sp-serif\)/.test(supplements)&&/--sp-serif:\s*
 
 // 3) Кожна внутрішня сторінка має рівно одну назву (h1), а головна палітру не вантажить: її h1 це окремий стиль головної.
 const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
-assert.equal(inner.length,20,'twenty inner pages');
+assert.equal(inner.length,21,'twenty-one inner pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (внутрішніх було 20).
 for(const f of inner){const html=read('dist/'+f);assert.equal((html.match(/<h1[\s>]/g)||[]).length,1,`${f} has exactly one <h1>`);}
 assert(!read('dist/index.html').includes('palette-cosmic.css'),'the home does not load the palette file, so its title is not affected');
 

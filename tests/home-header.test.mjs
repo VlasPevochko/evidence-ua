@@ -43,7 +43,7 @@ assert(read('dist/home-spectrum.css').includes('.eua-site-header .eua-header-wor
 
 // 3) Версії, журнал, документи.
 const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
-assert.equal(inner.length,20,'twenty inner pages');
+assert.equal(inner.length,21,'twenty-one inner pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (внутрішніх було 20).
 // Версія файла палітри росте з кожною зміною файла (правила шапки з'явились на v=6; далі того ж дня росла), тож перевіряємо не конкретне число,
 // а що всі сторінки вантажать одну версію, не старішу за ту, де є правила шапки.
 const paletteVersions=new Set(inner.map(f=>read('dist/'+f).match(/palette-cosmic\.css\?v=(\d+)/)?.[1]));

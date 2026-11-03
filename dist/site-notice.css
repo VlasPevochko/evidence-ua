@@ -1,0 +1,6 @@
+/* Спільне застереження внизу кожної сторінки (src/platform/site-notice.mjs). Кольори беруться від тексту сторінки (currentColor), а той уже слідує палітрі й темі;
+   власних кольорів немає. Нижче роздруківки теж виводиться. */
+.eua-site-notice{box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0 16px;width:min(1180px,calc(100% - 32px));margin:24px auto 0;padding:6px 0 22px;border-top:1px solid;border-top-color:color-mix(in srgb,currentColor 22%,transparent);font:14px/1.55 Inter,system-ui,-apple-system,Segoe UI,sans-serif;text-align:center}
+.eua-site-notice p{margin:0;opacity:.82}
+.eua-site-notice a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-underline-offset:3px}
+.eua-site-notice a:focus-visible{outline:2px solid currentColor;outline-offset:2px}

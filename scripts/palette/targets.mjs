@@ -12,7 +12,7 @@ export const plateSources=root=>fs.readdirSync(path.join(root,'dist')).filter(f=
 export const CSS_TARGETS=[
   'dist/platform.css','dist/atlas.css','dist/page-pine.css','dist/knee-pain-map.css','dist/shoulder-pain-map.css','dist/atlas-coordinate-map.css',
   'dist/cell-lab.css','dist/study-ui.css','dist/cell-vcard.css','dist/changes-page.css','dist/compare-page.css','dist/directions-pine.css',
-  'dist/exercises.css','dist/fat-burning.css','dist/fat-burning-pine.css','dist/glossary-page.css','dist/map-page.css','dist/mechanisms-page.css',
+  'dist/exercises.css','dist/fat-burning.css','dist/fat-burning-pine.css','dist/glossary-page.css','dist/map-page.css','dist/about-page.css','dist/mechanisms-page.css',
   'dist/movement.css','dist/learning-notes.css','dist/muscle-lab.css','dist/digestion.css','dist/nutrition-lab.css','dist/nutrition-diets.css',
   'dist/nutrition-fat-burning.css','dist/nutrition-navigation.css','dist/research-page.css','dist/sleep.css','dist/supplements.css','dist/videos-page.css',
   'dist/next-steps.css','dist/terms.css','dist/appearance.css','dist/experience.css','dist/nutrition-timeline.css',
@@ -33,5 +33,6 @@ export const EXCLUDED_CSS={
   'dist/palette-cosmic.css':'сам згенерований файл палітри',
   'dist/site-header.css':'копія src/platform/site-header.css (ціль палітри там)',
   'dist/evidence/evidence.css':'копія src/evidence/evidence.css (ціль палітри там)',
+  'dist/site-notice.css':'лише currentColor і прозорість (колір береться від тексту сторінки, а той уже слідує палітрі); власних кольорів немає',
   'dist/eua-stamp.css':'лише currentColor (колір береться від тексту рядка, а той уже слідує палітрі) і запасний сірий для браузерів без color-mix; власних кольорів палітри немає'
 };

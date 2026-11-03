@@ -61,7 +61,7 @@ assert.equal(typeof mountAnchorReveal,'function','the mount function is exported
 // 7) Підключення: копія в dist, один тег на кожній сторінці, у <head>.
 assert.equal(read('dist/anchor-reveal.js'),src,'the built copy equals the source (run node scripts/build-site.mjs)');
 const pages=fs.readdirSync('dist').filter(f=>f.endsWith('.html'));
-assert.equal(pages.length,21,'twenty-one pages');
+assert.equal(pages.length,22,'twenty-two pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (було 21).
 for(const f of pages){
   const html=read('dist/'+f);
   assert.equal((html.match(/<script type="module" src="\.\/anchor-reveal\.js\?v=1"><\/script>/g)||[]).length,1,`${f} loads anchor-reveal.js once`);

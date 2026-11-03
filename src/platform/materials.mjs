@@ -15,7 +15,8 @@ const guides=[
 ];
 const navigationMaterials=[
  {id:'navigation-atlas',title:'Атлас людського тіла',href:'./atlas.html',areaId:'atlas',areaTitle:'Атлас',group:'atlas',kind:'interactive'},
- {id:'navigation-exercises',title:'Бібліотека вправ',href:'./exercises.html',areaId:'exercises',areaTitle:'Вправи та практика',group:'movement',kind:'section'}
+ {id:'navigation-exercises',title:'Бібліотека вправ',href:'./exercises.html',areaId:'exercises',areaTitle:'Вправи та практика',group:'movement',kind:'section'},
+ {id:'navigation-about',title:'Про проєкт',href:'./about.html',areaId:'about',areaTitle:'Про сайт',group:'evidence',kind:'section'}
 ].map(m=>({...m,review:'Навігація до матеріалів; статус наукового перегляду зазначено окремо'}));
 export const materialKinds={interactive:'Інтерактив',dossier:'Досьє',guide:'Розбір',section:'Матеріал'};
 const listedMaterials=catalog.areas.filter(a=>a.available).flatMap(area=>{
@@ -77,6 +78,7 @@ const searchTerms={
  'guide-protein-meta':'білок білка білки білкові',
  'guide-videos':'відео ролик youtube ютуб instagram tiktok запропонувати надіслати посилання бібліотека відео',
  'guide-mechanisms':'як це працює механізм схема анімація кофеїн аденозин рецептор креатин фосфокреатин атф енергія м’яз бадьорість сонливість',
+ 'navigation-about':'про проєкт про сайт методика довіра застереження діагноз лікування лікар реклама рецензія рецензент незалежний перегляд помилки виправлення журнал приватність cookies куки дані відгук',
  'guide-research':'дослідження простими словами розбір мета-аналіз кроки сон дієта DASH кето середземноморська вагітність алкоголь вино підходи тренування коротко відповідь',
  'guide-changes':'оновлення зміни новини журнал що нового історія перевірки як ми перевіряємо',
  'guide-map':'карта знань схема зв’язки між темами навігація як пов’язані матеріали',

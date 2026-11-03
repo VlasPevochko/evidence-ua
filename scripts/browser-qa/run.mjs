@@ -97,6 +97,86 @@ async function artifact(page, viewport, name, locator, {scroll = true} = {}) {
   await page.screenshot({path: path.join(dir, `${name}-${viewport.name}.png`), clip: {x, y, width, height}});
 }
 
+// «Довіра 2» (2026-11-03): спільне застереження внизу кожної сторінки (src/platform/site-notice.mjs). Перевіряємо в самому браузері: воно одне, видиме, з точним текстом,
+// нічим не перекрите, останнє на сторінці, з посиланням не менше 44 px і читабельним контрастом. Контраст міряємо по справжніх пікселях (колір тексту береться від сторінки,
+// а світла тема робиться фільтром на <html>, тож обчислений колір не відповідає тому, що бачить людина): див. нижче.
+const NOTICE_TEXT = 'Матеріал освітній і не є персональною медичною рекомендацією.';
+async function checkNotice(page, where, {contrast = true} = {}) {
+  const notice = page.locator('.eua-site-notice');
+  const count = await notice.count();
+  check(where, count === 1, `exactly one shared notice is required (found ${count})`);
+  if (count !== 1) return;
+  await notice.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(150);
+  const facts = await page.evaluate(() => {
+    const n = document.querySelector('.eua-site-notice'), p = n.querySelector('p'), a = n.querySelector('a');
+    const r = n.getBoundingClientRect(), pr = p.getBoundingClientRect(), ar = a.getBoundingClientRect(), style = getComputedStyle(n);
+    const hit = box => { const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2); return !!top && n.contains(top); };
+    return {
+      text: p.textContent.trim(), linkText: a.textContent.trim(), href: a.getAttribute('href'), role: n.getAttribute('role'),
+      visible: r.width > 0 && r.height > 0 && style.visibility !== 'hidden' && style.display !== 'none',
+      linkHeight: ar.height, linkHit: hit(ar), textHit: hit(pr), fits: r.left >= -1 && r.right <= innerWidth + 1,
+      fromBottom: document.documentElement.scrollHeight - (r.bottom + scrollY), fontSize: parseFloat(getComputedStyle(p).fontSize)
+    };
+  });
+  check(where, facts.visible, 'the notice is visible');
+  check(where, facts.text === NOTICE_TEXT, `the notice says exactly the approved sentence; found «${facts.text}»`);
+  check(where, facts.linkText === 'Про проєкт' && facts.href === './about.html', `the notice links to the About page; found «${facts.linkText}» ${facts.href}`);
+  check(where, facts.role === 'note', 'the notice has role="note"');
+  check(where, facts.linkHeight >= 44, `the notice link is a 44px target (${facts.linkHeight})`);
+  check(where, facts.linkHit && facts.textHit, 'nothing covers the notice');
+  check(where, facts.fits, 'the notice stays inside the viewport width');
+  check(where, facts.fromBottom <= 40, `the notice is the last thing on the page (${Math.round(facts.fromBottom)}px of page below it)`);
+  check(where, facts.fontSize >= 14, `the notice text is at least 14px (${facts.fontSize})`);
+  if (!contrast) return;
+  // Контраст міряємо по справжніх пікселях, а не за обчисленим кольором: світла тема робиться фільтром на <html>, тож колір у CSS не той, що бачить людина.
+  // 1) тло без тексту; 2) той самий текст, але великий і жирний, щоб серцевина штрихів була суцільного кольору (колір чорнила з урахуванням прозорості й фільтра);
+  // найгірший піксель тла порівнюється з кольором чорнила для абзацу й для посилання окремо.
+  const setStyle = (selector, css) => page.evaluate(([sel, text]) => document.querySelectorAll(sel).forEach(node => { if (node.dataset.qaStyle === undefined) node.dataset.qaStyle = node.getAttribute('style') || ''; node.style.cssText = (node.dataset.qaStyle ? node.dataset.qaStyle + ';' : '') + text; }), [selector, css]);
+  const restore = () => page.evaluate(() => document.querySelectorAll('.eua-site-notice [data-qa-style]').forEach(node => { const old = node.dataset.qaStyle; delete node.dataset.qaStyle; if (old) node.setAttribute('style', old); else node.removeAttribute('style'); }));
+  // Знімок самої смуги в координатах сторінки (fullPage + clip): так він не залежить від того, чи смуга ціла вміщується у вікно (низ сторінки, дробові пікселі, збільшений текст).
+  const grab = async () => {
+    const box = await page.evaluate(() => { const r = document.querySelector('.eua-site-notice').getBoundingClientRect(); return {x: Math.max(0, r.left + scrollX), y: r.top + scrollY, width: r.width, height: r.height}; });
+    return (await page.screenshot({fullPage: true, clip: box})).toString('base64');
+  };
+  await setStyle('.eua-site-notice p, .eua-site-notice a', 'visibility:hidden');
+  const backdrop = await grab();
+  await restore();
+  const inks = {};
+  for (const [name, other] of [['p', 'a'], ['a', 'p']]) {
+    await setStyle(`.eua-site-notice ${other}`, 'visibility:hidden');
+    await setStyle(`.eua-site-notice ${name}`, 'font-size:72px;font-weight:900;line-height:1.1;letter-spacing:0');
+    inks[name] = await grab();
+    await restore();
+  }
+  const worst = await page.evaluate(async ({backdropShot, inkShots}) => {
+    const pixels = async base64 => {
+      const image = new Image(); image.src = 'data:image/png;base64,' + base64; await image.decode();
+      const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+      const context = canvas.getContext('2d', {willReadFrequently: true}); context.drawImage(image, 0, 0);
+      return {width: canvas.width, height: canvas.height, data: context.getImageData(0, 0, canvas.width, canvas.height).data};
+    };
+    const linear = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+    const luminance = (r, g, b) => 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+    const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    const back = await pixels(backdropShot), samples = [];
+    for (let y = 4; y < back.height; y += 3) for (let x = 0; x < back.width; x += 5) { const i = (y * back.width + x) * 4; samples.push(luminance(back.data[i], back.data[i + 1], back.data[i + 2])); }
+    const sorted = [...samples].sort((a, b) => a - b), median = sorted[Math.floor(sorted.length / 2)];
+    let worstRatio = Infinity;
+    for (const shot of Object.values(inkShots)) {
+      const ink = await pixels(shot);
+      let inkLuminance = median, far = 0;
+      for (let y = 4; y < ink.height; y += 1) for (let x = 0; x < ink.width; x += 1) {
+        const i = (y * ink.width + x) * 4, l = luminance(ink.data[i], ink.data[i + 1], ink.data[i + 2]);
+        if (Math.abs(l - median) > far) { far = Math.abs(l - median); inkLuminance = l; }
+      }
+      for (const l of samples) worstRatio = Math.min(worstRatio, ratio(inkLuminance, l));
+    }
+    return worstRatio;
+  }, {backdropShot: backdrop, inkShots: inks});
+  check(where, worst >= 4.5, `the notice text keeps a contrast of at least 4.5:1 against the page behind it (worst pixel ${worst.toFixed(2)}:1)`);
+}
+
 const headerGeometry = new Map();
 async function generic(browser, origin, viewport, file) {
   const where = `${file} @${viewport.name}`;
@@ -164,6 +244,7 @@ async function generic(browser, origin, viewport, file) {
   check(where, facts.overflow <= 1, `horizontal overflow of ${facts.overflow}px`);
   check(where, facts.h1 === 1, `${facts.h1} visible <h1> elements (expected 1)`);
   check(where, facts.brokenImages.length === 0, `broken images: ${facts.brokenImages.join(', ')}`);
+  await checkNotice(page, where);
   await context.close();
 }
 
@@ -1079,6 +1160,8 @@ async function searchFlow(browser, origin, viewport) {
   const dialog = page.locator('dialog.eua-search');
   await dialog.waitFor({state: 'visible'});
   check(where, await page.evaluate(() => document.activeElement?.id === 'eua-search-q'), 'the field is focused on open');
+  // Підказки малюються, щойно підвантажились дані пошуку (кілька мілісекунд після відкриття вікна), тож спершу дочекаємось їх, а не рахуємо одразу: на повільній машині рахунок одразу був би гонкою.
+  await page.locator('.eua-search-chips button').first().waitFor({state: 'attached', timeout: 5000}).catch(() => {});
   check(where, (await page.locator('.eua-search-chips button').count()) >= 3, 'suggestions show before typing');
   await page.fill('#eua-search-q', 'інтервал');
   await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
@@ -3161,6 +3244,119 @@ async function heroSearchFlow(browser, origin, viewport) {
   }
 }
 
+// «Довіра 1» (2026-11-03): сторінка «Про проєкт». Коротка (не більше ~4,4 екрана телефона), шість розділів із якорями, шапка веде на неї з будь-якої сторінки (на телефоні через меню),
+// пошук знаходить і сторінку, і розділи, посилання на якорі відкривають потрібний розділ угорі. Тексти сторінки прив’язані до коду тестом tests/about-page.test.mjs.
+async function aboutFlow(browser, origin, viewport) {
+  const where = `about @${viewport.name}`;
+  const phone = viewport.width < 600;
+  let {context, page, seen} = await open(browser, origin, viewport, '/about.html');
+  await page.waitForSelector('.eua-site-header');
+  check(where, (await page.title()) === 'Про проєкт — Evidence UA', 'the page has its own title');
+  check(where, (await page.locator('h1:visible').allInnerTexts()).join('|') === 'Про проєкт', 'one visible heading «Про проєкт»');
+  const ids = await page.locator('main h2').evaluateAll(nodes => nodes.map(node => node.id));
+  check(where, ids.join() === 'ab-what,ab-not,ab-method,ab-review,ab-fix,ab-privacy', `six sections with anchors (${ids.join()})`);
+  check(where, (await page.locator('.eua-header-about').getAttribute('aria-current')) === 'page', 'the header link marks the current page');
+  const facts = await page.evaluate(() => {
+    const flow = [...document.querySelectorAll('main p, main li')];
+    return {
+      height: document.documentElement.scrollHeight, overflow: document.documentElement.scrollWidth - innerWidth,
+      minFont: Math.min(...flow.map(node => parseFloat(getComputedStyle(node).fontSize))), widest: Math.max(...flow.map(node => node.getBoundingClientRect().width)),
+      emptyLinks: [...document.querySelectorAll('main a')].filter(link => !link.textContent.trim()).length,
+      closing: (() => { const link = document.querySelector('.ab-links a'); const box = link && link.getBoundingClientRect(); return box ? {h: box.height, w: box.width} : null; })()
+    };
+  });
+  check(where, facts.overflow <= 1, `no horizontal overflow (${facts.overflow}px)`);
+  check(where, facts.minFont >= 16, `body text is at least 16px (${facts.minFont})`);
+  check(where, facts.widest <= 780, `lines stay readable, not wider than 780px (${Math.round(facts.widest)})`);
+  check(where, facts.emptyLinks === 0, 'every link has a visible name');
+  check(where, facts.closing && facts.closing.h >= 44, `the closing link is a 44px target (${facts.closing && Math.round(facts.closing.h)})`);
+  if (phone) check(where, facts.height / viewport.height <= 4.4, `the page is short on a phone: ${(facts.height / viewport.height).toFixed(2)} screens (limit 4.4)`);
+  else check(where, facts.height / viewport.height <= 3.2, `the page is short on a desktop: ${(facts.height / viewport.height).toFixed(2)} screens (limit 3.2)`);
+  await artifact(page, viewport, 'about-top', page.locator('.pb'), {scroll: false});
+  // Якорі: кожен розділ відкривається на екрані (на коротких кінцях сторінки допускаємо, що розділ не дійшов до верху, бо далі прокручувати нічого).
+  for (const id of ids) {
+    await page.goto(`${origin}/about.html#${id}`, {waitUntil: 'load'});
+    await page.waitForTimeout(1300);
+    const at = await page.evaluate(sectionId => {
+      const top = document.getElementById(sectionId).getBoundingClientRect().top, atEnd = scrollY >= document.documentElement.scrollHeight - innerHeight - 2;
+      return {top: Math.round(top), ok: top >= -2 && (top <= innerHeight * 0.62 || (atEnd && top < innerHeight * 0.9))};
+    }, id);
+    check(where, at.ok, `#${id} lands in view (top ${at.top}px)`);
+  }
+  // Найскладніше посилання сторінки: «Як читати докази» веде на головну, де розділ створює скрипт уже в браузері (у готовому HTML його немає), тож відкриваємо його по-справжньому.
+  await page.goto(`${origin}/about.html`, {waitUntil: 'load'});
+  await page.locator('main a[href^="./index.html?path=evidence"]').click();
+  await page.waitForURL('**/index.html?path=evidence*');
+  const guideShown = await page.waitForFunction(() => { const heading = document.getElementById('evidence-guide-title'); if (!heading) return false; const box = heading.getBoundingClientRect(); return box.width > 0 && box.height > 0; }, null, {timeout: 8000}).then(() => true, () => false);
+  check(where, guideShown, 'the link «Як читати докази» opens its heading on the home page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `the page raises no errors, no failed or third-party requests (${[...seen.console, ...seen.pageErrors, ...seen.external, ...seen.badResponses].join(' | ')})`);
+  await context.close();
+
+  // Шапка з головної веде на сторінку (на телефоні через меню).
+  ({context, page, seen} = await open(browser, origin, viewport, '/index.html'));
+  await page.waitForSelector('.eua-site-header .eua-header-about', {state: 'attached'});
+  const toggle = page.locator('.eua-header-toggle');
+  if (await toggle.isVisible()) await toggle.click();
+  const link = page.locator('.eua-site-header .eua-header-about');
+  await link.waitFor({state: 'visible'});
+  const box = await link.boundingBox();
+  check(where, box && box.height >= 44 && box.x >= 0 && box.x + box.width <= viewport.width + 1, `the header link is a 44px target inside the viewport (${box && Math.round(box.height)})`);
+  check(where, (await link.getAttribute('href')) === './about.html' && /^Про проєкт/.test((await link.innerText()).trim()), 'the header link is a real link to the About page');
+  await link.click();
+  await page.waitForURL('**/about.html');
+  await page.locator('h1').waitFor({state: 'visible'});
+  check(where, (await page.locator('h1').innerText()).trim() === 'Про проєкт', 'the header link from the home opens the About page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, 'the transition raises no errors');
+  await context.close();
+
+  // Пошук: сторінка й розділи.
+  ({context, page, seen} = await open(browser, origin, viewport, '/sleep.html'));
+  await page.locator('.eua-header-search').click();
+  await page.locator('dialog.eua-search').waitFor({state: 'visible'});
+  await page.fill('#eua-search-q', 'приватність');
+  await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+  check(where, await page.locator('.eua-search-results a[href="./about.html"]').count() === 1, '«приватність» finds the About page');
+  const section = page.locator('.eua-search-results a[href="./about.html#ab-privacy"]');
+  check(where, await section.count() === 1, '«приватність» finds the privacy section');
+  check(where, /Розділ · Про проєкт/.test(await section.innerText()), 'the section result names the page it belongs to');
+  await artifact(page, viewport, 'about-search', page.locator('dialog.eua-search'));
+  await section.click();
+  await page.waitForURL('**/about.html#ab-privacy');
+  await page.waitForTimeout(1500);
+  const where2 = await page.evaluate(() => { const top = document.getElementById('ab-privacy').getBoundingClientRect().top; return {top: Math.round(top), ok: top >= -2 && top < innerHeight * 0.9}; });
+  check(where, where2.ok, `the section found by search is on screen (top ${where2.top}px)`);
+  for (const query of ['рецензент', 'застереження', 'помилки']) {
+    await page.locator('.eua-header-search').click();
+    await page.locator('dialog.eua-search').waitFor({state: 'visible'});
+    await page.fill('#eua-search-q', '');
+    await page.fill('#eua-search-q', query);
+    await page.locator('.eua-search-results a').first().waitFor({state: 'visible'});
+    check(where, await page.locator('.eua-search-results a[href^="./about.html"]').count() >= 1, `«${query}» finds the About page or its sections`);
+    // Закриваємо кнопкою: перший Escape у полі пошуку очищає запит (див. searchFlow).
+    await page.locator('dialog.eua-search .eua-search-close').click();
+    await page.locator('dialog.eua-search').waitFor({state: 'hidden'});
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'search for the About page raises no errors or third-party requests');
+  await context.close();
+}
+
+// Те саме застереження в іншому вигляді (світла тема, «Зелений», великий текст): власних кольорів воно не має й бере їх від сторінки, тому контраст міряємо піксельно в кожному вигляді.
+async function noticeThemeFlow(browser, origin, viewport) {
+  const looks = [['light', {theme: 'light', text: 'md'}], ['green', {theme: 'dark', text: 'md', palette: 'green'}], ['light-green', {theme: 'light', text: 'md', palette: 'green'}], ['large-text', {theme: 'dark', text: 'xl'}]];
+  for (const [label, appearance] of looks) {
+    for (const file of ['index.html', 'about.html', 'sleep.html', 'supplements.html']) {
+      const where = `notice ${label} ${file} @${viewport.name}`;
+      const {context, page, seen} = await open(browser, origin, viewport, '/' + file, {initScript: `localStorage.setItem('eua-appearance-v1', ${JSON.stringify(JSON.stringify(appearance))})`});
+      await page.waitForSelector('.eua-site-header');
+      await checkNotice(page, where);
+      check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'no horizontal overflow');
+      check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors or third-party requests');
+      await artifact(page, viewport, `notice-${label}-${file.replace('.html', '')}`, page.locator('.eua-site-notice'));
+      await context.close();
+    }
+  }
+}
+
 async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
   for (const viewport of [
@@ -3230,6 +3426,9 @@ try {
     for (const viewport of viewports) await mapFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(searchFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
+    // «Довіра» (2026-11-03): сторінка «Про проєкт» (360 включено: вузький телефон найдовший) і спільне застереження в інших виглядах.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(aboutFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(noticeThemeFlow, browser, origin, viewport);
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(provenanceStampFlow, browser, origin, viewport);

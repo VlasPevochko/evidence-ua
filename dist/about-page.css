@@ -1,0 +1,17 @@
+/* Про проєкт: текстова сторінка в загальному вигляді сайту (кольори з --pine-*, як на решті сторінок; палітра й форми слідують за перемикачем «Оформлення»). */
+.ab-fallback{padding:22px max(20px,calc((100vw - 1180px)/2));background:var(--c-041722,#041722)}
+.ab-fallback a{color:inherit;font-weight:800;text-decoration:none}
+body[data-platform-area="about"]{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.6}
+.ab-main{width:min(760px,calc(100% - 32px));margin:0 auto;padding:28px 0 56px}
+.ab-main section{margin:0 0 34px}
+.ab-main h2{margin:0 0 10px;font:700 clamp(22px,2.4vw,28px)/1.25 var(--pine-serif,"Source Serif 4",Georgia,serif);color:var(--pine-text,var(--c-e9efe9,#e9efe9))}
+.ab-main p,.ab-main li{font-size:17px;line-height:1.65;color:var(--pine-text,var(--c-e9efe9,#e9efe9))}
+.ab-main p{margin:0 0 12px}
+.ab-main ul{margin:0 0 12px;padding:0 0 0 22px}
+.ab-main li{margin:0 0 8px}
+.ab-main a{color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b));text-underline-offset:3px}
+.ab-main a:focus-visible{outline:2px solid var(--pine-accent,var(--c-e3bd6b,#e3bd6b));outline-offset:2px}
+.ab-note{padding:14px 16px;border:1px solid var(--pine-line,var(--c-26403a,#26403a));border-radius:var(--rd-14,14px);background:var(--pine-surface,var(--c-142520,#142520))}
+.ab-links{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0}
+.ab-links a{display:inline-flex;align-items:center;min-height:44px}
+@media(max-width:560px){.ab-main p,.ab-main li{font-size:16px}}

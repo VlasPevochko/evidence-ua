@@ -6,10 +6,15 @@ import {pathCard} from './platform-learning.js?v=87';
 export {pathCard};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function areaCard(area){
- const artwork={muscle:'muscle-lab-art-v1.webp',cell:'card-organism.svg',nutrition:'card-nutrition.svg',supplements:'card-evidence.svg',movement:'home-movement.svg',sleep:'home-sleep.svg'}[area.id];
+ const artwork={muscle:'muscle-lab-art-v1.webp',cell:'cell-atlas-card-v1.webp',nutrition:'card-nutrition.svg',supplements:'card-evidence.svg',movement:'home-movement.svg',sleep:'home-sleep.svg'}[area.id];
  // Мініатюра в двох палітрах (2026-11-01): оригінал для «Зеленого», фіолетова копія (-cosmic) для космосу; сторінка показує одну з двох (img[data-art] у page-pine.css і palette-cosmic.css).
  const cosmic=artwork&&artwork.replace(/\.(svg|webp)$/,'-cosmic.$1');
- return `<article class="area-card">${artwork?`<div class="area-visual" aria-hidden="true"><img src="./${artwork}" alt="" loading="lazy" width="480" height="180" data-art="green"><img src="./${cosmic}" alt="" loading="lazy" width="480" height="180" data-art="cosmic"></div>`:''}<p class="area-kind">${esc(area.lab)}</p><h3>${esc(area.title)}</h3><p>${esc(area.description)}</p><p class="area-status"><strong>${esc(area.state)}</strong><br>${esc(area.review)}</p><a class="area-open" href="${esc(area.href)}">Відкрити напрям <span aria-hidden="true">→</span></a>${area.units.length?`<details><summary>Матеріали напряму</summary><div class="unit-links">${area.units.map(u=>`<a href="${esc(u.href)}">${esc(u.title)} →</a>`).join('')}</div></details>`:''}</article>`;
+ // Клітина (2026-11-03, власник: «клітина там де органели всередині … яка на сторінці „Клітина людини“ сама головна»): картка показує головну картину
+ // сторінки «Клітина людини» (кадр cell-atlas-v2.webp; scripts/make-cell-card-art.py), а не тьмяну піктограму. Тло картини графітове, не бірюзове, тому
+ // палітрових копій немає: одна <img> для обох палітр (так само на самій сторінці), а клас area-visual-photo змушує картину заповнити всю плитку.
+ const single=artwork==='cell-atlas-card-v1.webp';
+ const visual=!artwork?'':single?`<div class="area-visual area-visual-photo" aria-hidden="true"><img src="./${artwork}" alt="" loading="lazy" width="240" height="240"></div>`:`<div class="area-visual" aria-hidden="true"><img src="./${artwork}" alt="" loading="lazy" width="480" height="180" data-art="green"><img src="./${cosmic}" alt="" loading="lazy" width="480" height="180" data-art="cosmic"></div>`;
+ return `<article class="area-card">${visual}<p class="area-kind">${esc(area.lab)}</p><h3>${esc(area.title)}</h3><p>${esc(area.description)}</p><p class="area-status"><strong>${esc(area.state)}</strong><br>${esc(area.review)}</p><a class="area-open" href="${esc(area.href)}">Відкрити напрям <span aria-hidden="true">→</span></a>${area.units.length?`<details><summary>Матеріали напряму</summary><div class="unit-links">${area.units.map(u=>`<a href="${esc(u.href)}">${esc(u.title)} →</a>`).join('')}</div></details>`:''}</article>`;
 }
 export function mountDirectory(root=document){
  let group='all',kind='all';const search=root.querySelector('#area-search'),view=root.defaultView;

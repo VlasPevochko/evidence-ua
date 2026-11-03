@@ -652,6 +652,70 @@ async function artPairsFlow(browser, origin, viewport) {
   }
 }
 
+// Картка «Клітини та органели» в каталозі напрямів (2026-11-03, власник: «пропала картинка клітини у напрямку про клітину … клітина там де органели всередині …
+// яка на сторінці „Клітина людини“ сама головна»). Було: лише тьмяна піктограма card-organism (після фіолетового перефарбування майже невидима), а в «М'язів» стояла справжня
+// картина. Стало: головна картина сторінки «Клітина людини» (кадр cell-atlas-v2.webp, scripts/make-cell-card-art.py). Міряємо те, що справді намальовано в браузері: картина
+// в картці одна, завантажена й видима в обох палітрах, яскрава й кольорова (піктограма мала яскравість близько 1 із 255), і це саме кадр головної картини: різниця до вирізки
+// cell-atlas-v2.webp (координати беремо зі скрипта, що її робить) мала, а до зсунутої вирізки й до всієї картини, стиснутої в квадрат, велика. Контроль від зворотного: стара
+// піктограма card-organism-cosmic.svg ті самі мірки не проходить.
+async function catalogCellPictureFlow(browser, origin, viewport) {
+  const where = `catalog cell picture @${viewport.name}`;
+  const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
+  const tool = fs.readFileSync(path.join(root, 'scripts', 'make-cell-card-art.py'), 'utf8');
+  const crop = tool.match(/CROP = \((\d+), (\d+), (\d+), (\d+)\)/);
+  check(where, Boolean(crop), 'scripts/make-cell-card-art.py states the crop of the main picture');
+  const [left, top, right, bottom] = crop ? crop.slice(1).map(Number) : [0, 0, 1, 1];
+  const sources = [];
+  for (const palette of ['cosmic', 'green']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/directions.html', palette === 'green' ? {initScript: green} : {});
+    await page.waitForSelector('.area-card');
+    const tag = `${palette}`;
+    const stats = await page.evaluate(async ([l, t, r, b]) => {
+      const cards = [...document.querySelectorAll('.area-card')].filter(c => c.querySelector('a.area-open[href="./cell-lab.html"]'));
+      const out = {cards: cards.length};
+      const card = cards[0];
+      if (!card) return out;
+      const imgs = [...card.querySelectorAll('.area-visual img')];
+      const visible = imgs.filter(i => getComputedStyle(i).display !== 'none' && i.getBoundingClientRect().width > 0);
+      Object.assign(out, {total: imgs.length, visible: visible.length, paired: imgs.some(i => i.hasAttribute('data-art'))});
+      const img = visible[0];
+      if (!img) return out;
+      img.scrollIntoView({block: 'center'});
+      await Promise.race([img.decode().catch(() => {}), new Promise(done => setTimeout(done, 4000))]);
+      const N = 24;
+      const sample = (image, sx, sy, sw, sh) => { const c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d', {willReadFrequently: true}); x.drawImage(image, sx, sy, sw, sh, 0, 0, N, N); return x.getImageData(0, 0, N, N).data; };
+      const bright = data => { let lum = 0, colour = 0, n = 0; for (let i = 0; i < data.length; i += 4) { const red = data[i], green = data[i + 1], blue = data[i + 2]; lum += 0.2126 * red + 0.7152 * green + 0.0722 * blue; if (Math.max(red, green, blue) - Math.min(red, green, blue) > 40) colour++; n++; } return {lum: lum / n, colourShare: colour / n}; };
+      const diff = (a, c) => { let sum = 0; for (let i = 0; i < a.length; i += 4) sum += Math.abs(a[i] - c[i]) + Math.abs(a[i + 1] - c[i + 1]) + Math.abs(a[i + 2] - c[i + 2]); return sum / (a.length / 4 * 3); };
+      const load = src => new Promise(done => { const i = new Image(); i.onload = () => done(i); i.onerror = () => done(null); i.src = src; });
+      const [atlas, icon] = await Promise.all([load('/cell-atlas-v2.webp'), load('/card-organism-cosmic.svg')]);
+      const box = img.getBoundingClientRect(), style = getComputedStyle(img);
+      Object.assign(out, {src: img.getAttribute('src'), loaded: img.complete && img.naturalWidth > 0, natural: img.naturalWidth, width: Math.round(box.width), height: Math.round(box.height), fit: style.objectFit, padding: style.paddingLeft});
+      const mine = sample(img, 0, 0, img.naturalWidth, img.naturalHeight);
+      Object.assign(out, bright(mine));
+      if (atlas) {
+        out.sameCrop = diff(mine, sample(atlas, l, t, r - l, b - t));
+        out.shifted = diff(mine, sample(atlas, l + 100, t, r - l, b - t));
+        out.squashed = diff(mine, sample(atlas, 0, 0, atlas.naturalWidth, atlas.naturalHeight));
+      }
+      if (icon) out.control = bright(sample(icon, 0, 0, icon.naturalWidth || 360, icon.naturalHeight || 176));
+      return out;
+    }, [left, top, right, bottom]);
+    check(where, stats.cards === 1, `${tag}: exactly one cell card in the catalogue (${stats.cards})`);
+    check(where, stats.total === 1 && stats.visible === 1 && stats.paired === false, `${tag}: the cell tile holds one picture for both palettes, and it is shown (${stats.visible}/${stats.total}, paired ${stats.paired})`);
+    check(where, stats.loaded === true && stats.natural === 240 && /cell-atlas-card-v1\.webp$/.test(stats.src || ''), `${tag}: the card shows cell-atlas-card-v1.webp, loaded (${stats.src}, ${stats.natural}px)`);
+    check(where, stats.width >= 56 && stats.height >= 56 && stats.fit === 'cover' && stats.padding === '0px', `${tag}: the picture fills the tile without margins (${stats.width}×${stats.height}, ${stats.fit}, padding ${stats.padding})`);
+    check(where, stats.lum >= 40 && stats.colourShare >= 0.25, `${tag}: the picture is bright and colourful, not a dim icon (luminance ${Math.round(stats.lum)}/255, colourful share ${(stats.colourShare * 100).toFixed(0)} %)`);
+    check(where, stats.sameCrop <= 12 && stats.shifted >= 16 && stats.squashed >= 16, `${tag}: it is the crop of the main picture of the page «Клітина людини» (difference ${stats.sameCrop?.toFixed(1)}; shifted ${stats.shifted?.toFixed(1)}, squashed ${stats.squashed?.toFixed(1)})`);
+    check(where, Boolean(stats.control) && stats.control.lum < 40 && stats.control.colourShare < 0.25, `${tag}: control: the old dim icon fails the same brightness gauge (luminance ${Math.round(stats.control?.lum ?? -1)}, colourful share ${((stats.control?.colourShare ?? -1) * 100).toFixed(1)} %)`);
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, `${tag}: no horizontal overflow`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `${tag}: no errors, failed or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external, ...seen.badResponses].join(' | ')}`);
+    sources.push(stats.src);
+    await artifact(page, viewport, `catalog-cell-${palette}`, page.locator('.area-card', {has: page.locator('a.area-open[href="./cell-lab.html"]')}).first());
+    await context.close();
+  }
+  check(where, sources.length === 2 && sources[0] === sources[1], `the same picture is shown in both palettes (${sources.join(' / ')})`);
+}
+
 // Заголовки карток як на головній (рішення власника 2026-11-01): у космосі h2–h4 усередині main і назви карток («Куди далі», картки дієт, записи журналу)
 // мають шрифт головної (Source Serif 4, звичайна вага, трохи стиснуті літери); у «Зеленому» лишаються колишніми; головна не змінюється.
 // Назви сторінок (h1) отримали той самий стиль другим рішенням власника того ж дня (тонкі, із засічками, літери -0,03 em).
@@ -3413,6 +3477,8 @@ try {
     for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
     await isolatedFlow(shareCardsFlow, browser, origin, viewports[0]);
     for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
+    // Картка клітини в каталозі (2026-11-03): справжня головна картина замість тьмяної піктограми; 360 включено, бо на вузькому телефоні плитка найменша.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogCellPictureFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headingsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headerFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);

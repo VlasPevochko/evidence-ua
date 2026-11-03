@@ -800,6 +800,7 @@ async function cellPictureFirstFlow(browser, origin, viewport) {
       jump: box('.explorer>figure>.model-jumps'), back: box('.explorer>.panel .model-jumps'),
       step2: step2 ? {display: getComputedStyle(step2).display, width: step2.getBoundingClientRect().width} : null,
       domOrder: before(intro, note) && before(note, explorer) && before(list, figure) && before(figure, panel), vh: innerHeight, overflow: document.documentElement.scrollWidth - innerWidth,
+      levels: (() => { const shown = e => Boolean(e) && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0; return {top: shown(document.querySelector('.intro .levels')), panel: shown(document.querySelector('.panel .reading-level-options')), buttons: document.querySelectorAll('[data-level]').length}; })(),
     };
   });
   const show = (a, b) => a && b && a.top < b.top;
@@ -811,15 +812,26 @@ async function cellPictureFirstFlow(browser, origin, viewport) {
     check(where, m.vh < 664 || seen1 >= 0.9, `at least 90 % of the picture is in the first screen of ${m.vh} px (${Math.round(seen1 * 100)} %)`);
     check(where, m.jump && m.jump.display === 'none' && m.back && m.back.display !== 'none', `the jump «До пояснення ↓» above the picture is hidden, «До моделі ↑» in the explanation stays (${m.jump?.display}, ${m.back?.display})`);
     check(where, m.step2 && m.step2.display !== 'none' && m.step2.width > 100, 'step «02 Прочитай функцію» still leads to the explanation');
+    check(where, m.levels.top === false && m.levels.panel === true && m.levels.buttons === 6, `on a phone the level switch is shown once, in the explanation; both copies stay in the markup (top ${m.levels.top}, explanation ${m.levels.panel}, buttons ${m.levels.buttons})`);
   } else {
     check(where, m.explorer.display === 'grid', `above 800 px the explorer stays a grid (${m.explorer.display})`);
     check(where, show(m.intro, m.note) && show(m.note, m.figure) && m.intro.bottom <= m.figure.top + 1, 'above 800 px the steps and the note stay above the picture');
     check(where, m.jump && m.jump.display !== 'none', 'above 800 px the jump above the picture stays');
+    check(where, m.levels.top === true && m.levels.panel === true, `above 800 px both level switches stay (top ${m.levels.top}, explanation ${m.levels.panel})`);
     if (viewport.width >= 1100) check(where, Math.abs(m.list.top - m.figure.top) <= 2 && Math.abs(m.panel.top - m.figure.top) <= 2, 'on a wide screen the list, the picture and the explanation share one row');
   }
   check(where, m.domOrder, 'the order of the blocks in the document is unchanged (steps, note, list, picture, explanation), so tab order is unchanged');
   check(where, m.overflow <= 1, `no horizontal overflow (${m.overflow})`);
   if (phone) {
+    // Єдиний видимий перемикач рівня працює і тримає в ногу прихований дубль: «Школа» міняє пояснення, «Університет» повертає.
+    await page.locator('.panel .reading-level-options [data-level="school"]').click();
+    await page.waitForTimeout(200);
+    const school = await page.evaluate(() => ({pressed: [...document.querySelectorAll('[data-level="school"]')].map(b => b.getAttribute('aria-pressed')), other: [...document.querySelectorAll('[data-level="university"]')].map(b => b.getAttribute('aria-pressed')), text: document.querySelector('#organelle-copy').textContent}));
+    check(where, school.pressed.join() === 'true,true' && school.other.join() === 'false,false' && /Почни з ролі структури/.test(school.text), `the level switch in the explanation changes the level in both copies and the text (${school.pressed}; ${school.other})`);
+    await page.locator('.panel .reading-level-options [data-level="university"]').click();
+    await page.waitForTimeout(200);
+    const university = await page.evaluate(() => ({pressed: [...document.querySelectorAll('[data-level="university"]')].map(b => b.getAttribute('aria-pressed')), text: document.querySelector('#organelle-copy').textContent}));
+    check(where, university.pressed.join() === 'true,true' && /Функції різних структур/.test(university.text), 'switching back to the university level restores the text in both copies');
     // Вибір структури зі списку працює: тап відкриває детальний вигляд, сторінка піднімається до картини, «Закрити» повертає схему.
     await page.locator('#organelle-list button[data-organelle="ORG-NUCLEUS"]').click();
     await page.waitForTimeout(500);

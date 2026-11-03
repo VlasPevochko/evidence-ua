@@ -52,3 +52,20 @@ body[data-platform-area="cell"] :focus-visible{outline:2px solid var(--c-e3bd6b,
  body[data-platform-area="cell"] .structure-list,body[data-platform-area="cell"] .panel,body[data-platform-area="cell"] .context>div{border-radius:var(--rd-16,16px);padding:20px}
 }
 @media(prefers-reduced-motion:reduce){body[data-platform-area="cell"] button{transition:none}}
+/* Головна картина першою на телефоні (2026-11-03, власник: «27 так»). До 800 px колонка одна, і картина зі станом, кнопками «Назад / Далі» та швидким вибором структури йде
+   одразу після назви сторінки; далі все як було: кроки й рівень, примітка про перегляд, пояснення, список структур. Змінено лише порядок показу (CSS order, .explorer стає
+   display:contents): розмітка й порядок табуляції не змінені, а від 801 px нічого не міняється. Кнопку «До пояснення ↓» над картиною на телефоні сховано: той самий перехід дає
+   крок «02 Прочитай функцію» нижче (один елемент керування на одну дію). Рядок маршруту (.eua-learning-nav, лише з ?path=) стоїть після картини, а не перед нею. */
+@media(max-width:800px){
+ body[data-platform-area="cell"] main{display:flex;flex-direction:column;gap:16px}
+ body[data-platform-area="cell"] main>*{order:6}
+ body[data-platform-area="cell"] .explorer{display:contents}
+ body[data-platform-area="cell"] .explorer>figure{order:1;margin:0;display:flex;flex-direction:column}
+ body[data-platform-area="cell"] .explorer>figure>.model-jumps{display:none}
+ body[data-platform-area="cell"] .explorer>figure>.eua-learning-nav{order:1}
+ body[data-platform-area="cell"] .intro{order:2;margin:0}
+ body[data-platform-area="cell"] .review-note{order:3;margin:0}
+ body[data-platform-area="cell"] .explorer>.panel{order:4;margin:0}
+ body[data-platform-area="cell"] .explorer>.structure-list{order:5;margin:0}
+ body[data-platform-area="cell"] .context{margin-top:20px}
+}

@@ -779,6 +779,78 @@ async function catalogThumbsFlow(browser, origin, viewport) {
   }
 }
 
+// Сторінка «Клітина людини» на телефоні: головна картина першою (2026-11-03, власник: «27 так»). Було: у першому екрані телефона лише кнопки кроків і перемикач рівня, картина починалася
+// на 902 px від верху, а на екрані Safari вміщується близько 660 px. Стало: до 800 px картина зі станом, «Назад / Далі» і швидким вибором йде одразу після назви (близько 410 px), далі кроки й
+// рівень, примітка про перегляд, пояснення, список. Міряємо те, що справді показано: порядок блоків на екрані, положення й видимість картини в першому екрані, прихований дубль «До пояснення ↓»,
+// незмінений порядок у документі (табуляція), вибір структури зі списку (тап відкриває деталь, закрити повертає картину), маршрут з ?path= (рядок маршруту після картини) і незмінність
+// комп'ютерної версії (від 801 px блок .explorer лишається сіткою, кроки й примітка над картиною).
+async function cellPictureFirstFlow(browser, origin, viewport) {
+  const where = `cell picture first @${viewport.name}`;
+  const phone = viewport.width <= 800;
+  const {context, page, seen} = await open(browser, origin, viewport, '/cell-lab.html');
+  await page.waitForSelector('svg.cell-atlas');
+  await page.waitForTimeout(400);
+  const m = await page.evaluate(() => {
+    const box = selector => { const e = document.querySelector(selector); if (!e) return null; const r = e.getBoundingClientRect(); return {top: r.top + scrollY, bottom: r.bottom + scrollY, height: r.height, width: r.width, display: getComputedStyle(e).display}; };
+    const explorer = document.querySelector('.explorer'), list = explorer.querySelector(':scope>.structure-list'), figure = explorer.querySelector(':scope>figure'), panel = explorer.querySelector(':scope>.panel'), intro = document.querySelector('.intro'), note = document.querySelector('.review-note');
+    const before = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const step2 = document.querySelector('.cell-route a[href="#organelle-panel"]');
+    return {
+      svg: box('svg.cell-atlas'), figure: box('.explorer>figure'), intro: box('.intro'), note: box('.review-note'), panel: box('.explorer>.panel'), list: box('.explorer>.structure-list'), explorer: box('.explorer'), pb: box('section.pb'),
+      jump: box('.explorer>figure>.model-jumps'), back: box('.explorer>.panel .model-jumps'),
+      step2: step2 ? {display: getComputedStyle(step2).display, width: step2.getBoundingClientRect().width} : null,
+      domOrder: before(intro, note) && before(note, explorer) && before(list, figure) && before(figure, panel), vh: innerHeight, overflow: document.documentElement.scrollWidth - innerWidth,
+    };
+  });
+  const show = (a, b) => a && b && a.top < b.top;
+  if (phone) {
+    check(where, show(m.figure, m.intro) && show(m.intro, m.note) && show(m.note, m.panel) && show(m.panel, m.list), `the blocks follow the new order: picture, steps, note, explanation, list (${[m.figure, m.intro, m.note, m.panel, m.list].map(b => Math.round(b?.top)).join(' < ')})`);
+    check(where, m.explorer.display === 'contents', `the explorer block lets its children join the column (display ${m.explorer.display})`);
+    check(where, m.svg.top <= 450, `the picture starts near the top of the page (${Math.round(m.svg.top)} px, was 902 on 390 px)`);
+    const seen1 = Math.max(0, Math.min(m.svg.bottom, m.vh) - m.svg.top) / m.svg.height;
+    check(where, m.vh < 664 || seen1 >= 0.9, `at least 90 % of the picture is in the first screen of ${m.vh} px (${Math.round(seen1 * 100)} %)`);
+    check(where, m.jump && m.jump.display === 'none' && m.back && m.back.display !== 'none', `the jump «До пояснення ↓» above the picture is hidden, «До моделі ↑» in the explanation stays (${m.jump?.display}, ${m.back?.display})`);
+    check(where, m.step2 && m.step2.display !== 'none' && m.step2.width > 100, 'step «02 Прочитай функцію» still leads to the explanation');
+  } else {
+    check(where, m.explorer.display === 'grid', `above 800 px the explorer stays a grid (${m.explorer.display})`);
+    check(where, show(m.intro, m.note) && show(m.note, m.figure) && m.intro.bottom <= m.figure.top + 1, 'above 800 px the steps and the note stay above the picture');
+    check(where, m.jump && m.jump.display !== 'none', 'above 800 px the jump above the picture stays');
+    if (viewport.width >= 1100) check(where, Math.abs(m.list.top - m.figure.top) <= 2 && Math.abs(m.panel.top - m.figure.top) <= 2, 'on a wide screen the list, the picture and the explanation share one row');
+  }
+  check(where, m.domOrder, 'the order of the blocks in the document is unchanged (steps, note, list, picture, explanation), so tab order is unchanged');
+  check(where, m.overflow <= 1, `no horizontal overflow (${m.overflow})`);
+  if (phone) {
+    // Вибір структури зі списку працює: тап відкриває детальний вигляд, сторінка піднімається до картини, «Закрити» повертає схему.
+    await page.locator('#organelle-list button[data-organelle="ORG-NUCLEUS"]').click();
+    await page.waitForTimeout(500);
+    const open1 = await page.evaluate(() => ({detail: !document.querySelector('#cell-detail').hidden, atlas: !document.querySelector('.cell-atlas-frame').hidden, label: document.querySelector('#selected-label').textContent, canvasTop: document.querySelector('#cell-canvas').getBoundingClientRect().top}));
+    check(where, open1.detail && !open1.atlas && /Ядро/.test(open1.label) && Math.abs(open1.canvasTop) < 140, `a tap on «Ядро» in the list opens the detail view and brings the picture to the top (${open1.label}, canvas at ${Math.round(open1.canvasTop)} px)`);
+    await page.locator('[data-cell-detail-action="close"]').first().click();
+    await page.waitForTimeout(300);
+    const closed = await page.evaluate(() => ({detail: !document.querySelector('#cell-detail').hidden, atlas: !document.querySelector('.cell-atlas-frame').hidden}));
+    check(where, !closed.detail && closed.atlas, 'closing the detail view brings the whole cell picture back');
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `no errors, failed or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external, ...seen.badResponses].join(' | ')}`);
+  await context.close();
+
+  // Маршрут з головної («Почати маршрут: Загальна клітина»): рядок маршруту стоїть після картини на телефоні й, як раніше, перед нею на комп'ютері; картина в кадрі після переходу до #cell-canvas.
+  const route = await open(browser, origin, viewport, '/cell-lab.html?path=structure&lesson=0#cell-canvas');
+  await route.page.waitForSelector('.eua-learning-nav');
+  await route.page.waitForTimeout(500);
+  const r = await route.page.evaluate(() => { const canvas = document.querySelector('#cell-canvas').getBoundingClientRect(), nav = document.querySelector('.eua-learning-nav').getBoundingClientRect(); return {canvasTop: canvas.top, canvasBottom: canvas.bottom, navTop: nav.top, navBottom: nav.bottom, vh: innerHeight, svg: document.querySelector('svg.cell-atlas').getBoundingClientRect().height}; });
+  if (phone) check(where, r.navTop >= r.canvasBottom - 1, `route mode: the route line comes after the picture block (picture ends ${Math.round(r.canvasBottom)}, line starts ${Math.round(r.navTop)})`);
+  else check(where, r.navBottom <= r.canvasTop + 1, 'route mode on a wide screen: the route line stays above the picture');
+  check(where, r.canvasTop >= -2 && r.canvasBottom <= r.vh + 2, `route mode: the picture block is fully in view after the jump to #cell-canvas (${Math.round(r.canvasTop)}…${Math.round(r.canvasBottom)} of ${r.vh})`);
+  check(where, route.seen.pageErrors.length === 0 && route.seen.console.length === 0 && route.seen.external.length === 0, 'route mode: no errors or third-party requests');
+  await artifact(route.page, viewport, 'cell-picture-first-route', route.page.locator('#cell-canvas'), {scroll: false});
+  await route.context.close();
+  const top = await open(browser, origin, viewport, '/cell-lab.html');
+  await top.page.waitForSelector('svg.cell-atlas');
+  await top.page.waitForTimeout(400);
+  await artifact(top.page, viewport, 'cell-picture-first', top.page.locator('body'), {scroll: false});
+  await top.context.close();
+}
+
 // Заголовки карток як на головній (рішення власника 2026-11-01): у космосі h2–h4 усередині main і назви карток («Куди далі», картки дієт, записи журналу)
 // мають шрифт головної (Source Serif 4, звичайна вага, трохи стиснуті літери); у «Зеленому» лишаються колишніми; головна не змінюється.
 // Назви сторінок (h1) отримали той самий стиль другим рішенням власника того ж дня (тонкі, із засічками, літери -0,03 em).
@@ -3544,6 +3616,8 @@ try {
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogCellPictureFlow, browser, origin, viewport);
     // Картки Харчування, Добавок, Руху й Сну в каталозі (2026-11-03): картини напрямів замість тьмяних піктограм, обидві палітри, три розміри екрана.
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogThumbsFlow, browser, origin, viewport);
+    // Сторінка «Клітина людини»: на телефоні картина першою (390 × 664 як Safari, 390 × 844, 360, планшет 700), від 801 px нічого не змінилося (801 і 1440).
+    for (const viewport of [...viewports, {name: 'phone-safari', width: 390, height: 664}, {name: 'mobile-narrow', width: 360, height: 780}, {name: 'tablet-portrait', width: 700, height: 900}, {name: 'tablet-801', width: 801, height: 900}]) await isolatedFlow(cellPictureFirstFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headingsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headerFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);

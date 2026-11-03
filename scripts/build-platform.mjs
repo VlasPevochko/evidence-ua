@@ -488,3 +488,15 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Картки Харчування, Добавок, Руху й Сну в каталозі показують справжні картини напрямів (2026-11-03, власник: «26 так»): каталог (directions.js) v=115, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=25) v=25.
+// Файли dist/card-thumb-*-v1(.-cosmic).webp створює scripts/make-direction-thumbs.py (збірка його не запускає). Стилі не змінювались (клас area-visual-photo уже є).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'directions.js?v=114':'directions.js?v=115','changes-page.js?v=24':'changes-page.js?v=25'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

@@ -30,10 +30,13 @@ assert(tile[1].includes('width="240"') && tile[1].includes('height="240"'), 'the
 assert(!html.includes('card-organism') && !html.includes('data-art'), 'the dim icon is gone and the picture is not duplicated for the palettes');
 assert(html.includes(cell.review) && html.includes(`href="${cell.href}"`), 'the card keeps its status line and its link');
 
-// 2) Решта карток не змінилася: пара «Зелений» + космос, як і раніше (їхні картини міряє artPairsFlow). Картина м'язів лишається фото-плиткою.
+// 2) Решта карток лишає пару «Зелений» + космос (їхні картини міряє artPairsFlow). Пояснення зміни 2026-11-03 («26 так»): раніше жодна з них не мала класу area-visual-photo,
+// бо в них стояли піктограми; тепер Харчування, Добавки, Рух і Сон мають квадратні кадри картин напрямів у плитці area-visual-photo (їх перевіряє tests/catalog-card-pictures.test.mjs),
+// а картка м'язів (muscle-lab-art-v1.webp) лишається звичайною плиткою зі своїм правилом :has(). Тому тут пара збережена в усіх, а клас фото-плитки очікується лише в чотирьох.
 for (const area of catalog.areas.filter(a => a.available && a.id !== 'cell')) {
   const other = areaCard(area);
-  assert(other.includes('data-art="green"') && other.includes('data-art="cosmic"') && !other.includes('area-visual-photo'), `${area.id}: the card keeps its green/cosmic pair`);
+  const photo = ['nutrition', 'supplements', 'movement', 'sleep'].includes(area.id);
+  assert(other.includes('data-art="green"') && other.includes('data-art="cosmic"') && other.includes('area-visual-photo') === photo, `${area.id}: the card keeps its green/cosmic pair`);
 }
 assert(areaCard(catalog.areas.find(a => a.id === 'muscle')).includes('muscle-lab-art-v1.webp'), 'the muscle card keeps its own picture');
 
@@ -41,7 +44,8 @@ assert(areaCard(catalog.areas.find(a => a.id === 'muscle')).includes('muscle-lab
 for (const file of ['src/platform/directory.mjs', 'dist/directions.js']) {
   const code = read(file);
   assert(code.includes("cell:'cell-atlas-card-v1.webp'") && !code.includes("cell:'card-organism.svg'"), `${file}: the cell card uses the picture of the page`);
-  assert(code.includes('area-visual area-visual-photo') && code.includes("artwork.replace(/\\.(svg|webp)$/,'-cosmic.$1')"), `${file}: one tile for the cell, the palette pair for the rest`);
+  // 2026-11-03 («26 так»): клас фото-плитки тепер збирається з прапорця (' area-visual-photo'), бо його мають і чотири інші картки.
+  assert(code.includes("' area-visual-photo'") && code.includes("artwork.replace(/\\.(svg|webp)$/,'-cosmic.$1')"), `${file}: one tile for the cell, the palette pair for the rest`);
 }
 
 // 4) Файл: легкий квадратний WebP; головна картина сторінки (з якої його вирізано) лишається на місці й саме її показує сторінка «Клітина людини».

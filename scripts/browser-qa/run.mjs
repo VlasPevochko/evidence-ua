@@ -601,7 +601,7 @@ async function paletteFlow(browser, origin, viewport) {
 async function artPairsFlow(browser, origin, viewport) {
   const where = `art pairs @${viewport.name}`;
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
-  const ORIGINAL = /\/(?:diet-art|home-sleep|home-anatomy|home-movement|card-organism|card-nutrition|card-evidence|muscle-lab-art-v1)\.(?:svg|webp)/;
+  const ORIGINAL = /\/(?:diet-art|home-sleep|home-anatomy|home-movement|card-organism|card-nutrition|card-evidence|muscle-lab-art-v1|card-thumb-[a-z]+-v1)\.(?:svg|webp)/;
   const hueOf = ([r, g, b]) => {
     const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
     if (!d) return 0;
@@ -714,6 +714,69 @@ async function catalogCellPictureFlow(browser, origin, viewport) {
     await context.close();
   }
   check(where, sources.length === 2 && sources[0] === sources[1], `the same picture is shown in both palettes (${sources.join(' / ')})`);
+}
+
+// Картки Харчування, Добавок, Руху й Сну в каталозі напрямів (2026-11-03, власник: «26 так»). Було: лише тьмяні піктограми (яскравість від 0,2 до 1,6 із 255). Стало: квадратні кадри картин
+// напрямів із вікна «Куди рушимо далі?» (scripts/make-direction-thumbs.py), у двох палітрах (пара data-art). Міряємо те, що намальовано: у кожній картці показано рівно один файл палітри
+// (-cosmic у космосі, оригінал у «Зеленому»), він завантажений, заповнює плитку, яскравий і не плаский (яскравість та розкид яскравості), і це саме кадр картини напряму: різниця до вирізки
+// цієї картини (координати беремо зі скрипта) мала, а до зсунутої вирізки й до всієї картини, стиснутої в квадрат, велика. Контроль від зворотного: стара піктограма тих самих мірок не проходить.
+async function catalogThumbsFlow(browser, origin, viewport) {
+  const where = `catalog direction pictures @${viewport.name}`;
+  const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
+  const tool = fs.readFileSync(path.join(root, 'scripts', 'make-direction-thumbs.py'), 'utf8');
+  const rows = [...tool.matchAll(/\('(\w+)', '(card-art-[\w-]+)', \((\d+), (\d+), (\d+), (\d+)\)\)/g)].map(m => ({area: m[1], source: m[2], crop: m.slice(3).map(Number)}));
+  check(where, rows.map(r => r.area).join() === 'nutrition,supplements,movement,sleep', 'scripts/make-direction-thumbs.py states the crops of the four direction pictures');
+  const hrefs = {nutrition: './nutrition.html', supplements: './supplements.html', movement: './movement.html', sleep: './sleep.html'};
+  const icons = {nutrition: '/card-nutrition-cosmic.svg', supplements: '/card-evidence-cosmic.svg', movement: '/home-movement-cosmic.svg', sleep: '/home-sleep-cosmic.svg'};
+  for (const palette of ['cosmic', 'green']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/directions.html', palette === 'green' ? {initScript: green} : {});
+    await page.waitForSelector('.area-card');
+    const suffix = palette === 'cosmic' ? '-cosmic' : '';
+    for (const row of rows) {
+      const tag = `${palette} ${row.area}`;
+      const stats = await page.evaluate(async ({href, art, source, crop, icon}) => {
+        const card = [...document.querySelectorAll('.area-card')].find(c => c.querySelector(`a.area-open[href="${href}"]`));
+        const out = {found: Boolean(card)};
+        if (!card) return out;
+        const imgs = [...card.querySelectorAll('.area-visual img')];
+        const visible = imgs.filter(i => getComputedStyle(i).display !== 'none' && i.getBoundingClientRect().width > 0);
+        Object.assign(out, {total: imgs.length, visible: visible.length, tile: card.querySelector('.area-visual')?.className || ''});
+        const img = visible[0];
+        if (!img) return out;
+        img.scrollIntoView({block: 'center'});
+        await Promise.race([img.decode().catch(() => {}), new Promise(done => setTimeout(done, 4000))]);
+        const N = 24;
+        const sample = (image, sx, sy, sw, sh) => { const c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d', {willReadFrequently: true}); x.drawImage(image, sx, sy, sw, sh, 0, 0, N, N); return x.getImageData(0, 0, N, N).data; };
+        const gauge = data => { const lum = []; for (let i = 0; i < data.length; i += 4) lum.push(0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]); const mean = lum.reduce((a, b) => a + b, 0) / lum.length; return {lum: mean, spread: Math.sqrt(lum.reduce((a, b) => a + (b - mean) ** 2, 0) / lum.length)}; };
+        const diff = (a, c) => { let sum = 0; for (let i = 0; i < a.length; i += 4) sum += Math.abs(a[i] - c[i]) + Math.abs(a[i + 1] - c[i + 1]) + Math.abs(a[i + 2] - c[i + 2]); return sum / (a.length / 4 * 3); };
+        const load = src => new Promise(done => { const i = new Image(); i.onload = () => done(i); i.onerror = () => done(null); i.src = src; });
+        const [original, oldIcon] = await Promise.all([load(source), load(icon)]);
+        const box = img.getBoundingClientRect(), style = getComputedStyle(img);
+        Object.assign(out, {src: img.getAttribute('src'), art: img.dataset.art, loaded: img.complete && img.naturalWidth > 0, natural: img.naturalWidth, width: Math.round(box.width), height: Math.round(box.height), fit: style.objectFit, padding: style.paddingLeft});
+        const mine = sample(img, 0, 0, img.naturalWidth, img.naturalHeight);
+        Object.assign(out, gauge(mine));
+        if (original) {
+          const [l, t, r, b] = crop, w = r - l, h = b - t, moved = Math.min(Math.max(0, l + 100), original.naturalWidth - w), shifted = moved === l ? Math.max(0, l - 100) : moved;
+          out.sameCrop = diff(mine, sample(original, l, t, w, h));
+          out.shifted = diff(mine, sample(original, shifted, t, w, h));
+          out.squashed = diff(mine, sample(original, 0, 0, original.naturalWidth, original.naturalHeight));
+        }
+        if (oldIcon) out.control = gauge(sample(oldIcon, 0, 0, oldIcon.naturalWidth || 360, oldIcon.naturalHeight || 176));
+        return out;
+      }, {href: hrefs[row.area], art: `card-thumb-${row.area}-v1${suffix}.webp`, source: `/${row.source}${suffix}.webp`, crop: row.crop, icon: icons[row.area]});
+      check(where, stats.found === true, `${tag}: the card is in the catalogue`);
+      check(where, stats.total === 2 && stats.visible === 1 && stats.art === palette && /area-visual-photo/.test(stats.tile), `${tag}: the tile holds the green/cosmic pair, shows only the ${palette} copy and is a photo tile (${stats.visible}/${stats.total}, ${stats.art}, ${stats.tile})`);
+      check(where, stats.loaded === true && stats.natural === 240 && stats.src === `./card-thumb-${row.area}-v1${suffix}.webp`, `${tag}: the card shows card-thumb-${row.area}-v1${suffix}.webp, loaded (${stats.src}, ${stats.natural}px)`);
+      check(where, stats.width >= 56 && stats.height >= 56 && stats.fit === 'cover' && stats.padding === '0px', `${tag}: the picture fills the tile without margins (${stats.width}×${stats.height}, ${stats.fit}, padding ${stats.padding})`);
+      check(where, stats.lum >= 40 && stats.spread >= 25, `${tag}: the picture is bright and not flat, not a dim icon (luminance ${Math.round(stats.lum)}/255, spread ${Math.round(stats.spread)})`);
+      check(where, stats.sameCrop <= 10 && stats.shifted >= 12 && stats.squashed >= 12, `${tag}: it is the crop of the picture of the direction (difference ${stats.sameCrop?.toFixed(1)}; shifted ${stats.shifted?.toFixed(1)}, squashed ${stats.squashed?.toFixed(1)})`);
+      check(where, Boolean(stats.control) && stats.control.lum < 40 && stats.control.spread < 25, `${tag}: control: the old dim icon fails the same gauge (luminance ${Math.round(stats.control?.lum ?? -1)}, spread ${Math.round(stats.control?.spread ?? -1)})`);
+      await artifact(page, viewport, `catalog-thumb-${row.area}-${palette}`, page.locator('.area-card', {has: page.locator(`a.area-open[href="${hrefs[row.area]}"]`)}).first());
+    }
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, `${palette}: no horizontal overflow`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `${palette}: no errors, failed or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external, ...seen.badResponses].join(' | ')}`);
+    await context.close();
+  }
 }
 
 // Заголовки карток як на головній (рішення власника 2026-11-01): у космосі h2–h4 усередині main і назви карток («Куди далі», картки дієт, записи журналу)
@@ -3479,6 +3542,8 @@ try {
     for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
     // Картка клітини в каталозі (2026-11-03): справжня головна картина замість тьмяної піктограми; 360 включено, бо на вузькому телефоні плитка найменша.
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogCellPictureFlow, browser, origin, viewport);
+    // Картки Харчування, Добавок, Руху й Сну в каталозі (2026-11-03): картини напрямів замість тьмяних піктограм, обидві палітри, три розміри екрана.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogThumbsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headingsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headerFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);

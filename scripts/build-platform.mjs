@@ -476,3 +476,15 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Картка «Клітини та органели» у каталозі показує головну картину сторінки «Клітина людини» (2026-11-03, власник): каталог (directions.js) v=114,
+// стилі каталогу (directions-pine.css) v=5, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=24) v=24. Файл картини dist/cell-atlas-card-v1.webp створює scripts/make-cell-card-art.py (збірка його не запускає).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'directions.js?v=113':'directions.js?v=114','directions-pine.css?v=4':'directions-pine.css?v=5','changes-page.js?v=23':'changes-page.js?v=24'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

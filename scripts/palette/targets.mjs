@@ -21,6 +21,12 @@ export const CSS_TARGETS=[
 // Авторські HTML-сторінки з вбудованим <style>.
 export const HTML_TARGETS=['dist/protein-meta.html'];
 export const EXTRAS='src/palette/cosmic-extras.css';
+// Режим «стаття» на головній (розбір добавки в index.html): файл палітри головна не вантажить (див. нижче), тож токени для карток розбору дає окремий згенерований файл.
+// Він діє лише під body[data-route-view="article"] і лише тоді, коли обрано не зелений варіант. Токени беруться зі стилів, які режим «стаття» реально підтягує.
+export const ARTICLE_CSS=['src/evidence/evidence.css','dist/experience.css','dist/appearance.css','dist/platform.css','dist/terms.css','dist/next-steps.css','src/platform/site-header.css'];
+export const ARTICLE_EXTRAS='src/palette/cosmic-article-extras.css';
+export const ARTICLE_OUTPUT='dist/home-article-cosmic.css';
+export const ARTICLE_SCOPE='html:not([data-palette="green"]) body[data-route-view="article"]';
 export const OUTPUT='dist/palette-cosmic.css';
 // Стилі головної: у токени не переводяться, файл палітри на головній не підключається.
 export const isHomeOnlyCss=file=>/^dist\/(home-[^/]*|desktop|evidence-trainer)\.css$/.test(file);

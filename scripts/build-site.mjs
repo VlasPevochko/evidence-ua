@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 // Everything else in dist is authored source and must retain its exact bytes.
 const generated = new Set([
   // Fat Burning Lab is an authored page; build-platform only injects shared appearance assets.
-  'sitemap.xml', 'robots.txt', 'palette-cosmic.css',
+  'sitemap.xml', 'robots.txt', 'palette-cosmic.css', 'home-article-cosmic.css',
   // Космічні копії малюнків-SVG (scripts/build-svg-art.mjs): сторінка показує оригінал або копію за палітрою.
   'diet-art-cosmic.svg', 'home-sleep-cosmic.svg', 'home-movement-cosmic.svg', 'home-anatomy-cosmic.svg', 'card-nutrition-cosmic.svg', 'card-evidence-cosmic.svg', 'card-organism-cosmic.svg',
   'compare-status.js', 'site-header.js', 'site-header.css', 'platform-search.js', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',

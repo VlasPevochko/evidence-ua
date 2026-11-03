@@ -1,0 +1,89 @@
+/* Розбір добавки на головній (режим «стаття») у космічних кольорах і формах решти сайту. Згенеровано scripts/build-palette.mjs: не редагувати вручну.
+   Діє лише під body[data-route-view="article"] і не для зеленого варіанта; саму головну не торкається. Перше правило: токени; далі переписування старих правил розбору
+   (scripts/palette/article-overrides.mjs); наприкінці ручні доповнення з src/palette/cosmic-article-extras.css. */
+html:not([data-palette="green"]) body[data-route-view="article"]{--c-020609d9:#050308d9;--c-020b10b3:#07050db3;--c-041722:#100b1b;--c-06131e:#0f0a1a;--c-061d28:#130d21;--c-061d28f5:#130d21f5;--c-06202c:#150f23;--c-07131d:#0f0a1a;--c-071925:#120d1f;--c-071e254d:#120d1f4d;--c-090a0c:#0a090c;--c-090a0cf5:#0a090cf5;--c-091b27:#140e22;--c-0a141d:#110d1a;--c-0a2a37:#1b132e;--c-0b0e11:#0d0c10;--c-0d1821:#14101e;--c-0d1916:#0b0a12;--c-0d1f2b:#181227;--c-0e1b24:#161121;--c-101214:#110f15;--c-101419:#131118;--c-101419eb:#131118eb;--c-101820:#16121e;--c-10202a:#191426;--c-10211c:#16131e;--c-102a3a:#1f1634;--c-102b3b:#1f1635;--c-102e3e:#211737;--c-111315:#121016;--c-11151d:#15131b;--c-111619:#141218;--c-11252c:#1b1528;--c-121416:#131117;--c-121417d9:#131217d9;--c-12171c:#16131b;--c-12232d:#1c1629;--c-122633:#1e172e;--c-122734:#1e172f;--c-12303f:#221938;--c-123d4e:#281c44;--c-131518:#141219;--c-131c23:#191521;--c-141619:#15131a;--c-14181b:#16141b;--c-142229:#1c1726;--c-14243a:#221a34;--c-142520:#14111d;--c-142f3e:#231a38;--c-14303b:#221a35;--c-15130c:#100e13;--c-152328:#1c1825;--c-152531:#1f192d;--c-152837:#211a32;--c-152a24:#1d1827;--c-153446:#271c3f;--c-164058:#2e204e;--c-17130a:#0f0d14;--c-17191d:#19161e;--c-171e24:#1c1922;--c-191b1f:#1a1820;--c-192832:#221d2e;--c-1b1608:#170f26;--c-1b2b35:#241f31;--c-1c1b15:#17151c;--c-1c1b16:#18151d;--c-1d1c28:#201d27;--c-201e16:#19171f;--c-21465a:#362a51;--c-23404e:#322948;--c-242518:#1d1a23;--c-252217:#1c1a23;--c-252317:#1c1a23;--c-26403a:#3b3647;--c-282417:#1e1b24;--c-292519:#1f1c26;--c-292719:#1f1c26;--c-293c4e:#362f48;--c-2c343a:#302c3a;--c-2d414e:#393249;--c-2f5f7a:#524069;--c-2f779c33:#62488333;--c-34434c:#3c3749;--c-345060:#443b59;--c-37424b:#3d384a;--c-374a55:#423c51;--c-385a71:#524564;--c-395466:#4e435c;--c-3a5662:#4d4359;--c-3a596b:#514560;--c-3c5762:#4e4559;--c-415e6b:#544a62;--c-416759:#534a5e;--c-446170:#584e66;--c-446172:#594e68;--c-466272:#5a5068;--c-47606e:#595065;--c-476789:#66567a;--c-48606f:#5a5166;--c-494439:#42374b;--c-4b4638:#42384b;--c-537282:#695e77;--c-554b31:#443650;--c-5a5031:#463754;--c-605638:#4d3e5a;--c-61583e:#50435c;--c-625a40:#52455d;--c-6391a5:#827296;--c-648899:#7d708d;--c-65879a:#7e718e;--c-659bb4:#8a77a2;--c-675d34:#4f3c5f;--c-686252:#5e4f6b;--c-6b5a37:#523f63;--c-7596a8:#8d809d;--c-91a6b1:#a098aa;--c-a8bac5:#b5afbe;--c-abbcc5:#b7b0c0;--c-b9c7c2:#c0bac6;--c-bed3e0:#cec5d9;--c-bfd1dd:#cdc5d7;--c-bfd3dc:#cdc5d6;--c-c2bda8:#d5c2e5;--c-c2cdcf:#c8c3ce;--c-c2d7df:#d0c8d9;--c-c9c0a6:#d7c6e6;--c-c9d6da:#d1ccd7;--c-d2ccbb:#dccdea;--c-d7a947:#bb8ae6;--c-d7dfe2:#dcd9e0;--c-d7e8ec:#e1dbe8;--c-d8a94e:#bb8ae5;--c-dbcb96:#d8c4eb;--c-e2d6b7:#dcccea;--c-e2e0d9:#dccdea;--c-e2e9eb:#ebe6e2;--c-e3bd6b:#d1a5ff;--c-e3bd6b22:#d1a5ff22;--c-e7bd46:#bb81ef;--c-e7bd4612:#bb81ef12;--c-e7bd4614:#bb81ef14;--c-e7d9b5:#ddc9ee;--c-e9efe9:#f7f3ef;--c-eae6de:#e9e4df;--c-ecebe5:#ece9e5;--c-eedb9b:#ddc2f5;--c-eeeae1:#ede8e2;--c-efca61:#ca99f5;--c-f0bd58:#c690f5;--c-f0d991:#ddc0f6;--c-f1cb61:#cb99f6;--c-f1f6f8:#f8f4f1;--c-f4f2ed:#f4f1ed;--c-f5f5ed:#f5f1ed;--c-f8f1dc:#f0eae4;--c-f9e7ad42:#ddbcfa42;--c-ffdc7e:#deb9fd;--c-ffdc7e1f:#deb9fd1f;--c-ffe7a510:#deb9fd10;--c-fff0ce:#eee7df;--c-fff8df:#f4efea;--rd-8:3px;--rd-10:3px;--rd-12:3px;--rd-14:3px;--rd-16:3px;--rd-20:5px;--rd-24:5px;--rd-30:5px;--rd-99:3px;--sd-card:none}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine{background:#0c0b0f;color:#ede8e3}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .topline{border-bottom:1px solid #2e2a38}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .back{background:none;border:1px solid #4c385e;color:#bb81ef;border-radius:5px}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .eyebrow{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .intro{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .box{border:1px solid #2f2a39;background:linear-gradient(140deg,#191b1b,#101112);border-radius:3px}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .box h3{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .box p{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine a{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .notice{border-left:3px solid #bb81ef;background:#1b1b18;color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .video{border:1px dashed #564664;border-radius:3px;color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .pill{color:#a5a197;border:1px solid #3b3932;border-radius:5px}
+html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live select,html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live button{background:#191b1b;border:1px solid #4c385e;color:#ebe3db;border-radius:3px}
+html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live button{background:#bb81ef;color:#0f0d13}
+html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live .research-meta{color:#ccb6e0}
+html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live .research-item{border:1px solid #2f2b3a;border-radius:3px;background:#141617}
+html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live .research-item a{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live .research-badge{border:1px solid #4c385e;color:#bb81ef;border-radius:3px}
+html:not([data-palette="green"]) body[data-route-view="article"] #pubmed-live .research-caveat{background:#1a1820;border-left:3px solid #bb81ef;color:#d1cabe}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-kicker{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-study{background:linear-gradient(135deg,#1d1a23,#131117 65%);border:1px solid #4e3a60;border-radius:3px}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-study>p{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-metric{border:1px solid #43374d;border-radius:3px;background:#121116}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-metric span{color:#bda1d7}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-metric strong{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-evidence-note{border-left:3px solid #bb81ef;background:#1f1c27;color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .source-button{background:#bb81ef;color:#110f15;border-radius:3px}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-nav a{border:1px solid #53465f;border-radius:5px;color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] .d-bottom a{border:1px solid #bb81ef;border-radius:5px;color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .evidence-deep{border-top:1px solid #463654}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-kicker{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .evidence-deep h2 em{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-evidence article,html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-papers article{background:linear-gradient(135deg,#20211e,#121413);border:1px solid #393041;border-radius:3px}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .strong{color:#bcaad0}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .moderate{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-meta{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-faq details{border:1px solid #41374a;border-radius:3px;background:#181a19}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-faq summary{color:#ece3db}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-note{border-left:3px solid #bb81ef;background:#1b1921;color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .ed-back{border:1px solid #bb81ef;border-radius:5px}
+html:not([data-palette="green"]) body[data-route-view="article"] .base-art{border-radius:3px;border:1px solid #383c38}
+html:not([data-palette="green"]) body[data-route-view="article"] section[id^="supplement-"]>.d-nav{border-top:1px solid #3e3447}
+html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-takeaway{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-choice{border:1px solid #585063;border-radius:3px;background:linear-gradient(135deg,#221e2b,#121116);color:#eee}
+html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-choice:hover,html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-choice[aria-expanded="true"]{border-color:#65ddf2;background:#251f34;box-shadow:0 0 22px #65ddf219}
+html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-choice span{color:#baaec8}
+html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-answer{border:1px solid #585063;border-radius:3px;background:#19161f;color:#d9dede}
+html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-answer small,html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-context-note{color:#b6b0be}
+html:not([data-palette="green"]) body[data-route-view="article"] #supplement-protein .protein-other,html:not([data-palette="green"]) body[data-route-view="article"] #supplement-berberine .protein-other{color:#b6b0be}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc{--pc-line:#34303f;--pc-cyan:#65ddf2;--pc-cyan-soft:#b9f5ff;--pc-gold:#bb81ef;--pc-muted:#bfb9c5}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-lead{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-scale{border:1px solid var(--pc-line);border-radius:3px;background:linear-gradient(135deg,#1d1927,#121116 70%)}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-bar-group h3{color:#baaec8}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-track i{border-radius:8px;background:#6a6176}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-facts div{border:1px solid var(--pc-line);border-radius:3px;background:#121116}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-facts span{color:#baaec8}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-not article{border-left:3px solid var(--pc-gold);background:#1b1921;border-radius:0 3px 3px 0}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .pc-not p{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-axis{border-radius:3px;background:#ffffff08}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-dot{border-radius:50%;background:var(--pc-cyan-soft);box-shadow:0 0 0 3px #121116}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-null .bc-ci{background:#6a6176}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-null .bc-dot{background:#a59daf}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-safety{border:1px solid #503b63;border-radius:3px;background:#18151d}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-safety li{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-up .bc-ci{background:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-up .bc-dot{background:#ddbef8}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .bc-up .bc-label span{color:#ddbef8}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine{--pc-line:#34303f;--pc-cyan:#65ddf2;--pc-cyan-soft:#b9f5ff;--pc-gold:#bb81ef;--pc-muted:#bfb9c5}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .cr-lead{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .cr-fold{border-top:1px solid #34303f}
+html:not([data-palette="green"]) body[data-route-view="article"] #creatine .cr-fold>summary::before{border:1px solid #34303f;border-radius:50%;color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]){background:#0c0b0f;color:#ede8e3}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) button{border:1px solid #775595;border-radius:5px;background:transparent;color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .lead{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .d-box{background:#17191a;border:1px solid #3e3447;border-radius:3px}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .d-box h3{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .d-box p{color:#dccdea}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .d-source{color:#bb81ef;border-bottom:1px solid #bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .d-note{border-left:3px solid #bb81ef;background:#1b1c1d}
+html:not([data-palette="green"]) body[data-route-view="article"] :is(#creatine,[id^="supplement-"]) .d-nav button.active{background:#bb81ef;color:#111}
+html:not([data-palette="green"]) body[data-route-view="article"] .page[data-article-mode]{background:#0c0b0f}
+html:not([data-palette="green"]) body[data-route-view="article"] .eua-article-bar .eua-article-back{color:#bb81ef}
+html:not([data-palette="green"]) body[data-route-view="article"] .eua-article-bar .eua-tools>*{border:1px solid #ffffff26;border-radius:3px;background:transparent;color:#d8d5dc}
+html:not([data-palette="green"]) body[data-route-view="article"] .eua-article-bar .eua-tools>*:hover{border-color:#bb81ef;color:#ddc3f3}
+html:not([data-palette="green"]) body[data-route-view="article"] {background:#0c0b0f}

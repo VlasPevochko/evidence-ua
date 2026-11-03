@@ -476,3 +476,24 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Розбір добавки на головній (режим «стаття») у космічних кольорах і формах решти сайту (2026-11-03): лише на головній, лише під body[data-route-view="article"].
+// Файл dist/home-article-cosmic.css генерує scripts/build-palette.mjs; тут його підключено до index.html один раз (збірка повторювана).
+{
+ const file='dist/index.html',old=fs.readFileSync(file,'utf8');
+ if(!old.includes('home-article-cosmic.css')){
+  const next=old.replace(/(<link rel="stylesheet" href="\.\/home-article\.css\?v=\d+">)/,'$1<link rel="stylesheet" href="./home-article-cosmic.css?v=1">');
+  if(next===old)throw new Error('index.html: не знайдено home-article.css для вставки home-article-cosmic.css');
+  fs.writeFileSync(file,next);
+ }
+}
+// Журнал оновлень: запис про розбори добавок (changes-page.js 23 → 24, він імпортує changes-data.js?v=24).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'changes-page.js?v=23':'changes-page.js?v=24'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

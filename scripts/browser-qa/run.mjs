@@ -601,7 +601,7 @@ async function paletteFlow(browser, origin, viewport) {
 async function artPairsFlow(browser, origin, viewport) {
   const where = `art pairs @${viewport.name}`;
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
-  const ORIGINAL = /\/(?:diet-art|home-sleep|home-anatomy|home-movement|card-organism|card-nutrition|card-evidence|muscle-lab-art-v1)\.(?:svg|webp)/;
+  const ORIGINAL = /\/(?:diet-art|home-sleep|home-anatomy|home-movement|card-organism|card-nutrition|card-evidence|muscle-lab-art-v1|card-thumb-[a-z]+-v1)\.(?:svg|webp)/;
   const hueOf = ([r, g, b]) => {
     const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
     if (!d) return 0;
@@ -714,6 +714,153 @@ async function catalogCellPictureFlow(browser, origin, viewport) {
     await context.close();
   }
   check(where, sources.length === 2 && sources[0] === sources[1], `the same picture is shown in both palettes (${sources.join(' / ')})`);
+}
+
+// Картки Харчування, Добавок, Руху й Сну в каталозі напрямів (2026-11-03, власник: «26 так»). Було: лише тьмяні піктограми (яскравість від 0,2 до 1,6 із 255). Стало: квадратні кадри картин
+// напрямів із вікна «Куди рушимо далі?» (scripts/make-direction-thumbs.py), у двох палітрах (пара data-art). Міряємо те, що намальовано: у кожній картці показано рівно один файл палітри
+// (-cosmic у космосі, оригінал у «Зеленому»), він завантажений, заповнює плитку, яскравий і не плаский (яскравість та розкид яскравості), і це саме кадр картини напряму: різниця до вирізки
+// цієї картини (координати беремо зі скрипта) мала, а до зсунутої вирізки й до всієї картини, стиснутої в квадрат, велика. Контроль від зворотного: стара піктограма тих самих мірок не проходить.
+async function catalogThumbsFlow(browser, origin, viewport) {
+  const where = `catalog direction pictures @${viewport.name}`;
+  const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
+  const tool = fs.readFileSync(path.join(root, 'scripts', 'make-direction-thumbs.py'), 'utf8');
+  const rows = [...tool.matchAll(/\('(\w+)', '(card-art-[\w-]+)', \((\d+), (\d+), (\d+), (\d+)\)\)/g)].map(m => ({area: m[1], source: m[2], crop: m.slice(3).map(Number)}));
+  check(where, rows.map(r => r.area).join() === 'nutrition,supplements,movement,sleep', 'scripts/make-direction-thumbs.py states the crops of the four direction pictures');
+  const hrefs = {nutrition: './nutrition.html', supplements: './supplements.html', movement: './movement.html', sleep: './sleep.html'};
+  const icons = {nutrition: '/card-nutrition-cosmic.svg', supplements: '/card-evidence-cosmic.svg', movement: '/home-movement-cosmic.svg', sleep: '/home-sleep-cosmic.svg'};
+  for (const palette of ['cosmic', 'green']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/directions.html', palette === 'green' ? {initScript: green} : {});
+    await page.waitForSelector('.area-card');
+    const suffix = palette === 'cosmic' ? '-cosmic' : '';
+    for (const row of rows) {
+      const tag = `${palette} ${row.area}`;
+      const stats = await page.evaluate(async ({href, art, source, crop, icon}) => {
+        const card = [...document.querySelectorAll('.area-card')].find(c => c.querySelector(`a.area-open[href="${href}"]`));
+        const out = {found: Boolean(card)};
+        if (!card) return out;
+        const imgs = [...card.querySelectorAll('.area-visual img')];
+        const visible = imgs.filter(i => getComputedStyle(i).display !== 'none' && i.getBoundingClientRect().width > 0);
+        Object.assign(out, {total: imgs.length, visible: visible.length, tile: card.querySelector('.area-visual')?.className || ''});
+        const img = visible[0];
+        if (!img) return out;
+        img.scrollIntoView({block: 'center'});
+        await Promise.race([img.decode().catch(() => {}), new Promise(done => setTimeout(done, 4000))]);
+        const N = 24;
+        const sample = (image, sx, sy, sw, sh) => { const c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d', {willReadFrequently: true}); x.drawImage(image, sx, sy, sw, sh, 0, 0, N, N); return x.getImageData(0, 0, N, N).data; };
+        const gauge = data => { const lum = []; for (let i = 0; i < data.length; i += 4) lum.push(0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]); const mean = lum.reduce((a, b) => a + b, 0) / lum.length; return {lum: mean, spread: Math.sqrt(lum.reduce((a, b) => a + (b - mean) ** 2, 0) / lum.length)}; };
+        const diff = (a, c) => { let sum = 0; for (let i = 0; i < a.length; i += 4) sum += Math.abs(a[i] - c[i]) + Math.abs(a[i + 1] - c[i + 1]) + Math.abs(a[i + 2] - c[i + 2]); return sum / (a.length / 4 * 3); };
+        const load = src => new Promise(done => { const i = new Image(); i.onload = () => done(i); i.onerror = () => done(null); i.src = src; });
+        const [original, oldIcon] = await Promise.all([load(source), load(icon)]);
+        const box = img.getBoundingClientRect(), style = getComputedStyle(img);
+        Object.assign(out, {src: img.getAttribute('src'), art: img.dataset.art, loaded: img.complete && img.naturalWidth > 0, natural: img.naturalWidth, width: Math.round(box.width), height: Math.round(box.height), fit: style.objectFit, padding: style.paddingLeft});
+        const mine = sample(img, 0, 0, img.naturalWidth, img.naturalHeight);
+        Object.assign(out, gauge(mine));
+        if (original) {
+          const [l, t, r, b] = crop, w = r - l, h = b - t, moved = Math.min(Math.max(0, l + 100), original.naturalWidth - w), shifted = moved === l ? Math.max(0, l - 100) : moved;
+          out.sameCrop = diff(mine, sample(original, l, t, w, h));
+          out.shifted = diff(mine, sample(original, shifted, t, w, h));
+          out.squashed = diff(mine, sample(original, 0, 0, original.naturalWidth, original.naturalHeight));
+        }
+        if (oldIcon) out.control = gauge(sample(oldIcon, 0, 0, oldIcon.naturalWidth || 360, oldIcon.naturalHeight || 176));
+        return out;
+      }, {href: hrefs[row.area], art: `card-thumb-${row.area}-v1${suffix}.webp`, source: `/${row.source}${suffix}.webp`, crop: row.crop, icon: icons[row.area]});
+      check(where, stats.found === true, `${tag}: the card is in the catalogue`);
+      check(where, stats.total === 2 && stats.visible === 1 && stats.art === palette && /area-visual-photo/.test(stats.tile), `${tag}: the tile holds the green/cosmic pair, shows only the ${palette} copy and is a photo tile (${stats.visible}/${stats.total}, ${stats.art}, ${stats.tile})`);
+      check(where, stats.loaded === true && stats.natural === 240 && stats.src === `./card-thumb-${row.area}-v1${suffix}.webp`, `${tag}: the card shows card-thumb-${row.area}-v1${suffix}.webp, loaded (${stats.src}, ${stats.natural}px)`);
+      check(where, stats.width >= 56 && stats.height >= 56 && stats.fit === 'cover' && stats.padding === '0px', `${tag}: the picture fills the tile without margins (${stats.width}×${stats.height}, ${stats.fit}, padding ${stats.padding})`);
+      check(where, stats.lum >= 40 && stats.spread >= 25, `${tag}: the picture is bright and not flat, not a dim icon (luminance ${Math.round(stats.lum)}/255, spread ${Math.round(stats.spread)})`);
+      check(where, stats.sameCrop <= 10 && stats.shifted >= 12 && stats.squashed >= 12, `${tag}: it is the crop of the picture of the direction (difference ${stats.sameCrop?.toFixed(1)}; shifted ${stats.shifted?.toFixed(1)}, squashed ${stats.squashed?.toFixed(1)})`);
+      check(where, Boolean(stats.control) && stats.control.lum < 40 && stats.control.spread < 25, `${tag}: control: the old dim icon fails the same gauge (luminance ${Math.round(stats.control?.lum ?? -1)}, spread ${Math.round(stats.control?.spread ?? -1)})`);
+      await artifact(page, viewport, `catalog-thumb-${row.area}-${palette}`, page.locator('.area-card', {has: page.locator(`a.area-open[href="${hrefs[row.area]}"]`)}).first());
+    }
+    check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, `${palette}: no horizontal overflow`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `${palette}: no errors, failed or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external, ...seen.badResponses].join(' | ')}`);
+    await context.close();
+  }
+}
+
+// Сторінка «Клітина людини» на телефоні: головна картина першою (2026-11-03, власник: «27 так»). Було: у першому екрані телефона лише кнопки кроків і перемикач рівня, картина починалася
+// на 902 px від верху, а на екрані Safari вміщується близько 660 px. Стало: до 800 px картина зі станом, «Назад / Далі» і швидким вибором йде одразу після назви (близько 410 px), далі кроки й
+// рівень, примітка про перегляд, пояснення, список. Міряємо те, що справді показано: порядок блоків на екрані, положення й видимість картини в першому екрані, прихований дубль «До пояснення ↓»,
+// незмінений порядок у документі (табуляція), вибір структури зі списку (тап відкриває деталь, закрити повертає картину), маршрут з ?path= (рядок маршруту після картини) і незмінність
+// комп'ютерної версії (від 801 px блок .explorer лишається сіткою, кроки й примітка над картиною).
+async function cellPictureFirstFlow(browser, origin, viewport) {
+  const where = `cell picture first @${viewport.name}`;
+  const phone = viewport.width <= 800;
+  const {context, page, seen} = await open(browser, origin, viewport, '/cell-lab.html');
+  await page.waitForSelector('svg.cell-atlas');
+  await page.waitForTimeout(400);
+  const m = await page.evaluate(() => {
+    const box = selector => { const e = document.querySelector(selector); if (!e) return null; const r = e.getBoundingClientRect(); return {top: r.top + scrollY, bottom: r.bottom + scrollY, height: r.height, width: r.width, display: getComputedStyle(e).display}; };
+    const explorer = document.querySelector('.explorer'), list = explorer.querySelector(':scope>.structure-list'), figure = explorer.querySelector(':scope>figure'), panel = explorer.querySelector(':scope>.panel'), intro = document.querySelector('.intro'), note = document.querySelector('.review-note');
+    const before = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const step2 = document.querySelector('.cell-route a[href="#organelle-panel"]');
+    return {
+      svg: box('svg.cell-atlas'), figure: box('.explorer>figure'), intro: box('.intro'), note: box('.review-note'), panel: box('.explorer>.panel'), list: box('.explorer>.structure-list'), explorer: box('.explorer'), pb: box('section.pb'),
+      jump: box('.explorer>figure>.model-jumps'), back: box('.explorer>.panel .model-jumps'),
+      step2: step2 ? {display: getComputedStyle(step2).display, width: step2.getBoundingClientRect().width} : null,
+      domOrder: before(intro, note) && before(note, explorer) && before(list, figure) && before(figure, panel), vh: innerHeight, overflow: document.documentElement.scrollWidth - innerWidth,
+      levels: (() => { const shown = e => Boolean(e) && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0; return {top: shown(document.querySelector('.intro .levels')), panel: shown(document.querySelector('.panel .reading-level-options')), buttons: document.querySelectorAll('[data-level]').length}; })(),
+    };
+  });
+  const show = (a, b) => a && b && a.top < b.top;
+  if (phone) {
+    check(where, show(m.figure, m.intro) && show(m.intro, m.note) && show(m.note, m.panel) && show(m.panel, m.list), `the blocks follow the new order: picture, steps, note, explanation, list (${[m.figure, m.intro, m.note, m.panel, m.list].map(b => Math.round(b?.top)).join(' < ')})`);
+    check(where, m.explorer.display === 'contents', `the explorer block lets its children join the column (display ${m.explorer.display})`);
+    check(where, m.svg.top <= 450, `the picture starts near the top of the page (${Math.round(m.svg.top)} px, was 902 on 390 px)`);
+    const seen1 = Math.max(0, Math.min(m.svg.bottom, m.vh) - m.svg.top) / m.svg.height;
+    check(where, m.vh < 664 || seen1 >= 0.9, `at least 90 % of the picture is in the first screen of ${m.vh} px (${Math.round(seen1 * 100)} %)`);
+    check(where, m.jump && m.jump.display === 'none' && m.back && m.back.display !== 'none', `the jump «До пояснення ↓» above the picture is hidden, «До моделі ↑» in the explanation stays (${m.jump?.display}, ${m.back?.display})`);
+    check(where, m.step2 && m.step2.display !== 'none' && m.step2.width > 100, 'step «02 Прочитай функцію» still leads to the explanation');
+    check(where, m.levels.top === false && m.levels.panel === true && m.levels.buttons === 6, `on a phone the level switch is shown once, in the explanation; both copies stay in the markup (top ${m.levels.top}, explanation ${m.levels.panel}, buttons ${m.levels.buttons})`);
+  } else {
+    check(where, m.explorer.display === 'grid', `above 800 px the explorer stays a grid (${m.explorer.display})`);
+    check(where, show(m.intro, m.note) && show(m.note, m.figure) && m.intro.bottom <= m.figure.top + 1, 'above 800 px the steps and the note stay above the picture');
+    check(where, m.jump && m.jump.display !== 'none', 'above 800 px the jump above the picture stays');
+    check(where, m.levels.top === true && m.levels.panel === true, `above 800 px both level switches stay (top ${m.levels.top}, explanation ${m.levels.panel})`);
+    if (viewport.width >= 1100) check(where, Math.abs(m.list.top - m.figure.top) <= 2 && Math.abs(m.panel.top - m.figure.top) <= 2, 'on a wide screen the list, the picture and the explanation share one row');
+  }
+  check(where, m.domOrder, 'the order of the blocks in the document is unchanged (steps, note, list, picture, explanation), so tab order is unchanged');
+  check(where, m.overflow <= 1, `no horizontal overflow (${m.overflow})`);
+  if (phone) {
+    // Єдиний видимий перемикач рівня працює і тримає в ногу прихований дубль: «Школа» міняє пояснення, «Університет» повертає.
+    await page.locator('.panel .reading-level-options [data-level="school"]').click();
+    await page.waitForTimeout(200);
+    const school = await page.evaluate(() => ({pressed: [...document.querySelectorAll('[data-level="school"]')].map(b => b.getAttribute('aria-pressed')), other: [...document.querySelectorAll('[data-level="university"]')].map(b => b.getAttribute('aria-pressed')), text: document.querySelector('#organelle-copy').textContent}));
+    check(where, school.pressed.join() === 'true,true' && school.other.join() === 'false,false' && /Почни з ролі структури/.test(school.text), `the level switch in the explanation changes the level in both copies and the text (${school.pressed}; ${school.other})`);
+    await page.locator('.panel .reading-level-options [data-level="university"]').click();
+    await page.waitForTimeout(200);
+    const university = await page.evaluate(() => ({pressed: [...document.querySelectorAll('[data-level="university"]')].map(b => b.getAttribute('aria-pressed')), text: document.querySelector('#organelle-copy').textContent}));
+    check(where, university.pressed.join() === 'true,true' && /Функції різних структур/.test(university.text), 'switching back to the university level restores the text in both copies');
+    // Вибір структури зі списку працює: тап відкриває детальний вигляд, сторінка піднімається до картини, «Закрити» повертає схему.
+    await page.locator('#organelle-list button[data-organelle="ORG-NUCLEUS"]').click();
+    await page.waitForTimeout(500);
+    const open1 = await page.evaluate(() => ({detail: !document.querySelector('#cell-detail').hidden, atlas: !document.querySelector('.cell-atlas-frame').hidden, label: document.querySelector('#selected-label').textContent, canvasTop: document.querySelector('#cell-canvas').getBoundingClientRect().top}));
+    check(where, open1.detail && !open1.atlas && /Ядро/.test(open1.label) && Math.abs(open1.canvasTop) < 140, `a tap on «Ядро» in the list opens the detail view and brings the picture to the top (${open1.label}, canvas at ${Math.round(open1.canvasTop)} px)`);
+    await page.locator('[data-cell-detail-action="close"]').first().click();
+    await page.waitForTimeout(300);
+    const closed = await page.evaluate(() => ({detail: !document.querySelector('#cell-detail').hidden, atlas: !document.querySelector('.cell-atlas-frame').hidden}));
+    check(where, !closed.detail && closed.atlas, 'closing the detail view brings the whole cell picture back');
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `no errors, failed or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external, ...seen.badResponses].join(' | ')}`);
+  await context.close();
+
+  // Маршрут з головної («Почати маршрут: Загальна клітина»): рядок маршруту стоїть після картини на телефоні й, як раніше, перед нею на комп'ютері; картина в кадрі після переходу до #cell-canvas.
+  const route = await open(browser, origin, viewport, '/cell-lab.html?path=structure&lesson=0#cell-canvas');
+  await route.page.waitForSelector('.eua-learning-nav');
+  await route.page.waitForTimeout(500);
+  const r = await route.page.evaluate(() => { const canvas = document.querySelector('#cell-canvas').getBoundingClientRect(), nav = document.querySelector('.eua-learning-nav').getBoundingClientRect(); return {canvasTop: canvas.top, canvasBottom: canvas.bottom, navTop: nav.top, navBottom: nav.bottom, vh: innerHeight, svg: document.querySelector('svg.cell-atlas').getBoundingClientRect().height}; });
+  if (phone) check(where, r.navTop >= r.canvasBottom - 1, `route mode: the route line comes after the picture block (picture ends ${Math.round(r.canvasBottom)}, line starts ${Math.round(r.navTop)})`);
+  else check(where, r.navBottom <= r.canvasTop + 1, 'route mode on a wide screen: the route line stays above the picture');
+  check(where, r.canvasTop >= -2 && r.canvasBottom <= r.vh + 2, `route mode: the picture block is fully in view after the jump to #cell-canvas (${Math.round(r.canvasTop)}…${Math.round(r.canvasBottom)} of ${r.vh})`);
+  check(where, route.seen.pageErrors.length === 0 && route.seen.console.length === 0 && route.seen.external.length === 0, 'route mode: no errors or third-party requests');
+  await artifact(route.page, viewport, 'cell-picture-first-route', route.page.locator('#cell-canvas'), {scroll: false});
+  await route.context.close();
+  const top = await open(browser, origin, viewport, '/cell-lab.html');
+  await top.page.waitForSelector('svg.cell-atlas');
+  await top.page.waitForTimeout(400);
+  await artifact(top.page, viewport, 'cell-picture-first', top.page.locator('body'), {scroll: false});
+  await top.context.close();
 }
 
 // Заголовки карток як на головній (рішення власника 2026-11-01): у космосі h2–h4 усередині main і назви карток («Куди далі», картки дієт, записи журналу)
@@ -3530,6 +3677,10 @@ try {
     for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
     // Картка клітини в каталозі (2026-11-03): справжня головна картина замість тьмяної піктограми; 360 включено, бо на вузькому телефоні плитка найменша.
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogCellPictureFlow, browser, origin, viewport);
+    // Картки Харчування, Добавок, Руху й Сну в каталозі (2026-11-03): картини напрямів замість тьмяних піктограм, обидві палітри, три розміри екрана.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogThumbsFlow, browser, origin, viewport);
+    // Сторінка «Клітина людини»: на телефоні картина першою (390 × 664 як Safari, 390 × 844, 360, планшет 700), від 801 px нічого не змінилося (801 і 1440).
+    for (const viewport of [...viewports, {name: 'phone-safari', width: 390, height: 664}, {name: 'mobile-narrow', width: 360, height: 780}, {name: 'tablet-portrait', width: 700, height: 900}, {name: 'tablet-801', width: 801, height: 900}]) await isolatedFlow(cellPictureFirstFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headingsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headerFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);

@@ -488,3 +488,38 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Картки Харчування, Добавок, Руху й Сну в каталозі показують справжні картини напрямів (2026-11-03, власник: «26 так»): каталог (directions.js) v=115, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=25) v=25.
+// Файли dist/card-thumb-*-v1(.-cosmic).webp створює scripts/make-direction-thumbs.py (збірка його не запускає). Стилі не змінювались (клас area-visual-photo уже є).
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'directions.js?v=114':'directions.js?v=115','changes-page.js?v=24':'changes-page.js?v=25'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Головна картина першою на сторінці «Клітина людини» на телефоні (2026-11-03, власник: «27 так»): стилі cell-vcard.css v=83 (порядок показу на екранах до 800 px);
+// сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=26) v=26.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'cell-vcard.css?v=82':'cell-vcard.css?v=83','changes-page.js?v=25':'changes-page.js?v=26'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Один перемикач рівня на сторінці «Клітина людини» на телефоні (2026-11-03, власник: «28 +»): стилі cell-vcard.css v=84, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=27) v=27.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'cell-vcard.css?v=83':'cell-vcard.css?v=84','changes-page.js?v=26':'changes-page.js?v=27'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

@@ -268,7 +268,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 // Нова версія в query-рядку для кожного зміненого стилю й модуля, що його підключає (інакше кеш змішав би старі стилі з новими). Заміна з межею слова.
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
- const updates={'platform-shell.js?v=105':'platform-shell.js?v=106','site-header.js?v=12':'site-header.js?v=13','directions.js?v=107':'directions.js?v=108','appearance.js?v=3':'appearance.js?v=4','platform-terms.js?v=3':'platform-terms.js?v=4','platform-next-steps.js?v=5':'platform-next-steps.js?v=6','fat-burning.js?v=10':'fat-burning.js?v=11','glossary-page.js?v=2':'glossary-page.js?v=3','map-page.js?v=3':'map-page.js?v=4','home-spectrum.js?v=2':'home-spectrum.js?v=3','changes-page.js?v=5':'changes-page.js?v=6','home-spectrum.css?v=3':'home-spectrum.css?v=4','appearance.css?v=5':'appearance.css?v=6','atlas.css?v=9':'atlas.css?v=10','cell-lab.css?v=77':'cell-lab.css?v=78','cell-vcard.css?v=81':'cell-vcard.css?v=82','changes-page.css?v=3':'changes-page.css?v=4','compare-page.css?v=2':'compare-page.css?v=3','digestion.css?v=4':'digestion.css?v=5','directions-pine.css?v=3':'directions-pine.css?v=4','evidence/evidence.css?v=58':'evidence/evidence.css?v=59','exercises.css?v=9':'exercises.css?v=10','experience.css?v=63':'experience.css?v=64','fat-burning-pine.css?v=4':'fat-burning-pine.css?v=5','fat-burning.css?v=3':'fat-burning.css?v=4','glossary-page.css?v=3':'glossary-page.css?v=4','knee-pain-map.css?v=3':'knee-pain-map.css?v=4','learning-notes.css?v=87':'learning-notes.css?v=88','map-page.css?v=2':'map-page.css?v=3','mechanisms-page.css?v=5':'mechanisms-page.css?v=6','movement.css?v=86':'movement.css?v=87','muscle-lab.css?v=75':'muscle-lab.css?v=76','nutrition-diets.css?v=90':'nutrition-diets.css?v=91','nutrition-fat-burning.css?v=2':'nutrition-fat-burning.css?v=3','nutrition-lab.css?v=80':'nutrition-lab.css?v=81','nutrition-navigation.css?v=3':'nutrition-navigation.css?v=4','nutrition-timeline.css?v=30':'nutrition-timeline.css?v=31','page-pine.css?v=20':'page-pine.css?v=21','palette-cosmic.css?v=1':'palette-cosmic.css?v=2','platform.css?v=85':'platform.css?v=86','research-page.css?v=4':'research-page.css?v=5','shoulder-pain-map.css?v=2':'shoulder-pain-map.css?v=3','sleep.css?v=84':'sleep.css?v=85','study-ui.css?v=72':'study-ui.css?v=73','supplements.css?v=4':'supplements.css?v=5','videos-page.css?v=4':'videos-page.css?v=5'};
+ const updates={'platform-shell.js?v=105':'platform-shell.js?v=106','site-header.js?v=12':'site-header.js?v=13','directions.js?v=107':'directions.js?v=108','appearance.js?v=3':'appearance.js?v=4','platform-terms.js?v=3':'platform-terms.js?v=4','platform-next-steps.js?v=5':'platform-next-steps.js?v=6','fat-burning.js?v=10':'fat-burning.js?v=11','glossary-page.js?v=2':'glossary-page.js?v=3','map-page.js?v=3':'map-page.js?v=4','home-spectrum.js?v=2':'home-spectrum.js?v=3','changes-page.js?v=5':'changes-page.js?v=6','home-spectrum.css?v=3':'home-spectrum.css?v=4','appearance.css?v=5':'appearance.css?v=6','atlas.css?v=9':'atlas.css?v=10','cell-lab.css?v=77':'cell-lab.css?v=78','cell-vcard.css?v=81':'cell-vcard.css?v=82','changes-page.css?v=3':'changes-page.css?v=4','compare-page.js?v=2':'compare-page.js?v=3','digestion.css?v=4':'digestion.css?v=5','directions-pine.css?v=3':'directions-pine.css?v=4','evidence/evidence.css?v=58':'evidence/evidence.css?v=59','exercises.css?v=9':'exercises.css?v=10','experience.css?v=63':'experience.css?v=64','fat-burning-pine.css?v=4':'fat-burning-pine.css?v=5','fat-burning.css?v=3':'fat-burning.css?v=4','glossary-page.css?v=3':'glossary-page.css?v=4','knee-pain-map.css?v=3':'knee-pain-map.css?v=4','learning-notes.css?v=87':'learning-notes.css?v=88','map-page.css?v=2':'map-page.css?v=3','mechanisms-page.css?v=5':'mechanisms-page.css?v=6','movement.css?v=86':'movement.css?v=87','muscle-lab.css?v=75':'muscle-lab.css?v=76','nutrition-diets.css?v=93':'nutrition-diets.css?v=94','nutrition-fat-burning.css?v=2':'nutrition-fat-burning.css?v=3','nutrition-lab.css?v=80':'nutrition-lab.css?v=81','nutrition-navigation.css?v=3':'nutrition-navigation.css?v=4','nutrition-timeline.css?v=30':'nutrition-timeline.css?v=31','page-pine.css?v=20':'page-pine.css?v=21','palette-cosmic.css?v=1':'palette-cosmic.css?v=2','platform.css?v=85':'platform.css?v=86','research-page.css?v=4':'research-page.css?v=5','shoulder-pain-map.css?v=2':'shoulder-pain-map.css?v=3','sleep.css?v=84':'sleep.css?v=85','study-ui.css?v=72':'study-ui.css?v=73','supplements.css?v=4':'supplements.css?v=5','videos-page.css?v=4':'videos-page.css?v=5'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
@@ -487,17 +487,6 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   fs.writeFileSync(file,next);
  }
 }
-// Журнал оновлень: запис про розбори добавок (changes-page.js 23 → 24, він імпортує changes-data.js?v=24).
-{
- const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
- const updates={'changes-page.js?v=23':'changes-page.js?v=24'};
- for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
-  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
-  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
-  if(next!==old)fs.writeFileSync(file,next);
- }
-}
-
 
 // Картка «Клітини та органели» у каталозі показує головну картину сторінки «Клітина людини» (2026-11-03, власник): каталог (directions.js) v=114,
 // стилі каталогу (directions-pine.css) v=5, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=24) v=24. Файл картини dist/cell-atlas-card-v1.webp створює scripts/make-cell-card-art.py (збірка його не запускає).
@@ -511,11 +500,58 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
  }
 }
 
-
-// Заголовки розборів добавок тонкі, із засічками (2026-11-03): home-article-cosmic.css 1 → 2 (нові правила заголовків), журнал (changes-page.js 24 → 25, він імпортує changes-data.js?v=25).
+// Картки Харчування, Добавок, Руху й Сну в каталозі показують справжні картини напрямів (2026-11-03, власник: «26 так»): каталог (directions.js) v=115, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=25) v=25.
+// Файли dist/card-thumb-*-v1(.-cosmic).webp створює scripts/make-direction-thumbs.py (збірка його не запускає). Стилі не змінювались (клас area-visual-photo уже є).
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
- const updates={'home-article-cosmic.css?v=1':'home-article-cosmic.css?v=2','changes-page.js?v=24':'changes-page.js?v=25'};
+ const updates={'directions.js?v=114':'directions.js?v=115','changes-page.js?v=24':'changes-page.js?v=25'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Головна картина першою на сторінці «Клітина людини» на телефоні (2026-11-03, власник: «27 так»): стилі cell-vcard.css v=83 (порядок показу на екранах до 800 px);
+// сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=26) v=26.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'cell-vcard.css?v=82':'cell-vcard.css?v=83','changes-page.js?v=25':'changes-page.js?v=26'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Один перемикач рівня на сторінці «Клітина людини» на телефоні (2026-11-03, власник: «28 +»): стилі cell-vcard.css v=84, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=27) v=27.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'cell-vcard.css?v=83':'cell-vcard.css?v=84','changes-page.js?v=26':'changes-page.js?v=27'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Заголовки розборів добавок тонкі, із засічками (2026-11-03): home-article-cosmic.css 1 → 2 (нові правила заголовків). Версія журналу піднімається в станції нижче.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-article-cosmic.css?v=1':'home-article-cosmic.css?v=2'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Розбори добавок у кольорах і формах решти сайту та їхні заголовки (2026-11-04, рішення власника 30: гілку доведено до PR): два записи в журналі (новий день 2026-11-04),
+// тож сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=28) v=28. Гілка писалась до PR #160–#162 і мала власні станції «changes-page.js 23 → 24» та «24 → 25»;
+// під час злиття з main їх прибрано, бо версії журналу веде ланцюжок станцій вище (23 → … → 27), а ця станція додає в нього останню ланку.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'changes-page.js?v=27':'changes-page.js?v=28'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

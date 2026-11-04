@@ -41,7 +41,7 @@ const pair=(html,original,cosmic,what)=>{
 };
 const nutrition=read('dist/nutrition.html'),ids=[...dietOld.matchAll(/<view id="view-([a-z-]+)"/g)].map(m=>m[1]);
 assert.equal(ids.length,8,'eight diets in the sprite');
-for(const id of ids)pair(nutrition,`diet-art.svg?v=86#view-${id}`,`diet-art-cosmic.svg?v=1#view-${id}`,`diet tile ${id}`);
+for(const id of ids)pair(nutrition,`diet-art.svg?v=87#view-${id}`,`diet-art-cosmic.svg?v=2#view-${id}`,`diet tile ${id}`);
 pair(read('dist/sleep.html'),'home-sleep.svg','home-sleep-cosmic.svg','sleep hero');
 const atlas=read('dist/atlas.html'),alt='Схематична анатомічна фігура людини';
 assert(atlas.includes(`<img src="./home-anatomy.svg" alt="${alt}" class="atlas-figure" data-art="green" loading="lazy"><img src="./home-anatomy-cosmic.svg" alt="${alt}" class="atlas-figure" data-art="cosmic" loading="lazy">`),'the atlas figure has a cosmic copy with the same alt text and class');

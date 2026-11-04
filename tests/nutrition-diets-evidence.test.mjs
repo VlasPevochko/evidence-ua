@@ -43,9 +43,9 @@ assert(section.includes('href="#diet-mediterranean"'),'the position links to the
 for(const m of section.matchAll(/<a [^>]*href="https?:[^>]*>/g))assert(m[0].includes('rel="noopener noreferrer"'),`safe link: ${m[0].slice(0,90)}`);
 const css=fs.readFileSync('dist/nutrition-diets.css','utf8');
 assert(css.includes('.nd-fit')&&css.includes('.nd-recommend')&&/max-width:760px\)\{\.nd-evidence/.test(css),'styled, with a phone layout');
-assert(html.includes('nutrition-diets.css?v=93'),'the stylesheet version was bumped');
+assert(html.includes('nutrition-diets.css?v=94'),'the stylesheet version was bumped');
 assert(css.includes('.nd-findings li:first-child::before')&&css.includes('КЛЮЧОВИЙ РЕЗУЛЬТАТ'),'the first sourced finding has a distinct visual hierarchy');
-assert(css.includes('@media(max-width:760px){.nd-art{height:150px}'),'the diet art is larger on mobile');
+assert(/@media\(max-width:760px\)\{[\s\S]*?\.nd-art\{height:190px\}/.test(css),'the diet art is larger on mobile');
 console.log('Diet evidence: every card has sourced findings, indications and cautions; key numbers, honest limits and the editorial position passed.');
 // Нові застереження за рішенням власника 2026-10-26 (джерела: docs/DIETS-SOURCES-DRAFT.md).
 {const m=evidence.mediterranean.cautions.join(' ');

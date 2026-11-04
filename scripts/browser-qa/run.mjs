@@ -1901,10 +1901,16 @@ async function dietsFlow(browser, origin, viewport) {
   await page.locator('#diet-mediterranean').evaluate(el => { el.open = true; });
   const evidence = page.locator('#diet-mediterranean .nd-evidence');
   await evidence.waitFor({state: 'visible'});
+  // 2026-11-04: чекаємо, поки карусель ЗУПИНИЛАСЬ, а не лише «майже по центру». Допуск «по центру» 4 px спрацьовує ще під час плавного докочування (картка на 2 px від кінцевого
+  // місця), а межу блоку доказів нижче міряємо з допуском 1 px: на мобільному блок стояв на 0,1 px за краєм екрана, і перевірка «блок доказів у межах видимої сторінки» падала
+  // навмання (двічі поспіль на main після злиття PR #165, хоча в PR проходила; у мене на вільній машині в 4 запусках із 6). Тепер ще й прокрутка каруселі стоїть вісім кадрів поспіль.
   await page.waitForFunction(() => {
     const track = document.querySelector('[data-diet-carousel]'), card = document.querySelector('#diet-mediterranean');
     const a = track.getBoundingClientRect(), b = card.getBoundingClientRect();
-    return Math.abs((b.left + b.width / 2) - (a.left + track.clientWidth / 2)) < 4;
+    const state = window.__qaDietScroll ??= {left: null, still: 0};
+    state.still = state.left === track.scrollLeft ? state.still + 1 : 0;
+    state.left = track.scrollLeft;
+    return Math.abs((b.left + b.width / 2) - (a.left + track.clientWidth / 2)) < 4 && state.still >= 8;
   });
   check(where, (await evidence.locator('.nd-findings a[href^="https://doi.org/"]').count()) >= 3, 'findings link to their sources');
   const featured = evidence.locator('.nd-findings li:first-child');

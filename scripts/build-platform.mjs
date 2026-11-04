@@ -477,6 +477,17 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
  }
 }
 
+// Розбір добавки на головній (режим «стаття») у космічних кольорах і формах решти сайту (2026-11-03): лише на головній, лише під body[data-route-view="article"].
+// Файл dist/home-article-cosmic.css генерує scripts/build-palette.mjs; тут його підключено до index.html один раз (збірка повторювана).
+{
+ const file='dist/index.html',old=fs.readFileSync(file,'utf8');
+ if(!old.includes('home-article-cosmic.css')){
+  const next=old.replace(/(<link rel="stylesheet" href="\.\/home-article\.css\?v=\d+">)/,'$1<link rel="stylesheet" href="./home-article-cosmic.css?v=1">');
+  if(next===old)throw new Error('index.html: не знайдено home-article.css для вставки home-article-cosmic.css');
+  fs.writeFileSync(file,next);
+ }
+}
+
 // Картка «Клітини та органели» у каталозі показує головну картину сторінки «Клітина людини» (2026-11-03, власник): каталог (directions.js) v=114,
 // стилі каталогу (directions-pine.css) v=5, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=24) v=24. Файл картини dist/cell-atlas-card-v1.webp створює scripts/make-cell-card-art.py (збірка його не запускає).
 {
@@ -517,6 +528,30 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  const updates={'cell-vcard.css?v=83':'cell-vcard.css?v=84','changes-page.js?v=26':'changes-page.js?v=27'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Заголовки розборів добавок тонкі, із засічками (2026-11-03): home-article-cosmic.css 1 → 2 (нові правила заголовків). Версія журналу піднімається в станції нижче.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-article-cosmic.css?v=1':'home-article-cosmic.css?v=2'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Розбори добавок у кольорах і формах решти сайту та їхні заголовки (2026-11-04, рішення власника 30: гілку доведено до PR): два записи в журналі (новий день 2026-11-04),
+// тож сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=28) v=28. Гілка писалась до PR #160–#162 і мала власні станції «changes-page.js 23 → 24» та «24 → 25»;
+// під час злиття з main їх прибрано, бо версії журналу веде ланцюжок станцій вище (23 → … → 27), а ця станція додає в нього останню ланку.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'changes-page.js?v=27':'changes-page.js?v=28'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

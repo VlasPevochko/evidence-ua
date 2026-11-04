@@ -21,6 +21,18 @@ export const CSS_TARGETS=[
 // Авторські HTML-сторінки з вбудованим <style>.
 export const HTML_TARGETS=['dist/protein-meta.html'];
 export const EXTRAS='src/palette/cosmic-extras.css';
+// Режим «стаття» на головній (розбір добавки в index.html): файл палітри головна не вантажить (див. нижче), тож токени для карток розбору дає окремий згенерований файл.
+// Він діє лише під body[data-route-view="article"] і лише тоді, коли обрано не зелений варіант. Токени беруться зі стилів, які режим «стаття» реально підтягує.
+export const ARTICLE_CSS=['src/evidence/evidence.css','dist/experience.css','dist/appearance.css','dist/platform.css','dist/terms.css','dist/next-steps.css','src/platform/site-header.css'];
+export const ARTICLE_EXTRAS='src/palette/cosmic-article-extras.css';
+export const ARTICLE_OUTPUT='dist/home-article-cosmic.css';
+export const ARTICLE_SCOPE='html:not([data-palette="green"]) body[data-route-view="article"]';
+// Префікс для копій старих правил розбору (scripts/palette/article-overrides.mjs, позначка «@p»). Повний ARTICLE_SCOPE додав би до кожної копії силу селектора (0,2,2) і
+// зробив би її сильнішою за ті правила розбору, які раніше перемагали (приклад: `#creatine.eua-module a.eua-primary` мав темний текст на лавандовій кнопці, а копія
+// `#creatine a{color:лаванда}` стала сильнішою й дала лавандовий текст на лавандовому тлі). Тому :where() не додає сили, а :not(x-eua) додає рівно одну одиницю
+// (як ще один елемент): копія перемагає власний оригінал за будь-якого порядку файлів, але не правила, що були сильнішими за нього. Ручні доповнення (позначка «@s»)
+// лишаються під повним ARTICLE_SCOPE: вони навмисно сильні (!important для заголовків, тло сторінки, кнопка меню в шапці проти стилів home-controls.css).
+export const ARTICLE_PARITY=`:where(${ARTICLE_SCOPE}):not(x-eua)`;
 export const OUTPUT='dist/palette-cosmic.css';
 // Стилі головної: у токени не переводяться, файл палітри на головній не підключається.
 export const isHomeOnlyCss=file=>/^dist\/(home-[^/]*|desktop|evidence-trainer)\.css$/.test(file);

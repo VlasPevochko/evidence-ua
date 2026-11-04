@@ -1,0 +1,21 @@
+/* Ручні доповнення режиму «стаття» (розбір добавки на головній), космічний варіант. Позначка «@s» на початку селектора означає ARTICLE_SCOPE (scripts/palette/targets.mjs).
+   Решту (золото → лаванда, 16px → 3px, 30px → 5px) генерує scripts/palette/article-overrides.mjs зі стилів розборів у index.html і home-article.css. Тут лише те, чого в тих стилях немає. */
+/* Тло під статтею (смуга із застереженням унизу): на головній воно старе бірюзове (#041722), у космосі темно-фіолетове, як тло розбору. */
+@s {background:#0c0b0f}
+/* Заголовки розборів (2026-11-03): те саме рішення власника про тонкі заголовки з засічками (2026-11-01), що діє на решті сайту (див. cosmic-extras.css):
+   Source Serif 4 звичайної ваги, літери -0.03em для h1 і -0.015em для h2–h4. Розмір, колір і відступи заголовків лишаються як були. Заголовки-підписи (великі літери з розрядкою,
+   .pc-bar-group > h3) і назви-згортки (summary) не чіпаємо: це підписи й керування, а не заголовки карток. */
+@s :is(#creatine,[id^="supplement-"]) h1{font-weight:400!important;letter-spacing:-.03em!important}
+@s :is(#creatine,[id^="supplement-"]) :is(h2,h3,h4):not(.pc-bar-group>h3){font-family:var(--pine-serif,"Source Serif 4",Georgia,serif)!important;font-weight:400!important;letter-spacing:-.015em!important}
+/* Дрібні заголовки (17–18 px): у шрифту із засічками нижча висота рядкових літер, font-size-adjust вирівнює видимий розмір, як у правилі решти сайту. */
+@s :is(#creatine,[id^="supplement-"]) :is(.eua-source h3,article h3,h3.eua-reaction-label){font-size-adjust:.55}
+/* Кнопка меню в шапці на телефоні, до 1024 px (2026-11-04). Золотий колір, рамку й радіус 16px їй задає home-controls.css (стилі головної, у токени не переводяться),
+   а лавандовий вигляд головної (home-spectrum.css) у режимі «стаття» вимкнений. Через це дві сусідні кнопки шапки («Пошук», «Аа») були космічними, а ця лишалась золотою й круглою.
+   Тут вона така сама, як «Аа» поруч (рамка, тло, колір і радіус з тих самих значень), а наведення, відкрите меню й фокус теж як у «Аа». Сила селектора вища за home-controls.css навмисно: позначка «@s». */
+@s .eua-site-header .eua-header-toggle.home-menu-toggle,@s .page>header.home-header .home-menu-toggle{border:1px solid #ffffff45;border-radius:3px;background:#120d1f4d;color:#deb9fd}
+@s .eua-site-header .eua-header-toggle.home-menu-toggle:hover,@s .eua-site-header .eua-header-toggle.home-menu-toggle[aria-expanded="true"],@s .page>header.home-header .home-menu-toggle:hover,@s .page>header.home-header .home-menu-toggle[aria-expanded="true"]{border-color:#deb9fd}
+@s .eua-site-header .eua-header-toggle.home-menu-toggle:focus-visible,@s .page>header.home-header .home-menu-toggle:focus-visible{outline:2px solid #deb9fd;outline-offset:3px}
+/* Смуга шапки над розбором (2026-11-04). Шапка в режимі «стаття» прозора й показує колір обгортки .page, а home-coast.css фарбує її старим бірюзовим #041722 з !important:
+   смуга зверху лишалась бірюзовою на тлі решти фіолетово-чорної сторінки. Тут вона такого кольору, як смуга шапки на інших сторінках у космосі (#130d21). !important потрібен,
+   бо правило головної теж з !important; сила цього селектора вища (позначка «@s»). */
+@s .page{background:#130d21!important}

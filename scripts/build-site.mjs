@@ -26,7 +26,7 @@ const generated = new Set([
   'muscle-scale-art.js', 'muscle-sarcomere.js', 'muscle-guide.js', 'muscle-practice-data.js',
   'movement.js', 'movement-model.js', 'movement-learning.js', 'sleep.js',
   'sleep.html', 'platform-glossary.js', 'platform-glossary-data.js',
-  'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js',
+  'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js', 'nutrition-diets-share.js',
   'evidence/protein-data.js', 'evidence/protein-ui.js',
   'evidence/berberine-data.js', 'evidence/berberine-ui.js',
   'evidence/omega-data.js', 'evidence/vitd-data.js', 'evidence/supplement-cards-ui.js',

@@ -918,6 +918,50 @@ async function shareCardsFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function dietStoryFlow(browser, origin, viewport) {
+  const where = `diet stories @${viewport.name}`;
+  const initScript = () => {
+    window.__dietStoryShare = null;
+    Object.defineProperty(navigator, 'canShare', {configurable: true, value: () => true});
+    Object.defineProperty(navigator, 'share', {configurable: true, value: async data => {
+      window.__dietStoryShare = {
+        title: data.title, text: data.text,
+        fileName: data.files[0]?.name, fileType: data.files[0]?.type, fileSize: data.files[0]?.size
+      };
+    }});
+  };
+  const {context, page, seen} = await open(browser, origin, viewport, '/nutrition.html', {initScript});
+  await page.waitForFunction(() => document.querySelectorAll('.nd-story[data-ready="true"]').length === 8);
+  const stories = page.locator('.nd-story');
+  check(where, await stories.count() === 8, 'all eight diet cards have story creatives');
+  for (let index = 0; index < await stories.count(); index++) {
+    const story = stories.nth(index);
+    await page.locator('.nd-card').nth(index).locator(':scope > summary').click();
+    await story.locator(':scope > summary').click();
+    const canvas = story.locator('canvas');
+    await page.waitForFunction(el => el.closest('.nd-story').dataset.rendered === 'true' && el.width === 1080 && el.height === 1920 && el.getContext('2d').getImageData(1, 1, 1, 1).data[3] === 255, await canvas.elementHandle());
+    const facts = await canvas.evaluate(el => ({
+      label: el.getAttribute('aria-label'), width: el.width, height: el.height,
+      visible: el.getBoundingClientRect().width > 0
+    }));
+    check(where, facts.width === 1080 && facts.height === 1920 && facts.visible && facts.label.includes('Джерело:'), `story ${index + 1} has a visible, accessible 9:16 canvas`);
+    check(where, !(await story.locator('[data-story-status]').innerText()).includes('не вміщується'), `story ${index + 1} fits without clipping`);
+    if (index === 0) {
+      await story.locator('[data-story-share]').click();
+      await page.waitForFunction(() => window.__dietStoryShare?.fileType === 'image/png');
+      const payload = await page.evaluate(() => window.__dietStoryShare);
+      check(where, payload.fileName === 'evidence-ua-diet-mediterranean-story.png' && payload.fileSize > 0, 'native sharing receives the generated PNG');
+      check(where, payload.text.includes('#diet-mediterranean') && payload.text.includes('doi.org/'), 'the share caption carries the diet link and source');
+      const download = page.waitForEvent('download');
+      await story.locator('[data-story-download]').click();
+      const saved = await download;
+      check(where, saved.suggestedFilename() === 'evidence-ua-diet-mediterranean-story.png', 'the fallback download is a named PNG');
+    }
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, `story creation has no runtime or third-party errors: ${[...seen.pageErrors, ...seen.console, ...seen.external].join(' | ')}`);
+  await context.close();
+}
+
 async function shapesFlow(browser, origin, viewport) {
   // Форми (рішення власника 2026-10-31): у космічному стилі картки, кнопки й чипи мають прямі кути головної (3px, великі панелі 5px),
   // підняті тіні карток зникають, а зелений варіант лишає колишні форми.
@@ -1486,6 +1530,12 @@ async function dietsFlow(browser, origin, viewport) {
   const evidence = page.locator('#diet-mediterranean .nd-evidence');
   await evidence.waitFor({state: 'visible'});
   check(where, (await evidence.locator('.nd-findings a[href^="https://doi.org/"]').count()) >= 3, 'findings link to their sources');
+  const featured = evidence.locator('.nd-findings li:first-child');
+  const featureStyle = await featured.evaluate(el => ({
+    fontSize: parseFloat(getComputedStyle(el).fontSize),
+    kicker: getComputedStyle(el, '::before').content
+  }));
+  check(where, featureStyle.kicker === '"КЛЮЧОВИЙ РЕЗУЛЬТАТ"' && featureStyle.fontSize >= (viewport.width <= 760 ? 15 : 17), 'the first evidence-based result is visually emphasized');
   check(where, (await evidence.innerText()).includes('ПОКАЗИ') && (await evidence.innerText()).includes('ПРОТИПОКАЗИ'), 'indications and contraindications are both shown');
   check(where, (await evidence.locator('a[target="_blank"]:not([rel~="noopener"])').count()) === 0, 'all outgoing links are safe');
   const cols = await evidence.locator('.nd-fit').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
@@ -3476,6 +3526,7 @@ try {
     for (const viewport of viewports) await isolatedFlow(paletteFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
     await isolatedFlow(shareCardsFlow, browser, origin, viewports[0]);
+    for (const viewport of viewports) await isolatedFlow(dietStoryFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
     // Картка клітини в каталозі (2026-11-03): справжня головна картина замість тьмяної піктограми; 360 включено, бо на вузькому телефоні плитка найменша.
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogCellPictureFlow, browser, origin, viewport);

@@ -1109,6 +1109,79 @@ async function dietStoryFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function dietCarouselFlow(browser, origin, viewport) {
+  const where = `diet carousel @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/nutrition.html');
+  await page.waitForFunction(() => document.querySelector('[data-diet-carousel]')?.dataset.carouselReady === 'true');
+  const track = page.locator('[data-diet-carousel]');
+  const cards = track.locator('.nd-card');
+  const previous = page.locator('[data-diet-previous]');
+  const next = page.locator('[data-diet-next]');
+  const count = page.locator('[data-diet-count]');
+  const waitForCentered = index => page.waitForFunction(expected => {
+    const track = document.querySelector('[data-diet-carousel]');
+    const card = track?.querySelectorAll('.nd-card')[expected];
+    if (!card) return false;
+    const a = track.getBoundingClientRect(), b = card.getBoundingClientRect();
+    return Math.abs((b.left + b.width / 2) - (a.left + track.clientWidth / 2)) < 4;
+  }, index);
+  check(where, await cards.count() === 8, 'all eight diet cards are in the carousel');
+  check(where, await count.innerText() === '01 / 08' && await previous.isDisabled() && !(await next.isDisabled()), 'the first card is selected and controls are bounded');
+  const initial = await page.evaluate(() => {
+    const track = document.querySelector('[data-diet-carousel]'), card = track.querySelector('.nd-card');
+    const a = track.getBoundingClientRect(), b = card.getBoundingClientRect();
+    return {centered: Math.abs((b.left + b.width / 2) - (a.left + track.clientWidth / 2)) < 3, artHeight: Math.round(card.querySelector('.nd-art').getBoundingClientRect().height), pageOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth};
+  });
+  check(where, initial.centered, 'the first illustrated card starts centered');
+  check(where, initial.artHeight >= (viewport.width <= 760 ? 180 : 210), 'the artwork is prominent at this viewport');
+  check(where, !initial.pageOverflow, 'the carousel does not cause page-level horizontal overflow');
+
+  await next.click();
+  await page.waitForFunction(() => document.querySelector('[data-diet-count]')?.textContent === '02 / 08');
+  await waitForCentered(1);
+  check(where, await count.innerText() === '02 / 08', 'the next control selects and centers the next card');
+  await track.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => document.querySelector('[data-diet-count]')?.textContent === '03 / 08');
+  await waitForCentered(2);
+  check(where, await count.innerText() === '03 / 08', 'focused carousel supports right-arrow navigation');
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForFunction(() => document.querySelector('[data-diet-count]')?.textContent === '02 / 08');
+  await waitForCentered(1);
+
+  const card = cards.nth(1);
+  const closedSize = await card.evaluate(element => {
+    const bounds = element.getBoundingClientRect();
+    return {height: bounds.height, width: bounds.width};
+  });
+  await card.locator(':scope > summary').click();
+  await page.waitForFunction(() => document.querySelector('#diet-dash')?.open === true);
+  await waitForCentered(1);
+  const opened = await card.evaluate(element => ({
+    height: element.getBoundingClientRect().height,
+    width: element.getBoundingClientRect().width,
+    source: element.querySelector('.nd-evidence .nd-source')?.getAttribute('href'),
+    pageOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+  }));
+  check(where, opened.height > closedSize.height && opened.width > closedSize.width * 1.2, 'opening a card reveals its detail in the carousel');
+  check(where, Boolean(opened.source) && !opened.pageOverflow, 'expanded evidence remains available without page overflow');
+  await next.click();
+  await page.waitForFunction(() => document.querySelector('[data-diet-count]')?.textContent === '03 / 08');
+  await waitForCentered(2);
+  check(where, !(await card.evaluate(element => element.open)), 'moving to another card closes the expanded card');
+
+  for (let index = 4; index <= 8; index++) {
+    await next.click();
+    await page.waitForFunction(expected => document.querySelector('[data-diet-count]')?.textContent === `${String(expected).padStart(2, '0')} / 08`, index);
+    await waitForCentered(index - 1);
+  }
+  await page.waitForFunction(() => document.querySelector('[data-diet-count]')?.textContent === '08 / 08');
+  check(where, await next.isDisabled(), 'the final card disables the next control');
+  check(where, await count.innerText() === '08 / 08', 'the carousel cannot advance past the final card');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, `the carousel raises no runtime or third-party errors: ${[...seen.pageErrors, ...seen.console, ...seen.external].join(' | ')}`);
+  await context.close();
+}
+
 async function shapesFlow(browser, origin, viewport) {
   // Форми (рішення власника 2026-10-31): у космічному стилі картки, кнопки й чипи мають прямі кути головної (3px, великі панелі 5px),
   // підняті тіні карток зникають, а зелений варіант лишає колишні форми.
@@ -1676,6 +1749,11 @@ async function dietsFlow(browser, origin, viewport) {
   await page.locator('#diet-mediterranean').evaluate(el => { el.open = true; });
   const evidence = page.locator('#diet-mediterranean .nd-evidence');
   await evidence.waitFor({state: 'visible'});
+  await page.waitForFunction(() => {
+    const track = document.querySelector('[data-diet-carousel]'), card = document.querySelector('#diet-mediterranean');
+    const a = track.getBoundingClientRect(), b = card.getBoundingClientRect();
+    return Math.abs((b.left + b.width / 2) - (a.left + track.clientWidth / 2)) < 4;
+  });
   check(where, (await evidence.locator('.nd-findings a[href^="https://doi.org/"]').count()) >= 3, 'findings link to their sources');
   const featured = evidence.locator('.nd-findings li:first-child');
   const featureStyle = await featured.evaluate(el => ({
@@ -1688,7 +1766,8 @@ async function dietsFlow(browser, origin, viewport) {
   const cols = await evidence.locator('.nd-fit').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
   check(where, viewport.width <= 760 ? cols === 1 : cols === 2, `indications and cautions use ${viewport.width <= 760 ? 'one column on the phone' : 'two columns on the desktop'}`);
   const box = await evidence.boundingBox();
-  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the evidence block stays inside the viewport');
+  const contentWidth = await page.evaluate(() => document.documentElement.clientWidth);
+  check(where, box && box.x >= 0 && box.x + box.width <= contentWidth + 1, 'the evidence block stays inside the visible page area');
   await page.locator('#diet-ketogenic').evaluate(el => { el.open = true; });
   check(where, (await page.locator('#diet-ketogenic .nd-caution').innerText()).includes('панкреатит'), 'the keto card lists its contraindications');
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the nutrition page');
@@ -3673,6 +3752,7 @@ try {
     for (const viewport of viewports) await isolatedFlow(paletteFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(shapesFlow, browser, origin, viewport);
     await isolatedFlow(shareCardsFlow, browser, origin, viewports[0]);
+    for (const viewport of viewports) await isolatedFlow(dietCarouselFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(dietStoryFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(artPairsFlow, browser, origin, viewport);
     // Картка клітини в каталозі (2026-11-03): справжня головна картина замість тьмяної піктограми; 360 включено, бо на вузькому телефоні плитка найменша.

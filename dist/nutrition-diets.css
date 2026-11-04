@@ -67,3 +67,50 @@
 .nd-fit .nd-detail-label{margin-bottom:14px!important}
 @media(max-width:760px){.nd-art{height:150px}.nd-card-copy{padding:18px 16px 0}.nd-card-title{font-size:17px}.nd-card-intro{font-size:12px}.nd-open{min-height:52px;font-size:11px}.nd-card[open] .nd-art{height:184px;min-height:0}.nd-card[open] .nd-card-copy{padding:22px 20px 0}.nd-findings li:first-child{padding:17px 16px;font-size:15px;line-height:1.7}.nd-findings li:first-child .nd-source{font-size:11px}.nd-fit>div{padding:17px}}
 @media(prefers-reduced-motion:reduce){.nd-art img{transition:none}}
+
+.nd-carousel-controls{display:flex;align-items:center;gap:12px;max-width:340px;margin:20px auto 4px}
+.nd-carousel-controls button{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border:1px solid var(--nd-line);border-radius:3px;background:var(--c-17201e,#17201e);color:var(--c-f4f2ed,#f4f2ed);font:inherit;font-size:22px;cursor:pointer;transition:background .18s,border-color .18s,color .18s}
+.nd-carousel-controls button:hover:not(:disabled){border-color:var(--nd-gold);background:var(--c-e3bd6b13,#e3bd6b13);color:var(--nd-gold)}
+.nd-carousel-controls button:disabled{opacity:.42;cursor:not-allowed}
+.nd-carousel-controls button:focus-visible{outline:3px solid var(--nd-gold);outline-offset:3px}
+.nd-carousel-count{flex:0 0 auto;color:var(--nd-muted);font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:.08em}
+.nd-carousel-progress{position:relative;flex:1;height:2px;overflow:hidden;background:var(--nd-line)}
+.nd-carousel-progress span{display:block;width:var(--nd-progress,12.5%);height:100%;background:var(--nd-gold);transition:width .25s ease}
+.nd-grid[data-diet-carousel]{--nd-slide-width:38%;display:flex;align-items:stretch;gap:16px;overflow-x:auto;overflow-y:hidden;margin:0 -18px;padding:8px 0 20px;scroll-padding-inline:31%;scroll-snap-type:x mandatory;scrollbar-color:var(--nd-line) transparent;scrollbar-width:thin;overscroll-behavior-x:contain}
+.nd-grid[data-diet-carousel]:focus-visible{outline:2px solid var(--nd-gold);outline-offset:3px}
+.nd-grid[data-diet-carousel]>.nd-card{flex:0 0 var(--nd-slide-width);scroll-snap-align:center;scroll-snap-stop:always}
+.nd-grid[data-diet-carousel]>.nd-card:first-child{margin-left:calc((100% - var(--nd-slide-width))/2)}
+.nd-grid[data-diet-carousel]>.nd-card:last-child{margin-right:calc((100% - var(--nd-slide-width))/2)}
+.nd-grid[data-diet-carousel]>.nd-card[open]{flex-basis:100%;margin-inline:0}
+.nd-art{height:220px}
+.nd-art img{transform:scale(1.38);transition:transform .4s ease,filter .4s ease}
+.nd-art img[data-art=cosmic]{filter:saturate(1.08) contrast(1.03)}
+.nd-card:hover .nd-art img{transform:scale(1.46)}
+.nd-card[open] .nd-art{min-height:300px}
+.nd-card[open] .nd-art img{transform:scale(1.42)}
+.nd-card[open] .nd-card-copy{padding-top:32px}
+.nd-card-number{border-radius:3px;backdrop-filter:blur(8px)}
+.nd-card:not([open])>summary{display:flex;flex-direction:column;height:100%}
+.nd-card:not([open]) .nd-card-copy{flex:1}
+.nd-card-intro{min-height:0;flex:1}
+.nd-open{margin-top:auto}
+.nd-grid[data-diet-carousel]::-webkit-scrollbar{height:6px}
+.nd-grid[data-diet-carousel]::-webkit-scrollbar-track{background:transparent}
+.nd-grid[data-diet-carousel]::-webkit-scrollbar-thumb{border-radius:3px;background:var(--nd-line)}
+@media(max-width:760px){
+ .nd-carousel-controls{max-width:300px;margin-top:12px}
+ .nd-grid[data-diet-carousel]{--nd-slide-width:82%;gap:14px;margin-inline:-16px;padding:8px 0 18px;scroll-padding-inline:9%}
+ .nd-grid[data-diet-carousel]>.nd-card:first-child{margin-left:9%}
+ .nd-grid[data-diet-carousel]>.nd-card:last-child{margin-right:9%}
+ .nd-grid[data-diet-carousel]>.nd-card[open]{flex-basis:100%}
+ .nd-art{height:190px}
+ .nd-card-copy{padding:20px 18px 0}
+ .nd-card-title{font-size:20px}
+ .nd-card-intro{font-size:13px;line-height:1.75}
+ .nd-card[open] .nd-art{height:210px;min-height:0}
+ .nd-card[open] .nd-card-copy{padding:22px 20px 0}
+}
+@media(prefers-reduced-motion:reduce){
+ .nd-carousel-controls button,.nd-carousel-progress span,.nd-art img{transition:none}
+ .nd-grid[data-diet-carousel]{scroll-behavior:auto}
+}

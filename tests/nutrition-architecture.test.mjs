@@ -21,10 +21,12 @@ const EARLY_BEFORE_PALETTE="try{var a=JSON.parse(localStorage.getItem('eua-appea
 // 2026-11-01 (шапка й меню як на головній): ще одне правило в тому самому файлі, версія v=6. Знову лише версія в query-рядку.
 // 2026-11-01 (без мазка під назвою сторінки): ще одне правило в тому самому файлі, версія v=7. Знову лише версія в query-рядку.
 // 2026-11-01 (пошук за ключовими словами): каскад версій через materials.mjs (materials 104, tools 104, directions 110, home-feedback 104, shell 107, search 12, header 14, home-spectrum 4, fat-burning 12: дві останні сторінки самі імпортують пошук і шапку). Змінились лише версії в query-рядках.
-const singleDietArt=text=>text.replace(/ data-art="green"><img src="\.\/diet-art-cosmic\.svg\?v=1#view-(?:[a-z-]+|\$\{esc\(d\.id\)\})"[^>]*data-art="cosmic">/g,'>'); // і для HTML (id у src), і для джерела render.mjs (шаблон ${esc(d.id)})
+const singleDietArt=text=>text.replace(/ data-art="green"><img src="\.\/diet-art-cosmic\.svg\?v=[12]#view-(?:[a-z-]+|\$\{esc\(d\.id\)\})"[^>]*data-art="cosmic">/g,'>').replace(/diet-art\.svg\?v=\d+/g,'diet-art.svg?v=86'); // Normalize art-pair versions while protecting the older card markup and content.
 // 2026-11-03: normalize only the newly added, evidence-backed story presentation so the historical hash continues to protect every existing diet statement, source and research section.
+// 2026-11-04: normalize the carousel controls and module as presentation-only markup; the same hash still protects all diet research and wording.
+const withoutDietCarousel=text=>text.replace(/<div class="nd-carousel-controls"[\s\S]*?(?=<div class="nd-grid" data-diet-carousel)/g,'').replace('<div class="nd-grid" data-diet-carousel role="region" aria-label="Карусель дієт" aria-roledescription="карусель" tabindex="0">','<div class="nd-grid">').replace('<script type="module" src="./nutrition-diets-carousel.js?v=1"></script>','');
 const withoutDietStories=text=>text.replace(/^const storyHTML=d=>\{[\s\S]*?^};\n/m,'').replace('${storyHTML(d)}','').replace('<script type="module" src="./nutrition-diets-share.js?v=1"></script>','').replace(/<details class="nd-story"[\s\S]*?<\/details>/g,'');
-const retainedDietText=text=>withoutDietStories(singleDietArt(text));
+const retainedDietText=text=>withoutDietStories(withoutDietCarousel(singleDietArt(text)));
 // 2026-11-03 («Довіра», спільне застереження): збірка вставляє в кожну сторінку один рядок застереження (<div class="eua-site-notice">…</div>) перед кінцевими
 // скриптами та підключає site-notice.css у <head>. Наукових блоків це не торкається; для звірки зі старим еталоном прибираємо лише ці два вставлені місця.
 const withoutSiteNotice=html=>html.replace(/<div class="eua-site-notice"[\s\S]*?<\/div>\n?/,'').replace(/<link rel="stylesheet" href="\.\/site-notice\.css\?v=\d+">/,'');

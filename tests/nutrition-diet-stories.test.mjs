@@ -56,7 +56,7 @@ const css=fs.readFileSync('dist/nutrition-diets.css','utf8');
 assert(css.includes('.nd-story-preview')&&css.includes('aspect-ratio:9/16'),'the preview uses the Instagram Stories format');
 assert(css.includes('@media(max-width:760px){.nd-story>summary'),'story controls adapt to mobile');
 const page=fs.readFileSync('dist/nutrition.html','utf8');
-assert(page.includes('nutrition-diets.css?v=93'),'story styling is cache-busted');
+assert(page.includes('nutrition-diets.css?v=94'),'story styling is cache-busted');
 assert(page.includes('nutrition-diets-share.js?v=1'),'the story interaction module is loaded');
 
 console.log(`Diet stories: ${dietCards.length} sourced story cards, complete layouts, safe share fallback and mobile styling passed.`);

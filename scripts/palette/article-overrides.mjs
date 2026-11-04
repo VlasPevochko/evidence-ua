@@ -12,7 +12,12 @@ import {shapeOf} from '../shapes/shape-map.mjs';
 export const ARTICLE_SOURCES=['dist/home-article.css'];   // поряд із вбудованими <style> з dist/index.html
 const PAINT=/^(color|background(-color|-image)?|border(-[a-z]+)*|outline(-color)?|box-shadow|fill|stroke|--pc-[a-z-]+)$/;
 const COLOUR_PROP=/^border(-(top|right|bottom|left))?$|^background(-color|-image)?$|^color$|^border-(top|right|bottom|left)-color$|^border-color$|^outline(-color)?$|^box-shadow$|^fill$|^stroke$|^--pc-/;
-const ID_LIST=/:is\((?:#(?:supplement-[a-z-]+|creatine),?)+\)/g;
+const ID_LIST=/:is\(((?:#(?:supplement-[a-z-]+|creatine),?)+)\)/g;
+// Одинадцять розборів на головній: креатин і десять #supplement-… У стилях головної список id буває повним (11), без креатину (10) або коротшим (8).
+// Скорочувати до :is(#creatine,[id^="supplement-"]) можна лише повний список: скорочення неповного поширило б копію правила на розбори, до яких оригінал не стосувався
+// (помилка до 2026-11-04: правила кнопок «без креатину» зачепили креатин, і бірюзові кнопки «Докази й межі» в ньому стали лавандовими). Тому інші списки лишаються дослівно.
+export const ARTICLE_IDS=['creatine','supplement-protein','supplement-berberine','supplement-omega','supplement-vitd','supplement-caffeine','supplement-magnesium','supplement-collagen','supplement-beta-alanine','supplement-citrulline','supplement-electrolytes'].sort();
+export const shortenIds=selector=>selector.replace(ID_LIST,(whole,list)=>{const ids=list.split(',').filter(Boolean).map(id=>id.slice(1)).sort();return ids.length===ARTICLE_IDS.length&&ids.every((id,i)=>id===ARTICLE_IDS[i])?':is(#creatine,[id^="supplement-"])':whole;});
 // Селектори розбору: сторінки добавок, їхній блок PubMed, фото-рамка, панель статті. Блоки головної (#start-here, #categories) сюди не входять.
 const RELEVANT=/#supplement-|#creatine|^\.d-|^section\[id\^="supplement-"\]|\.eua-article-|data-article-mode|^\.base-art|#pubmed-live/;
 const NOT_RELEVANT=/#start-here|#categories/;
@@ -55,13 +60,13 @@ function collect(css,media,rules){
           if(nv!==val)changed=true;
           if(PAINT.test(p)&&!/url\(/i.test(val))full.push(`${prop}:${nv}`);   // картинки не перефарбовуємо й не дублюємо
         }
-        if(changed)rules.push({media,sel:ours.map(s=>'@s '+s.replace(ID_LIST,':is(#creatine,[id^="supplement-"])')).join(','),decl:full.join(';')});
+        if(changed)rules.push({media,sel:ours.map(s=>'@p '+shortenIds(s)).join(','),decl:full.join(';')});
       }
     }
     i=j;
   }
 }
-// Текст переписувань; «@s » на початку селектора підставляє build-palette.mjs (ARTICLE_SCOPE).
+// Текст переписувань; «@p » на початку селектора підставляє build-palette.mjs (ARTICLE_PARITY: те саме місце дії, що в ARTICLE_SCOPE, але без додаткової сили селектора).
 export function articleOverrides(root=process.cwd()){
   const html=fs.readFileSync(path.join(root,'dist/index.html'),'utf8');
   const blocks=[...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]);

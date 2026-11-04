@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {toHex,parseColor} from './palette/css-colors.mjs';
 import {cosmicOf,plateOf} from './palette/cosmic-map.mjs';
 import {shapeOf,CARD_SHADOW_TOKEN,CARD_SHADOW_VALUE} from './shapes/shape-map.mjs';
-import {CSS_TARGETS,HTML_TARGETS,EXTRAS,OUTPUT,SVG_ATTR,plateSources,ARTICLE_CSS,ARTICLE_EXTRAS,ARTICLE_OUTPUT,ARTICLE_SCOPE} from './palette/targets.mjs';
+import {CSS_TARGETS,HTML_TARGETS,EXTRAS,OUTPUT,SVG_ATTR,plateSources,ARTICLE_CSS,ARTICLE_EXTRAS,ARTICLE_OUTPUT,ARTICLE_SCOPE,ARTICLE_PARITY} from './palette/targets.mjs';
 import {articleOverrides} from './palette/article-overrides.mjs';
 
 // Правила для темних плит під схемами (SVG-атрибути без токенів): [fill="#0d2230" i]{fill:#…} лише в космічній палітрі. Зелений варіант їх не має, тож показує оригінал.
@@ -73,9 +73,10 @@ export function articlePaletteCss(root=process.cwd()){
   for(const k of [...keys].sort()){const v=cosmicValue(k);if(!v)throw Error(`Токен --c-${k} не має космічного значення`);decls.push(`--c-${k}:${v}`);}
   for(const px of [...shapes].sort((a,b)=>a-b)){const to=shapeOf(px);if(to===null)throw Error(`Токен --rd-${px} не має значення космічного стилю`);decls.push(`--rd-${px}:${to}px`);}
   if(usesCardShadow)decls.push(`${CARD_SHADOW_TOKEN}:${CARD_SHADOW_VALUE}`);
-  const scoped=text=>text.replace(/(^|[,{])@s /gm,(m,p)=>p+ARTICLE_SCOPE+' ');
-  const overrides=scoped(articleOverrides(root));
-  const extras=fs.existsSync(path.join(root,ARTICLE_EXTRAS))?scoped(fs.readFileSync(path.join(root,ARTICLE_EXTRAS),'utf8').replace(/\/\*[\s\S]*?\*\//g,'').trim()):'';
+  // «@p » (копії старих правил розбору) стає ARTICLE_PARITY, «@s » (ручні доповнення) стає повним ARTICLE_SCOPE; пояснення в scripts/palette/targets.mjs.
+  const scoped=(text,mark,prefix)=>text.replace(new RegExp('(^|[,{])'+mark+' ','gm'),(m,p)=>p+prefix+' ');
+  const overrides=scoped(articleOverrides(root),'@p',ARTICLE_PARITY);
+  const extras=fs.existsSync(path.join(root,ARTICLE_EXTRAS))?scoped(fs.readFileSync(path.join(root,ARTICLE_EXTRAS),'utf8').replace(/\/\*[\s\S]*?\*\//g,'').trim(),'@s',ARTICLE_SCOPE):'';
   const css=`/* Розбір добавки на головній (режим «стаття») у космічних кольорах і формах решти сайту. Згенеровано scripts/build-palette.mjs: не редагувати вручну.\n   Діє лише під body[data-route-view="article"] і не для зеленого варіанта; саму головну не торкається. Перше правило: токени; далі переписування старих правил розбору\n   (scripts/palette/article-overrides.mjs); наприкінці ручні доповнення з src/palette/cosmic-article-extras.css. */\n${ARTICLE_SCOPE}{${decls.join(';')}}\n${overrides}\n${extras}\n`;
   return {css,count:decls.length};
 }

@@ -863,6 +863,158 @@ async function cellPictureFirstFlow(browser, origin, viewport) {
   await top.context.close();
 }
 
+// Розбори добавок на головній (index.html#creatine, #supplement-…, режим «стаття») у космічних кольорах і формах решти сайту (2026-11-03, «A: кольори й форми»; гілку довів
+// до PR і виправив 2026-11-04 за рішенням власника 30). Стилі розборів лежать у самій головній, яка файл палітри не вантажить, тож їх перефарбовує згенерований файл
+// home-article-cosmic.css під body[data-route-view="article"]. Міряємо справжній вигляд у браузері, а не наявність правил у файлі:
+//  • золото зникло (жодного елемента з золотим кольором тексту, тла, рамки чи контуру; відкрите меню шапки теж), радіуси лише 3 і 5 px, тло сторінки й смуга шапки фіолетово-чорні;
+//  • заголовки (h1–h4, крім підписів .pc-bar-group > h3) тонкі, із засічками (Source Serif 4, вага 400, стиснуті літери);
+//  • копії старих правил НЕ перемагають сильніших: «← На головну» (темний текст на лавандовій кнопці), бірюзові кнопки «Докази й межі» й керування анімації в Креатині лишились
+//    бірюзовими, а в добавок стали лавандовими; жоден текст (крім вимкнених кнопок) не гірший за 4,5:1 (3:1 для великого);
+//  • три кнопки шапки (Пошук, «Аа», меню на телефоні) однакові: радіус 3 px, лавандовий колір; розкладка та сама (немає горизонтальної прокрутки);
+//  • «Зелений» варіант і сама головна лишаються як були; режим перемикається туди й назад без перезавантаження.
+const ARTICLE_IDS = ['creatine', 'supplement-protein', 'supplement-berberine', 'supplement-omega', 'supplement-vitd', 'supplement-caffeine', 'supplement-magnesium', 'supplement-collagen', 'supplement-beta-alanine', 'supplement-citrulline', 'supplement-electrolytes'];
+const articleProbe = id => {
+  const parse = s => { const m = /rgba?\(([^)]+)\)/.exec(s || ''); if (!m) return null; const p = m[1].split(/[,\s/]+/).filter(Boolean).map(Number); return {r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1}; };
+  const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const lum = c => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+  const over = (fg, bg) => ({r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1});
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const hsl = c => { const r = c.r / 255, g = c.g / 255, b = c.b / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; let h = 0, s = 0; if (mx !== mn) { const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? ((g - b) / d + (g < b ? 6 : 0)) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; } return {h, s, l}; };
+  const goldish = c => { if (!c || c.a < 0.2) return false; const q = hsl(c); return q.h >= 36 && q.h <= 52 && q.s >= 0.5 && q.l >= 0.4 && q.l <= 0.85; };
+  const stops = img => [...(img || '').matchAll(/rgba?\([^)]+\)/g)].map(m => parse(m[0])).filter(Boolean);
+  const backgrounds = el => {
+    // Найгірші можливі тла під елементом: суцільний колір найближчого непрозорого предка (або кожна зупинка градієнта), поверх нього всі прозорі шари між ними.
+    let chain = []; for (let n = el; n && n.nodeType === 1; n = n.parentElement) chain.push(n);
+    let cands = [{r: 0, g: 0, b: 0, a: 1}], cut = chain.length;
+    for (let i = 0; i < chain.length; i++) {
+      const cs = getComputedStyle(chain[i]), c = parse(cs.backgroundColor), grad = /gradient/.test(cs.backgroundImage), s = grad ? stops(cs.backgroundImage) : [];
+      if (grad && s.length && s.every(x => x.a >= 0.99)) { cands = s.map(x => ({r: x.r, g: x.g, b: x.b, a: 1})); cut = i; break; }
+      if (c && c.a >= 0.99) { cands = [{r: c.r, g: c.g, b: c.b, a: 1}]; cut = i; break; }
+    }
+    for (let i = cut - 1; i >= 0; i--) {
+      const cs = getComputedStyle(chain[i]), c = parse(cs.backgroundColor);
+      if (c && c.a > 0 && c.a < 0.99) cands = cands.map(b => over(c, b));
+      else if (/gradient/.test(cs.backgroundImage)) { const s = stops(cs.backgroundImage); if (s.length) cands = cands.flatMap(b => s.map(x => over(x, b))); }
+    }
+    return cands;
+  };
+  const shown = el => { const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && (!el.checkVisibility || el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true})); };
+  document.querySelectorAll('details').forEach(d => { d.open = true; });
+  // На телефоні відкриваємо меню шапки: його пункти теж не повинні лишитися золотими.
+  const toggle = document.querySelector('.home-menu-toggle');
+  if (toggle && shown(toggle) && toggle.getAttribute('aria-expanded') !== 'true') toggle.click();
+  const all = [...document.querySelectorAll('body *')].filter(shown);
+  let gold = 0; const goldWhere = {}; const radii = {};
+  for (const el of all) {
+    const cs = getComputedStyle(el);
+    for (const prop of ['color', 'backgroundColor', 'borderTopColor', 'borderLeftColor', 'borderBottomColor', 'outlineColor']) {
+      const width = prop.startsWith('border') ? parseFloat(cs[prop.replace('Color', 'Width')]) : (prop === 'outlineColor' ? (cs.outlineStyle === 'none' ? 0 : 1) : 1);
+      if (width > 0 && goldish(parse(cs[prop]))) { gold++; const k = `${el.tagName.toLowerCase()}.${String(el.getAttribute('class') || '').split(' ')[0]}`; goldWhere[k] = (goldWhere[k] || 0) + 1; }
+    }
+    // Радіус рахуємо лише в елементів, що щось малюють (тло, картинка, рамка): прозорий блок із радіусом 16 px, як панель меню шапки, нічого не показує.
+    const r = el.getBoundingClientRect(), bgc = parse(cs.backgroundColor);
+    const paints = (bgc && bgc.a > 0.02) || cs.backgroundImage !== 'none' || /^(img|svg|picture|video)$/.test(el.tagName.toLowerCase()) || ['Top', 'Right', 'Bottom', 'Left'].some(side => { const c = parse(cs[`border${side}Color`]); return parseFloat(cs[`border${side}Width`]) > 0 && c && c.a > 0.02 && cs[`border${side}Style`] !== 'none'; });
+    if (paints && r.width >= 40 && r.height >= 20 && cs.borderTopLeftRadius !== '0px') radii[cs.borderTopLeftRadius] = (radii[cs.borderTopLeftRadius] || 0) + 1;
+  }
+  const family = cs => cs.fontFamily.split(',')[0].replace(/["']/g, '').trim();
+  const heads = [...document.querySelectorAll('h1,h2,h3,h4')].filter(el => shown(el) && !el.matches('.pc-bar-group>h3'));
+  const wrongHeads = heads.filter(el => { const cs = getComputedStyle(el); return family(cs) !== 'Source Serif 4' || cs.fontWeight !== '400' || !(parseFloat(cs.letterSpacing) < 0); }).map(el => `${el.tagName.toLowerCase()} «${el.textContent.trim().slice(0, 24)}» ${family(getComputedStyle(el))} ${getComputedStyle(el).fontWeight}`);
+  const bad = [];
+  for (const el of all) {
+    if (!([...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 0))) continue;
+    if (el.closest('button:disabled,[aria-disabled="true"],fieldset:disabled')) continue;     // вимкнені елементи від вимог до контрасту звільнені
+    const cs = getComputedStyle(el), fg0 = parse(cs.color); if (!fg0) continue;
+    let opacity = 1; for (let n = el; n && n.nodeType === 1; n = n.parentElement) opacity *= parseFloat(getComputedStyle(n).opacity);
+    const size = parseFloat(cs.fontSize), large = size >= 24 || (size >= 18.66 && parseInt(cs.fontWeight, 10) >= 700), need = large ? 3 : 4.5;
+    let worst = Infinity; for (const bg of backgrounds(el)) worst = Math.min(worst, ratio(over({...fg0, a: fg0.a * opacity}, bg), bg));
+    if (worst < need) bad.push(`${el.tagName.toLowerCase()}.${String(el.getAttribute('class') || '').split(' ')[0]} «${el.textContent.trim().replace(/\s+/g, ' ').slice(0, 24)}» ${worst.toFixed(2)}<${need}`);
+  }
+  const paint = el => { if (!el || !shown(el)) return null; const cs = getComputedStyle(el), c = parse(cs.color), b = parse(cs.backgroundColor); return {color: cs.color, bg: cs.backgroundColor, border: cs.borderTopColor, radius: cs.borderTopLeftRadius, hue: c ? Math.round(hsl(c).h) : null, bgLight: b ? hsl(b).l : null, bgHue: b ? Math.round(hsl(b).h) : null, contrast: c && b && b.a > 0.99 ? ratio(c, b) : null}; };
+  const section = document.getElementById(id);
+  const page = document.querySelector('main.page'), body = getComputedStyle(document.body);
+  return {
+    routeView: document.body.dataset.routeView || '', overflow: document.documentElement.scrollWidth - innerWidth, gold, goldWhere: Object.entries(goldWhere).sort((a, b) => b[1] - a[1]).slice(0, 4), radii, headings: heads.length, wrongHeads: wrongHeads.slice(0, 4), bad: bad.slice(0, 5), badCount: bad.length, checked: all.length,
+    bodyBg: body.backgroundColor, pageBg: page ? getComputedStyle(page).backgroundColor : '', rd16: body.getPropertyValue('--rd-16').trim(), h1: paint(section && section.querySelector('h1')) && getComputedStyle(section.querySelector('h1')).fontWeight,
+    header: {search: paint(document.querySelector('.eua-header-search')), aa: paint(document.querySelector('.eua-appearance-toggle')), menu: paint(document.querySelector('.home-menu-toggle')), menuOpen: toggle ? toggle.getAttribute('aria-expanded') : null},
+    primary: paint(document.querySelector('#creatine a.eua-primary')), evidence: paint(section && [...section.querySelectorAll('.eua-evidence-button')].find(shown)),
+    control: paint(id === 'creatine' ? [...document.querySelectorAll('#creatine .eua-controls button')].find(b => /Далі/.test(b.textContent) && shown(b)) : null),
+    sectionBg: section ? getComputedStyle(section).backgroundColor : ''
+  };
+};
+async function articleCosmicFlow(browser, origin, viewport) {
+  const where = `article palette @${viewport.name}`;
+  const ids = viewport.fullArticles === false ? ['creatine', 'supplement-protein'] : ARTICLE_IDS;
+  const phone = viewport.width <= 1024;
+  const lavender = hue => hue >= 255 && hue <= 290, cyan = hue => hue >= 165 && hue <= 215;
+  let withGold = 0;
+  for (const id of ids) {
+    const {context, page, seen} = await open(browser, origin, viewport, `/index.html#${id}`);
+    await page.waitForFunction(() => document.body.dataset.routeView === 'article');
+    await page.waitForTimeout(400);
+    const m = await page.evaluate(articleProbe, id);
+    const at = `${where} ${id}`;
+    check(at, m.routeView === 'article' && m.checked > 200, `the article view is open and has content (${m.routeView}, ${m.checked} visible elements)`);
+    check(at, m.gold === 0, `no gold left in colours, backgrounds, borders or outlines (${m.gold}: ${m.goldWhere.map(([k, n]) => `${k}×${n}`).join(', ')})`);
+    const oldShapes = Object.keys(m.radii).filter(r => !['3px', '5px'].includes(r));
+    check(at, oldShapes.length === 0 && (m.radii['3px'] || 0) > 20, `cards and buttons are 3 px, panels 5 px, no old 16/30/999 px shapes (${JSON.stringify(m.radii)})`);
+    check(at, m.headings > 0 && m.wrongHeads.length === 0, `all ${m.headings} headings are thin Source Serif 4 with tight letters (wrong: ${m.wrongHeads.join('; ')})`);
+    check(at, m.badCount === 0, `every text has enough contrast, except disabled controls (${m.badCount}: ${m.bad.join('; ')})`);
+    check(at, m.bodyBg === 'rgb(12, 11, 15)' && m.pageBg === 'rgb(19, 13, 33)', `the page is violet-black and the band behind the header too, not the old turquoise (body ${m.bodyBg}, band ${m.pageBg})`);
+    check(at, m.rd16 === '3px', `the article palette is active (--rd-16 ${m.rd16 || 'empty'})`);
+    check(at, m.overflow <= 1, `no horizontal overflow (${m.overflow})`);
+    // Три кнопки шапки однакові: «Пошук», «Аа» і (до 1024 px) меню; меню на момент заміру відкрите, тож його колір рамки такий, як у «Аа» при наведенні.
+    const {search, aa, menu} = m.header;
+    check(at, search && aa && search.radius === '3px' && aa.radius === '3px', `the header search and «Аа» are 3 px (${search?.radius}, ${aa?.radius})`);
+    check(at, aa && lavender(aa.hue), `«Аа» is lavender (hue ${aa?.hue})`);
+    if (phone) {
+      check(at, menu && menu.radius === '3px' && menu.color === aa.color && lavender(menu.hue), `the menu button is drawn like «Аа»: 3 px, the same lavender (${menu?.radius}, ${menu?.color} vs ${aa?.color})`);
+      check(at, menu && menu.border === 'rgb(222, 185, 253)', `the open menu button has a lavender border (${menu?.border})`);
+    }
+    if (id === 'creatine') {
+      // Копії старих правил не мають перемагати сильніших: ці три місця були зламані, коли копії були сильнішими за оригінали.
+      check(at, m.primary && m.primary.contrast !== null && m.primary.contrast >= 4.5 && lavender(m.primary.bgHue), `«← На головну»: dark text on a lavender button, readable (contrast ${m.primary?.contrast?.toFixed(2)}, text ${m.primary?.color}, button ${m.primary?.bg})`);
+      check(at, m.evidence && cyan(m.evidence.hue) && m.evidence.bgLight < 0.2, `the evidence buttons in creatine stay cyan on a dark background, as before (text hue ${m.evidence?.hue}, background lightness ${m.evidence?.bgLight?.toFixed(2)})`);
+      check(at, m.control && cyan(m.control.hue) && m.control.bgLight < 0.2, `the animation controls in creatine keep their cyan text on a dark background (text hue ${m.control?.hue}, background lightness ${m.control?.bgLight?.toFixed(2)})`);
+    } else if (m.evidence) {
+      check(at, lavender(m.evidence.hue), `the evidence buttons in ${id} became lavender, as the old gold ones (text hue ${m.evidence.hue})`);
+    }
+    withGold += m.gold;
+    check(at, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `no errors, failed or third-party requests: ${[...seen.pageErrors, ...seen.console, ...seen.external, ...seen.badResponses].join(' | ')}`);
+    if (id === 'creatine') await artifact(page, viewport, 'article-cosmic-creatine', page.locator('body'), {scroll: false});
+    await context.close();
+  }
+  check(where, withGold === 0, `no gold in any of the ${ids.length} articles`);
+
+  // «Зелений» варіант лишається як був: старе золото, радіуси 16 і 30 px, бірюзова смуга шапки, жодних космічних токенів (контроль: той самий замір бачить золото, коли воно є).
+  const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
+  for (const id of ['creatine', 'supplement-protein']) {
+    const {context, page} = await open(browser, origin, viewport, `/index.html#${id}`, {initScript: green});
+    await page.waitForFunction(() => document.body.dataset.routeView === 'article');
+    await page.waitForTimeout(400);
+    const g = await page.evaluate(articleProbe, id);
+    check(`${where} green ${id}`, g.gold > 20 && g.radii['16px'] > 10 && (id === 'creatine' || g.radii['30px'] > 5), `the green variant keeps its gold and its 16/30 px shapes (gold ${g.gold}, ${JSON.stringify(g.radii)})`);
+    check(`${where} green ${id}`, g.rd16 === '' && g.pageBg === 'rgb(4, 23, 34)' && g.bodyBg !== 'rgb(12, 11, 15)', `the green variant has no cosmic tokens and keeps the old band (--rd-16 «${g.rd16}», band ${g.pageBg}, body ${g.bodyBg})`);
+    check(`${where} green ${id}`, g.wrongHeads.length > 0, 'the green variant keeps its old headings (the measure sees them as not thin serif)');
+    await context.close();
+  }
+
+  // Сама головна не змінилась: токенів розбору немає, кнопка меню на телефоні лишається такою, якою її робить home-spectrum.css (радіус 2 px).
+  const home = await open(browser, origin, viewport, '/index.html#top');
+  await home.page.waitForTimeout(500);
+  const h = await home.page.evaluate(() => { const t = document.querySelector('.home-menu-toggle'), r = t && t.getBoundingClientRect(); return {route: document.body.dataset.routeView || '', rd16: getComputedStyle(document.body).getPropertyValue('--rd-16').trim(), menuRadius: t && r.width > 0 ? getComputedStyle(t).borderTopLeftRadius : null}; });
+  check(where, h.route !== 'article' && h.rd16 === '', `the home does not get the article palette (route «${h.route}», --rd-16 «${h.rd16}»)`);
+  if (phone) check(where, h.menuRadius === '2px', `the home keeps its own menu button, 2 px (${h.menuRadius})`);
+  // Перемикання без перезавантаження: головна → розбір → назад. Палітра розбору вмикається й вимикається разом з режимом.
+  await home.page.evaluate(() => { location.hash = '#creatine'; });
+  await home.page.waitForFunction(() => document.body.dataset.routeView === 'article');
+  const inArticle = await home.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--rd-16').trim());
+  await home.page.evaluate(() => history.back());
+  await home.page.waitForFunction(() => document.body.dataset.routeView !== 'article');
+  const backHome = await home.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--rd-16').trim());
+  check(where, inArticle === '3px' && backHome === '', `the palette follows the mode without a reload (article «${inArticle}», back home «${backHome}»)`);
+  await home.context.close();
+}
+
 // Заголовки карток як на головній (рішення власника 2026-11-01): у космосі h2–h4 усередині main і назви карток («Куди далі», картки дієт, записи журналу)
 // мають шрифт головної (Source Serif 4, звичайна вага, трохи стиснуті літери); у «Зеленому» лишаються колишніми; головна не змінюється.
 // Назви сторінок (h1) отримали той самий стиль другим рішенням власника того ж дня (тонкі, із засічками, літери -0,03 em).
@@ -3761,6 +3913,8 @@ try {
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(catalogThumbsFlow, browser, origin, viewport);
     // Сторінка «Клітина людини»: на телефоні картина першою (390 × 664 як Safari, 390 × 844, 360, планшет 700), від 801 px нічого не змінилося (801 і 1440).
     for (const viewport of [...viewports, {name: 'phone-safari', width: 390, height: 664}, {name: 'mobile-narrow', width: 360, height: 780}, {name: 'tablet-portrait', width: 700, height: 900}, {name: 'tablet-801', width: 801, height: 900}]) await isolatedFlow(cellPictureFirstFlow, browser, origin, viewport);
+    // Розбори добавок на головній (2026-11-04): усі одинадцять на 390 і 1440; на 360 і 1024 (там іще видно кнопку меню) Креатин і Протеїн.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780, fullArticles: false}, {name: 'tablet-1024', width: 1024, height: 800, fullArticles: false}]) await isolatedFlow(articleCosmicFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headingsFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(headerFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(deniedStorageFlow, browser, origin, viewport);

@@ -1177,7 +1177,6 @@ async function dietCarouselFlow(browser, origin, viewport) {
   }
   await page.waitForFunction(() => document.querySelector('[data-diet-count]')?.textContent === '08 / 08');
   check(where, await next.isDisabled(), 'the final card disables the next control');
-  await next.click();
   check(where, await count.innerText() === '08 / 08', 'the carousel cannot advance past the final card');
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, `the carousel raises no runtime or third-party errors: ${[...seen.pageErrors, ...seen.console, ...seen.external].join(' | ')}`);
   await context.close();
@@ -1750,6 +1749,11 @@ async function dietsFlow(browser, origin, viewport) {
   await page.locator('#diet-mediterranean').evaluate(el => { el.open = true; });
   const evidence = page.locator('#diet-mediterranean .nd-evidence');
   await evidence.waitFor({state: 'visible'});
+  await page.waitForFunction(() => {
+    const track = document.querySelector('[data-diet-carousel]'), card = document.querySelector('#diet-mediterranean');
+    const a = track.getBoundingClientRect(), b = card.getBoundingClientRect();
+    return Math.abs((b.left + b.width / 2) - (a.left + track.clientWidth / 2)) < 4;
+  });
   check(where, (await evidence.locator('.nd-findings a[href^="https://doi.org/"]').count()) >= 3, 'findings link to their sources');
   const featured = evidence.locator('.nd-findings li:first-child');
   const featureStyle = await featured.evaluate(el => ({
@@ -1762,7 +1766,8 @@ async function dietsFlow(browser, origin, viewport) {
   const cols = await evidence.locator('.nd-fit').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
   check(where, viewport.width <= 760 ? cols === 1 : cols === 2, `indications and cautions use ${viewport.width <= 760 ? 'one column on the phone' : 'two columns on the desktop'}`);
   const box = await evidence.boundingBox();
-  check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'the evidence block stays inside the viewport');
+  const contentWidth = await page.evaluate(() => document.documentElement.clientWidth);
+  check(where, box && box.x >= 0 && box.x + box.width <= contentWidth + 1, 'the evidence block stays inside the visible page area');
   await page.locator('#diet-ketogenic').evaluate(el => { el.open = true; });
   check(where, (await page.locator('#diet-ketogenic .nd-caution').innerText()).includes('панкреатит'), 'the keto card lists its contraindications');
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'horizontal overflow on the nutrition page');

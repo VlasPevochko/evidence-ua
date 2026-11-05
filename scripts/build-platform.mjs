@@ -558,3 +558,15 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Журнал оновлень: записи про картки дієт (2026-11-05, рішення власника 32): карусель (PR #164), картинка для Stories і виділений результат (PR #163). Ці зміни вийшли на сайт 4 листопада без записів у журналі.
+// Сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=29) v=29.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'changes-page.js?v=28':'changes-page.js?v=29'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

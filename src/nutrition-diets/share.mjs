@@ -1,5 +1,5 @@
 export const STORY_SIZE={width:1080,height:1920,pad:92};
-export const STORY_NOTE='Переказ опублікованого огляду. Не оцінка Evidence UA. Не медична порада.';
+export const STORY_NOTE='Результат опублікованого дослідження. Не оцінка Evidence UA. Не медична порада.';
 
 export function storyUrl(id,pageUrl){
  const url=new URL(pageUrl);
@@ -8,7 +8,7 @@ export function storyUrl(id,pageUrl){
 }
 
 export function storyText(story,url){
- return `${story.title} — результат з огляду\n\n${story.finding}\n\nДжерело: ${story.sourceLabel}. ${story.sourceUrl}\n\n${STORY_NOTE}\n\n${url}`;
+ return `${story.title} — результат дослідження\n\n${story.finding}\n\nДжерело: ${story.sourceLabel}. ${story.sourceUrl}\n\n${STORY_NOTE}\n\n${url}`;
 }
 
 export function storyFileName(story){

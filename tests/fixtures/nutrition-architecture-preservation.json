@@ -40,7 +40,7 @@
     "dist/nutrition-timeline.js": "ad28b8bc52089ea786bf61e3df512213702659bdc19ae6a1da353ff25bda0bfd",
     "dist/nutrition-digestion.html": "b07c1f313952a121c86263b369cea02de601d6862b326655e3de5eedc3dcbb3e",
     "src/nutrition-diets/catalog.mjs": "9998edf47371f676a6461316da9b244ccf943ea3f99a58effa40409d62e0f46e",
-    "src/nutrition-diets/evidence.mjs": "9073d1d9ebfbf73e293a973566fbe1ce317c0ba2dbbe92d1b26da3c7c4e8c283",
+    "src/nutrition-diets/evidence.mjs": "ec9c80c1c6e96af11a59e80b3e491267db39f7f1fe4e56f60bd997165b11c9ad",
     "src/nutrition-diets/render.mjs": "c6d0ce1d09da01195e717ca8005118ea5cd22f1887d48cdcb1d8aa3cbe55a5a9",
     "dist/fat-burning.html": "a5ae3543ac1ca7391d471044344c9f5a2f7771ad24edd1c484a6d1a8f342fd32"
   },

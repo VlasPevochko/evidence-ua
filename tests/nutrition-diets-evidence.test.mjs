@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {dietCards} from '../src/nutrition-diets/catalog.mjs';
-import {evidence,recommendation,EVIDENCE_CHECKED} from '../src/nutrition-diets/evidence.mjs';
+import {evidence,recommendation,EVIDENCE_CHECKED,EFFECTIVENESS_CHECKED} from '../src/nutrition-diets/evidence.mjs';
 
 // Покази, протипокази й позиція редакції (рішення власника 2026-10-21).
 // Раніше картки лише описували підходи й казали «розбір готується»; тепер вони переказують опубліковані огляди з DOI.
@@ -31,6 +31,23 @@ for(const k of ['піруваткарбоксилаза','панкреатит',
 assert(!/гарантує|вилікує|лікує|допоможе схуднути|найкраща дієта|найефективніша|точно знизить/i.test(text),'no promises');
 assert(!/GRADE:|рівень впевненості:|високий рівень/i.test(text),'no Evidence UA confidence level is invented');
 assert.equal(EVIDENCE_CHECKED,'26.10.2026');
+// Each expanded card and its exported Story must open with the primary trial selected for this review.
+const featuredTrialDois={
+ mediterranean:'10.1056/NEJMoa1800389',
+ dash:'10.1056/NEJM199704173361601',
+ ketogenic:'10.1093/ajcn/nqac154',
+ 'low-carb':'10.1001/jama.2018.0245',
+ 'high-protein':'10.3945/ajcn.115.119339',
+ vegetarian:'10.1161/CIRCULATIONAHA.117.030088',
+ vegan:'10.1001/jamanetworkopen.2023.44457',
+ 'intermittent-fasting':'10.1056/NEJMoa2114833'
+};
+for(const [id,doi] of Object.entries(featuredTrialDois)){
+ const primaryUrl='https://doi.org/'+doi;
+ assert.equal(evidence[id].findings[0][1].href,primaryUrl,`${id}: first finding cites the primary trial`);
+ assert(section.includes(`data-story-id="${id}"`)&&section.includes(`data-story-source-url="${primaryUrl}"`),`${id}: trial flows to the story`);
+}
+assert(section.includes(`Ключові випробування звірено ${EFFECTIVENESS_CHECKED}`),'the source-check date for the new trials is visible');
 assert(section.includes('Це не оцінка Evidence UA')&&section.includes('порадьтеся з лікарем'),'the card states that this is not an Evidence UA rating and not a prescription');
 assert(!section.includes('Розбір ефективності готується'),'the old «coming soon» line is gone from the cards');
 // Editorial position: visible above the cards, honest about limits, labelled as the editors' stance.
@@ -55,4 +72,5 @@ console.log('Diet evidence: every card has sourced findings, indications and cau
  assert(m.includes('алергії на рибу чи горіхи')&&m.includes('не висновок із дослідження'),'mediterranean: allergy caution is labelled as general advice');
  assert(!m.includes('Вино в огляді Cochrane'),'the outdated wine wording is gone');
  assert(evidence.mediterranean.findings.some(([t])=>t.includes('Вагітність')&&t.includes('0,63–0,88')),'mediterranean: pregnancy finding with its interval');
- assert(evidence.dash.findings.some(([t])=>t.includes('не мав переваги над іншими дієтами')),'dash: no advantage over other diets for blood pressure is stated');}
+ // The interval includes zero. Keep the wording about uncertainty rather than asserting equivalence.
+ assert(evidence.dash.findings.some(([t])=>t.includes('Перевагу DASH над іншими раціонами за тиском не встановили')&&t.includes('від −1,54 до 4,14')),'dash: comparative uncertainty and interval are stated');}

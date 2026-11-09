@@ -175,14 +175,14 @@ function researchRows(research) {
 
 function dietRows(diets, titles) {
   const rows = [];
-  const note = `На сайті: «Огляд опублікованих оглядів із PubMed, звірено ${diets.EVIDENCE_CHECKED}. Це не оцінка Evidence UA: власні рівні впевненості ще не присвоєно.»`;
+  const note = `На сайті: «${diets.EVIDENCE_REVIEW_NOTE}»`;
   for (const id of Object.keys(diets.evidence)) {
     const diet = diets.evidence[id], title = titles.get(id), where = url(`nutrition.html#diet-${id}`);
     if (!title) throw Error(`export-review-sheet: для дієти ${id} немає назви в каталозі`);
-    if (!Array.isArray(diet.findings) || !diet.findings.length) throw Error(`export-review-sheet: у дієти ${id} немає висновків оглядів`);
+    if (!Array.isArray(diet.findings) || !diet.findings.length) throw Error(`export-review-sheet: у дієти ${id} немає результатів досліджень`);
     rows.push(
       ['Дієта: кому може підходити', title, where, `${id}/fits`, bullets(diet.fits), '', note, 'не присвоєно', 'посилань біля цього блоку на сайті немає'],
-      ['Дієта: що показали огляди', title, where, `${id}/findings`, numbered(diet.findings.map(([text]) => text)), '', note, 'не присвоєно', numbered(diet.findings.map(([, ...links]) => links.flat().map(ref => `${ref.label}: ${ref.href}`).join('; ')))],
+      ['Дієта: що показали дослідження', title, where, `${id}/findings`, numbered(diet.findings.map(([text]) => text)), '', note, 'не присвоєно', numbered(diet.findings.map(([, ...links]) => links.flat().map(ref => `${ref.label}: ${ref.href}`).join('; ')))],
       ['Дієта: застереження', title, where, `${id}/cautions`, bullets(diet.cautions), '', note, 'не присвоєно', refs(diet.cautionRefs)]
     );
   }

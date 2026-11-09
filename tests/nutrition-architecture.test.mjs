@@ -25,8 +25,40 @@ const singleDietArt=text=>text.replace(/ data-art="green"><img src="\.\/diet-art
 // 2026-11-03: normalize only the newly added, evidence-backed story presentation so the historical hash continues to protect every existing diet statement, source and research section.
 // 2026-11-04: normalize the carousel controls and module as presentation-only markup; the same hash still protects all diet research and wording.
 const withoutDietCarousel=text=>text.replace(/<div class="nd-carousel-controls"[\s\S]*?(?=<div class="nd-grid" data-diet-carousel)/g,'').replace('<div class="nd-grid" data-diet-carousel role="region" aria-label="Карусель дієт" aria-roledescription="карусель" tabindex="0">','<div class="nd-grid">').replace('<script type="module" src="./nutrition-diets-carousel.js?v=1"></script>','');
-const withoutDietStories=text=>text.replace(/^const storyHTML=d=>\{[\s\S]*?^};\n/m,'').replace('${storyHTML(d)}','').replace('<script type="module" src="./nutrition-diets-share.js?v=1"></script>','').replace(/<details class="nd-story"[\s\S]*?<\/details>/g,'');
-const retainedDietText=text=>withoutDietStories(withoutDietCarousel(singleDietArt(text)));
+const withoutDietStories=text=>text.replace(/^const storyHTML=d=>\{[\s\S]*?^};\n/m,'').replace('${storyHTML(d)}','').replace('<script type="module" src="./nutrition-diets-share.js?v=2"></script>','').replace(/<details class="nd-story"[\s\S]*?<\/details>/g,'');
+// 2026-11-09: the eight diet reviews add these named trial results and refine two DASH summaries.
+// The historical hash still protects the other findings and all scientific blocks on the physiology page.
+const dietTrialDois=new Set([
+ '10.1056/NEJMoa1800389',
+ '10.1016/S0140-6736(22)00122-2',
+ '10.1056/NEJM199704173361601',
+ '10.1056/NEJM200101043440101',
+ '10.1093/ajcn/nqac154',
+ '10.1001/jama.2018.0245',
+ '10.3945/ajcn.115.119339',
+ '10.1056/NEJMoa0804748',
+ '10.1161/CIRCULATIONAHA.117.030088',
+ '10.1001/jamanetworkopen.2023.44457',
+ '10.1056/NEJMoa2114833',
+]);
+const dietEditorialChanges=[
+ ["EVIDENCE_REVIEW_NOTE} from","EVIDENCE_CHECKED} from"],
+ ["${esc(EVIDENCE_REVIEW_NOTE)}","Огляд опублікованих оглядів із PubMed, звірено ${EVIDENCE_CHECKED}. Це не оцінка Evidence UA: власні рівні впевненості ще не присвоєно."],
+ ["Кожна картка пояснює принцип раціону та показує, у кого, за який час і порівняно з чим виміряли його ефект.","Спочатку — принцип і склад. Далі розбиратимемо дослідження: для кого, з чим порівнювали та які результати отримали."],
+ ["Результати випробувань для 8 підходів","Огляд літератури додано, власні рівні впевненості ще ні"],
+ ["Як читати результати","Як будемо оцінювати ефективність"],
+ ["У перших результатах кожної картки вказано учасників, тривалість і групу порівняння. Величина ефекту залежить від цих умов.","Для кожного результату зазначимо учасників, групу порівняння, тривалість, величину ефекту та невизначеність. Окремо розглянемо дотримання раціону й небажані явища."],
+ ["Артеріальний тиск, вага й частота інфарктів відповідають на різні питання. Результати окремих випробувань читають у межах конкретного показника й порівняння.","Картки переказують висновки опублікованих оглядів із посиланнями. Власну оцінку впевненості Evidence UA додамо після окремої перевірки."],
+ ["Попередні джерела звірено 26.10.2026. Ключові випробування звірено 09.11.2026. Це не оцінка Evidence UA: власні рівні впевненості ще не присвоєно.","Огляд опублікованих оглядів із PubMed, звірено 26.10.2026. Це не оцінка Evidence UA: власні рівні впевненості ще не присвоєно."],
+ ["В огляді Cochrane (5 РКД, 1397 учасників) даних про інфаркт, інсульт і смертність було недостатньо для надійного висновку. Спостереження тривало від 16 тижнів до 18 місяців, певність щодо клінічних подій була низькою або дуже низькою.","В огляді Cochrane (5 РКД, 1397 учасників) DASH, ймовірно, знижує тиск, загальний холестерин і тригліцериди порівняно зі звичайним харчуванням, а на ЛПНЩ майже не впливає. Вплив на інфаркт, інсульт і смертність невідомий; довіра низька або дуже низька."],
+ ["В огляд увійшли 22 РКД, до кількісного синтезу — 10. Перевагу DASH над іншими раціонами за тиском не встановили (верхній тиск: різниця 1,30 мм рт. ст., 95% ДІ від −1,54 до 4,14). Результати досліджень помітно різнилися.","У мета-аналізі 22 РКД DASH не мав переваги над іншими дієтами за тиском (систолічний: різниця 1,30 мм рт. ст.; 95% ДІ −1,54…4,14). Є ефекти на ЛПНЩ (−8,59 мг/дл) і HbA1c (−0,49). Довіра від помірної до дуже низької."],
+];
+const historicalDietCopy=text=>{
+ const withoutTrials=text.replace(/<li>[^<]* <a class="nd-source" href="https:\/\/doi\.org\/([^"]+)"[^>]*>[^<]*<\/a><\/li>/g,
+  (row,doi)=>dietTrialDois.has(doi)?'':row);
+ return dietEditorialChanges.reduce((html,[current,historical])=>html.replaceAll(current,historical),withoutTrials);
+};
+const retainedDietText=text=>historicalDietCopy(withoutDietStories(withoutDietCarousel(singleDietArt(text))));
 // 2026-11-03 («Довіра», спільне застереження): збірка вставляє в кожну сторінку один рядок застереження (<div class="eua-site-notice">…</div>) перед кінцевими
 // скриптами та підключає site-notice.css у <head>. Наукових блоків це не торкається; для звірки зі старим еталоном прибираємо лише ці два вставлені місця.
 const withoutSiteNotice=html=>html.replace(/<div class="eua-site-notice"[\s\S]*?<\/div>\n?/,'').replace(/<link rel="stylesheet" href="\.\/site-notice\.css\?v=\d+">/,'');
@@ -53,7 +85,7 @@ test('Nutrition retains the diets and offers the physiology branch without loadi
  assert(html.includes('href="#nutrition-diets"'));
  for(const id of ['nutrition-fat-burning','nutrition-lab','nutrient-time','nutrition-evidence','nutrition-sources'])assert(!html.includes(`id="${id}"`),`${id} belongs on the physiology page`);
  assert(!/src="(?:\.\/)?nutrition-(?:lab|timeline)\.js/.test(html),'the entry must not boot missing model controls');
- const b=baseline.blocks.diets,diets=retainedDietText(html);assert.equal(sha(diets.slice(diets.indexOf(b.start),diets.indexOf(b.end)+b.end.length)),b.sha256,'all diet research must be retained verbatim');
+ const b=baseline.blocks.diets,diets=retainedDietText(html);assert.equal(sha(diets.slice(diets.indexOf(b.start),diets.indexOf(b.end)+b.end.length)),b.sha256,'diet research outside the reviewed updates must be retained verbatim');
 });
 
 // This UI controller intentionally changes for the audited focus bug. Reconstruct

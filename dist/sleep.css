@@ -82,3 +82,18 @@ body[data-platform-area=sleep] .pb .module-meta a.meta-button{display:inline-fle
 .sleep-basics article{padding:20px}
 .habit-list article{padding:18px 0}
 }
+
+/* Звички на телефоні: картка згортається в рядок «номер + назва», текст відкривається дотиком (рішення власника «1 так», 2026-11-09). Клас .is-fold і кнопки ставить JavaScript лише до 600 px
+   (mountHabits у src/sleep/page.mjs); на комп’ютері, без JavaScript і в друку все видно, як і раніше. Рядок-кнопка не нижча за 56 px. */
+.habit-list.is-fold{border-bottom:1px solid var(--border)}
+.habit-list.is-fold article{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 17px;align-items:center;padding:0}
+.habit-list.is-fold article>div{display:contents}
+.habit-list.is-fold article>span{grid-column:1;grid-row:1;padding-top:0}
+.habit-list.is-fold h3{grid-column:2;grid-row:1;margin:0}
+.habit-list.is-fold .habit-body{grid-column:2;grid-row:2;padding:0 0 16px}
+.habit-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.habit-toggle::after{content:'＋';content:'＋' / '';flex:none;font-size:18px;line-height:1;color:var(--gold)}
+.habit-toggle[aria-expanded=true]::after{content:'−';content:'−' / ''}
+.habit-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+/* !important: на сайті діє загальне [hidden]{display:none!important}, без нього друк лишив би тексти схованими. */
+@media print{.habit-list .habit-body[hidden]{display:block!important}.habit-toggle::after{display:none}}

@@ -10,6 +10,47 @@ export function mountSleep(root=document,hooks={}){
  return {buttons,select};
 }
 
+// Звички (рішення власника «1 так», 2026-11-09): на телефоні (до 600 px) кожна картка звички згортається в рядок «номер + назва» з кнопкою, текст відкривається дотиком.
+// На комп'ютері й без JavaScript усе видно, як і раніше: розмітка статична (<h3>назва</h3><div class="habit-body" id="…">текст</div>), JavaScript лише вкладає кнопку в заголовок
+// (шаблон «акордеон» з APG: заголовок лишається заголовком) і ховає тіло. Перетнули поріг у будь-який бік: усе повертається до стану, що відповідає ширині.
+export function mountHabits(root=document){
+ const list=root.querySelector?.('.habit-list');
+ if(!list)return null;
+ const doc=list.ownerDocument||root,win=doc.defaultView||globalThis;
+ const items=[...list.querySelectorAll('article')].map(article=>{
+  const heading=article.querySelector('h3'),body=article.querySelector('.habit-body');
+  return heading&&body?{heading,body,label:heading.textContent.trim(),button:null}:null;
+ }).filter(Boolean);
+ if(!items.length)return null;
+ const query=win.matchMedia?.('(max-width: 600px)');
+ const fold=on=>{
+  for(const item of items){
+   if(on&&!item.button){
+    const button=doc.createElement('button');
+    button.type='button';
+    button.className='habit-toggle';
+    button.textContent=item.label;
+    button.setAttribute('aria-expanded','false');
+    button.setAttribute('aria-controls',item.body.id);
+    button.addEventListener('click',()=>{const open=button.getAttribute('aria-expanded')!=='true';button.setAttribute('aria-expanded',String(open));item.body.hidden=!open;});
+    item.heading.textContent='';
+    item.heading.append(button);
+    item.button=button;
+    item.body.hidden=true;
+   }else if(!on&&item.button){
+    item.heading.textContent=item.label;
+    item.button=null;
+    item.body.hidden=false;
+   }
+  }
+  list.classList.toggle('is-fold',on);
+ };
+ fold(Boolean(query?.matches));
+ const onChange=event=>fold(Boolean(event.matches));
+ if(query?.addEventListener)query.addEventListener('change',onChange);else query?.addListener?.(onChange);
+ return {fold,items,isFolded:()=>list.classList.contains('is-fold')};
+}
+
 // Схема ночі (рішення власника 35, 2026-11-09). Нерухома розмітка вже є на сторінці (її збирає збірка з night.mjs), тож без JavaScript схема видна, лише без руху.
 // Тут додається курсор, що повільно проходить ніч, і одна кнопка «Пауза / Відтворити». Вибір стадії кнопками зупиняє курсор на першому відрізку цієї стадії й
 // підсвічує всі її відрізки; «Відтворити» знімає підсвітку й запускає ніч. Схема стоїть, поки її не видно й поки вкладка у фоні, а якщо в системі вимкнено
@@ -110,4 +151,5 @@ if(typeof document!=='undefined'){
  let night=null;
  const sleep=mountSleep(document,{onSelect:id=>night?.show(id)});
  night=mountNight(document,sleep);
+ mountHabits(document);
 }

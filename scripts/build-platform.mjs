@@ -592,3 +592,15 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Картки звичок на телефоні згортаються в рядки (2026-11-09, рішення власника «1 так»): sleep.css 86 → 87, sleep.js 83 → 84 (mountHabits).
+// Новий запис у журналі (день 2026-11-09), тож сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=31) v=31.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'sleep.css?v=86':'sleep.css?v=87','sleep.js?v=83':'sleep.js?v=84','changes-page.js?v=30':'changes-page.js?v=31'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

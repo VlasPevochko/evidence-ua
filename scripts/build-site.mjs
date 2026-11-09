@@ -24,7 +24,7 @@ const generated = new Set([
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',
   'muscle-scale-art.js', 'muscle-sarcomere.js', 'muscle-guide.js', 'muscle-practice-data.js',
-  'movement.js', 'movement-model.js', 'movement-learning.js', 'sleep.js',
+  'movement.js', 'movement-model.js', 'movement-learning.js', 'sleep.js', 'sleep-night.js',
   'sleep.html', 'platform-glossary.js', 'platform-glossary-data.js',
   'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js', 'nutrition-diets-carousel.js', 'nutrition-diets-share.js',
   'evidence/protein-data.js', 'evidence/protein-ui.js',

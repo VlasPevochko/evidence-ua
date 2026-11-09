@@ -8,6 +8,7 @@ import {homeSpectrumHTML} from '../src/platform/home-spectrum.mjs';
 import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
 import {homeFreshGridHTML} from '../src/platform/home-fresh.mjs';
+import {renderNight} from '../src/sleep/night.mjs';
 // Дані, з яких збирається блок «Нове на сайті» (T4): ті самі модулі, що вантажать сторінки розборів, схем і журналу.
 import {STUDIES} from '../dist/research-data.js';
 import {miniInterval} from '../dist/research-chart.js';
@@ -71,7 +72,9 @@ for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
 fs.writeFileSync('dist/movement-model.js',fs.readFileSync('src/movement/model.mjs','utf8'));
 fs.writeFileSync('dist/movement.js',fs.readFileSync('src/movement/page.mjs','utf8').replace("'./model.mjs'","'./movement-model.js?v=83'").replace("'./learning.mjs'","'./movement-learning.js?v=83'"));
 fs.writeFileSync('dist/movement-learning.js',fs.readFileSync('src/movement/learning.mjs','utf8'));
-fs.writeFileSync('dist/sleep.js',fs.readFileSync('src/sleep/page.mjs','utf8'));
+// Схема ночі (2026-11-09, рішення власника 35): модуль даних доставляється окремим файлом, sleep.js підключає його з версією (при зміні модуля піднімайте ?v= тут).
+fs.writeFileSync('dist/sleep-night.js',fs.readFileSync('src/sleep/night.mjs','utf8'));
+fs.writeFileSync('dist/sleep.js',fs.readFileSync('src/sleep/page.mjs','utf8').replace("'./night.mjs'","'./sleep-night.js?v=1'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
  let next=old.replace(/platform-shell\.js\?v=(?:63|81|82)/g,'platform-shell.js?v=83').replace(/directions\.js\?v=(?:63|70|82)/g,'directions.js?v=83') .replaceAll('home-catalog.js?v=82','home-catalog.js?v=83').replaceAll('home-feedback.js?v=82','home-feedback.js?v=83').replaceAll('home-coast.css?v=82','home-coast.css?v=83').replaceAll('home-catalog.js?v=57','home-catalog.js?v=83').replaceAll('home-feedback.js?v=63','home-feedback.js?v=83').replaceAll('home-coast.css?v=80','home-coast.css?v=83');
@@ -87,6 +90,13 @@ for(const area of ['movement','sleep']){
  const marker=/<!-- EUA_LEARNING_NOTES_START -->[\s\S]*?<!-- EUA_LEARNING_NOTES_END -->/;
  if(!marker.test(old))throw Error('Learning notes marker missing: '+file);
  const next=old.replace(marker,'<!-- EUA_LEARNING_NOTES_START -->'+learningNotesHTML(area)+'<!-- EUA_LEARNING_NOTES_END -->');
+ if(next!==old)fs.writeFileSync(file,next);
+}
+// Схема ночі на сторінці сну (рішення власника 35): нерухома розмітка між позначками збирається з даних src/sleep/night.mjs, тож видима й без JavaScript і не потребує ручної правки.
+{
+ const file='dist/sleep.html',old=fs.readFileSync(file,'utf8'),marker=/<!-- EUA_SLEEP_NIGHT_START -->[\s\S]*?<!-- EUA_SLEEP_NIGHT_END -->/;
+ if(!marker.test(old))throw Error('Sleep night marker missing: '+file);
+ const next=old.replace(marker,()=>'<!-- EUA_SLEEP_NIGHT_START -->'+renderNight()+'<!-- EUA_SLEEP_NIGHT_END -->');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
@@ -564,6 +574,18 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  const updates={'changes-page.js?v=28':'changes-page.js?v=29'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Схема ночі, «Дивись також» і щільніший телефонний вигляд сторінки сну (2026-11-09, рішення власника 34–37): sleep.css 85 → 86 і sleep.js 82 → 83 (модуль схеми sleep-night.js підключається з ?v=1 у самому sleep.js).
+// Три записи в журналі (новий день 2026-11-09), тож сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=30) v=30.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'sleep.css?v=85':'sleep.css?v=86','sleep.js?v=82':'sleep.js?v=83','changes-page.js?v=29':'changes-page.js?v=30'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

@@ -83,7 +83,7 @@ export function mountNight(root=document,sleep=null){
  const label=()=>{
   if(selected)now.textContent=`Показано: ${describe(selected)}`;
   else if(playing||byUser)now.textContent=`На схемі зараз: ${describe(segmentAt(t).stage)}`;
-  else now.textContent='Обери стадію або запусти ніч.';
+  else now.textContent='Обери рядок схеми чи кнопку стадії.';
  };
  const render=()=>{
   figure.style.setProperty('--t',t.toFixed(4));
@@ -120,15 +120,27 @@ export function mountNight(root=document,sleep=null){
   if(playing)setPlaying(false,true);
   else{clearSelection();setPlaying(true,true);}
  });
- const show=id=>{
+ const show=(id,at)=>{
   if(!STAGE_IDS.includes(id))return;
   selected=id;
   figure.dataset.selected=id;
-  t=firstStart(id)+0.5/SLOTS;
+  t=typeof at==='number'&&at>=0&&at<1&&segmentAt(at).stage===id?at:firstStart(id)+0.5/SLOTS;
   setPlaying(false);
   render();
   label();
  };
+ // Схему можна торкатися (рішення власника «3 так», 2026-11-09): рядок N1/N2/N3/REM діє як кнопка цієї стадії: курсор стає на її першу смугу, смуги підсвічено, пояснення й кнопка стадії перемикаються.
+ // Якщо влучили в саму смугу цієї стадії, курсор стає саме туди. Рядок «Неспання» не має пояснення, тож він не реагує. Рядок визначаємо за висотою торкання відносно поля смуг (п'ять рівних рядків),
+ // тож працює і підпис ліворуч, і порожнє місце рядка. Для клавіатури й скрінрідера лишаються кнопки стадій (та сама дія): сама схема не фокусується.
+ const chart=figure.querySelector?.('.night-chart'),plot=figure.querySelector?.('.night-plot');
+ chart?.addEventListener('click',event=>{
+  const box=plot?.getBoundingClientRect?.();
+  if(!box||!box.height||!box.width)return;
+  const id=STAGE_IDS[Math.floor((event.clientY-box.top)/(box.height/STAGE_IDS.length))];
+  if(!id||id==='wake')return;
+  sleep?.select?.(id,'chart');
+  show(id,(event.clientX-box.left)/box.width);
+ });
 
  doc.addEventListener('visibilitychange',()=>{if(doc.hidden)stop();else run();});
  if('IntersectionObserver' in win){

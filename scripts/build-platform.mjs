@@ -604,3 +604,15 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+
+// Схему ночі можна торкатися, «Дивись також» у стилі «рейки» (2026-11-09, рішення власника «3 так» і «5 так»): sleep.css 87 → 88, sleep.js 84 → 85. Два записи в журналі (день 2026-11-09),
+// тож сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=32) v=32.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'sleep.css?v=87':'sleep.css?v=88','sleep.js?v=84':'sleep.js?v=85','changes-page.js?v=31':'changes-page.js?v=32'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}

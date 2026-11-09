@@ -71,9 +71,11 @@ const minHeight = (selectorStart, from = 0) => {
 assert(minHeight('.night-play{') >= 44, 'the play/pause button is at least 44 px tall');
 assert(minHeight('body[data-platform-area=sleep] .pb .module-meta a.meta-button{') >= 44, 'the hero button is at least 44 px tall');
 assert(minHeight('.related-list a{') >= 44, 'a related link is at least 44 px tall');
-assert(css.includes("content:'\\00a0→';content:'\\00a0→' / '';"), 'the arrow after a related link follows a non-breaking space (it never wraps alone) and has an empty text alternative, with a plain fallback for browsers without alt text in content');
-const phoneRelated = css.match(/@media\(max-width:600px\)\{\.related-list\{[^}]*\}\.related-list a\{([^}]*)\}/);
-assert(phoneRelated && Number((phoneRelated[1].match(/min-height:(\d+)px/) || [])[1]) >= 44, 'and on a phone too');
+// «Дивись також» стало «рейкою» (рішення власника «5 так», 2026-11-09): раніше стрілка стояла в кінці назви (тут перевірялась нерозривна пробіл-стрілка й телефонне правило плиток 2 × 2), тепер стрілка в кружку-вузлі
+// ліворуч від рядка. Вона декоративна (порожня текстова альтернатива, з простим запасним варіантом), а висота рядка не нижча за 44 px на будь-якій ширині (окремого телефонного правила для неї більше немає).
+assert(css.includes("content:'→';content:'→' / '';"), 'the arrow of a related link sits in a round node and is decorative for a screen reader, with a plain fallback for browsers without alt text in content');
+assert(/\.related-list li::before,\.related-list li::after\{content:'';position:absolute;left:12\.5px;width:1px/.test(css), 'a hairline joins the nodes (the rail)');
+assert(!/max-width:600px\)\{[^}]*\.related-list a\{[^}]*min-height/.test(css), 'no phone rule lowers the row height');
 // Блок «щільніші інтервали» закінчується першим рядком «}» після його коментаря. Раніше зріз ішов до кінця файла; відтоді після нього додано блок карток звичок (там є розмір значка «＋»),
 // тож зріз обмежено самим блоком: він, як і раніше, не має права міняти розміри шрифтів.
 const phoneStart = css.indexOf('/* Телефон: той самий текст');
@@ -101,6 +103,16 @@ assert(entry('related').text.includes('чотири посилання'), 'the r
 assert(/магній/.test(entry('related').text) && /інтервальне голодування/.test(entry('related').text) && /короткий сон/.test(entry('related').text) && /кофеїн/.test(entry('related').text), 'and names what they lead to');
 assert(entry('phone').text.includes('одна кнопка замість трьох'), 'the phone record says what happened to the three links');
 // Версії: сторінка журналу й її дані піднято, сторінка сну несе нові версії.
+// Записи за «3 так» і «5 так» (2026-11-09): схему ночі можна торкатися; «Дивись також» у стилі «рейки».
+for (const [title, href, words] of [['Сон: схему ночі можна торкатися', './sleep.html#sleep-stages', ['Торкніться рядка', 'як після кнопки стадії']], ['Сон: «Дивись також» у стилі рейки', './sleep.html#sleep-related', ['вузлами-стрілками', 'Слова й посилання не змінились']]]) {
+  const it = day.items.find(i => i.title === title);
+  assert(it, `${title}: there is a record`);
+  assert(TAGS[it.tag] && SCIENCE[it.science] && it.science === 'none', `${title}: known tag, no new science`);
+  assert(it.text.length > 20 && it.text.length < 200, `${title}: a short plain description`);
+  assert.equal(it.href, href);
+  assert(page.includes(`id="${href.split('#')[1]}"`), `${title}: the place the record leads to exists`);
+  assert(words.every(w => it.text.includes(w)), `${title}: the record says what the page does`);
+}
 // Версії не прив'язані до точних чисел (2026-11-09, після картки звичок): кожна наступна зміна цих файлів піднімає їх, а тест мусить лишатися чинним. Важливе: журнал і його дані мають ОДНУ версію, не нижчу за ту,
 // з якою вийшли записи про схему ночі (30), а сторінка сну несе версії не нижчі за ті, з якими вийшла схема (стиль 86, скрипт 83).
 const versionOf = (text, name) => Number((text.match(new RegExp(name.replace(/[.]/g, '\\.') + '\\?v=(\\d+)')) || [])[1]);
@@ -109,6 +121,7 @@ assert(journalVersion >= 30 && journalVersion === versionOf(read('dist/changes-p
 assert(versionOf(page, 'sleep.css') >= 86 && versionOf(page, 'sleep.js') >= 83, 'the sleep page carries the new versions of its style and script');
 // Картка «Нове на сайті» на головній збирається з журналу, тож найновіший запис про сон має бути в ній.
 const home = read('dist/index.html');
-assert(home.includes('<time datetime="2026-11-09">9 листопада</time>') && home.includes('<li>Схема ночі на сторінці «Сон і відновлення»</li>'), 'the home card «Нове на сайті» shows the newest day with the scheme record');
+// Картка показує перші записи найновішого дня, тож перевіряємо найновіший запис дня (а не конкретну назву: щойно за цей день додано нові записи, перший з них зсуває старші за межу картки).
+assert(home.includes('<time datetime="2026-11-09">9 листопада</time>') && home.includes(`<li>${CHANGES[0].items[0].title}</li>`), 'the home card «Нове на сайті» shows the newest day with its newest record');
 
 console.log('Sleep related block, hero button, heading space, 44 px targets, phone spacing and journal records passed.');

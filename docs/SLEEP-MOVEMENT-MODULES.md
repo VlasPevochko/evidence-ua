@@ -60,8 +60,8 @@ So the page is **not shorter** than before: on a phone tightening the existing s
 
 | Width | After the first PR | With folded habits | Original (before the sleep upgrade) |
 |---|---|---|---|
-| 390 × 844 | 6564 px (7.8 screens) | 6228 px (7.4) | 6057 px (7.2) |
-| 360 × 780 | 6726 px (8.6) | 6369 px (8.2) | 6213 px (8.0) |
+| 390 × 844 | 6564 px (7.8 screens) | 6223 px (7.4) | 6057 px (7.2) |
+| 360 × 780 | 6726 px (8.6) | 6364 px (8.2) | 6213 px (8.0) |
 | 1440 × 900 | 4862 px (5.4) | 4862 px (5.4, unchanged) | 4413 px (4.9) |
 
 So the phone page is now 0.2 screen longer than before the upgrade, which is the scheme (+305 px) and the related block (+370 px) that the owner asked for, less what the tightening and the folded habits took back. **Templateness and functionality (owner's requirement, 2026-11-09).** The owner asked to take into account the parameter of templateness («ШІ-сайти легко відрізнити по шаблонності») together with functionality; the criterion and its questions are item 9 of the quality standard in `CLAUDE.md`. Honest rating of what the sleep upgrade added:

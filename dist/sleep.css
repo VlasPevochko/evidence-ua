@@ -83,17 +83,26 @@ body[data-platform-area=sleep] .pb .module-meta a.meta-button{display:inline-fle
 .habit-list article{padding:18px 0}
 }
 
-/* Звички на телефоні: картка згортається в рядок «номер + назва», текст відкривається дотиком (рішення власника «1 так», 2026-11-09). Клас .is-fold і кнопки ставить JavaScript лише до 600 px
-   (mountHabits у src/sleep/page.mjs); на комп’ютері, без JavaScript і в друку все видно, як і раніше. Рядок-кнопка не нижча за 56 px. */
-.habit-list.is-fold{border-bottom:1px solid var(--border)}
-.habit-list.is-fold article{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 17px;align-items:center;padding:0}
-.habit-list.is-fold article>div{display:contents}
-.habit-list.is-fold article>span{grid-column:1;grid-row:1;padding-top:0}
-.habit-list.is-fold h3{grid-column:2;grid-row:1;margin:0}
-.habit-list.is-fold .habit-body{grid-column:2;grid-row:2;padding:0 0 16px}
-.habit-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.habit-toggle::after{content:'＋';content:'＋' / '';flex:none;font-size:18px;line-height:1;color:var(--gold)}
-.habit-toggle[aria-expanded=true]::after{content:'−';content:'−' / ''}
-.habit-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-/* !important: на сайті діє загальне [hidden]{display:none!important}, без нього друк лишив би тексти схованими. */
-@media print{.habit-list .habit-body[hidden]{display:block!important}.habit-toggle::after{display:none}}
+/* Звички на телефоні: «рейка» з вузлами замість стандартного акордеона з плюсами. Тонка лінія зв’язує вузли, як лінії рядків у схемі ночі; відкритий вузол заповнений, як курсор схеми.
+   Клас .is-fold і кнопки ставить JavaScript лише до 600 px (mountHabits у src/sleep/page.mjs); на комп’ютері, без JavaScript і в друку все видно, як і раніше. Рядок-кнопка не нижча за 56 px. */
+@media screen{
+.habit-list.is-fold{counter-reset:habit}
+.habit-list.is-fold article{position:relative;display:block;padding:0;border-top:0;counter-increment:habit}
+.habit-list.is-fold article>span{display:none}
+.habit-list.is-fold h3{margin:0}
+.habit-list.is-fold .habit-body{padding:0 0 18px 40px}
+.habit-list.is-fold article::before,.habit-list.is-fold article::after{content:'';position:absolute;left:12.5px;width:1px;background:var(--border)}
+.habit-list.is-fold article::before{top:0;height:15px}
+.habit-list.is-fold article::after{top:41px;bottom:0}
+.habit-list.is-fold article:first-child::before{display:none}
+.habit-list.is-fold article:last-child::after{background:linear-gradient(var(--border),transparent)}
+.habit-toggle{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;margin:0;padding:0 4px 0 40px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.habit-toggle::before{content:counter(habit,decimal-leading-zero);content:counter(habit,decimal-leading-zero) / '';position:absolute;left:0;top:50%;box-sizing:border-box;width:26px;height:26px;margin-top:-13px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:50%;font-family:Arial,sans-serif;font-size:11px;font-weight:400;line-height:1;letter-spacing:0;color:var(--gold)}
+.habit-toggle[aria-expanded=true]::before{background:var(--gold);color:var(--c-152a25,#152a25)}
+.habit-toggle::after{content:'';flex:none;width:7px;height:7px;border-right:1.5px solid var(--gold);border-bottom:1.5px solid var(--gold);transform:translateY(-2px) rotate(45deg);transition:transform .2s}
+.habit-toggle[aria-expanded=true]::after{transform:translateY(2px) rotate(-135deg)}
+.habit-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+}
+@media (prefers-reduced-motion:reduce){.habit-toggle::after{transition:none}}
+/* Друк: звичайна розмітка, усі тексти розгорнуті. !important: на сайті діє загальне [hidden]{display:none!important}. */
+@media print{.habit-list .habit-body[hidden]{display:block!important}.habit-toggle{padding:0;border:0;background:none;font:inherit;color:inherit}}

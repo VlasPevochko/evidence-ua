@@ -3216,7 +3216,16 @@ async function sleepHabitsFlow(browser, origin, viewport) {
     check(where, (await state()).shown[0] === true, 'Enter opens a habit');
     await page.keyboard.press('Space');
     check(where, (await state()).shown[0] === false, 'Space closes it');
-    check(where, await toggles.nth(0).evaluate(el => { const cs = getComputedStyle(el, '::after'); return cs.content.includes('＋'); }), 'a plus sign shows that the row opens');
+    // «Рейка»: у кожного рядка вузол-кружок із номером і шеврон; відкритий вузол заповнений (закритий порожній), шеврон перевертається.
+    const look = i => toggles.nth(i).evaluate(el => { const node = getComputedStyle(el, '::before'), chevron = getComputedStyle(el, '::after'); return {nodeW: parseFloat(node.width), nodeRadius: node.borderTopLeftRadius, nodeFill: node.backgroundColor, nodeContent: node.content, chevron: parseFloat(chevron.width), turn: chevron.transform}; });
+    const closed = await look(0);
+    check(where, closed.nodeW >= 24 && closed.nodeRadius !== '0px' && /counter/.test(closed.nodeContent) && closed.chevron > 0, `each row shows a round numbered node and a chevron (${JSON.stringify(closed)})`);
+    check(where, /rgba\(0, 0, 0, 0\)|transparent/.test(closed.nodeFill), 'a closed node is empty');
+    await toggles.nth(0).click();
+    await page.waitForTimeout(350);
+    const opened = await look(0);
+    check(where, !/rgba\(0, 0, 0, 0\)|transparent/.test(opened.nodeFill) && opened.turn !== closed.turn, 'an open node is filled and its chevron turns over');
+    await toggles.nth(0).click();
     // У друку всі тексти розгорнуті.
     await page.emulateMedia({media: 'print'});
     check(where, (await state()).shown.every(v => v), 'on paper every habit text is shown');

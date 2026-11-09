@@ -30,7 +30,13 @@ assert(Number((rule('.habit-toggle{').match(/min-height:(\d+)px/) || [])[1]) >= 
 assert(css.includes('.habit-toggle:focus-visible{outline:2px solid'), 'the fold button shows a focus ring');
 assert(/@media print\{[^}]*\.habit-body\[hidden\]\{display:block!important\}/.test(css), 'on paper every habit text is shown (!important, because the site hides every [hidden] element with !important)');
 assert(!/\.habit-body\{[^}]*display:none/.test(css), 'CSS alone never hides a text: only the hidden attribute set by the script does');
-assert(css.includes("content:'＋' / ''") && css.includes("content:'−' / ''"), 'the plus and minus signs are decorative (empty text alternative) and have a plain fallback');
+// «Рейка» замість стандартного акордеона з плюсами (вимога власника про шаблонність, 2026-11-09): вузол-кружок із номером картки, тонка лінія між вузлами (як лінії рядків схеми ночі), шеврон;
+// відкритий вузол заповнений, як курсор схеми. Номер у вузлі береться з лічильника CSS, тож завжди збігається з порядком карток; він декоративний (порожня текстова альтернатива, з простим запасним варіантом).
+assert(css.includes("content:counter(habit,decimal-leading-zero);content:counter(habit,decimal-leading-zero) / '';"), 'the node shows the card number from a CSS counter and is decorative for a screen reader');
+assert(/\.habit-toggle\[aria-expanded=true\]::before\{background:var\(--gold\)/.test(css), 'an open node is filled');
+assert(/\.habit-toggle::after\{content:'';[^}]*border-right[^}]*border-bottom/.test(css) && css.includes('.habit-toggle[aria-expanded=true]::after{transform:'), 'a chevron shows that the row opens and turns over when it is open');
+assert(/@media screen\{\s*\.habit-list\.is-fold\{counter-reset:habit\}/.test(css), 'the fold styles apply on a screen only: paper keeps the plain layout');
+assert(css.includes('@media (prefers-reduced-motion:reduce){.habit-toggle::after{transition:none}}'), 'the chevron does not animate for people who ask for no motion');
 
 // 2а) Запис у журналі оновлень: правдивий (лише спосіб користування, слова не змінились), посилання веде на розділ звичок.
 const day = CHANGES.find(d => d.date === '2026-11-09');

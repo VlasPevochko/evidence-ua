@@ -35,17 +35,24 @@ function setup({reduced = false, observer = false, names = true} = {}) {
   figure.ownerDocument = doc;
   figure.querySelectorAll = selector => selector === '.night-bar' ? bars : [];
   const bars = SEGMENTS.map(() => el('i'));
+  // Поле смуг: п'ять рядків по 50 px (зверху вниз: неспання, REM, N1, N2, N3), починається в точці (100, 40) і має ширину 300 px.
+  const chart = el('div'), plot = el('div');
+  plot.getBoundingClientRect = () => plot.box || {left: 100, top: 40, width: 300, height: 250};
+  figure.querySelector = selector => selector === '.night-chart' ? chart : selector === '.night-plot' ? plot : null;
   const root = {querySelector: selector => selector === '[data-sleep-night]' ? figure : null};
   const buttons = ['n1', 'n2', 'n3', 'rem'].map(id => {
     const span = {textContent: ` ${{n1: 'Перехід до сну', n2: 'Сон поглиблюється', n3: 'Глибокий сон', rem: 'Активність мозку'}[id]} `};
     return {dataset: {sleepStage: id}, querySelector: selector => selector === 'span' ? span : null};
   });
-  const night = sleep.mountNight(root, names ? {buttons} : null);
+  const selections = [];
+  const night = sleep.mountNight(root, names ? {buttons, select: (id, source) => selections.push([id, source])} : null);
   const foot = figure.children[0];
   const [now, toggle] = foot.children;
   // Один кадр: виконати те, що попросили в requestAnimationFrame, і повернути, чи було що виконувати.
   const frame = time => { const [id, fn] = frames.entries().next().value || []; if (!fn) return false; frames.delete(id); fn(time); return true; };
-  return {night, figure, bars, doc, now, toggle, frames, frame, observe: entries => io(entries), hasObserver: () => Boolean(io)};
+  // Торкання схеми: рядок 0..4 зверху вниз; fraction: де вздовж ночі (0..1) влучили, без нього влучили в підпис ліворуч від поля смуг.
+  const tap = (row, fraction = null) => chart.listeners.click({clientX: fraction === null ? 60 : 100 + 300 * fraction, clientY: 40 + 50 * row + 25});
+  return {night, figure, bars, doc, now, toggle, frames, frame, observe: entries => io(entries), hasObserver: () => Boolean(io), selections, tap, chart, plot};
 }
 
 test('without IntersectionObserver the night starts moving by itself, one frame at a time, and the cursor advances by the real time', () => {
@@ -79,7 +86,7 @@ test('prefers-reduced-motion: the scheme starts paused and only a person can sta
   const page = setup({reduced: true});
   assert.equal(page.night.state().playing, false);
   assert.equal(page.frames.size, 0, 'no animation frame is requested');
-  assert.equal(page.now.textContent, 'Обери стадію або запусти ніч.');
+  assert.equal(page.now.textContent, 'Обери рядок схеми чи кнопку стадії.', 'the hint names both ways to choose a stage: a row of the scheme or a stage button');
   assert(page.toggle.innerHTML.includes('Відтворити'));
   page.toggle.listeners.click();
   assert.equal(page.night.state().playing, true, 'the button starts the night');
@@ -197,6 +204,64 @@ test('the stage buttons ask the scheme to show a stage only when a person chose 
   controller.select('n2');
   assert.deepEqual(calls, ['n3', 'rem'], 'a selection made by the code itself is not');
   assert.equal(sleep.mountSleep({querySelectorAll: () => []}), null, 'a page without stage buttons does nothing');
+});
+
+test('a tap on a row of the scheme acts as the stage button: the night stops on the first bar of the stage, the stage button and its explanation follow', () => {
+  const page = setup();
+  page.frame(1000);
+  assert.equal(page.night.state().playing, true);
+  page.tap(4);
+  const state = page.night.state();
+  assert.equal(state.selected, 'n3', 'row 4 from the top is N3 (a tap on its label, left of the bars)');
+  assert.equal(state.playing, false, 'a tap pauses the night, as a stage button does');
+  assert(Math.abs(state.t - (firstStart('n3') + 0.5 / SLOTS)) < 1e-12, 'the cursor stands on the first bar of the stage');
+  assert.deepEqual(page.selections, [['n3', 'chart']], 'the stage button and the explanation are switched, and the hook meant for button clicks is not called again');
+  assert.equal(page.figure.dataset.selected, 'n3');
+  assert.equal(page.now.textContent, 'Показано: N3 · Глибокий сон');
+  assert.equal(page.frames.size, 0, 'no frame is left running');
+});
+
+test('every row of the scheme picks its own stage; the wake row and taps outside the bars do nothing', () => {
+  const rows = ['wake', 'rem', 'n1', 'n2', 'n3'];
+  for (let row = 1; row < rows.length; row++) {
+    const page = setup();
+    page.tap(row);
+    assert.equal(page.night.state().selected, rows[row], `row ${row} is ${rows[row]}`);
+  }
+  const page = setup();
+  page.tap(0);
+  assert.equal(page.night.state().selected, null, 'the wake row has no explanation, so it does not react');
+  page.chart.listeners.click({clientX: 150, clientY: 10});
+  page.chart.listeners.click({clientX: 150, clientY: 40 + 250 + 5});
+  assert.equal(page.night.state().selected, null, 'a tap above or below the field of bars (the head, the axis) does nothing');
+  assert.deepEqual(page.selections, []);
+  assert.equal(page.night.state().playing, true, 'and does not stop the night');
+});
+
+test('a tap on a bar of the chosen stage puts the cursor exactly there; a tap on a gap or on another stage falls back to the first bar of the stage', () => {
+  const page = setup();
+  const n3 = SEGMENTS.filter(seg => seg.stage === 'n3');
+  const second = (n3[1].start + n3[1].len / 2) / SLOTS;
+  page.tap(4, second);
+  assert(Math.abs(page.night.state().t - second) < 1e-12, 'the cursor stands where the person tapped, inside the second N3 bar');
+  assert.equal(segmentAt(page.night.state().t).index, n3[1].index);
+  const other = page.night.state();
+  const early = 0.02;
+  assert.notEqual(segmentAt(early).stage, 'n3', 'the early part of the night is not N3');
+  page.tap(4, early);
+  assert(Math.abs(page.night.state().t - (firstStart('n3') + 0.5 / SLOTS)) < 1e-12, 'a tap at a place where the row has no bar of that stage goes to its first bar');
+  assert.equal(other.selected, 'n3');
+});
+
+test('taps work without the stage buttons too, and a plot that has no size is ignored', () => {
+  const page = setup({names: false});
+  page.tap(3);
+  assert.equal(page.night.state().selected, 'n2');
+  assert.equal(page.now.textContent, 'Показано: N2');
+  const flat = setup();
+  flat.plot.box = {left: 0, top: 0, width: 0, height: 0};
+  flat.tap(4);
+  assert.equal(flat.night.state().selected, null, 'a collapsed scheme (hidden, not laid out) ignores a tap');
 });
 
 test('a page without the scheme does nothing', () => {

@@ -37,6 +37,14 @@ body[data-platform-area=sleep]>.eua-platform-nav{max-width:1184px;margin:10px au
 .night-cursor{position:absolute;top:-3px;bottom:-3px;left:calc(var(--t,0)*100%);width:2px;margin-left:-1px;border-radius:1px;background:var(--text);opacity:0;pointer-events:none}
 .night-cursor::before{content:'';position:absolute;top:-5px;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--text);box-shadow:0 0 0 2px var(--surface)}
 .sleep-night.is-live .night-cursor{opacity:.92}
+/* Схему можна торкатися (рішення власника «3 так», 2026-11-09): рядки N1…REM діють як кнопки стадій (sleep.js, mountNight). Рука над схемою, підсвітка підпису й смуг під мишею; рядок «Неспання» не реагує.
+   Це швидкий вибір поруч із кнопками стадій (та сама дія, для клавіатури лишаються кнопки), тому рядок 32 px на телефоні. */
+.sleep-night.is-live .night-chart{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.sleep-night.is-live .night-label[data-row=wake],.sleep-night.is-live .night-bar[data-stage=wake]{cursor:default}
+@media (hover:hover){
+.sleep-night.is-live .night-label:not([data-row=wake]):hover{color:var(--text)}
+.sleep-night.is-live:not([data-selected]) .night-bar:not([data-stage=wake]):hover{opacity:1}
+}
 .night-axis{display:flex;justify-content:space-between;margin:6px 0 0 calc(var(--label) + 8px);font-size:12px;line-height:1.4;color:var(--muted)}
 .night-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
 .night-now{flex:1 1 190px;margin:0;font-size:13px;line-height:1.45;color:var(--muted);min-height:1.45em}
@@ -44,7 +52,7 @@ body[data-platform-area=sleep]>.eua-platform-nav{max-width:1184px;margin:10px au
 .night-play:hover{border-color:var(--gold)}
 .night-play:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 @media(min-width:1000px){.sleep-stage-top{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:48px;align-items:center}.sleep-night{--row:38px;--bar:20px}}
-@media(max-width:600px){.sleep-night{--row:28px;--bar:14px;--label:58px;padding:14px 12px 8px}.night-head{margin-bottom:10px}.night-foot{flex-wrap:nowrap;gap:10px;margin-top:8px;padding-top:6px}.night-now{flex:1 1 0;min-width:0}.night-play{flex:0 0 auto;min-width:120px;padding:0 12px}}
+@media(max-width:600px){.sleep-night{--row:32px;--bar:16px;--label:58px;padding:14px 12px 8px}.night-head{margin-bottom:10px}.night-foot{flex-wrap:nowrap;gap:10px;margin-top:8px;padding-top:6px}.night-now{flex:1 1 0;min-width:0}.night-play{flex:0 0 auto;min-width:120px;padding:0 12px}}
 @media(prefers-reduced-motion:reduce){.night-bar,.night-label{transition:none}}
 @media print{.night-foot,.night-cursor{display:none}}
 
@@ -56,14 +64,24 @@ body[data-platform-area=sleep] .pb .module-meta a.meta-button{display:inline-fle
 /* Заголовок «Дивись також» менший за заголовки основних розділів: це довідка в кінці сторінки, а не розділ. */
 .sleep-related .section-intro{margin-bottom:16px}
 .sleep-related .section-intro h2{font-size:clamp(24px,3vw,30px);margin-bottom:0}
-.related-list li{display:grid}
-.related-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}
-.related-list a{display:flex;flex-direction:column;justify-content:center;gap:6px;min-height:72px;padding:14px 18px;border:1px solid var(--border);border-radius:var(--rd-12,12px);background:var(--c-1a322c66,#1a322c66);color:var(--text)}
-.related-list a:hover{border-color:var(--c-ffdb8090,#ffdb8090)}
-.related-list small{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
-.related-list span{font-size:15px;line-height:1.35}
-.related-list span::after{content:'\00a0→';content:'\00a0→' / '';color:var(--gold)}
-@media(max-width:600px){.related-list{gap:8px}.related-list a{min-height:96px;padding:12px;gap:4px}.related-list span{font-size:14px}}
+.related-list{margin:0;padding:0;list-style:none}
+/* «Дивись також» у стилі «рейки» (рішення власника «5 так», 2026-11-09): рядки з вузлами-стрілками на тонкій лінії, та сама мова кружків і лінії, що в схемі ночі й у звичках. Слова й посилання ті самі.
+   Вузол-кружок зі стрілкою і лінія між вузлами малюються стилями (стрілка декоративна: порожня текстова альтернатива, з простим запасним варіантом); весь рядок це посилання не нижче 62 px. */
+.related-list li{position:relative}
+.related-list li::before,.related-list li::after{content:'';position:absolute;left:12.5px;width:1px;background:var(--border)}
+.related-list li::before{top:0;bottom:calc(50% + 13px)}
+.related-list li::after{top:calc(50% + 13px);bottom:0}
+.related-list li:first-child::before{display:none}
+.related-list li:last-child::after{background:linear-gradient(var(--border),transparent)}
+.related-list a{position:relative;display:flex;flex-direction:column;justify-content:center;gap:3px;min-height:62px;padding:10px 4px 10px 40px;color:var(--text)}
+.related-list a::before{content:'→';content:'→' / '';position:absolute;left:0;top:50%;box-sizing:border-box;width:26px;height:26px;margin-top:-13px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:50%;font-family:Arial,sans-serif;font-size:14px;line-height:1;color:var(--gold);transition:background .2s,color .2s}
+.related-list a:hover::before,.related-list a:focus-visible::before{background:var(--gold);color:var(--c-152a25,#152a25)}
+.related-list a:hover span,.related-list a:focus-visible span{color:var(--gold)}
+.related-list a:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.related-list small{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.related-list span{font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:17px;line-height:1.28;letter-spacing:-.015em;transition:color .2s}
+@media (prefers-reduced-motion:reduce){.related-list a::before,.related-list span{transition:none}}
+@media(min-width:1000px){.sleep-related{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:0 48px;align-items:start}.sleep-related .section-intro{margin-bottom:0}}
 
 /* Розділи сторінки як компактні кнопки на комп’ютері (раніше три широкі порожні плитки). На телефоні лишається три колонки. */
 @media(min-width:901px){.sleep-chapters{display:flex;flex-wrap:wrap;gap:10px}.sleep-chapters>a{flex:0 0 auto;min-height:44px;padding:10px 18px;font-size:13px}.sleep-chapters span{font-size:11px}}

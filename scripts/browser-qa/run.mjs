@@ -2933,6 +2933,238 @@ async function mechanismsFlow(browser, origin, viewport) {
   await context.close();
 }
 
+// Схема ночі на сторінці «Сон і відновлення» та блок «Дивись також» (рішення власника 34–37, 2026-11-09). Тести в Node бачать дані й логіку; тут міряємо те, що видно й рухається в Chromium:
+// розкладку (смуги в сітці, підписи проти своїх рядків, без виходу за ширину), рух курсора, паузу, зупинку поза екраном, вибір стадії кнопками, режим без руху, клавіатуру,
+// розмір цілей дотику, справжність посилань і кольори (різниця між стадіями, що йдуть у ночі підряд, у космічній і зеленій палітрах за правилами скіла dataviz).
+const NIGHT_STAGE_ORDER = ['wake', 'rem', 'n1', 'n2', 'n3'];
+// Пари стадій, що в умовній ночі стоять поруч у часі (див. SEGMENTS у src/sleep/night.mjs): колір саме цих пар мусить відрізнятися.
+// «cat» — різні категорії (неспання, REM, ряд N1–N3): на нормальному зорі ΔE ≥ 15, при протанопії/дейтеранопії ≥ 8 (правила dataviz для категорій).
+// «ord» — сусідні кроки одного ряду «глибше = насиченіше»: за правилом dataviz для впорядкованих рядів крок світлоти ΔL ≥ 0,06; ΔE ≥ 12 (нормальний зір і CVD) тут як страховка.
+const NIGHT_NEIGHBOURS = [['wake', 'n1', 'cat'], ['wake', 'n2', 'cat'], ['n1', 'n2', 'ord'], ['n2', 'n3', 'ord'], ['n2', 'rem', 'cat'], ['rem', 'n1', 'cat']];
+const nightLin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+const nightLab = ([r, g, b]) => {
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+};
+// Machado, Oliveira, Fernandes (2009), severity 1.0, лінійний RGB: ті самі матриці, що в validate_palette.js скіла dataviz.
+const NIGHT_CVD = {
+  protan: [[0.152286, 1.052583, -0.204868], [0.114503, 0.786281, 0.099216], [-0.003882, -0.048116, 1.051998]],
+  deutan: [[0.367322, 0.860646, -0.227968], [0.280085, 0.672501, 0.047413], [-0.01182, 0.04294, 0.968881]]
+};
+const nightDeltaE = (a, b, kind) => {
+  const lin = c => c.map(nightLin), sim = c => { if (!kind) return lin(c); const L = lin(c); return NIGHT_CVD[kind].map(row => Math.min(1, Math.max(0, row[0] * L[0] + row[1] * L[1] + row[2] * L[2]))); };
+  const x = nightLab(sim(a)), y = nightLab(sim(b));
+  return 100 * Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+};
+const nightLum = c => { const [r, g, b] = c.map(nightLin); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const nightContrast = (a, b) => { const x = nightLum(a), y = nightLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const nightRgb = text => { const m = /rgba?\(([^)]+)\)/.exec(text || ''); const p = m ? m[1].split(/[,\s/]+/).filter(Boolean).map(Number) : []; return {r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1}; };
+
+// Реальні кольори смуг: колір смуги з її прозорістю, накладений на тло схеми (так їх складає браузер).
+async function nightColours(page) {
+  const raw = await page.evaluate(() => {
+    const fig = document.querySelector('[data-sleep-night]');
+    const pick = stage => { const bars = [...fig.querySelectorAll(`.night-bar[data-stage="${stage}"]`)].filter(b => !b.classList.contains('is-now')); const bar = bars[bars.length - 1]; const cs = getComputedStyle(bar); return {color: cs.backgroundColor, opacity: parseFloat(cs.opacity)}; };
+    const out = {surface: getComputedStyle(fig).backgroundColor, bars: {}};
+    for (const stage of ['wake', 'rem', 'n1', 'n2', 'n3']) out.bars[stage] = pick(stage);
+    out.label = getComputedStyle(fig.querySelector('.night-label')).color;
+    out.now = getComputedStyle(fig.querySelector('.night-now')).color;
+    out.head = getComputedStyle(fig.querySelector('.night-head span')).color;
+    return out;
+  });
+  const surface = nightRgb(raw.surface), surf = [surface.r, surface.g, surface.b];
+  const colours = {};
+  for (const [stage, {color, opacity}] of Object.entries(raw.bars)) { const c = nightRgb(color); colours[stage] = [c.r, c.g, c.b].map((v, i) => v * opacity + surf[i] * (1 - opacity)); }
+  const text = key => { const c = nightRgb(raw[key]); return [c.r, c.g, c.b]; };
+  return {surface: surf, surfaceAlpha: surface.a, colours, label: text('label'), now: text('now'), head: text('head')};
+}
+
+async function sleepNightFlow(browser, origin, viewport) {
+  const where = `sleep night @${viewport.name}`;
+  const wide = viewport.width >= 1000;
+  const night = await import(pathToFileURL(path.join(dist, 'sleep-night.js')).href).catch(() => null);
+  check(where, night && night.SEGMENTS && night.SEGMENTS.length > 8, 'the page delivers the night module (sleep-night.js) with the data of the scheme');
+  if (!night) return;
+  const read = page => page.evaluate(() => { const f = document.querySelector('[data-sleep-night]'); return {clock: performance.now(), t: parseFloat(f.style.getPropertyValue('--t')), selected: f.dataset.selected || null, button: f.querySelector('.night-play').textContent.trim(), now: f.querySelector('.night-now').textContent.trim(), nowStage: f.querySelector('.night-bar.is-now')?.dataset.stage || null, nowCount: f.querySelectorAll('.night-bar.is-now').length, cursor: f.querySelector('.night-cursor').getBoundingClientRect().x + 1, plotX: f.querySelector('.night-plot').getBoundingClientRect().x, plotW: f.querySelector('.night-plot').getBoundingClientRect().width}; });
+  const advance = (a, b) => ((b - a) % 1 + 1) % 1;
+  const centre = page => page.evaluate(() => document.querySelector('[data-sleep-night]').scrollIntoView({block: 'center'}));
+
+  // 1) Розмітка й розкладка.
+  const {context, page, seen} = await open(browser, origin, viewport, '/sleep.html');
+  const figure = page.locator('[data-sleep-night]');
+  await page.waitForFunction(() => document.querySelector('[data-sleep-night]')?.classList.contains('is-live'), null, {timeout: 5000});
+  await centre(page);
+  const layout = await page.evaluate(() => {
+    const fig = document.querySelector('[data-sleep-night]'), plot = fig.querySelector('.night-plot').getBoundingClientRect(), box = fig.getBoundingClientRect();
+    const intro = document.querySelector('.sleep-stage-top > .section-intro').getBoundingClientRect();
+    const bars = [...fig.querySelectorAll('.night-bar')].map(b => { const q = b.getBoundingClientRect(); return {stage: b.dataset.stage, i: Number(b.dataset.i), x: q.x, right: q.right, cy: q.y + q.height / 2, h: q.height, w: q.width}; });
+    const labels = [...fig.querySelectorAll('.night-label')].map(l => { const q = l.getBoundingClientRect(); return {text: l.textContent.trim(), row: l.dataset.row, cy: q.y + q.height / 2, size: parseFloat(getComputedStyle(l).fontSize), right: q.right}; });
+    const chart = fig.querySelector('.night-chart');
+    return {box: {x: box.x, right: box.right, y: box.y}, intro: {right: intro.right, bottom: intro.bottom}, plot: {x: plot.x, w: plot.width, right: plot.right}, bars, labels, role: chart.getAttribute('role'), aria: chart.getAttribute('aria-label'), hidden: [...fig.querySelectorAll('.night-rows,.night-plot,.night-axis')].map(e => e.getAttribute('aria-hidden')), caption: fig.querySelector('.night-head span').textContent.trim(), axis: [...fig.querySelectorAll('.night-axis span')].map(s => s.textContent.trim()), overflow: document.documentElement.scrollWidth - innerWidth, svg: fig.querySelectorAll('svg,canvas,img').length};
+  });
+  check(where, layout.box.x >= -0.5 && layout.box.right <= viewport.width + 0.5 && layout.overflow <= 1, `the scheme fits the width (${layout.box.x}…${layout.box.right}, overflow ${layout.overflow})`);
+  if (wide) check(where, layout.box.x >= layout.intro.right - 1, 'on a computer the scheme stands beside the intro text, not under it');
+  else check(where, await page.evaluate(() => document.querySelector('[data-sleep-night]').getBoundingClientRect().top >= document.querySelector('.sleep-stage-top > .section-intro').getBoundingClientRect().bottom - 1), 'on a phone the scheme comes right after the intro text');
+  check(where, layout.bars.length === night.SEGMENTS.length, `one bar per segment (${layout.bars.length} of ${night.SEGMENTS.length})`);
+  check(where, layout.labels.map(l => l.text).join('|') === 'Неспання|REM|N1|N2|N3', `five row labels in the order of a hypnogram: ${layout.labels.map(l => l.text)}`);
+  check(where, layout.labels.every(l => l.size >= 12), 'row labels are real text, not smaller than 12 px');
+  check(where, layout.svg === 0, 'no picture, canvas or SVG: labels and bars are plain HTML');
+  check(where, layout.role === 'img' && layout.aria === night.SUMMARY && layout.hidden.every(v => v === 'true'), 'a screen reader gets one text description of the scheme; the drawn parts are hidden from it');
+  check(where, /Умовний приклад/.test(layout.caption) && layout.axis.join('|') === 'початок ночі|ранок', 'the scheme says it is a conditional example and marks the start and the morning, without any times');
+  const rowY = {};
+  for (const stage of NIGHT_STAGE_ORDER) { const ys = layout.bars.filter(b => b.stage === stage).map(b => b.cy); rowY[stage] = ys[0]; check(where, ys.every(y => Math.abs(y - ys[0]) <= 1), `all ${stage} bars stand on one row`); }
+  check(where, NIGHT_STAGE_ORDER.every((s, i) => !i || rowY[s] > rowY[NIGHT_STAGE_ORDER[i - 1]] + 8), `rows go wake, REM, N1, N2, N3 from top to bottom: ${NIGHT_STAGE_ORDER.map(s => Math.round(rowY[s]))}`);
+  check(where, layout.labels.every(l => Math.abs(l.cy - rowY[l.row]) <= 2), 'every label stands against its own row');
+  check(where, layout.labels.every(l => l.right <= layout.plot.x + 1), 'labels do not run into the plot');
+  check(where, layout.bars.every(b => b.h >= 10 && b.h <= 24 && b.w >= 4.5), `bars are between 10 and 24 px tall and at least 5 px wide (max ${Math.max(...layout.bars.map(b => b.h))} px)`);
+  const slots = night.SLOTS;
+  check(where, layout.bars.every(b => { const seg = night.SEGMENTS[b.i]; return Math.abs(b.x - (layout.plot.x + layout.plot.w * seg.start / slots)) <= 1.5 && (b.w >= layout.plot.w * seg.len / slots - 1.5 || b.w <= 5.5); }), 'a bar starts where its segment starts and is as long as the segment (the time axis is honest)');
+  check(where, layout.bars.every(b => b.x >= layout.plot.x - 1 && b.right <= layout.plot.right + 1), 'no bar leaves the plot');
+
+  // 2) Рух: схема, яку видно, рухається сама; курсор іде вперед і збігається з підписом «зараз».
+  await page.waitForFunction(() => /Пауза/.test(document.querySelector('.night-play')?.textContent || ''), null, {timeout: 4000}).catch(() => {});
+  const m0 = await read(page);
+  check(where, /Пауза/.test(m0.button) && m0.now.startsWith('На схемі зараз: '), `the night moves by itself once the scheme is on the screen (${m0.button}; ${m0.now})`);
+  await page.waitForTimeout(800);
+  const m1 = await read(page);
+  const step = advance(m0.t, m1.t), elapsed = (m1.clock - m0.clock) / night.NIGHT_MS;
+  check(where, step >= elapsed * 0.4 && step <= elapsed + 0.003, `the cursor moves forward by the time that passed, not faster (${step.toFixed(4)} of the night, ${elapsed.toFixed(4)} of real time)`);
+  check(where, m1.nowCount === 1 && m1.now.includes(night.labelOf(m1.nowStage)), `exactly one bar is «now» and the label names its stage (${m1.nowStage}: ${m1.now})`);
+  check(where, Math.abs(m1.cursor - (m1.plotX + m1.t * m1.plotW)) <= 2, 'the cursor stands where --t says');
+
+  // 3) Пауза.
+  await page.locator('.night-play').click();
+  const p0 = await read(page);
+  await page.waitForTimeout(700);
+  const p1 = await read(page);
+  check(where, /Відтворити/.test(p0.button) && p1.t === p0.t && p1.now === p0.now, 'the pause button stops the cursor and the label');
+  check(where, await page.locator('.night-play').evaluate(el => { const r = el.getBoundingClientRect(); return r.height >= 44 && r.width >= 44; }), 'the play/pause button is at least 44 × 44 px');
+
+  // 4) Вибір стадії кнопками: схема стає на першу смугу цієї стадії й підсвічує всі її смуги; решта притушена.
+  const opacity = stage => page.evaluate(s => [...document.querySelectorAll(`.night-bar[data-stage="${s}"]`)].map(b => parseFloat(getComputedStyle(b).opacity)), stage);
+  const labelColour = row => page.evaluate(r => getComputedStyle(document.querySelector(`.night-label[data-row="${r}"]`)).color, row);
+  // Стадію обирають, поки ніч іде: вибір сам ставить схему на паузу (без цього курсор побіг би далі від обраної смуги).
+  await page.locator('.night-play').click();
+  await page.waitForTimeout(300);
+  check(where, /Пауза/.test((await read(page)).button), 'the night is moving again before a stage is chosen');
+  await page.locator('[data-sleep-stage="n3"]').click();
+  await page.waitForTimeout(450);
+  const s0 = await read(page);
+  check(where, s0.selected === 'n3' && /Відтворити/.test(s0.button) && s0.now === 'Показано: N3 · Глибокий сон', `choosing N3 pauses the scheme and names the stage (${s0.selected}; ${s0.now})`);
+  const firstN3 = night.SEGMENTS.find(s => s.stage === 'n3');
+  check(where, Math.abs(s0.t - (firstN3.start + 0.5) / slots) < 1e-4 && s0.nowStage === 'n3', 'the cursor stands in the middle of the first N3 bar');
+  const n3 = await opacity('n3'), n2 = await opacity('n2'), rem = await opacity('rem');
+  check(where, n3.every(o => o === 1) && [...n2, ...rem].every(o => o < 0.4), `every N3 bar is lit and the other stages are dimmed (N3 ${n3}; N2 max ${Math.max(...n2)})`);
+  check(where, (await labelColour('n3')) !== (await labelColour('n2')), 'the label of the chosen row is brighter than the others');
+  const sT = await read(page);
+  await page.waitForTimeout(600);
+  check(where, (await read(page)).t === sT.t, 'a chosen stage stays put: the cursor does not move');
+  check(where, (await page.locator('[data-stage-panel="n3"]').isVisible()) && (await page.locator('[data-stage-panel="n2"]').isHidden()), 'the explanation of the chosen stage is shown, as before');
+  await page.locator('[data-sleep-stage="rem"]').click();
+  await page.waitForTimeout(450);
+  const s1 = await read(page), remO = await opacity('rem'), n3b = await opacity('n3');
+  check(where, s1.selected === 'rem' && s1.nowStage === 'rem' && remO.every(o => o === 1) && n3b.every(o => o < 0.4), 'another stage takes the highlight over from the first');
+  // «Відтворити» знімає виділення й запускає ніч.
+  await page.locator('.night-play').click();
+  await page.waitForTimeout(450);
+  const r0 = await read(page);
+  await page.waitForTimeout(600);
+  const r1 = await read(page);
+  check(where, r0.selected === null && /Пауза/.test(r0.button) && advance(r0.t, r1.t) > 0.005, 'Play removes the highlight and the night goes on');
+  check(where, (await opacity('n2')).some(o => o > 0.5) && (await opacity('rem')).every(o => o > 0.9), 'all stages are shown normally again');
+
+  // 5) Клавіатура: кнопка керується Enter і пропуском.
+  await page.locator('.night-play').focus();
+  await page.keyboard.press('Enter');
+  const k0 = await read(page);
+  check(where, /Відтворити/.test(k0.button), 'Enter pauses');
+  await page.keyboard.press('Space');
+  check(where, /Пауза/.test((await read(page)).button), 'Space plays');
+  await page.keyboard.press('Enter');
+
+  // 6) Поза екраном схема стоїть, повернулась — іде далі (якщо людина не ставила паузу).
+  await page.locator('.night-play').click();
+  await centre(page);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(500);
+  const o0 = await read(page);
+  await page.waitForTimeout(700);
+  const o1 = await read(page);
+  check(where, o1.t === o0.t, 'while the scheme is off the screen the night stands still');
+  await centre(page);
+  await page.waitForTimeout(500);
+  const o2 = await read(page);
+  await page.waitForTimeout(600);
+  check(where, advance(o2.t, (await read(page)).t) > 0.005 && /Пауза/.test((await read(page)).button), 'and goes on when the scheme comes back');
+
+  // 7) Дрібниці з правки 34: одна кнопка в шапці, пропущений пробіл, без виходу за ширину.
+  await page.evaluate(() => scrollTo(0, 0));
+  const hero = page.locator('.module-meta a');
+  check(where, (await hero.count()) === 1 && (await hero.evaluate(el => el.getBoundingClientRect().height)) >= 44, 'the hero has one button of at least 44 px instead of three small links');
+  check(where, /від того,\s+що саме вимірюють/.test(await page.locator('#sleep-performance h3').first().innerText()), 'the heading «від того, що саме вимірюють» has its space on every width');
+  // 8) «Дивись також»: чотири посилання не нижче 44 px, справжні адреси, перше відкриває картку розбору.
+  const related = await page.locator('.related-list a').evaluateAll(els => els.map(a => { const r = a.getBoundingClientRect(); return {href: a.getAttribute('href'), w: r.width, h: r.height, right: r.right, left: r.left, text: a.innerText.replace(/\s+/g, ' ').trim(), arrow: getComputedStyle(a.querySelector('span'), '::after').content}; }));
+  check(where, related.length === 4 && related.every(l => l.h >= 44 && l.w >= 120 && l.left >= -0.5 && l.right <= viewport.width + 0.5), `four related links, each at least 44 px tall and inside the width (${related.map(l => Math.round(l.w) + '×' + Math.round(l.h))})`);
+  check(where, related.every(l => l.arrow.startsWith('"\u00a0→"') && l.text.length > 20), `every related link has its arrow after a non-breaking space, so the arrow never wraps alone (${JSON.stringify(related.map(l => l.arrow))})`);
+  check(where, related.every(l => /\/ ""$/.test(l.arrow)), 'the arrow is decorative: it has an empty text alternative, so a screen reader reads the link without it');
+  for (const link of related) { const response = await context.request.get(origin + '/' + link.href.replace(/^\.\//, '').split('#')[0]); check(where, response.status() === 200, `${link.href} opens`); }
+  check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'no horizontal overflow on the page');
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `no errors, no third-party requests, no bad responses: ${JSON.stringify(seen.pageErrors.concat(seen.console, seen.external, seen.badResponses))}`);
+  await artifact(page, viewport, 'sleep-night', figure);
+  await context.close();
+
+  // 9) Перехід за посиланням «Дивись також» відкриває саме ту картку розбору.
+  const jump = await open(browser, origin, viewport, '/sleep.html');
+  await jump.page.locator('.related-list a').first().scrollIntoViewIfNeeded();
+  await jump.page.locator('.related-list a').first().click();
+  const opened = await jump.page.waitForURL(/research\.html#magnesium-sleep$/, {timeout: 5000}).then(() => jump.page.waitForFunction(() => document.getElementById('rs-magnesium-sleep')?.open === true, null, {timeout: 5000})).then(() => true, () => false);
+  check(where, opened, 'the first related link opens the research page with the magnesium card opened');
+  await jump.context.close();
+
+  // 10) Без руху: система просить без анімації, тож схема починає зі стану «пауза» й рухається лише від людини.
+  const calm = await open(browser, origin, viewport, '/sleep.html', {contextOptions: {reducedMotion: 'reduce'}});
+  await calm.page.waitForFunction(() => document.querySelector('[data-sleep-night]')?.classList.contains('is-live'), null, {timeout: 5000});
+  await centre(calm.page);
+  await calm.page.waitForTimeout(900);
+  const c0 = await read(calm.page);
+  await calm.page.waitForTimeout(700);
+  const c1 = await read(calm.page);
+  check(where, c1.t === c0.t && /Відтворити/.test(c0.button) && c0.now === 'Обери стадію або запусти ніч.', `reduced motion: the scheme starts paused and says what to do (${c0.now})`);
+  await calm.page.locator('.night-play').click();
+  await calm.page.waitForTimeout(700);
+  check(where, advance(c0.t, (await read(calm.page)).t) > 0.005, 'reduced motion: a person can still start the night');
+  await calm.page.locator('.night-play').click();
+  await calm.page.reload({waitUntil: 'load'});
+  await calm.page.waitForFunction(() => document.querySelector('[data-sleep-night]')?.classList.contains('is-live'), null, {timeout: 5000});
+  await centre(calm.page);
+  await calm.page.waitForTimeout(700);
+  const colours = {cosmic: await nightColours(calm.page)};
+  await calm.context.close();
+  const green = await open(browser, origin, viewport, '/sleep.html', {contextOptions: {reducedMotion: 'reduce'}, initScript: () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}))});
+  await green.page.waitForFunction(() => document.querySelector('[data-sleep-night]')?.classList.contains('is-live'), null, {timeout: 5000});
+  await centre(green.page);
+  await green.page.waitForTimeout(700);
+  colours.green = await nightColours(green.page);
+  check(where, (await green.page.locator('html').getAttribute('data-palette')) === 'green', 'the green palette is on for the second colour check');
+  await artifact(green.page, viewport, 'sleep-night-green', green.page.locator('[data-sleep-night]'));
+  await green.context.close();
+
+  // 11) Кольори: у кожній палітрі стадії, що йдуть у ночі підряд, відрізняються (ΔE у OKLab ×100: ≥ 15 на нормальному зорі, ≥ 8 при протанопії й дейтеранопії),
+  // а кожна смуга має контраст із тлом ≥ 3 (WCAG 1.4.11 для значущої графіки). Це правила скіла dataviz.
+  for (const [palette, data] of Object.entries(colours)) {
+    check(where, data.surfaceAlpha >= 0.99, `${palette}: the scheme background is opaque, so the colours are real`);
+    for (const [a, b, kind] of NIGHT_NEIGHBOURS) {
+      const normal = nightDeltaE(data.colours[a], data.colours[b], null), cvd = Math.min(nightDeltaE(data.colours[a], data.colours[b], 'protan'), nightDeltaE(data.colours[a], data.colours[b], 'deutan'));
+      const stepL = Math.abs(nightLab(data.colours[a].map(nightLin))[0] - nightLab(data.colours[b].map(nightLin))[0]);
+      const ok = kind === 'cat' ? normal >= 15 && cvd >= 8 : stepL >= 0.06 && normal >= 12 && cvd >= 12;
+      check(where, ok, `${palette}: ${a} and ${b} (${kind}) differ enough (normal ${normal.toFixed(1)}, colour-blind ${cvd.toFixed(1)}, lightness step ${stepL.toFixed(3)})`);
+    }
+    for (const stage of NIGHT_STAGE_ORDER) { const ratio = nightContrast(data.colours[stage], data.surface); check(where, ratio >= 3, `${palette}: the ${stage} bar against the background ${ratio.toFixed(2)} (WCAG 1.4.11 asks for 3)`); }
+    for (const key of ['label', 'now', 'head']) { const ratio = nightContrast(data[key], data.surface); check(where, ratio >= 4.5, `${palette}: the ${key} text against the background ${ratio.toFixed(2)}`); }
+  }
+}
+
 async function homeFreshCardsFlow(browser, origin, viewport) {
   // Бриф T4 (2026-11-02): три картки різної форми в блоці «Нове на сайті». Висота блоку на телефоні до зміни: 950 px (390), бюджет брифу +150.
   const where = `home fresh cards @${viewport.name}`;
@@ -3946,6 +4178,8 @@ try {
     // T3: ширини навколо порогу 1360 px: до нього приміток немає, від нього вони видимі й нічого не накладається.
     for (const width of [1100, 1280, 1360]) await isolatedFlow(sidenotesFlow, browser, origin, {name: 'wide-' + width, width, height: 900});
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
+    // Сторінка сну (2026-11-09, рішення власника 34–37): схема ночі, блок «Дивись також», одна кнопка в шапці; 360 включено, бо вузький телефон найдовший і найтісніший.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(sleepNightFlow, browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow, browser, origin, viewport);
     await homeFlows(browser, origin);

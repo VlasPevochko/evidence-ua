@@ -74,7 +74,10 @@ assert(minHeight('.related-list a{') >= 44, 'a related link is at least 44 px ta
 assert(css.includes("content:'\\00a0→';content:'\\00a0→' / '';"), 'the arrow after a related link follows a non-breaking space (it never wraps alone) and has an empty text alternative, with a plain fallback for browsers without alt text in content');
 const phoneRelated = css.match(/@media\(max-width:600px\)\{\.related-list\{[^}]*\}\.related-list a\{([^}]*)\}/);
 assert(phoneRelated && Number((phoneRelated[1].match(/min-height:(\d+)px/) || [])[1]) >= 44, 'and on a phone too');
-const phoneBlock = css.slice(css.indexOf('/* Телефон: той самий текст'));
+// Блок «щільніші інтервали» закінчується першим рядком «}» після його коментаря. Раніше зріз ішов до кінця файла; відтоді після нього додано блок карток звичок (там є розмір значка «＋»),
+// тож зріз обмежено самим блоком: він, як і раніше, не має права міняти розміри шрифтів.
+const phoneStart = css.indexOf('/* Телефон: той самий текст');
+const phoneBlock = css.slice(phoneStart, css.indexOf('\n}\n', phoneStart) + 3);
 assert(phoneBlock.includes('@media(max-width:600px)') && !/font-size/.test(phoneBlock), 'the phone block changes only spacing, never font sizes');
 
 // 4) Журнал: три записи за 2026-11-09, правдиві й без нових наукових тверджень.
@@ -98,8 +101,12 @@ assert(entry('related').text.includes('чотири посилання'), 'the r
 assert(/магній/.test(entry('related').text) && /інтервальне голодування/.test(entry('related').text) && /короткий сон/.test(entry('related').text) && /кофеїн/.test(entry('related').text), 'and names what they lead to');
 assert(entry('phone').text.includes('одна кнопка замість трьох'), 'the phone record says what happened to the three links');
 // Версії: сторінка журналу й її дані піднято, сторінка сну несе нові версії.
-assert(/changes-page\.js\?v=30/.test(read('dist/changes.html')) && read('dist/changes-page.js').includes("changes-data.js?v=30"), 'the journal page and its data have a new version');
-assert(/sleep\.css\?v=86/.test(page) && /sleep\.js\?v=83/.test(page), 'the sleep page carries the new versions of its style and script');
+// Версії не прив'язані до точних чисел (2026-11-09, після картки звичок): кожна наступна зміна цих файлів піднімає їх, а тест мусить лишатися чинним. Важливе: журнал і його дані мають ОДНУ версію, не нижчу за ту,
+// з якою вийшли записи про схему ночі (30), а сторінка сну несе версії не нижчі за ті, з якими вийшла схема (стиль 86, скрипт 83).
+const versionOf = (text, name) => Number((text.match(new RegExp(name.replace(/[.]/g, '\\.') + '\\?v=(\\d+)')) || [])[1]);
+const journalVersion = versionOf(read('dist/changes.html'), 'changes-page.js');
+assert(journalVersion >= 30 && journalVersion === versionOf(read('dist/changes-page.js'), 'changes-data.js'), 'the journal page and its data have the same, new version');
+assert(versionOf(page, 'sleep.css') >= 86 && versionOf(page, 'sleep.js') >= 83, 'the sleep page carries the new versions of its style and script');
 // Картка «Нове на сайті» на головній збирається з журналу, тож найновіший запис про сон має бути в ній.
 const home = read('dist/index.html');
 assert(home.includes('<time datetime="2026-11-09">9 листопада</time>') && home.includes('<li>Схема ночі на сторінці «Сон і відновлення»</li>'), 'the home card «Нове на сайті» shows the newest day with the scheme record');

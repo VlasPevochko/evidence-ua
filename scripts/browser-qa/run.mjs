@@ -3165,6 +3165,113 @@ async function sleepNightFlow(browser, origin, viewport) {
   }
 }
 
+// Картки звичок на сторінці сну (рішення власника «1 так», 2026-11-09): до 600 px кожна згортається в рядок-кнопку, на комп'ютері й без JavaScript усе видно, як і раніше.
+// Тести в Node бачать логіку й розмітку; тут міряємо у справжньому браузері: розмір рядків, видимість тексту, дотик і клавіатуру, зміну ширини в обидва боки, друк, висоту розділу.
+const HABIT_TITLES = ['Стабільний ритм', 'Світло й спокій', 'Тиха, темна, прохолодна спальня', 'Увага до стимуляторів'];
+async function sleepHabitsFlow(browser, origin, viewport) {
+  const where = `sleep habits @${viewport.name}`;
+  const phone = viewport.width <= 600;
+  const {context, page, seen} = await open(browser, origin, viewport, '/sleep.html');
+  const list = page.locator('.habit-list');
+  const bodies = page.locator('.habit-body');
+  check(where, (await bodies.count()) === 4, 'four habit texts, each in its own .habit-body');
+  const state = () => page.evaluate(() => ({
+    folded: document.querySelector('.habit-list').classList.contains('is-fold'),
+    buttons: [...document.querySelectorAll('.habit-list .habit-toggle')].map(b => ({text: b.textContent.trim(), expanded: b.getAttribute('aria-expanded'), controls: b.getAttribute('aria-controls'), h: b.getBoundingClientRect().height, w: b.getBoundingClientRect().width, left: b.getBoundingClientRect().left, right: b.getBoundingClientRect().right, inHeading: b.parentElement.tagName === 'H3'})),
+    shown: [...document.querySelectorAll('.habit-body')].map(b => { const r = b.getBoundingClientRect(), cs = getComputedStyle(b); return cs.display !== 'none' && r.height > 0; }),
+    headings: [...document.querySelectorAll('.habit-list h3')].map(h => h.textContent.trim()),
+    section: document.getElementById('sleep-habits').getBoundingClientRect().height,
+    overflow: document.documentElement.scrollWidth - innerWidth
+  }));
+  await page.waitForTimeout(300);
+  let s = await state();
+  check(where, s.overflow <= 1, `no horizontal overflow (${s.overflow})`);
+  check(where, s.headings.join('|') === HABIT_TITLES.join('|'), `the four habit titles are headings in the same order: ${s.headings}`);
+  if (phone) {
+    check(where, s.folded && s.buttons.length === 4, 'on a phone the cards are folded into four rows with a button each');
+    check(where, s.buttons.every(b => b.inHeading), 'the button sits inside the heading, so the heading stays a heading');
+    check(where, s.buttons.every(b => b.h >= 56 && b.w >= 200 && b.left >= 0 && b.right <= viewport.width + 0.5), `every row is at least 56 px tall and inside the width (${s.buttons.map(b => Math.round(b.h))})`);
+    check(where, s.buttons.map(b => b.text).join('|') === HABIT_TITLES.join('|'), 'every button says the title of its habit');
+    check(where, s.buttons.every((b, i) => b.expanded === 'false' && b.controls === `habit-body-${i + 1}`), 'every button says it is collapsed and names the text it controls');
+    check(where, s.shown.every(v => !v), 'all four texts are hidden at first');
+    check(where, s.section <= 680, `the habits section is short on a phone (${Math.round(s.section)} px; it was 928 px with the cards open)`);
+    check(where, (await page.getByRole('heading', {name: HABIT_TITLES[0], level: 3}).count()) === 1, 'a screen reader still finds the habits by their headings');
+    // Дотик відкриває одну картку й закриває її; інші не зачіпає.
+    const toggles = page.locator('.habit-toggle');
+    await toggles.nth(3).click();
+    s = await state();
+    check(where, s.buttons[3].expanded === 'true' && s.shown.join() === 'false,false,false,true', 'a tap opens the fourth habit only');
+    check(where, await page.locator('#habit-body-4').getByRole('link', {name: /Наш розбір кофеїну/}).isVisible(), 'its link to the caffeine breakdown is visible and tappable');
+    check(where, await page.locator('#habit-body-4 a').evaluate(a => a.getBoundingClientRect().height >= 44), 'the link is at least 44 px tall');
+    await toggles.nth(1).click();
+    s = await state();
+    check(where, s.shown.join() === 'false,true,false,true', 'a second habit opens without closing the first');
+    await toggles.nth(3).click();
+    await toggles.nth(1).click();
+    s = await state();
+    check(where, s.shown.every(v => !v) && s.buttons.every(b => b.expanded === 'false'), 'tapping again closes them');
+    // Клавіатура: кнопка керується Enter і пропуском.
+    await toggles.nth(0).focus();
+    await page.keyboard.press('Enter');
+    check(where, (await state()).shown[0] === true, 'Enter opens a habit');
+    await page.keyboard.press('Space');
+    check(where, (await state()).shown[0] === false, 'Space closes it');
+    // «Рейка»: у кожного рядка вузол-кружок із номером і шеврон; відкритий вузол заповнений (закритий порожній), шеврон перевертається.
+    const look = i => toggles.nth(i).evaluate(el => { const node = getComputedStyle(el, '::before'), chevron = getComputedStyle(el, '::after'); return {nodeW: parseFloat(node.width), nodeRadius: node.borderTopLeftRadius, nodeFill: node.backgroundColor, nodeContent: node.content, chevron: parseFloat(chevron.width), turn: chevron.transform}; });
+    const closed = await look(0);
+    check(where, closed.nodeW >= 24 && closed.nodeRadius !== '0px' && /counter/.test(closed.nodeContent) && closed.chevron > 0, `each row shows a round numbered node and a chevron (${JSON.stringify(closed)})`);
+    check(where, /rgba\(0, 0, 0, 0\)|transparent/.test(closed.nodeFill), 'a closed node is empty');
+    await toggles.nth(0).click();
+    await page.waitForTimeout(350);
+    const opened = await look(0);
+    check(where, !/rgba\(0, 0, 0, 0\)|transparent/.test(opened.nodeFill) && opened.turn !== closed.turn, 'an open node is filled and its chevron turns over');
+    await toggles.nth(0).click();
+    // У друку всі тексти розгорнуті.
+    await page.emulateMedia({media: 'print'});
+    check(where, (await state()).shown.every(v => v), 'on paper every habit text is shown');
+    await page.emulateMedia({media: 'screen'});
+    // Ширина росте: до комп'ютерної все розгортається, повертається вузька: знову згорнуто, і відкрите раніше теж.
+    await toggles.nth(2).click();
+    await page.setViewportSize({width: 1000, height: 800});
+    await page.waitForTimeout(250);
+    s = await state();
+    check(where, !s.folded && s.buttons.length === 0 && s.shown.every(v => v) && s.headings.join('|') === HABIT_TITLES.join('|'), 'widening the window unfolds everything and removes the buttons');
+    await page.setViewportSize({width: viewport.width, height: viewport.height});
+    await page.waitForTimeout(250);
+    s = await state();
+    check(where, s.folded && s.buttons.length === 4 && s.shown.every(v => !v) && s.buttons.every(b => b.expanded === 'false'), 'narrowing it again folds everything, nothing is left half open');
+    // Перехід за «03 Звички ↓» приводить до розділу, де видно чотири рядки.
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.locator('.sleep-chapters a[href="#sleep-habits"]').click();
+    const landed = await page.waitForFunction(() => { const t = document.getElementById('sleep-habits').getBoundingClientRect().top; return t > -40 && t < 220; }, null, {timeout: 6000}).then(() => true, () => false);
+    check(where, landed, 'the chapter link «03 Звички» lands on the habits section');
+    check(where, (await state()).buttons.every(b => b.h >= 56), 'and the four rows are there');
+  } else {
+    check(where, !s.folded && s.buttons.length === 0, 'on a computer there are no buttons and nothing is folded');
+    check(where, s.shown.every(v => v), 'all four habit texts are visible');
+    const rows = await page.locator('.habit-list article').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return {x: Math.round(r.x), y: Math.round(r.y)}; }));
+    check(where, rows[0].y === rows[1].y && rows[2].y === rows[3].y && rows[0].x < rows[1].x && rows[2].y > rows[0].y, `the cards stand in two columns as before (${JSON.stringify(rows)})`);
+    check(where, s.section >= 600, `the section keeps its size on a computer (${Math.round(s.section)} px)`);
+    // Вікно звужують до телефона: картки згортаються самі (без перезавантаження).
+    await page.setViewportSize({width: 390, height: 844});
+    await page.waitForTimeout(250);
+    s = await state();
+    check(where, s.folded && s.buttons.length === 4 && s.shown.every(v => !v), 'narrowing the window to a phone folds the cards without a reload');
+    await page.setViewportSize({width: viewport.width, height: viewport.height});
+    await page.waitForTimeout(250);
+    s = await state();
+    check(where, !s.folded && s.buttons.length === 0 && s.shown.every(v => v), 'and widening it brings everything back');
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `no errors, no third-party requests: ${JSON.stringify(seen.pageErrors.concat(seen.console, seen.external, seen.badResponses))}`);
+  await artifact(page, viewport, 'sleep-habits', list);
+  await context.close();
+  // Без JavaScript нічого не ховається: усі чотири тексти на місці й видимі (на будь-якій ширині).
+  const plain = await open(browser, origin, viewport, '/sleep.html', {contextOptions: {javaScriptEnabled: false}});
+  const plainShown = await plain.page.evaluate(() => [...document.querySelectorAll('.habit-body')].map(b => getComputedStyle(b).display !== 'none' && b.getBoundingClientRect().height > 0));
+  check(where, plainShown.length === 4 && plainShown.every(v => v) && (await plain.page.locator('.habit-toggle').count()) === 0, 'without JavaScript every habit text is shown and there are no buttons');
+  await plain.context.close();
+}
+
 async function homeFreshCardsFlow(browser, origin, viewport) {
   // Бриф T4 (2026-11-02): три картки різної форми в блоці «Нове на сайті». Висота блоку на телефоні до зміни: 950 px (390), бюджет брифу +150.
   const where = `home fresh cards @${viewport.name}`;
@@ -4180,6 +4287,8 @@ try {
     for (const viewport of viewports) await mechanismsFlow(browser, origin, viewport);
     // Сторінка сну (2026-11-09, рішення власника 34–37): схема ночі, блок «Дивись також», одна кнопка в шапці; 360 включено, бо вузький телефон найдовший і найтісніший.
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(sleepNightFlow, browser, origin, viewport);
+    // Картки звичок на сторінці сну (2026-11-09, рішення власника «1 так»): на телефоні згорнуті в рядки, на комп’ютері й без JavaScript усе видно.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(sleepHabitsFlow, browser, origin, viewport);
   for (const viewport of viewports) await homeFreshFlow(browser, origin, viewport);
   for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow, browser, origin, viewport);
     await homeFlows(browser, origin);

@@ -3073,6 +3073,38 @@ async function sleepNightFlow(browser, origin, viewport) {
   check(where, r0.selected === null && /Пауза/.test(r0.button) && advance(r0.t, r1.t) > 0.005, 'Play removes the highlight and the night goes on');
   check(where, (await opacity('n2')).some(o => o > 0.5) && (await opacity('rem')).every(o => o > 0.9), 'all stages are shown normally again');
 
+  // 4б) Схему можна торкатися (рішення власника «3 так»): рядок N1…REM діє як кнопка стадії, влучання в смугу ставить курсор на неї, «Неспання» не реагує. Це швидкий вибір поруч із кнопками (та сама дія).
+  await centre(page);
+  const plotBox = await page.evaluate(() => { const r = document.querySelector('.night-plot').getBoundingClientRect(); return {x: r.x, y: r.y, w: r.width, h: r.height}; });
+  const tapY = i => plotBox.y + (plotBox.h / 5) * (i + 0.5);
+  check(where, plotBox.h / 5 >= 31.5, `a row of the scheme is at least 32 px tall (${(plotBox.h / 5).toFixed(1)})`);
+  await page.mouse.click(plotBox.x - 20, tapY(4));
+  await page.waitForTimeout(450);
+  const tp1 = await read(page);
+  check(where, tp1.selected === 'n3' && /Відтворити/.test(tp1.button) && tp1.now === 'Показано: N3 · Глибокий сон', `tapping the N3 row picks the stage, pauses the night and names the stage (${tp1.selected}; ${tp1.now})`);
+  check(where, (await page.locator('[data-sleep-stage="n3"]').getAttribute('aria-pressed')) === 'true' && (await page.locator('[data-stage-panel="n3"]').isVisible()) && (await page.locator('[data-stage-panel="n1"]').isHidden()), 'the stage button is pressed and the explanation of the stage is shown, as after a click on the button');
+  check(where, Math.abs(tp1.t - (firstN3.start + 0.5) / slots) < 1e-4, 'a tap on the label puts the cursor on the first N3 bar');
+  const n3Bars = await page.locator('.night-bar[data-stage="n3"]').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return {x: r.x, w: r.width, cy: r.y + r.height / 2}; }));
+  const third = n3Bars[2];
+  await page.mouse.click(third.x + third.w / 2, third.cy);
+  await page.waitForTimeout(300);
+  const tp2 = await read(page);
+  check(where, tp2.selected === 'n3' && tp2.nowStage === 'n3' && Math.abs(tp2.cursor - (third.x + third.w / 2)) <= 2.5, `tapping a bar puts the cursor right there (${Math.round(tp2.cursor)} against ${Math.round(third.x + third.w / 2)})`);
+  await page.mouse.click(plotBox.x - 20, tapY(0));
+  const tp3 = await read(page);
+  check(where, tp3.t === tp2.t && tp3.selected === 'n3', 'the wake row has no explanation and does not react');
+  await page.locator('.night-play').click();
+  await page.waitForTimeout(250);
+  check(where, /Пауза/.test((await read(page)).button), 'the night moves again before the next tap');
+  await page.mouse.click(plotBox.x - 20, tapY(1));
+  await page.waitForTimeout(450);
+  const tp4 = await read(page);
+  check(where, tp4.selected === 'rem' && /Відтворити/.test(tp4.button) && (await page.locator('[data-sleep-stage="rem"]').getAttribute('aria-pressed')) === 'true', 'tapping REM while the night moves stops it on REM');
+  check(where, await page.evaluate(() => getComputedStyle(document.querySelector('.night-label[data-row="n3"]')).cursor === 'pointer' && getComputedStyle(document.querySelector('.night-label[data-row="wake"]')).cursor === 'default'), 'the hand shows over the tappable rows and not over the wake row');
+  check(where, (await page.locator('[data-sleep-night] .night-chart *').evaluateAll(els => els.filter(e => e.matches('a,button,input,[tabindex]')).length)) === 0, 'the scheme itself takes no focus (the stage buttons are the keyboard way to the same action)');
+  await page.locator('.night-play').click();
+  await page.waitForTimeout(300);
+
   // 5) Клавіатура: кнопка керується Enter і пропуском.
   await page.locator('.night-play').focus();
   await page.keyboard.press('Enter');
@@ -3104,10 +3136,12 @@ async function sleepNightFlow(browser, origin, viewport) {
   check(where, (await hero.count()) === 1 && (await hero.evaluate(el => el.getBoundingClientRect().height)) >= 44, 'the hero has one button of at least 44 px instead of three small links');
   check(where, /від того,\s+що саме вимірюють/.test(await page.locator('#sleep-performance h3').first().innerText()), 'the heading «від того, що саме вимірюють» has its space on every width');
   // 8) «Дивись також»: чотири посилання не нижче 44 px, справжні адреси, перше відкриває картку розбору.
-  const related = await page.locator('.related-list a').evaluateAll(els => els.map(a => { const r = a.getBoundingClientRect(); return {href: a.getAttribute('href'), w: r.width, h: r.height, right: r.right, left: r.left, text: a.innerText.replace(/\s+/g, ' ').trim(), arrow: getComputedStyle(a.querySelector('span'), '::after').content}; }));
+  const related = await page.locator('.related-list a').evaluateAll(els => els.map(a => { const r = a.getBoundingClientRect(); return {href: a.getAttribute('href'), w: r.width, h: r.height, right: r.right, left: r.left, text: a.innerText.replace(/\s+/g, ' ').trim(), node: (() => { const n = getComputedStyle(a, '::before'); return {content: n.content, w: parseFloat(n.width), radius: n.borderTopLeftRadius}; })(), serif: /Serif|Georgia/.test(getComputedStyle(a.querySelector('span')).fontFamily)}; }));
   check(where, related.length === 4 && related.every(l => l.h >= 44 && l.w >= 120 && l.left >= -0.5 && l.right <= viewport.width + 0.5), `four related links, each at least 44 px tall and inside the width (${related.map(l => Math.round(l.w) + '×' + Math.round(l.h))})`);
-  check(where, related.every(l => l.arrow.startsWith('"\u00a0→"') && l.text.length > 20), `every related link has its arrow after a non-breaking space, so the arrow never wraps alone (${JSON.stringify(related.map(l => l.arrow))})`);
-  check(where, related.every(l => /\/ ""$/.test(l.arrow)), 'the arrow is decorative: it has an empty text alternative, so a screen reader reads the link without it');
+  // «Рейка» (рішення власника «5 так»): стрілка в круглому вузлі ліворуч від рядка, назва засічковим шрифтом, лінія між вузлами.
+  check(where, related.every(l => l.text.length > 20 && l.node.w >= 24 && l.node.radius !== '0px' && l.node.content.includes('→') && l.serif), `every related link is a row with a round node holding the arrow (${JSON.stringify(related.map(l => l.node))})`);
+  check(where, related.every(l => /\/ ""$/.test(l.node.content)), 'the arrow is decorative: it has an empty text alternative, so a screen reader reads the link without it');
+  check(where, await page.locator('.related-list li').evaluateAll(els => els.every((li, i) => { const before = getComputedStyle(li, '::before'), after = getComputedStyle(li, '::after'); return (i === 0 ? before.display === 'none' : parseFloat(before.width) === 1) && parseFloat(after.width) === 1; })), 'a hairline joins the nodes: no tail above the first row');
   for (const link of related) { const response = await context.request.get(origin + '/' + link.href.replace(/^\.\//, '').split('#')[0]); check(where, response.status() === 200, `${link.href} opens`); }
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'no horizontal overflow on the page');
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0 && seen.badResponses.length === 0, `no errors, no third-party requests, no bad responses: ${JSON.stringify(seen.pageErrors.concat(seen.console, seen.external, seen.badResponses))}`);
@@ -3130,7 +3164,7 @@ async function sleepNightFlow(browser, origin, viewport) {
   const c0 = await read(calm.page);
   await calm.page.waitForTimeout(700);
   const c1 = await read(calm.page);
-  check(where, c1.t === c0.t && /Відтворити/.test(c0.button) && c0.now === 'Обери стадію або запусти ніч.', `reduced motion: the scheme starts paused and says what to do (${c0.now})`);
+  check(where, c1.t === c0.t && /Відтворити/.test(c0.button) && c0.now === 'Обери рядок схеми чи кнопку стадії.', `reduced motion: the scheme starts paused and says what to do (${c0.now})`);
   await calm.page.locator('.night-play').click();
   await calm.page.waitForTimeout(700);
   check(where, advance(c0.t, (await read(calm.page)).t) > 0.005, 'reduced motion: a person can still start the night');

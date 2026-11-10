@@ -3077,7 +3077,9 @@ async function sleepNightFlow(browser, origin, viewport) {
   await centre(page);
   const plotBox = await page.evaluate(() => { const r = document.querySelector('.night-plot').getBoundingClientRect(); return {x: r.x, y: r.y, w: r.width, h: r.height}; });
   const tapY = i => plotBox.y + (plotBox.h / 5) * (i + 0.5);
-  check(where, plotBox.h / 5 >= 31.5, `a row of the scheme is at least 32 px tall (${(plotBox.h / 5).toFixed(1)})`);
+  // Рядок схеми торкається палець: на телефоні не нижчий за 44 px (рішення власника «6 так», 2026-11-10), із мишею 34–38 px.
+  const minRow = viewport.width <= 600 ? 43.5 : 33.5;
+  check(where, plotBox.h / 5 >= minRow, `a row of the scheme is at least ${viewport.width <= 600 ? 44 : 34} px tall (${(plotBox.h / 5).toFixed(1)})`);
   await page.mouse.click(plotBox.x - 20, tapY(4));
   await page.waitForTimeout(450);
   const tp1 = await read(page);
@@ -3155,6 +3157,22 @@ async function sleepNightFlow(browser, origin, viewport) {
   const opened = await jump.page.waitForURL(/research\.html#magnesium-sleep$/, {timeout: 5000}).then(() => jump.page.waitForFunction(() => document.getElementById('rs-magnesium-sleep')?.open === true, null, {timeout: 5000})).then(() => true, () => false);
   check(where, opened, 'the first related link opens the research page with the magnesium card opened');
   await jump.context.close();
+
+  // 9б) Сенсорний планшет (768 px, вказівник «coarse»): рядок теж не нижчий за 44 px, а справжнє торкання вибирає стадію.
+  if (viewport.name === 'mobile') {
+    const touch = await open(browser, origin, {name: 'tablet-touch', width: 768, height: 1024}, '/sleep.html', {contextOptions: {hasTouch: true, isMobile: true}});
+    await touch.page.waitForFunction(() => document.querySelector('[data-sleep-night]')?.classList.contains('is-live'), null, {timeout: 5000});
+    await touch.page.evaluate(() => document.querySelector('[data-sleep-night]').scrollIntoView({block: 'center'}));
+    await touch.page.waitForTimeout(500);
+    const tb = await touch.page.evaluate(() => { const r = document.querySelector('.night-plot').getBoundingClientRect(); return {x: r.x, y: r.y, h: r.height, coarse: matchMedia('(pointer: coarse)').matches}; });
+    check(where, tb.coarse && tb.h / 5 >= 43.5, `on a touch tablet (768 px) a row is at least 44 px tall too (${(tb.h / 5).toFixed(1)}; coarse pointer: ${tb.coarse})`);
+    await touch.page.touchscreen.tap(tb.x - 20, tb.y + (tb.h / 5) * 3.5);
+    await touch.page.waitForTimeout(450);
+    const picked = await touch.page.evaluate(() => document.querySelector('[data-sleep-night]').dataset.selected || null);
+    check(where, picked === 'n2', `a real touch tap on the N2 row picks N2 (${picked})`);
+    check(where, touch.seen.pageErrors.length === 0 && touch.seen.console.length === 0 && touch.seen.external.length === 0, 'no errors on the touch tablet');
+    await touch.context.close();
+  }
 
   // 10) Без руху: система просить без анімації, тож схема починає зі стану «пауза» й рухається лише від людини.
   const calm = await open(browser, origin, viewport, '/sleep.html', {contextOptions: {reducedMotion: 'reduce'}});

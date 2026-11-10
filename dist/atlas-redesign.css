@@ -52,6 +52,7 @@ body[data-pine][data-platform-area="atlas"] > header.eua-site-header.eua-site-he
   background: transparent; border: 0; margin: 0; padding: .7rem 0 .4rem; color: var(--atlas-ink);
 }
 .atlas-sidebar .atlas-intro h1 { max-width: none; margin: 0 0 .4rem; color: inherit; font-size: clamp(1.3rem, 1.9vw, 1.7rem); line-height: 1.15; }
+html:not([data-palette="green"]) .atlas-sidebar .atlas-intro h1 { font-family: "Source Serif 4", Georgia, serif; }
 .atlas-sidebar .atlas-intro p { margin: 0; max-width: 19ch; color: var(--atlas-muted); font-size: .91rem; line-height: 1.4; }
 .atlas-side-menu { display: grid; gap: .5rem; }
 .atlas-side-menu > *, .atlas-about {

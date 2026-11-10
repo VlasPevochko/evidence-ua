@@ -3637,6 +3637,7 @@ async function atlasFlow(browser, origin, viewport) {
   const detail = page.locator('.atlas-detail');
   check(where, await detail.evaluate(node => parseFloat(getComputedStyle(node).borderTopLeftRadius) >= 8), 'the Atlas detail panel retains the reference corners');
   check(where, await page.locator('#atlas-actions .eua-module-menu:not([open])').count() === 1, 'the Atlas tools stay folded below the explorer');
+  check(where, await page.locator('[data-eua-tool="share"]').count() === 1, 'hidden map headers do not duplicate the share control');
   check(where, await page.locator('.atlas-shoulder-topic').count() === 5, 'the overview contains all five shoulder topics');
   const thumb = page.locator('.atlas-shoulder-topic .atlas-topic-icon').first();
   check(where, await thumb.evaluate(node => getComputedStyle(node).backgroundImage.includes('atlas-shoulder.webp')), 'the overview has an illustrated thumbnail');

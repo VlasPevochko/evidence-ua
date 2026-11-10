@@ -221,5 +221,8 @@ viewButtons.forEach(button=>button.addEventListener('click',()=>{
 document.addEventListener('DOMContentLoaded',()=>{
  const actions=document.querySelector('body > .eua-platform-nav');
  if(actions)document.getElementById('atlas-actions').append(actions);
+ // The shell also sees the headers in the hidden pain maps. Only the page's navigation belongs here.
+ document.querySelectorAll('#knee-pain-map > .eua-platform-nav, #shoulder-pain-map > .eua-platform-nav')
+  .forEach(nav=>nav.remove());
 },{once:true});
 render();

@@ -1371,7 +1371,8 @@ async function shapesFlow(browser, origin, viewport) {
     }
     return {rounded: [...new Set(rounded)], raised: [...new Set(raised)], big};
   }, [artOnly, overlays]);
-  for (const file of ['research.html', 'atlas.html', 'muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'nutrition-inside.html', 'supplements.html', 'fat-burning.html', 'exercises.html', 'directions.html']) {
+  // The Atlas reference explicitly uses softly rounded blue panels in both palettes; atlasFlow checks them.
+  for (const file of ['research.html', 'muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'nutrition-inside.html', 'supplements.html', 'fat-burning.html', 'exercises.html', 'directions.html']) {
     const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
     await page.evaluate(() => document.querySelectorAll('details').forEach(d => { d.open = true; }));
     await page.waitForTimeout(300);
@@ -2606,7 +2607,8 @@ async function homeNoScriptFlow(browser, origin, viewport) {
 
 async function compactBannerFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-25: на сторінках зі смугою «Навігація й інструменти» кнопка живе в банері (широкі екрани), на телефоні смуга лишається.
-  for (const route of ['/atlas.html', '/sleep.html', '/movement.html', '/exercises.html', '/protein-meta.html', '/nutrition-digestion.html']) {
+  // The Atlas no longer has a full-width banner. Its tools are beneath the explorer.
+  for (const route of ['/sleep.html', '/movement.html', '/exercises.html', '/protein-meta.html', '/nutrition-digestion.html']) {
     const where = `compact banner ${route} @${viewport.name}`;
     const {context, page, seen} = await open(browser, origin, viewport, route);
     // The strip is built by the platform shell script after load.
@@ -3632,6 +3634,9 @@ async function atlasFlow(browser, origin, viewport) {
       stacked: boxes[0].bottom <= boxes[1].top && boxes[1].bottom <= boxes[2].top};
   });
   check(where, viewport.width > 900 ? layout.columns : viewport.width > 580 ? layout.tablet : layout.stacked, 'the Atlas layout adapts to the available width');
+  const detail = page.locator('.atlas-detail');
+  check(where, await detail.evaluate(node => parseFloat(getComputedStyle(node).borderTopLeftRadius) >= 8), 'the Atlas detail panel retains the reference corners');
+  check(where, await page.locator('#atlas-actions .eua-module-menu:not([open])').count() === 1, 'the Atlas tools stay folded below the explorer');
   check(where, await page.locator('.atlas-shoulder-topic').count() === 5, 'the overview contains all five shoulder topics');
   const thumb = page.locator('.atlas-shoulder-topic .atlas-topic-icon').first();
   check(where, await thumb.evaluate(node => getComputedStyle(node).backgroundImage.includes('atlas-shoulder.webp')), 'the overview has an illustrated thumbnail');

@@ -43,8 +43,8 @@ const nutrition=read('dist/nutrition.html'),ids=[...dietOld.matchAll(/<view id="
 assert.equal(ids.length,8,'eight diets in the sprite');
 for(const id of ids)pair(nutrition,`diet-art.svg?v=87#view-${id}`,`diet-art-cosmic.svg?v=2#view-${id}`,`diet tile ${id}`);
 pair(read('dist/sleep.html'),'home-sleep.svg','home-sleep-cosmic.svg','sleep hero');
-const atlas=read('dist/atlas.html'),alt='Схематична анатомічна фігура людини';
-assert(atlas.includes(`<img src="./home-anatomy.svg" alt="${alt}" class="atlas-figure" data-art="green" loading="lazy"><img src="./home-anatomy-cosmic.svg" alt="${alt}" class="atlas-figure" data-art="cosmic" loading="lazy">`),'the atlas figure has a cosmic copy with the same alt text and class');
+const atlas=read('dist/atlas.html');
+assert.match(atlas,/<img src="\.\/atlas-body-views\.webp" class="atlas-figure" alt=""/,'both Atlas palettes use the same anatomy illustration');
 const directory=read('src/platform/directory.mjs'),directions=read('dist/directions.js');
 for(const file of [directory,directions]){
   assert(file.includes('data-art="green"')&&file.includes('data-art="cosmic"')&&file.includes("artwork.replace(/\\.(svg|webp)$/,'-cosmic.$1')"),'directory thumbnails come in pairs');
@@ -53,8 +53,8 @@ for(const art of ['muscle-lab-art-v1','card-organism','card-nutrition','card-evi
   const ext=art==='muscle-lab-art-v1'?'webp':'svg';
   assert(fs.existsSync(`dist/${art}.${ext}`)&&fs.existsSync(`dist/${art}-cosmic.${ext}`),`${art} has a cosmic copy`);
 }
-// Скрипти карт болю ховають і показують обидві копії фігури разом.
-for(const f of ['dist/knee-pain-map.js','dist/shoulder-pain-map.js'])assert(read(f).includes("wrap.querySelectorAll('.atlas-figure')")&&read(f).includes('set hidden(value)'),`${f} hides both copies of the figure`);
+// Скрипти карт болю ховають і повертають загальну фігуру.
+for(const f of ['dist/knee-pain-map.js','dist/shoulder-pain-map.js'])assert(read(f).includes("wrap.querySelectorAll('.atlas-figure')")&&read(f).includes('set hidden(value)'),`${f} hides the full body figure`);
 assert(atlas.includes('knee-pain-map.js?v=3')&&atlas.includes('shoulder-pain-map.js?v=3'),'the changed map scripts have new versions');
 
 // 3) Правила показу: за замовчуванням (без файла палітри) і в «Зеленому» видно оригінал; у космосі фіолетова копія; атрибут hidden не перебивається.

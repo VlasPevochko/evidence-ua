@@ -19,6 +19,11 @@ const shellBuilt=fs.readFileSync('dist/platform-shell.js','utf8');
 const zones=[...html.matchAll(/data-zone="([^"]+)"/g)].map(match=>match[1]);
 assert.deepEqual(zones,['brain','shoulder','spine','muscles','gut','knee']);
 assert.match(html,/data-zone="shoulder"[^>]*aria-pressed="true"/);
+assert.match(html,/<aside class="atlas-sidebar"[^>]*>[\s\S]*?<h1 id="atlas-title">Атлас Evidence<\/h1>/);
+assert.deepEqual([...html.matchAll(/data-atlas-view="([^"]+)"/g)].map(match=>match[1]),['front','back']);
+assert.match(html,/src="\.\/atlas-body-views\.webp"/);
+assert(fs.existsSync('dist/atlas-shoulder.webp'),'Shoulder art is part of the publish directory');
+assert.match(js,/figurePanel\.dataset\.bodyView=button\.dataset\.atlasView/);
 
 const tabs=[...html.matchAll(/data-atlas-tab="([^"]+)"/g)].map(match=>match[1]);
 assert.deepEqual(tabs,['overview','anatomy','symptoms','training','rehab','research']);

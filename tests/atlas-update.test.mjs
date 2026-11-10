@@ -28,6 +28,10 @@ assert(/html\[data-theme="light"\] \.atlas-detail\[data-zone-art="shoulder"\] \.
 assert(css.includes('html[data-theme="light"] .atlas-shoulder-topic .atlas-topic-icon::before') && css.includes('html[data-theme="light"] .shoulder-stage, html[data-theme="light"] .knee-stage'), 'thumbnails and diagram stages keep natural colours in the light theme');
 assert(/\.atlas-topic-icon::before\s*\{[^}]*background:\s*url\("\.\/atlas-shoulder\.webp"\)/.test(css) && !/\.atlas-shoulder-topic \.atlas-topic-icon\s*\{[^}]*background:\s*url/.test(css), 'the thumbnail picture sits in ::before, so only the picture (not the border) is re-inverted');
 
+// Висота фігури залежить і від висоти вікна (інакше на 1440 × 900 перемикач «Спереду / Ззаду» виходив за нижній край); полотно фігури бере ту саму змінну.
+assert(/--atlas-figure-h:\s*clamp\(31rem,\s*min\(51vw,\s*calc\(100vh\s*-\s*17\.5rem\)\),\s*43rem\)/.test(css), 'the figure height follows the window height as well as its width');
+assert(css.includes('min-height: var(--atlas-figure-h)') && css.includes('max-width: calc(var(--atlas-figure-h) * .586)'), 'the figure and its canvas share one height variable');
+
 // ── 1) Шрифти не менші за 12 px (аудит: 9–11,5 px) — у стилях Атласу й обох карт болю.
 const fontSizes = text => [...text.matchAll(/font-size:\s*(clamp\(\s*)?([\d.]+)(rem|px)/g)].map(m => ({value: Number(m[2]) * (m[3] === 'rem' ? 16 : 1), raw: m[0]}));
 for (const [name, text] of [['atlas-redesign.css', css], ['atlas-diagrams.css', diagramCss], ['shoulder-pain-map.css', read('dist/shoulder-pain-map.css')], ['knee-pain-map.css', read('dist/knee-pain-map.css')]]) {
@@ -140,6 +144,9 @@ assert.equal(diagramViews.knee.length, 4);
 // ── 6) Адреса: зона, вкладка, точка; «Назад» (pushState на зону, replaceState на вкладку й точку), поділитися посиланням.
 assert(js.includes("history[mode==='push'?'pushState':'replaceState']") && js.includes("writeLocation('push')") && js.includes("window.addEventListener('popstate'"), 'zone changes add history entries, tabs and points only update the address, Back restores the state');
 assert(js.includes("params.get('tab')") && js.includes("params.get('point')"), 'the address is read back');
+// Карти болю — окремі скрипти й можуть завершити завантаження раніше за atlas.js: без повторного повідомлення стану після першого показу «?zone=knee» не відкривав карту,
+// а картку точки з «?point=…» затирав огляд зони (знайдено перевіркою навмисними поломками; порядок вимірює atlasLoadOrderFlow у Browser QA).
+assert(/\nrender\(\);\n[^]*document\.dispatchEvent\(new CustomEvent\('atlas:state',\{detail:\{zone:selectedZone,point:currentPoint\}\}\)\);\s*$/.test(js), 'atlas.js replays the address state to the pain maps right after the first render');
 const base = 'https://x.test/atlas.html';
 assert.equal(contextLink(`${base}?zone=knee&tab=symptoms&point=medial-joint-line&utm_source=qa`), `${base}?zone=knee&tab=symptoms&point=medial-joint-line`, 'sharing keeps zone, tab and point and nothing else');
 assert.equal(contextLink(`${base}?zone=nope&tab=nope&point=nope`), base, 'unknown values are dropped from a shared link');

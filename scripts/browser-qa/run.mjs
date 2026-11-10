@@ -3739,7 +3739,7 @@ async function atlasUpdateFlow(browser, origin, viewport) {
       tabs: tabs.map(tab => ({name: tab.dataset.atlasTab, id: tab.id, controls: tab.getAttribute('aria-controls'), index: tab.tabIndex, selected: tab.getAttribute('aria-selected')})),
       panel: (() => { const panel = document.getElementById('atlas-content'); return {role: panel.getAttribute('role'), labelled: panel.getAttribute('aria-labelledby')}; })(),
       liveOnArticle: !!document.querySelector('article#atlas-detail[aria-live]'), statusRegion: document.getElementById('atlas-status')?.getAttribute('role'),
-      stage: rect('.atlas-stage'), detail: rect('.atlas-detail'), figure: rect('.atlas-body-canvas'), state_box: rect('#atlas-state'),
+      stage: rect('.atlas-stage'), detail: rect('.atlas-detail'), figure: rect('.atlas-body-canvas'), views: rect('.atlas-views'), state_box: rect('#atlas-state'),
       overflow: document.documentElement.scrollWidth - innerWidth
     };
   });
@@ -3754,6 +3754,8 @@ async function atlasUpdateFlow(browser, origin, viewport) {
   if (stacked) check(where, facts.stage.bottom <= facts.detail.top + 2, 'on a narrow screen the figure column is above the zone panel');
   else check(where, facts.stage.right <= facts.detail.left + 2 && Math.abs(facts.stage.top - facts.detail.top) < 6, 'on a computer the figure column and the zone panel stand side by side');
   check(where, facts.figure.top < viewport.height * 0.4 && facts.figure.bottom < viewport.height + 40, `the body figure starts on the first screen (top ${Math.round(facts.figure.top)} px)`);
+  // На комп'ютері весь провідник (фігура з перемикачем «Спереду / Ззаду» і панель зони) вміщується в перший екран: після прибирання лівої колонки заголовок став над фігурою, і на 1440 × 900 перемикач виходив за нижній край (виміряно).
+  if (!stacked) check(where, facts.views.bottom <= viewport.height && facts.detail.bottom <= viewport.height, `the figure toggle (bottom ${Math.round(facts.views.bottom)} px) and the zone panel (bottom ${Math.round(facts.detail.bottom)} px) fit the first screen of ${viewport.height} px`);
   check(where, facts.state_box.top > facts.detail.bottom - 4, '«Стан атласу» is below the explorer');
   check(where, (await atlasSmallText(page)).length === 0, `no text under 12 px at the start: ${(await atlasSmallText(page)).slice(0, 4).join(' | ')}`);
   check(where, (await atlasSmallTargets(page)).length === 0, `no control under 44 px at the start: ${JSON.stringify((await atlasSmallTargets(page)).slice(0, 4))}`);
@@ -4064,8 +4066,13 @@ async function atlasLoadOrderFlow(browser, origin, viewport) {
       const add = url => page.addScriptTag({type: 'module', url});
       if (order === 'map scripts first') { await add(sources[1]); await add(sources[2]); await page.waitForTimeout(250); await add(sources[0]); }
       else { await add(sources[0]); await page.waitForTimeout(250); await add(sources[1]); await add(sources[2]); }
-      await page.waitForFunction(name => document.getElementById('atlas-zone-title').textContent.includes(name), zone === 'knee' ? 'Колінний' : 'Плечовий', {timeout: 4000}).catch(() => {});
-      await page.waitForTimeout(500);
+      // Чекаємо кінцевого стану (карта відкрита, потрібна точка натиснута, її картка є), а не фіксований час: на повільній машині CI модулі завершуються пізніше.
+      await page.waitForFunction(([zoneName, wanted]) => {
+        const map = document.getElementById(zoneName + '-pain-map');
+        const pressed = document.querySelector(`[data-${zoneName}-hotspot][aria-pressed="true"]`)?.getAttribute(`data-${zoneName}-hotspot`) || null;
+        return !!map && !map.hidden && pressed === wanted && (!wanted || !!document.querySelector('[data-point-title]'));
+      }, [zone, point], {timeout: 5000}).catch(() => {});
+      await page.waitForTimeout(150);
       const state = await page.evaluate(zoneName => ({
         title: document.getElementById('atlas-zone-title').textContent,
         mapOpen: !document.getElementById(zoneName + '-pain-map').hidden,
@@ -4803,4 +4810,4 @@ if (failures.length) {
   process.exit(1);
 }
 if (homeOnly) console.log(`Homepage QA passed: ${checks} checks; Spectrum interactions at three viewports plus cosmic-lens wheel/touch/keyboard/fallback/deep-link, no-script, native-scroll, reduced-motion and lower-home flows.`);
-else console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas, muscles-zone, spine-zone and Spectrum home/search/directions/native-scroll flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);
+else console.log(`Browser QA passed: ${checks} checks over ${files.length} pages × ${viewports.length} viewports plus library, muscle lab, atlas (pain maps, update, light theme, phone, load order), muscles-zone, spine-zone and Spectrum home/search/directions/native-scroll flows (3D model rendered: ${webgl.filter(Boolean).length}/${webgl.length}).`);

@@ -15,6 +15,8 @@ body[data-platform-area="atlas"] {
   --atlas-blue: #6ebdff;
   --atlas-active: #123e69;
   --atlas-warm: #ffbd73;
+  /* Висота фігури: від ширини вікна, але не більша, ніж вміщує екран разом із заголовком і перемикачем «Спереду / Ззаду»: на 1440 × 900 перемикач виходив за нижній край (виміряно під час оновлення 2026-11-10). */
+  --atlas-figure-h: clamp(31rem, min(51vw, calc(100vh - 17.5rem)), 43rem);
   background: radial-gradient(ellipse at 36% 37%, #0a2135, transparent 44%), var(--atlas-page-bg);
   color: var(--atlas-ink);
 }
@@ -55,14 +57,18 @@ html:not([data-palette="green"]) .atlas-stage .atlas-intro h1 { font-family: "So
 }
 .atlas-about:hover { color: var(--atlas-ink); }
 .atlas-figure-panel { position: relative; flex: 1; min-width: 0; overflow: visible; background: transparent; border: 0; box-shadow: none; }
-.atlas-figure-wrap { overflow: visible; min-height: clamp(31rem, 51vw, 43rem); background: none; }
+@media (min-width: 901px) {
+  /* Старе правило atlas.css тримало панель фігури не нижчою за 720 px (600 px до 1120 px). Тепер висоту задає сама фігура (--atlas-figure-h), інакше провідник не вміщується в перший екран. */
+  .atlas-figure-panel { min-height: 0; }
+}
+.atlas-figure-wrap { overflow: visible; min-height: var(--atlas-figure-h); background: none; }
 .atlas-figure-wrap.is-shoulder-map, .atlas-figure-wrap.is-knee-map {
   overflow: hidden; border: 1px solid var(--atlas-border); border-radius: .9rem; background: var(--atlas-panel);
 }
 .atlas-figure-wrap.is-shoulder-map .atlas-body-canvas, .atlas-figure-wrap.is-knee-map .atlas-body-canvas,
 .atlas-figure-panel:has(.is-shoulder-map, .is-knee-map) .atlas-views { display: none; }
 .atlas-body-canvas {
-  width: min(100%, 25rem); height: auto; max-width: calc(clamp(31rem, 51vw, 43rem) * .586);
+  width: min(100%, 25rem); height: auto; max-width: calc(var(--atlas-figure-h) * .586);
   aspect-ratio: 600 / 1024; top: 0; transform: translateX(-50%);
 }
 .atlas-body-art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }

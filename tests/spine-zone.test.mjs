@@ -40,12 +40,13 @@ assert.equal(Object.keys(REGION_COLORS).sort().join(), 'cervical,lumbar,sacral,t
 // --- Zone content and wording --------------------------------------------------------------
 assert(/spine:\{title:'Хребет'[^}]*state:'Бета',stateKey:'beta'\}/.test(atlas), 'The spine zone is a Beta module');
 const start = atlas.indexOf('const spineContent={');
-const end = atlas.indexOf('function previewContent');
+// 2026-11-10: previewContent (заглушки «Готується») прибрано; блок хребта закінчується перед коментарем про зони без власного модуля.
+const end = atlas.indexOf('// Для зон без власного модуля');
 assert(start > 0 && end > start);
 const block = atlas.slice(start, end);
 for (const tab of ['overview', 'anatomy', 'symptoms', 'training']) assert(new RegExp(`\\n ${tab}:\\(\\)=>`).test(block), `spine has a ${tab} tab`);
-for (const tab of ['rehab', 'research']) assert(!new RegExp(`\\n ${tab}:\\(\\)=>`).test(block), `${tab} stays "Готується"`);
-assert(/spineContent\[tab\]\(\)/.test(atlas) && /zone==='spine'/.test(atlas));
+for (const tab of ['rehab', 'research']) assert(!new RegExp(`\\n ${tab}:\\(\\)=>`).test(block), `${tab} has no content, so the tab is hidden (not a placeholder)`);
+assert(/spine:spineContent/.test(atlas) && /zoneContent\[zone\]\[tab\]\(\)/.test(atlas));
 
 const forbidden = ['виправляє поставу', 'лікує біль', 'прибирає защемлення', 'запобігає травмам', 'найкраща вправа', 'ідеальна техніка', 'ваш діагноз', 'у вас', 'можлива причина'];
 for (const text of [block, hub]) for (const phrase of forbidden) assert(!text.toLocaleLowerCase('uk').includes(phrase), `Forbidden wording: ${phrase}`);

@@ -20,7 +20,8 @@ for(const day of CHANGES){
   for(const it of day.items){
     assert(TAGS[it.tag]&&SCIENCE[it.science],`${it.title}: known tag and science marker`);
     assert(it.title&&it.text.length>20&&it.text.length<200,`${it.title}: a short plain description`);
-    assert(fs.existsSync('dist/'+it.href.replace('./','').split('#')[0]),`${it.title}: the link leads to a real page`);
+    // 2026-11-10: запис може вести на глибоке посилання зі строкою запиту (./atlas.html?zone=knee), тож запит відкидаємо: перевіряємо сторінку.
+    assert(fs.existsSync('dist/'+it.href.replace('./','').split('#')[0].split('?')[0]),`${it.title}: the link leads to a real page`);
   }
 }
 // «Новий зміст» only where the owner added content with sources on the page itself.

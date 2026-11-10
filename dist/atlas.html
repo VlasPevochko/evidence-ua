@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="./knee-pain-map.css?v=4">
   <link rel="stylesheet" href="./shoulder-pain-map.css?v=3">
   <link rel="stylesheet" href="./atlas-coordinate-map.css?v=4">
-  <link rel="stylesheet" href="./atlas-redesign.css?v=3">
+  <link rel="stylesheet" href="./atlas-redesign.css?v=4">
+  <link rel="stylesheet" href="./atlas-diagrams.css?v=1">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="icon" href="./favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -34,14 +35,9 @@
     <symbol id="ai-symptoms" viewBox="0 0 24 24"><path d="M12 3 2.8 19.5a1 1 0 0 0 .9 1.5h16.6a1 1 0 0 0 .9-1.5L12 3Z"/><path d="M12 9v5m0 3h.01"/></symbol>
     <symbol id="ai-training" viewBox="0 0 24 24"><path d="M3 9v6m4-8v10m10-10v10m4-8v6M7 12h10"/></symbol>
     <symbol id="ai-rehab" viewBox="0 0 24 24"><circle cx="14" cy="4" r="2"/><path d="m8 9 3-1 3 4h5m-8-4-2 7-5 5m5-5 5 2 2 4"/></symbol>
-    <symbol id="ai-shield" viewBox="0 0 24 24"><path d="M12 3c2 2 6 3 8 3v5c0 4-3 7-8 10-5-3-8-6-8-10V6c2 0 6-1 8-3Z"/><path d="M12 8v7m-3.5-3.5h7"/></symbol>
-    <symbol id="ai-pill" viewBox="0 0 24 24"><path d="M5 19a4.5 4.5 0 0 1 0-6.4l7.6-7.6a4.5 4.5 0 1 1 6.4 6.4L11.4 19A4.5 4.5 0 0 1 5 19Zm4-10 6 6"/></symbol>
-    <symbol id="ai-book" viewBox="0 0 24 24"><path d="M12 5C9 3 5 3 3 4v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-2-1-6-1-9 1Zm0 0v15"/></symbol>
     <symbol id="ai-research" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6Zm9 0v5h4M9 12h7m-7 4h7"/></symbol>
     <symbol id="ai-overview" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></symbol>
     <symbol id="ai-next" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
-    <symbol id="ai-level" viewBox="0 0 24 24"><path d="M5 19v-5m5 5V9m5 10V6m5 13V3"/></symbol>
-    <symbol id="ai-refresh" viewBox="0 0 24 24"><path d="M20 9a8 8 0 0 0-14-3L4 8m0-5v5h5m-5 7a8 8 0 0 0 14 3l2-2m0 5v-5h-5"/></symbol>
   </svg>
   <header class="atlas-topbar">
     <a class="atlas-brand" href="./index.html#top" aria-label="Evidence UA — на головну">
@@ -61,31 +57,22 @@
 
   <main class="atlas-page">
     <section class="atlas-workspace" aria-label="Інтерактивний атлас людини">
-      <aside class="atlas-sidebar" aria-labelledby="atlas-title">
+      <div class="atlas-stage">
         <div class="atlas-intro">
           <h1 id="atlas-title">Атлас Evidence</h1>
           <p>Досліджуй людське тіло через науку.</p>
+          <a class="atlas-about" href="./about.html#ab-atlas">Про атлас: статуси й межі&nbsp;→</a>
         </div>
-        <div class="atlas-side-menu" role="group" aria-label="Швидкі переходи в атласі">
-          <button type="button" data-atlas-shortcut="anatomy"><svg aria-hidden="true"><use href="#ai-anatomy"/></svg><span><strong>Анатомія</strong><small>Структури тіла</small></span></button>
-          <button type="button" data-atlas-shortcut="symptoms"><svg aria-hidden="true"><use href="#ai-symptoms"/></svg><span><strong>Симптоми</strong><small>Що може боліти</small></span></button>
-          <button type="button" data-atlas-shortcut="training"><svg aria-hidden="true"><use href="#ai-training"/></svg><span><strong>Тренування</strong><small>Як навантажувати</small></span></button>
-          <button type="button" data-atlas-shortcut="rehab"><svg aria-hidden="true"><use href="#ai-rehab"/></svg><span><strong>Реабілітація</strong><small>Відновлення</small></span></button>
-          <a href="./directions.html#available"><svg aria-hidden="true"><use href="#ai-shield"/></svg><span><strong>Матеріали</strong><small>Каталог напрямів</small></span></a>
-          <a href="./supplements.html"><svg aria-hidden="true"><use href="#ai-pill"/></svg><span><strong>Добавки</strong><small>Що має сенс</small></span></a>
-        </div>
-        <a class="atlas-about" href="./about.html"><svg aria-hidden="true"><use href="#ai-book"/></svg><span><strong>Про атлас</strong><small>Джерела та методологія</small></span><svg aria-hidden="true"><use href="#ai-next"/></svg></a>
-      </aside>
       <div class="atlas-figure-panel">
         <div class="atlas-figure-wrap">
           <div class="atlas-body-canvas">
             <div class="atlas-body-art" aria-hidden="true"><img src="./atlas-body-views.webp" class="atlas-figure" alt="" width="1536" height="1024" fetchpriority="high"></div>
-            <button class="atlas-zone atlas-zone--brain" type="button" data-zone="brain" aria-pressed="false" aria-label="Мозок"><span>Мозок<small>Сон і когнітивні функції</small></span></button>
-            <button class="atlas-zone atlas-zone--shoulder is-selected" type="button" data-zone="shoulder" aria-pressed="true" aria-label="Плече"><span>Плече<small>Біль і стабільність</small></span></button>
-            <button class="atlas-zone atlas-zone--spine" type="button" data-zone="spine" aria-pressed="false" aria-label="Хребет"><span>Хребет<small>Постава і рух</small></span></button>
-            <button class="atlas-zone atlas-zone--muscles" type="button" data-zone="muscles" aria-pressed="false" aria-label="М’язи"><span>М’язи<small>Сила й відновлення</small></span></button>
-            <button class="atlas-zone atlas-zone--gut" type="button" data-zone="gut" aria-pressed="false" aria-label="ШКТ"><span>ШКТ<small>Травлення й харчування</small></span></button>
-            <button class="atlas-zone atlas-zone--knee" type="button" data-zone="knee" aria-pressed="false" aria-label="Коліно"><span>Коліно<small>Травми й навантаження</small></span></button>
+            <button class="atlas-zone atlas-zone--brain" type="button" data-zone="brain" data-state="planned" aria-pressed="false" aria-label="Мозок"><span>Мозок<small>Сон і когнітивні функції</small></span></button>
+            <button class="atlas-zone atlas-zone--shoulder is-selected" type="button" data-zone="shoulder" data-state="full" aria-pressed="true" aria-label="Плече"><span>Плече<small>Біль і стабільність</small></span></button>
+            <button class="atlas-zone atlas-zone--spine" type="button" data-zone="spine" data-state="beta" aria-pressed="false" aria-label="Хребет"><span>Хребет<small>Постава і рух</small></span></button>
+            <button class="atlas-zone atlas-zone--muscles" type="button" data-zone="muscles" data-state="beta" aria-pressed="false" aria-label="М’язи"><span>М’язи<small>Сила й відновлення</small></span></button>
+            <button class="atlas-zone atlas-zone--gut" type="button" data-zone="gut" data-state="planned" aria-pressed="false" aria-label="ШКТ"><span>ШКТ<small>Травлення й харчування</small></span></button>
+            <button class="atlas-zone atlas-zone--knee" type="button" data-zone="knee" data-state="beta" aria-pressed="false" aria-label="Коліно"><span>Коліно<small>Травми й навантаження</small></span></button>
           </div>
           <section class="knee-pain-map" id="knee-pain-map" hidden aria-label="Точна карта болю коліна"></section>
           <section class="shoulder-pain-map" id="shoulder-pain-map" hidden aria-label="Точна карта болю плеча"></section>
@@ -99,11 +86,16 @@
           <span><i class="atlas-dot"></i> Доступна зона</span>
         </div>
       </div>
+      </div>
 
-      <article class="atlas-detail" id="atlas-detail" data-zone-art="shoulder" aria-live="polite" aria-labelledby="atlas-zone-title">
-        <nav class="atlas-breadcrumb" id="atlas-breadcrumb" aria-label="Шлях в Атласі">
-          <span>Атлас</span><i aria-hidden="true">→</i><strong id="atlas-breadcrumb-zone">Плечовий комплекс</strong><i aria-hidden="true">→</i><span id="atlas-breadcrumb-tab">Огляд</span>
-        </nav>
+      <article class="atlas-detail" id="atlas-detail" data-zone-art="shoulder" aria-labelledby="atlas-zone-title">
+        <p class="atlas-sr-only" id="atlas-status" role="status" aria-live="polite"></p>
+        <div class="atlas-detail-bar">
+          <nav class="atlas-breadcrumb" id="atlas-breadcrumb" aria-label="Шлях в Атласі">
+            <span>Атлас</span><i aria-hidden="true">→</i><strong id="atlas-breadcrumb-zone">Плечовий комплекс</strong><i aria-hidden="true">→</i><span id="atlas-breadcrumb-tab">Огляд</span>
+          </nav>
+          <button type="button" class="atlas-to-figure" data-atlas-to-figure>↑ До фігури</button>
+        </div>
         <div class="atlas-detail-head">
           <div>
             <p class="atlas-kicker" id="atlas-zone-kicker">ОБРАНА ОБЛАСТЬ</p>
@@ -113,35 +105,37 @@
           <span class="atlas-status" id="atlas-zone-status" data-state="full">Повний модуль</span>
         </div>
 
-        <div class="atlas-tabs" role="tablist" aria-label="Розділи обраного модуля">
-          <button type="button" role="tab" data-atlas-tab="overview" aria-selected="true"><svg aria-hidden="true"><use href="#ai-overview"/></svg>Огляд</button>
-          <button type="button" role="tab" data-atlas-tab="anatomy" aria-selected="false"><svg aria-hidden="true"><use href="#ai-anatomy"/></svg>Анатомія</button>
-          <button type="button" role="tab" data-atlas-tab="symptoms" aria-selected="false"><svg aria-hidden="true"><use href="#ai-symptoms"/></svg>Симптоми</button>
-          <button type="button" role="tab" data-atlas-tab="training" aria-selected="false"><svg aria-hidden="true"><use href="#ai-training"/></svg>Тренування</button>
-          <button type="button" role="tab" data-atlas-tab="rehab" aria-selected="false"><svg aria-hidden="true"><use href="#ai-rehab"/></svg>Реабілітація</button>
-          <button type="button" role="tab" data-atlas-tab="research" aria-selected="false"><svg aria-hidden="true"><use href="#ai-research"/></svg>Дослідження</button>
+        <div class="atlas-tabs" id="atlas-tablist" role="tablist" aria-label="Розділи обраного модуля">
+          <button type="button" role="tab" id="atlas-tab-overview" aria-controls="atlas-content" data-atlas-tab="overview" aria-selected="true" tabindex="0"><svg aria-hidden="true"><use href="#ai-overview"/></svg>Огляд</button>
+          <button type="button" role="tab" id="atlas-tab-anatomy" aria-controls="atlas-content" data-atlas-tab="anatomy" aria-selected="false" tabindex="-1"><svg aria-hidden="true"><use href="#ai-anatomy"/></svg>Анатомія</button>
+          <button type="button" role="tab" id="atlas-tab-symptoms" aria-controls="atlas-content" data-atlas-tab="symptoms" aria-selected="false" tabindex="-1"><svg aria-hidden="true"><use href="#ai-symptoms"/></svg>Симптоми</button>
+          <button type="button" role="tab" id="atlas-tab-training" aria-controls="atlas-content" data-atlas-tab="training" aria-selected="false" tabindex="-1"><svg aria-hidden="true"><use href="#ai-training"/></svg>Тренування</button>
+          <button type="button" role="tab" id="atlas-tab-rehab" aria-controls="atlas-content" data-atlas-tab="rehab" aria-selected="false" tabindex="-1"><svg aria-hidden="true"><use href="#ai-rehab"/></svg>Реабілітація</button>
+          <button type="button" role="tab" id="atlas-tab-research" aria-controls="atlas-content" data-atlas-tab="research" aria-selected="false" tabindex="-1"><svg aria-hidden="true"><use href="#ai-research"/></svg>Дослідження</button>
         </div>
 
-        <div id="atlas-content" class="atlas-content"></div>
+        <div id="atlas-content" class="atlas-content" role="tabpanel" aria-labelledby="atlas-tab-overview"></div>
 
       </article>
     </section>
 
-    <section class="atlas-evidence-footer" aria-label="Принципи Evidence UA">
-      <span><svg aria-hidden="true"><use href="#ai-shield"/></svg><span><strong>Доказовий підхід</strong><small>На основі наукових даних</small></span></span>
-      <span><svg aria-hidden="true"><use href="#ai-research"/></svg><span><strong>Чіткі джерела</strong><small>PubMed і систематичні огляди</small></span></span>
-      <span><svg aria-hidden="true"><use href="#ai-level"/></svg><span><strong>Рівень доказів</strong><small>Показуємо межі впевненості</small></span></span>
-      <span><svg aria-hidden="true"><use href="#ai-book"/></svg><span><strong>Практика</strong><small>Як застосувати прочитане</small></span></span>
-      <span><svg aria-hidden="true"><use href="#ai-refresh"/></svg><span><strong>Оновлення</strong><small>Нові дані в журналі сайту</small></span></span>
+    <section class="atlas-state" id="atlas-state" aria-labelledby="atlas-state-title">
+      <h2 id="atlas-state-title">Стан атласу</h2>
+      <dl class="atlas-state-list">
+        <div data-state="full"><dt>Повний модуль</dt><dd>Плече</dd></div>
+        <div data-state="beta"><dt>Бета</dt><dd>Хребет · М’язи · Коліно</dd></div>
+        <div data-state="planned"><dt>Готується</dt><dd>Мозок · ШКТ</dd></div>
+      </dl>
+      <p class="atlas-state-note">Статус показує, наскільки область розгорнута, а не силу доказів. <a href="./about.html#ab-atlas">Що це означає&nbsp;→</a></p>
     </section>
     <div id="atlas-actions"></div>
     <aside class="atlas-disclaimer">Матеріал освітній і не є персональною медичною рекомендацією. Симптоми та діагноз не визначаються лише за вибором області на схемі.</aside>
   </main>
 
   <div class="eua-site-notice" role="note"><p>Матеріал освітній і не є персональною медичною рекомендацією.</p><a href="./about.html">Про проєкт</a></div>
-<script type="module" src="./atlas.js?v=8"></script>
-  <script type="module" src="./knee-pain-map.js?v=3"></script>
-  <script type="module" src="./shoulder-pain-map.js?v=3"></script>
-  <script type="module" src="./platform-shell.js?v=110"></script>
+<script type="module" src="./atlas.js?v=9"></script>
+  <script type="module" src="./knee-pain-map.js?v=4"></script>
+  <script type="module" src="./shoulder-pain-map.js?v=4"></script>
+  <script type="module" src="./platform-shell.js?v=111"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Журнал оновлень: найновіший день розгорнуто, старші дні складені.
-import {CHANGES,TAGS,SCIENCE} from './changes-data.js?v=32';
+import {CHANGES,TAGS,SCIENCE} from './changes-data.js?v=33';
 
 const months=['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
 export const formatDate=iso=>{const [y,m,d]=iso.split('-').map(Number);return `${d} ${months[m-1]} ${y}`;};

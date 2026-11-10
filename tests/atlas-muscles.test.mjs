@@ -20,7 +20,8 @@ assert(start > 0 && end > start, 'musclesContent block exists');
 const block = js.slice(start, end);
 for (const tab of ['overview', 'anatomy', 'training', 'research']) assert(new RegExp(`\\n ${tab}:\\(\\)=>`).test(block), `muscles has a ${tab} tab`);
 for (const tab of ['symptoms', 'rehab']) assert(!new RegExp(`\\n ${tab}:\\(\\)=>`).test(block), `${tab} stays "Готується" until it can be backed by Claims`);
-assert(/musclesContent\[tab\]\(\)/.test(js) && /zone==='muscles'/.test(js), 'The zone is routed to its content');
+// 2026-11-10: зони маршрутизуються через реєстр zoneContent (раніше ланцюжок if), вкладки без змісту (symptoms, rehab) тепер ховаються, а не показують заглушку.
+assert(/muscles:musclesContent/.test(js) && /zoneContent\[zone\]\[tab\]\(\)/.test(js), 'The zone is routed to its content');
 
 // Wording rules (implementation pack §11 and the Atlas safety stance).
 const forbidden = ['виправляє поставу', 'лікує біль', 'прибирає защемлення', 'запобігає травмам', 'найкраща вправа', 'ідеальна техніка'];
@@ -39,8 +40,9 @@ for (const {file, anchor} of links) {
 }
 
 // Deep link: ?zone= is honoured only for known zones.
-assert(/new URLSearchParams\(location\.search\)\.get\('zone'\)/.test(js));
-assert(/Object\.prototype\.hasOwnProperty\.call\(zoneMeta,requestedZone\)/.test(js), 'Unknown zones are ignored (no prototype keys)');
+// 2026-11-10: адреса читається через readLocation() (зона, вкладка, точка); зона перевіряється так само: лише відомі зони.
+assert(/new URLSearchParams\(location\.search\)/.test(js)&&/params\.get\('zone'\)/.test(js));
+assert(/Object\.prototype\.hasOwnProperty\.call\(zoneMeta,zone\)/.test(js), 'Unknown zones are ignored (no prototype keys)');
 
 // Related practice is data-driven and cannot break the Atlas: dynamic import with a fallback.
 assert(/import\('\.\/exercises-data\.js\?v=\d+'\)/.test(js), 'Practice list is loaded lazily');

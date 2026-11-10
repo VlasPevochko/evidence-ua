@@ -39,7 +39,7 @@ export function mountSiteHeader(doc=document){
   // Search loads lazily from the generated dist copy; unit tests that import this file never click it.
   const searchButton=header.querySelector('.eua-header-search');
   let search=null;
-  const withSearch=async()=>{search||=import('./platform-search.js?v=15');return (await search).mountSearch(doc,searchButton);};
+  const withSearch=async()=>{search||=import('./platform-search.js?v=16');return (await search).mountSearch(doc,searchButton);};
   searchButton.addEventListener('click',async e=>{if(searchButton.dataset.searchMounted)return;e.stopImmediatePropagation();const s=await withSearch();s?.open();},{once:false});
   doc.addEventListener('keydown',async e=>{if(e.key==='/'&&!searchButton.dataset.searchMounted&&!e.ctrlKey&&!e.metaKey&&!e.altKey){const t=e.target,tag=t?.tagName;if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||t?.isContentEditable||doc.querySelector('dialog[open]'))return;e.preventDefault();const s=await withSearch();s?.open();}});
   // Home enhancements bind to the same header even when it mounts after them.

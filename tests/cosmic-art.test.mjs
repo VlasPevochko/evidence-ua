@@ -55,7 +55,9 @@ for(const art of ['muscle-lab-art-v1','card-organism','card-nutrition','card-evi
 }
 // Скрипти карт болю ховають і повертають загальну фігуру.
 for(const f of ['dist/knee-pain-map.js','dist/shoulder-pain-map.js'])assert(read(f).includes("wrap.querySelectorAll('.atlas-figure')")&&read(f).includes('set hidden(value)'),`${f} hides the full body figure`);
-assert(atlas.includes('knee-pain-map.js?v=3')&&atlas.includes('shoulder-pain-map.js?v=3'),'the changed map scripts have new versions');
+// 2026-11-10: скрипти карт змінено ще раз (v=4), тож перевіряємо «не старіші за 3», а не точне число.
+const scriptVersion=name=>Number((atlas.match(new RegExp(name.replace('.','\\.')+'\\?v=(\\d+)'))||[])[1]);
+assert(scriptVersion('knee-pain-map.js')>=3&&scriptVersion('shoulder-pain-map.js')>=3,'the changed map scripts have new versions');
 
 // 3) Правила показу: за замовчуванням (без файла палітри) і в «Зеленому» видно оригінал; у космосі фіолетова копія; атрибут hidden не перебивається.
 assert(pine.includes('html img[data-art="cosmic"]{display:none!important}'),'the cosmic copy is hidden unless the cosmic palette shows it');

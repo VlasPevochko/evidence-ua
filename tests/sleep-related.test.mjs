@@ -79,13 +79,21 @@ assert(!/max-width:600px\)\{[^}]*\.related-list a\{[^}]*min-height/.test(css), '
 // Блок «щільніші інтервали» закінчується першим рядком «}» після його коментаря. Раніше зріз ішов до кінця файла; відтоді після нього додано блок карток звичок (там є розмір значка «＋»),
 // тож зріз обмежено самим блоком: він, як і раніше, не має права міняти розміри шрифтів.
 const phoneStart = css.indexOf('/* Телефон: той самий текст');
+// Рядки схеми ночі торкаються пальцем (рішення власника «3 так»; висоту 44 px затверджено «6 так», 2026-11-10): на телефоні й на сенсорних екранах будь-якої ширини рядок не нижчий за 44 px,
+// смуга не вища за 20 px (поточна смуга вища ще на 4 px, тож смуги лишаються не вищими за 24 px).
+const phoneRow = css.match(/@media\(max-width:600px\)\{\.sleep-night\{--row:(\d+)px;--bar:(\d+)px/);
+assert(phoneRow && Number(phoneRow[1]) >= 44 && Number(phoneRow[2]) <= 20, 'on a phone a row of the scheme is at least 44 px tall and its bar at most 20 px');
+const coarse = css.match(/@media \(pointer:coarse\)\{\.sleep-night\{--row:(\d+)px;--bar:(\d+)px\}\}/);
+assert(coarse && Number(coarse[1]) >= 44 && Number(coarse[2]) <= 20, 'the same on touch screens of any width (pointer: coarse)');
+assert(css.indexOf('@media (pointer:coarse)') > css.indexOf('@media(min-width:1000px){.sleep-stage-top'), 'the touch rule comes after the wide-screen rule, so it wins on a wide touch screen too');
 const phoneBlock = css.slice(phoneStart, css.indexOf('\n}\n', phoneStart) + 3);
 assert(phoneBlock.includes('@media(max-width:600px)') && !/font-size/.test(phoneBlock), 'the phone block changes only spacing, never font sizes');
 
 // 4) Журнал: три записи за 2026-11-09, правдиві й без нових наукових тверджень.
 const day = CHANGES.find(d => d.date === '2026-11-09');
 assert(day, 'the journal has the day of the change');
-assert.equal(CHANGES[0].date, '2026-11-09', 'and it is the newest day');
+// 2026-11-10: після записів про сон журнал отримав новий день (Атлас), тож «найновіший день» уже не 2026-11-09; достатньо, щоб день змін існував і не був новішим за журнал.
+assert(CHANGES[0].date >= '2026-11-09', 'and the journal is not older than that day');
 const titles = {scheme: 'Схема ночі на сторінці «Сон і відновлення»', related: 'Сон: блок «Дивись також»', phone: 'Сон: щільніший вигляд на телефоні й одна кнопка в шапці'};
 const entry = key => day.items.find(i => i.title === titles[key]);
 for (const key of Object.keys(titles)) {
@@ -122,6 +130,6 @@ assert(versionOf(page, 'sleep.css') >= 86 && versionOf(page, 'sleep.js') >= 83, 
 // Картка «Нове на сайті» на головній збирається з журналу, тож найновіший запис про сон має бути в ній.
 const home = read('dist/index.html');
 // Картка показує перші записи найновішого дня, тож перевіряємо найновіший запис дня (а не конкретну назву: щойно за цей день додано нові записи, перший з них зсуває старші за межу картки).
-assert(home.includes('<time datetime="2026-11-09">9 листопада</time>') && home.includes(`<li>${CHANGES[0].items[0].title}</li>`), 'the home card «Нове на сайті» shows the newest day with its newest record');
+assert(home.includes(`<time datetime="${CHANGES[0].date}">`) && home.includes(`<li>${CHANGES[0].items[0].title}</li>`), 'the home card «Нове на сайті» shows the newest day with its newest record');
 
 console.log('Sleep related block, hero button, heading space, 44 px targets, phone spacing and journal records passed.');

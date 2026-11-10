@@ -15,9 +15,10 @@ const text=textOf(body);
 assert.equal((page.match(/<h1\b/g)||[]).length,1);
 assert.equal((page.match(/<header\b/g)||[]).length,1,'only the placeholder for the shared header (the navigation is inserted after every header)');
 assert.deepEqual([...page.matchAll(/<h2 id="(ab-[a-z]+)">([^<]+)<\/h2>/g)].map(match=>[match[1],match[2]]),[
-  ['ab-what','Що це за сайт'],['ab-not','Чого сайт не робить'],['ab-method','Як ми працюємо з доказами'],['ab-review','Стан наукового перегляду'],['ab-fix','Як ми виправляємо помилки'],['ab-privacy','Приватність']
-],'six sections, each with an anchor');
-assert(text.split(' ').length<=460,`the page stays short (${text.split(' ').length} words; about three phone screens, Browser QA measures the real height)`);
+  ['ab-what','Що це за сайт'],['ab-not','Чого сайт не робить'],['ab-method','Як ми працюємо з доказами'],['ab-atlas','Про Атлас'],['ab-review','Стан наукового перегляду'],['ab-fix','Як ми виправляємо помилки'],['ab-privacy','Приватність']
+],'seven sections, each with an anchor (the Atlas section was added on 2026-11-10: owner decision «1-7 так», item 6)');
+// Ліміт слів 460 → 540: власник вирішив додати розділ «Про Атлас» (2026-11-10, «1-7 так», п. 6); реальну висоту міряє Browser QA (ліміт на телефоні піднято з 4,4 до 4,8 екрана).
+assert(text.split(' ').length<=540,`the page stays short (${text.split(' ').length} words; Browser QA measures the real height)`);
 assert(!/<form|<input|<button|<iframe|<img|<video|<audio/i.test(body),'the page is plain text and links');
 // Скрипти лише спільні: шапка, вигляд (ранній вбудований скрипт + модуль) і перехід до якоря; власного коду на сторінці немає.
 const scripts=[...page.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].map(match=>({attrs:match[1],body:match[2]}));
@@ -97,7 +98,7 @@ const material=materials.find(item=>item.id==='navigation-about');
 assert(material&&material.href==='./about.html'&&material.title==='Про проєкт','the page is a material of its own');
 for(const query of ['про проєкт','приватність','застереження','рецензент','помилки'])assert(findMaterials(query).some(item=>item.href==='./about.html'),`search finds the page for «${query}»`);
 const rows=sections.filter(row=>row[0].startsWith('about.html#'));
-assert.deepEqual(rows.map(row=>row[0]),['about.html#ab-what','about.html#ab-not','about.html#ab-method','about.html#ab-review','about.html#ab-fix','about.html#ab-privacy'],'the six sections are in the section search');
+assert.deepEqual(rows.map(row=>row[0]),['about.html#ab-what','about.html#ab-not','about.html#ab-method','about.html#ab-atlas','about.html#ab-review','about.html#ab-fix','about.html#ab-privacy'],'the seven sections are in the section search');
 assert(rows.every(row=>row[2]==='Про проєкт'&&row[3]==='section'));
 assert(/<link rel="canonical" href="https:\/\/[^"]+\/about\.html">/.test(page)&&/<meta property="og:url" content="https:\/\/[^"]+\/about\.html">/.test(page)&&page.includes('/og/about.jpg"'),'canonical, og:url and the share card point to this page');
 const card=fs.readFileSync('dist/og/about.jpg');

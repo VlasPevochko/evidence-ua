@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {catalog} from '../src/platform/catalog.mjs';
 
-const requiredFiles=['dist/atlas.html','dist/atlas.css','dist/atlas.js','dist/knee-pain-map.css','dist/knee-pain-map.js','dist/shoulder-pain-map.css','dist/shoulder-pain-map.js','dist/atlas-coordinate-map.css'];
+const requiredFiles=['dist/atlas.html','dist/atlas.css','dist/atlas.js','dist/knee-pain-map.css','dist/knee-pain-map.js','dist/shoulder-pain-map.css','dist/shoulder-pain-map.js','dist/atlas-coordinate-map.css','dist/atlas-points.js','dist/atlas-diagrams.js','dist/atlas-diagrams.css'];
 for(const file of requiredFiles)assert(fs.existsSync(file),`Missing Atlas asset: ${file}`);
 
 const html=fs.readFileSync('dist/atlas.html','utf8');
@@ -15,11 +15,16 @@ const shoulderJS=fs.readFileSync('dist/shoulder-pain-map.js','utf8');
 const coordinateCSS=fs.readFileSync('dist/atlas-coordinate-map.css','utf8');
 const shellSource=fs.readFileSync('src/platform/shell.mjs','utf8');
 const shellBuilt=fs.readFileSync('dist/platform-shell.js','utf8');
+// 2026-11-10 (рішення власника «1-7 так», п. 4–5): точки карт болю, їхні підписи й теми карток живуть в одному модулі (src/atlas/points.mjs → dist/atlas-points.js), схеми — в src/atlas/diagrams.mjs.
+const points=fs.readFileSync('src/atlas/points.mjs','utf8');
+const diagrams=fs.readFileSync('src/atlas/diagrams.mjs','utf8');
 
 const zones=[...html.matchAll(/data-zone="([^"]+)"/g)].map(match=>match[1]);
 assert.deepEqual(zones,['brain','shoulder','spine','muscles','gut','knee']);
 assert.match(html,/data-zone="shoulder"[^>]*aria-pressed="true"/);
-assert.match(html,/<aside class="atlas-sidebar"[^>]*>[\s\S]*?<h1 id="atlas-title">Атлас Evidence<\/h1>/);
+// 2026-11-10 (п. 2): бічну колонку з 6 плитками-дублями прибрано; заголовок і вступ стоять над фігурою в одній колонці сцени.
+assert.match(html,/<div class="atlas-stage">[\s\S]*?<h1 id="atlas-title">Атлас Evidence<\/h1>/);
+assert(!html.includes('atlas-sidebar')&&!html.includes('data-atlas-shortcut')&&!html.includes('atlas-evidence-footer'),'no tile column, no tab-duplicating shortcuts, no principles strip');
 assert.deepEqual([...html.matchAll(/data-atlas-view="([^"]+)"/g)].map(match=>match[1]),['front','back']);
 assert.match(html,/src="\.\/atlas-body-views\.webp"/);
 assert(fs.existsSync('dist/atlas-shoulder.webp'),'Shoulder art is part of the publish directory');
@@ -30,10 +35,10 @@ assert.deepEqual(tabs,['overview','anatomy','symptoms','training','rehab','resea
 assert(html.includes('id="atlas-breadcrumb"'),'Atlas breadcrumb is required');
 
 for(const title of ['Ротаторна манжета','Субакроміальний біль','Нестабільність плеча','Біцепс','AC-суглоб']){
-  assert(js.includes(title),`Missing shoulder topic: ${title}`);
+  assert(points.includes(title),`Missing shoulder topic: ${title}`);
 }
 for(const title of ['Пателофеморальний біль','Меніски','ACL','Сухожилок надколінка','Остеоартроз коліна']){
-  assert(js.includes(title),`Missing knee topic: ${title}`);
+  assert(points.includes(title),`Missing knee topic: ${title}`);
 }
 for(const title of ['Сон і циркадні ритми','Неспецифічний біль у попереку','Гіпертрофія','Мікробіом']){
   assert(js.includes(title),`Missing preview topic: ${title}`);
@@ -64,30 +69,30 @@ for(const coordinate of [
 assert(html.includes('id="knee-pain-map"'),'Knee pain map mount is required in the figure panel');
 assert(html.includes('./knee-pain-map.css'),'Knee pain map stylesheet must be loaded');
 assert(html.includes('./knee-pain-map.js'),'Knee pain map controller must be loaded');
-for(const view of ['front','medial','lateral','posterior'])assert(kneeJS.includes(`id:'${view}'`),`Missing knee view: ${view}`);
-for(const label of ['Спереду','Зсередини','Ззовні','Ззаду'])assert(kneeJS.includes(label),`Missing knee view label: ${label}`);
+for(const view of ['front','medial','lateral','posterior'])assert(points.includes(`id: '${view}'`),`Missing knee view: ${view}`);
+for(const label of ['Спереду','Зсередини','Ззовні','Ззаду'])assert(points.includes(label),`Missing knee view label: ${label}`);
 for(const hotspot of ['anterior-patella','inferior-patella','superior-patella','medial-joint-line','pes-anserinus','lateral-joint-line','fibular-head','posterior-knee']){
-  assert(kneeJS.includes(`id:'${hotspot}'`),`Missing knee pain hotspot: ${hotspot}`);
+  assert(points.includes(`id: '${hotspot}'`),`Missing knee pain hotspot: ${hotspot}`);
 }
+// Латинські назви структур лишились у дужках біля українських (2026-11-10, п. 5: англійські слова замінено, анатомічні терміни збережено).
 for(const anatomy of ['pes anserinus','sartorius','gracilis','semitendinosus','gastrocnemius','biceps femoris']){
-  assert(kneeJS.toLowerCase().includes(anatomy.toLowerCase()),`Missing pain-map anatomy: ${anatomy}`);
+  assert(points.toLowerCase().includes(anatomy.toLowerCase()),`Missing pain-map anatomy: ${anatomy}`);
 }
 assert(kneeJS.includes('Точка болю ≠ джерело болю'),'Pain map must state the core interpretation rule');
 assert(kneeJS.includes('не встановлює діагноз'),'Pain map must explicitly avoid auto-diagnosis');
 assert.match(coordinateCSS,/\.knee-stage\{[^}]*aspect-ratio:320\s*\/\s*420/,'Knee stage must preserve the SVG 320/420 coordinate system');
 assert.match(coordinateCSS,/\.knee-stage>\.knee-diagram\{[^}]*inset:0/,'Knee SVG must fill the same coordinate canvas as its hotspots');
+// Було: калібрування точок коліна окремими правилами з !important у atlas-coordinate-map.css. Тепер координати (відсотки сцени) лежать у даних, а правил-перебивачів немає:
+// інакше вони перекрили б нові координати під перемальовану схему.
+assert(!/\.knee-hotspot\[data-knee-hotspot=/.test(coordinateCSS),'no CSS override may shadow the hotspot coordinates from the data');
+const {kneePoints}=await import('../src/atlas/points.mjs');
 const calibratedKneePoints=[
-  ['superior-patella','50%','38%'],
-  ['anterior-patella','50%','47.5%'],
-  ['inferior-patella','50%','57.5%'],
-  ['medial-joint-line','59.5%','54.5%'],
-  ['pes-anserinus','39%','79%'],
-  ['lateral-joint-line','64%','54.5%'],
-  ['fibular-head','69%','62.5%'],
-  ['posterior-knee','50%','52.5%']
+  ['superior-patella',50,36.5],['anterior-patella',50,47.5],['inferior-patella',50,58.5],['medial-joint-line',59.5,54.5],
+  ['pes-anserinus',39,79],['lateral-joint-line',60.3,54.5],['fibular-head',65.3,66],['posterior-knee',50,52.5]
 ];
 for(const [id,x,y] of calibratedKneePoints){
-  assert(coordinateCSS.includes(`.knee-hotspot[data-knee-hotspot="${id}"]{--x:${x}!important;--y:${y}!important}`),`Missing calibrated knee hotspot ${id}`);
+  const point=kneePoints.find(item=>item.id===id);
+  assert(point&&point.x===x&&point.y===y,`Knee hotspot ${id} stays at its calibrated place on the redrawn diagram`);
 }
 assert.match(kneeCSS,/:focus-visible/);
 assert.match(kneeCSS,/prefers-reduced-motion/);
@@ -96,17 +101,18 @@ assert.match(kneeCSS,/prefers-reduced-motion/);
 assert(html.includes('id="shoulder-pain-map"'),'Shoulder pain map mount is required in the figure panel');
 assert(html.includes('./shoulder-pain-map.css'),'Shoulder pain map stylesheet must be loaded');
 assert(html.includes('./shoulder-pain-map.js'),'Shoulder pain map controller must be loaded');
-for(const view of ['front','lateral','posterior'])assert(shoulderJS.includes(`id:'${view}'`),`Missing shoulder view: ${view}`);
-for(const label of ['Спереду','Збоку','Ззаду'])assert(shoulderJS.includes(label),`Missing shoulder view label: ${label}`);
+for(const view of ['front','lateral','posterior'])assert(points.includes(`id: '${view}'`),`Missing shoulder view: ${view}`);
+for(const label of ['Спереду','Збоку','Ззаду'])assert(points.includes(label),`Missing shoulder view label: ${label}`);
 for(const hotspot of ['ac-joint','bicipital-groove','anterior-gh','lateral-deltoid','posterior-cuff','scapular-region','cervical-referred']){
-  assert(shoulderJS.includes(`id:'${hotspot}'`),`Missing shoulder pain hotspot: ${hotspot}`);
+  assert(points.includes(`id: '${hotspot}'`),`Missing shoulder pain hotspot: ${hotspot}`);
 }
-for(const anatomy of ['AC-суглоб','довга голівка біцепса','rotator cuff','subacromial','шийного відділу']){
-  assert(shoulderJS.toLowerCase().includes(anatomy.toLowerCase()),`Missing shoulder-map anatomy or differential: ${anatomy}`);
+// 2026-11-10: «rotator cuff» і «subacromial» замінено на «ротаторна манжета» і «субакроміальн…» (п. 5, англійські слова в інтерфейсі).
+for(const anatomy of ['AC-суглоб','довга голівка біцепса','ротаторна манжета','субакроміальн','шийного відділу']){
+  assert(points.toLowerCase().includes(anatomy.toLowerCase()),`Missing shoulder-map anatomy or differential: ${anatomy}`);
 }
 assert(shoulderJS.includes('Точка болю ≠ джерело болю'),'Shoulder map must preserve the core interpretation rule');
 assert(shoulderJS.includes('не встановлює діагноз'),'Shoulder map must explicitly avoid auto-diagnosis');
-assert(shoulderJS.includes('реферований біль'),'Shoulder map must distinguish referred pain');
+assert(points.includes('реферований біль')&&shoulderJS.includes('реферований патерн'),'Shoulder map must distinguish referred pain');
 assert(shoulderJS.includes('kneeMapVisible'),'Shoulder controller must not restore the body/legend over an active knee pain map');
 assert.match(shoulderCSS,/shoulder-pain-map/);
 assert.match(shoulderCSS,/:focus-visible/);

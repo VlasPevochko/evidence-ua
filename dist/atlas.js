@@ -1,3 +1,7 @@
+// Дані точок карт болю й тем плеча та коліна лежать в окремому модулі. Завантажуємо його з запасним варіантом: якщо він не завантажиться, плече й коліно покажуть
+// лише довідкову частину, а безпековий текст хребта й решта зон (він статичний, див. комент. біля spineContent) працюватимуть, як і раніше.
+const {painMaps,shoulderTopics,kneeTopics}=await import('./atlas-points.js?v=1').catch(()=>({painMaps:{},shoulderTopics:[],kneeTopics:[]}));
+
 const zoneMeta={
  brain:{title:'Мозок',summary:'Сон, стрес, когнітивні функції, фізична активність і фактори, що впливають на роботу нервової системи.',state:'Готується',stateKey:'planned'},
  shoulder:{title:'Плечовий комплекс',summary:'Анатомія, найпоширеніші стани, навантаження, реабілітація та спосіб читати наукові дані без спрощення до «працює / не працює».',state:'Повний модуль',stateKey:'full'},
@@ -8,22 +12,6 @@ const zoneMeta={
 };
 
 const tabLabels={overview:'Огляд',anatomy:'Анатомія',symptoms:'Симптоми',training:'Тренування',rehab:'Реабілітація',research:'Дослідження'};
-
-const shoulderTopics=[
- {title:'Ротаторна манжета',copy:'Функції, поширені проблеми, навантаження, реабілітація та доказові підходи.',tag:'Анатомія · Біль · Навантаження'},
- {title:'Субакроміальний біль',copy:'Чому один лише простір під акроміоном не пояснює симптоми та як мислити про навантаження.',tag:'Симптоми · Реабілітація'},
- {title:'Нестабільність плеча',copy:'Типи нестабільності, фактори ризику та логіка повернення до навантаження.',tag:'Стабільність · Травми'},
- {title:'Біцепс',copy:'Довга головка біцепса, сухожилок, провокація симптомів і силове навантаження.',tag:'Анатомія · Сухожилки'},
- {title:'AC-суглоб',copy:'Акроміально-ключичний суглоб: навантаження, біль і контекст травми.',tag:'Біль · Травми'}
-];
-
-const kneeTopics=[
- {title:'Пателофеморальний біль',copy:'Біль навколо або позаду надколінка, толерантність до навантаження та роль активної реабілітації.',tag:'Біль · Навантаження'},
- {title:'Меніски',copy:'Травматичні й дегенеративні сценарії, симптоми, функція та різні шляхи ведення.',tag:'Травми · Функція'},
- {title:'ACL',copy:'Передня хрестоподібна зв’язка: травма, стабільність, відновлення функції та повернення до спорту.',tag:'Зв’язки · Спорт'},
- {title:'Сухожилок надколінка',copy:'Навантажувальна толерантність сухожилка, силова робота та поступове повернення до стрибкових задач.',tag:'Сухожилки · Навантаження'},
- {title:'Остеоартроз коліна',copy:'Симптоми, функціональні можливості, фізична активність і місце силового навантаження в довгостроковому веденні.',tag:'Суглоб · Активність'}
-];
 
 const previewTopics={
  brain:[
@@ -52,16 +40,22 @@ const previewTopics={
  ]
 };
 
-function topicCards(topics){return topics.map((topic,index)=>`<article class="atlas-topic"><div class="atlas-topic-icon" aria-hidden="true">${String(index+1).padStart(2,'0')}</div><div><h3>${topic.title}</h3><p>${topic.copy}</p></div><span class="atlas-topic-tag">${topic.tag}</span></article>`).join('');}
+const esc=text=>String(text).replace(/[&<>"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
+const arrow='<svg class="atlas-topic-arrow" aria-hidden="true"><use href="#ai-next"/></svg>';
+const pointTitle=(zone,id)=>painMaps[zone]?.points.find(point=>point.id===id)?.title||'';
 
-function shoulderTopicCards(){
- const destinations=['anatomy','symptoms','rehab','anatomy','symptoms'];
- return shoulderTopics.map((topic,index)=>`<article class="atlas-topic atlas-shoulder-topic" data-shoulder-art="${index+1}">
-  <div class="atlas-topic-icon" aria-hidden="true"></div>
-  <div><h3><button type="button" data-goto-tab="${destinations[index]}" aria-label="${topic.title} · ${tabLabels[destinations[index]]}">${topic.title}</button></h3><p>${topic.copy}</p></div>
-  <span class="atlas-topic-tag">${topic.tag}</span><svg class="atlas-topic-arrow" aria-hidden="true"><use href="#ai-next"/></svg>
- </article>`).join('');
+// Довідкова картка без переходу (теми, яких ще немає окремими матеріалами).
+function topicCards(topics){return topics.map(topic=>`<article class="atlas-topic atlas-topic--plain"><div><h3>${topic.title}</h3><p>${topic.copy}</p></div>${topic.tag?`<span class="atlas-topic-tag">${topic.tag}</span>`:''}</article>`).join('');}
+
+// Картка теми карти болю: уся картка натискна (розтягнута кнопка), чип каже, до якої точки вона веде.
+function pointCard(zone,topic,{className='',attrs='',icon=''}={}){
+ const target=topic.point?pointTitle(zone,topic.point):'';
+ const name=topic.point?`<button type="button" data-goto-point="${zone}:${topic.point}" aria-label="${esc(topic.title)}: показати на карті болю">${topic.title}</button>`:topic.title;
+ const chip=topic.point?`<span class="atlas-topic-tag atlas-topic-goes">На карті: ${target}</span>${arrow}`:'<span class="atlas-topic-tag atlas-topic-goes atlas-topic-goes--none">Окремої точки на карті немає</span>';
+ return `<article class="atlas-topic ${className} ${topic.point?'atlas-topic--link':'atlas-topic--plain'}"${attrs}>${icon}<div><h3>${name}</h3><p>${topic.copy}</p></div>${chip}</article>`;
 }
+function shoulderTopicCards(){return shoulderTopics.map((topic,index)=>pointCard('shoulder',topic,{className:'atlas-shoulder-topic',attrs:` data-shoulder-art="${index+1}"`,icon:'<div class="atlas-topic-icon" aria-hidden="true"></div>'})).join('');}
+function kneeTopicCards(){return kneeTopics.map(topic=>pointCard('knee',topic)).join('');}
 
 const shoulderContent={
  overview:()=>`${shoulderTopicCards()}<details class="atlas-copy-card atlas-reading-note"><summary>Як читати цей модуль</summary><p>Плече — перша повністю розгорнута область Атласу. Тут ми не намагаємося поставити діагноз за точкою болю. Мета — показати структуру знань: що це за область, які питання виникають найчастіше, що варто перевіряти і де закінчується впевненість доказів.</p></details>`,
@@ -73,7 +67,7 @@ const shoulderContent={
 };
 
 const kneeContent={
- overview:()=>`<div class="atlas-copy-card"><h3>Коліно — другий модуль Атласу</h3><p>Колінний біль не є однією нозологією. У бета-модулі ми розділяємо пателофеморальний біль, меніски, зв’язки, сухожилки та остеоартроз, щоб не змішувати різні механізми, прогнози й задачі реабілітації.</p></div>${topicCards(kneeTopics)}`,
+ overview:()=>`<div class="atlas-copy-card"><h3>Коліно — другий модуль Атласу</h3><p>Колінний біль не є однією нозологією. У бета-модулі ми розділяємо пателофеморальний біль, меніски, зв’язки, сухожилки та остеоартроз, щоб не змішувати різні механізми, прогнози й задачі реабілітації.</p></div>${kneeTopicCards()}`,
  anatomy:()=>`<div class="atlas-copy-card"><h3>Анатомія коліна</h3><p>Колінний комплекс поєднує тибіофеморальний і пателофеморальний суглоби, меніски, зв’язки, сухожилки та м’язові групи, що керують навантаженням.</p><ul><li>Меніски беруть участь у розподілі навантаження та стабільності.</li><li>ACL є важливим елементом пасивної стабільності коліна.</li><li>Квадрицепс і м’язи задньої поверхні стегна суттєво впливають на функцію.</li></ul></div>`,
  symptoms:()=>`<div class="atlas-copy-card"><h3>Симптоми потребують контексту</h3><p>Передній, медіальний або латеральний біль, набряк, нестабільність і обмеження руху мають різне значення залежно від механізму появи, тривалості та функціональних вимог.</p><ul><li>Локалізація болю сама по собі не встановлює діагноз.</li><li>Після гострої травми важливі механізм, набряк, функція та стабільність.</li><li>Структурні зміни на зображеннях інтерпретують разом із симптомами.</li></ul></div>`,
  training:()=>`<div class="atlas-copy-card"><h3>Тренування коліна</h3><p>Основна ідея — не уникати руху як категорії, а керувати дозою навантаження відповідно до конкретної задачі та реакції тканин і симптомів.</p><ul><li>Прогресія може включати силу, контроль, швидкість і специфічні спортивні задачі.</li><li>Глибина руху та зовнішнє навантаження змінюються поступово.</li><li>Оцінюється не лише відчуття під час вправи, а й реакція після неї.</li></ul></div>`,
@@ -81,7 +75,7 @@ const kneeContent={
  research:()=>`<div class="atlas-copy-card"><h3>Докази для коліна</h3><p>Бета-модуль уже розділяє клінічні сценарії, але кожна тема отримає власний набір джерел, рівень впевненості й окремі практичні висновки.</p><ul><li>Для пателофеморального болю окремо розглядаємо активну реабілітацію та освіту.</li><li>Для менісків і ACL розділяємо травматичні сценарії, хірургічні та нехірургічні шляхи.</li><li>Для остеоартрозу оцінюємо функцію, фізичну активність, симптоми й довгострокове ведення.</li></ul></div>`
 };
 
-function topicLinks(items){return items.map((item,index)=>`<article class="atlas-topic"><div class="atlas-topic-icon" aria-hidden="true">${String(index+1).padStart(2,'0')}</div><div><h3><a href="${item.href}">${item.title}</a></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span></article>`).join('');}
+function topicLinks(items){return items.map(item=>`<article class="atlas-topic atlas-topic--link"><div><h3><a href="${item.href}">${item.title}</a></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span>${arrow}</article>`).join('');}
 
 // «М’язи» is a navigation beta: it links existing Evidence UA materials and the exercise library and adds no new scientific claims.
 const musclesContent={
@@ -100,7 +94,7 @@ const musclesContent={
  research:()=>`<div class="atlas-copy-card"><h3>Джерела й межі</h3><p>Для цієї зони рівні впевненості ще не оцінено: науковий перегляд матеріалів Muscle Lab і Movement Lab не завершено. Джерела та межі пояснень — у самих модулях:</p><ul><li><a href="./muscle-lab.html#sources">Muscle Lab · Джерела та межі пояснень</a></li><li><a href="./movement.html#sources">Movement Lab · Джерела та межі моделі</a></li></ul></div>`
 };
 
-function topicTabs(items){return items.map((item,index)=>`<article class="atlas-topic"><div class="atlas-topic-icon" aria-hidden="true">${String(index+1).padStart(2,'0')}</div><div><h3><button type="button" class="atlas-link-button" data-goto-tab="${item.tab}">${item.title}</button></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span></article>`).join('');}
+function topicTabs(items){return items.map(item=>`<article class="atlas-topic atlas-topic--link"><div><h3><button type="button" class="atlas-link-button" data-goto-tab="${item.tab}">${item.title}</button></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span>${arrow}</article>`).join('');}
 
 // «Хребет» is a Beta navigation zone (Stage 0 in docs/SPINE_AND_PERSONAL_GUIDANCE_BACKLOG.md). Safety text is static on purpose:
 // it must never depend on a lazy module. No pain map, no causes by location, no exercises chosen from a pointed spot.
@@ -115,15 +109,40 @@ const spineContent={
  training:()=>`<div class="atlas-alert"><strong>Спершу про безпеку.</strong><p>Перед будь-якими вправами перегляньте <button type="button" class="atlas-link-button" data-goto-tab="symptoms">«Коли звернутися по медичну допомогу»</button>.</p></div><div class="atlas-copy-card"><h3>Практика</h3><p>Нижче — вправи з Бібліотеки вправ як освітні приклади для цієї зони. Це не персональні призначення: вони не підбираються за місцем болю, не обіцяють результату й не замінюють оцінку фахівця. Поради до вправ — редакційна чернетка.</p></div><div class="atlas-practice" data-related-practice="spine"><p class="atlas-practice-status">Завантаження списку вправ…</p></div>`
 };
 
-function previewContent(zone,tab){
- const meta=zoneMeta[zone],topics=previewTopics[zone]||[];
- if(tab==='overview')return `<div class="atlas-copy-card"><h3>${meta.title}: карта майбутнього модуля</h3><p>Ми вже показуємо структуру тем, але не підміняємо відсутній доказовий розбір короткими універсальними порадами. Кожна картка стане окремим матеріалом із джерелами та рівнем впевненості.</p></div>${topicCards(topics)}`;
- return `<div class="atlas-coming"><strong>Готується</strong><h3>${tabLabels[tab]} · ${meta.title}</h3><p>Ця вкладка вже є частиною загальної архітектури Атласу. Наступний крок — наповнити її перевіреними матеріалами й першоджерелами для конкретних тем цієї області.</p></div>`;
+// Для зон без власного модуля («Готується») заглушок на кожну вкладку більше немає (рішення власника 2026-11-10, п. 3): одна вкладка «Огляд» з посиланнями
+// на наші справжні матеріали на близькі теми. Описи взято з метаопису самих сторінок, нових тверджень тут немає.
+const relatedMaterials={
+ brain:[
+  {title:'Сон і відновлення',copy:'Як влаштований сон, що відомо про недосипання й фізичну працездатність та які звички допомагають створити умови для сну.',href:'./sleep.html',tag:'Сон'},
+  {title:'Кофеїн: як це працює',copy:'Коротка анімована схема «Чому кава бадьорить: кофеїн і аденозин». Це схема, а не вимірювання.',href:'./mechanisms.html#caffeine',tag:'Схема'},
+  {title:'Кофеїн: розбір',copy:'Наукові пояснення, джерела, практичні орієнтири та обмеження.',href:'./index.html#supplement-caffeine',tag:'Добавки'}
+ ],
+ gut:[
+  {title:'Шлях їжі: травлення у 3D',copy:'3D-модель травного тракту: як їжа проходить від стравоходу до товстої кишки, з джерелами для кожного твердження.',href:'./nutrition-digestion.html',tag:'3D-модель'},
+  {title:'Харчування зсередини',copy:'Від їжі до клітини: інтерактивний шлях нутрієнтів — перетравлення, всмоктування та подальший транспорт.',href:'./nutrition-inside.html',tag:'Фізіологія'}
+ ]
+};
+
+function plannedOverview(zone){
+ const meta=zoneMeta[zone],planned=previewTopics[zone]||[];
+ return `<div class="atlas-copy-card"><h3>${meta.title}: власного модуля ще немає</h3><p>Ми не підміняємо відсутній розбір короткими універсальними порадами. Поки що тут лише посилання на наші матеріали на близькі теми: вони не є частиною Атласу й мають власні статуси перегляду.</p></div><h3 class="atlas-group-title">Уже є на сайті</h3>${topicLinks(relatedMaterials[zone]||[])}<details class="atlas-copy-card atlas-reading-note"><summary>Що ще готується</summary><ul class="atlas-planned-list">${planned.map(topic=>`<li><strong>${topic.title}</strong>: ${topic.copy}</li>`).join('')}</ul></details>`;
 }
+
+// Які вкладки має кожна зона. Вкладки без змісту не показуємо (раніше було 14 однакових заглушок із 36 екранів).
+const zoneContent={
+ shoulder:shoulderContent,
+ knee:kneeContent,
+ spine:spineContent,
+ muscles:musclesContent,
+ brain:{overview:()=>plannedOverview('brain')},
+ gut:{overview:()=>plannedOverview('gut')}
+};
+const TAB_ORDER=['overview','anatomy','symptoms','training','rehab','research'];
+const MAP_ZONES=new Set(['shoulder','knee']);
+const tabsOf=zone=>TAB_ORDER.filter(tab=>typeof zoneContent[zone]?.[tab]==='function');
 
 const zoneButtons=[...document.querySelectorAll('[data-zone]')];
 const tabs=[...document.querySelectorAll('[data-atlas-tab]')];
-const shortcuts=[...document.querySelectorAll('[data-atlas-shortcut]')];
 const viewButtons=[...document.querySelectorAll('[data-atlas-view]')];
 const figurePanel=document.querySelector('.atlas-figure-panel');
 const detail=document.getElementById('atlas-detail');
@@ -131,20 +150,53 @@ const title=document.getElementById('atlas-zone-title');
 const summary=document.getElementById('atlas-zone-summary');
 const status=document.getElementById('atlas-zone-status');
 const content=document.getElementById('atlas-content');
+const tablist=document.getElementById('atlas-tablist');
+const statusLine=document.getElementById('atlas-status');
 const breadcrumbZone=document.getElementById('atlas-breadcrumb-zone');
 const breadcrumbTab=document.getElementById('atlas-breadcrumb-tab');
-let selectedZone='shoulder';
+const DEFAULT_ZONE='shoulder';
+const hasZone=zone=>typeof zone==='string'&&Object.prototype.hasOwnProperty.call(zoneMeta,zone);
+let selectedZone=DEFAULT_ZONE;
 let selectedTab='overview';
-const requestedZone=new URLSearchParams(location.search).get('zone');
-if(requestedZone&&Object.prototype.hasOwnProperty.call(zoneMeta,requestedZone))selectedZone=requestedZone;
+let currentPoint=null;
 
-function markupFor(zone,tab){
- if(zone==='shoulder')return shoulderContent[tab]();
- if(zone==='knee')return kneeContent[tab]();
- if(zone==='muscles'&&musclesContent[tab])return musclesContent[tab]();
- if(zone==='spine'&&spineContent[tab])return spineContent[tab]();
- return previewContent(zone,tab);
+// Стан у адресі: ?zone=knee&tab=symptoms&point=medial-joint-line. Перехід до іншої зони додає запис в історію («Назад» повертає до попередньої зони),
+// вкладки й точки лише оновлюють адресу. Чужі параметри (наприклад, utm) не чіпаємо.
+function readLocation(){
+ const params=new URLSearchParams(location.search);
+ const zone=hasZone(params.get('zone'))?params.get('zone'):DEFAULT_ZONE;
+ const tab=tabsOf(zone).includes(params.get('tab'))?params.get('tab'):'overview';
+ return {zone,tab,point:params.get('point')||null};
 }
+function writeLocation(mode){
+ const next=new URL(location.href);
+ next.searchParams.set('zone',selectedZone);
+ if(selectedTab!=='overview')next.searchParams.set('tab',selectedTab);else next.searchParams.delete('tab');
+ if(currentPoint)next.searchParams.set('point',currentPoint);else next.searchParams.delete('point');
+ if(next.href===location.href)return;
+ try{history[mode==='push'?'pushState':'replaceState'](null,'',next);}catch{}
+}
+{const initial=readLocation();selectedZone=initial.zone;selectedTab=initial.tab;currentPoint=initial.point;}
+
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
+const stacked=matchMedia('(max-width: 900px)');
+function say(text){if(!statusLine)return;statusLine.textContent='';requestAnimationFrame(()=>{statusLine.textContent=text;});}
+// На вузьких екранах панель зони стоїть під фігурою: після дотику до піна чи точки болю прокручуємо до результату,
+// інакше змінюється те, чого людина не бачить (виміряно в аудиті 2026-11-10: на 390 і 360 px 0 px результату в кадрі).
+function revealDetail(){
+ if(!stacked.matches||!detail)return;
+ const top=detail.getBoundingClientRect().top;
+ if(top>=0&&top<innerHeight*.55)return;
+ detail.scrollIntoView({block:'start',behavior:reduceMotion.matches?'auto':'smooth'});
+}
+function backToFigure(){
+ if(!figurePanel)return;
+ figurePanel.scrollIntoView({block:'start',behavior:reduceMotion.matches?'auto':'smooth'});
+ const target=figurePanel.querySelector('.atlas-zone.is-selected:not([hidden])')||figurePanel.querySelector('[data-shoulder-return]:not([hidden]),[data-knee-return]:not([hidden])');
+ target?.focus({preventScroll:true});
+}
+
+function markupFor(zone,tab){return zoneContent[zone][tab]();}
 
 let spineHub=null;
 async function hydrateSpineHub(){
@@ -185,38 +237,99 @@ async function hydrateRelatedPractice(){
  }
 }
 
-function render(){
+// «Стан атласу» збирається з тих самих даних, що статуси зон (zoneMeta) і підписи пінів.
+function renderState(){
+ const list=document.querySelector('#atlas-state .atlas-state-list');
+ if(!list)return;
+ const names=Object.fromEntries(zoneButtons.map(button=>[button.dataset.zone,button.getAttribute('aria-label')]));
+ const groups=[['full','Повний модуль'],['beta','Бета'],['planned','Готується']];
+ list.innerHTML=groups.map(([key,label])=>{
+  const zones=Object.keys(zoneMeta).filter(zone=>zoneMeta[zone].stateKey===key&&zoneMeta[zone].state===label);
+  return zones.length?`<div data-state="${key}"><dt>${label}</dt><dd>${zones.map(zone=>names[zone]||zoneMeta[zone].title).join(' · ')}</dd></div>`:'';
+ }).join('');
+}
+
+function render({user=false}={}){
  const meta=zoneMeta[selectedZone];
+ const available=tabsOf(selectedZone);
+ if(!available.includes(selectedTab))selectedTab='overview';
  detail.dataset.zoneArt=selectedZone;
  title.textContent=meta.title;summary.textContent=meta.summary;status.textContent=meta.state;status.dataset.state=meta.stateKey;
  breadcrumbZone.textContent=meta.title;breadcrumbTab.textContent=tabLabels[selectedTab];
  zoneButtons.forEach(button=>{const active=button.dataset.zone===selectedZone;button.classList.toggle('is-selected',active);button.setAttribute('aria-pressed',String(active));});
- tabs.forEach(button=>{button.disabled=false;button.hidden=false;button.setAttribute('aria-selected',String(button.dataset.atlasTab===selectedTab));});
- shortcuts.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.atlasShortcut===selectedTab)));
+ // Вкладка з'являється лише там, де в неї є зміст; одну вкладку «Огляд» окремо не показуємо.
+ tabs.forEach(button=>{
+  const has=available.includes(button.dataset.atlasTab),on=has&&button.dataset.atlasTab===selectedTab;
+  button.hidden=!has;button.disabled=false;
+  button.setAttribute('aria-selected',String(on));button.tabIndex=on?0:-1;
+ });
+ tablist.hidden=available.length<2;tablist.dataset.count=String(available.length);
+ if(available.length<2){content.removeAttribute('role');content.removeAttribute('aria-labelledby');}
+ else{content.setAttribute('role','tabpanel');content.setAttribute('aria-labelledby',`atlas-tab-${selectedTab}`);}
  content.classList.add('is-changing');
  spineHub?.dispose();spineHub=null;
  content.innerHTML=markupFor(selectedZone,selectedTab);
  requestAnimationFrame(()=>content.classList.remove('is-changing'));
  hydrateRelatedPractice();
  hydrateSpineHub();
+ if(user)say(`Обрано: ${meta.title}${available.length>1?` · ${tabLabels[selectedTab]}`:''}`);
 }
 
-content.addEventListener('click',event=>{const jump=event.target.closest('[data-goto-tab]');if(!jump)return;const target=tabs.find(button=>button.dataset.atlasTab===jump.dataset.gotoTab);if(target){target.click();target.focus();}});
-zoneButtons.forEach(button=>button.addEventListener('click',()=>{selectedZone=button.dataset.zone;selectedTab='overview';render();}));
-tabs.forEach((button,index)=>{
- button.addEventListener('click',()=>{selectedTab=button.dataset.atlasTab;render();});
- button.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight'].includes(event.key))return;event.preventDefault();const step=event.key==='ArrowRight'?1:-1;tabs[(index+step+tabs.length)%tabs.length].focus();});
+content.addEventListener('click',event=>{
+ const jump=event.target.closest('[data-goto-tab]');
+ if(jump){const target=tabs.find(button=>button.dataset.atlasTab===jump.dataset.gotoTab);if(target){target.click();target.focus();}return;}
+ const toPoint=event.target.closest('[data-goto-point]');
+ if(toPoint){
+  const [zone,point]=toPoint.dataset.gotoPoint.split(':');
+  if(!hasZone(zone))return;
+  selectedZone=zone;selectedTab='overview';currentPoint=point;
+  render({user:false});
+  document.dispatchEvent(new CustomEvent('atlas:goto-point',{detail:{zone,point}}));
+  return;
+ }
+ const back=event.target.closest('[data-atlas-topics]');
+ if(back){
+  const zone=selectedZone,last=currentPoint;
+  document.dispatchEvent(new CustomEvent('atlas:clear-point',{detail:{zone}}));
+  currentPoint=null;selectedTab='overview';render({user:false});writeLocation('replace');
+  content.querySelector(`[data-goto-point="${zone}:${last}"]`)?.focus({preventScroll:true});
+ }
 });
-shortcuts.forEach(button=>button.addEventListener('click',()=>{
- const tab=tabs.find(item=>item.dataset.atlasTab===button.dataset.atlasShortcut);
- tab.click();
- tab.focus({preventScroll:true});
- detail.scrollIntoView({block:'nearest'});
+zoneButtons.forEach(button=>button.addEventListener('click',()=>{
+ selectedZone=button.dataset.zone;selectedTab='overview';currentPoint=null;
+ render({user:true});writeLocation('push');
+ if(!MAP_ZONES.has(selectedZone))revealDetail();
 }));
+tabs.forEach(button=>{
+ button.addEventListener('click',()=>{selectedTab=button.dataset.atlasTab;currentPoint=null;render({user:false});writeLocation('replace');});
+ button.addEventListener('keydown',event=>{
+  const visible=tabs.filter(item=>!item.hidden),index=visible.indexOf(button);
+  const target={ArrowRight:visible[(index+1)%visible.length],ArrowLeft:visible[(index-1+visible.length)%visible.length],Home:visible[0],End:visible[visible.length-1]}[event.key];
+  if(!target)return;
+  event.preventDefault();target.focus();
+ });
+});
 viewButtons.forEach(button=>button.addEventListener('click',()=>{
  figurePanel.dataset.bodyView=button.dataset.atlasView;
  viewButtons.forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
 }));
+document.querySelector('[data-atlas-to-figure]')?.addEventListener('click',backToFigure);
+
+// Карти болю повідомляють про вибір точки (atlas:point), а адреса й історія приходять сюди ж (popstate).
+document.addEventListener('atlas:point',event=>{
+ const {zone,point,title:pointName,user}=event.detail||{};
+ if(zone!==selectedZone)return;
+ currentPoint=point||null;
+ if(point)selectedTab='overview';
+ writeLocation('replace');
+ if(user&&point){say(`Обрано точку: ${pointName}`);revealDetail();}
+});
+window.addEventListener('popstate',()=>{
+ const state=readLocation();
+ selectedZone=state.zone;selectedTab=state.tab;currentPoint=state.point;
+ render({user:false});
+ document.dispatchEvent(new CustomEvent('atlas:state',{detail:state}));
+});
 
 document.addEventListener('DOMContentLoaded',()=>{
  const actions=document.querySelector('body > .eua-platform-nav');
@@ -225,4 +338,8 @@ document.addEventListener('DOMContentLoaded',()=>{
  document.querySelectorAll('#knee-pain-map > .eua-platform-nav, #shoulder-pain-map > .eua-platform-nav')
   .forEach(nav=>nav.remove());
 },{once:true});
+renderState();
 render();
+// Карти болю (knee-pain-map.js, shoulder-pain-map.js) завантажуються окремими скриптами й можуть завершитись раніше за цей або пізніше. Після першого показу ще раз повідомляємо їм стан з адреси:
+// інакше «?zone=knee» не відкривав би карту, а «?point=…» залежав би від порядку завантаження (огляд зони затирав картку точки). Повторне застосування стану нешкідливе.
+document.dispatchEvent(new CustomEvent('atlas:state',{detail:{zone:selectedZone,point:currentPoint}}));

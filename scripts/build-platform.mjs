@@ -23,16 +23,16 @@ const positions={muscle:'18.5%',nutrition:'34%',supplements:'50%',cell:'3%',move
 const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.title,subtitle:a.lab,href:a.id==='supplements'?'#supplement-library':a.href,state:a.state,position:positions[a.id]||'50%'}));
 const homeDirections=homeDirectionsHTML(homeTopics);
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
-fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=106'"));
-fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'"));
-fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=106'"));
+fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=107'"));
+fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'").replace("'../atlas/points.mjs'","'./atlas-points.js?v=1'"));
+fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=107'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=106'").replace("'./site-header.mjs'","'./site-header.js?v=17'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=107'").replace("'./site-header.mjs'","'./site-header.js?v=18'"));
 fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'"));
 fs.writeFileSync('dist/home-picker.js',fs.readFileSync('src/platform/home-picker.mjs','utf8'));
 fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8').replace("'./home-picker.mjs'","'./home-picker.js?v=2'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=106'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=106'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=17'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=100'").replace("'./materials.mjs'","'./platform-materials.js?v=107'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=107'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=87'").replace("'./site-header.mjs'","'./site-header.js?v=18'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -74,6 +74,9 @@ fs.writeFileSync('dist/movement.js',fs.readFileSync('src/movement/page.mjs','utf
 fs.writeFileSync('dist/movement-learning.js',fs.readFileSync('src/movement/learning.mjs','utf8'));
 // Схема ночі (2026-11-09, рішення власника 35): модуль даних доставляється окремим файлом, sleep.js підключає його з версією (при зміні модуля піднімайте ?v= тут).
 fs.writeFileSync('dist/sleep-night.js',fs.readFileSync('src/sleep/night.mjs','utf8'));
+// Точки карт болю плеча й коліна (рішення власника 2026-11-10): один модуль даних для карт, карток тем, пошуку й тестів.
+fs.writeFileSync('dist/atlas-points.js',fs.readFileSync('src/atlas/points.mjs','utf8'));
+fs.writeFileSync('dist/atlas-diagrams.js',fs.readFileSync('src/atlas/diagrams.mjs','utf8'));
 fs.writeFileSync('dist/sleep.js',fs.readFileSync('src/sleep/page.mjs','utf8').replace("'./night.mjs'","'./sleep-night.js?v=1'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
@@ -502,7 +505,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 // стилі каталогу (directions-pine.css) v=5, сторінка журналу (changes-page.js, вона імпортує changes-data.js?v=24) v=24. Файл картини dist/cell-atlas-card-v1.webp створює scripts/make-cell-card-art.py (збірка його не запускає).
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
- const updates={'directions.js?v=113':'directions.js?v=114','directions-pine.css?v=4':'directions-pine.css?v=5','changes-page.js?v=23':'changes-page.js?v=24'};
+ const updates={'directions.js?v=115':'directions.js?v=116','directions-pine.css?v=4':'directions-pine.css?v=5','changes-page.js?v=23':'changes-page.js?v=24'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
@@ -610,6 +613,20 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  const updates={'sleep.css?v=87':'sleep.css?v=88','sleep.js?v=84':'sleep.js?v=85','changes-page.js?v=31':'changes-page.js?v=32'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Оновлення Атласу (2026-11-10, рішення власника «1-7 так», п. 1–6): atlas-redesign.css 2 → 3, atlas.js 7 → 8, обидві карти болю (скрипти) 3 → 4.
+// Модуль даних atlas-points.js (v=1) імпортують atlas.js і скрипти карт: після зміни точок підняти його v= у цих трьох файлах.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'atlas-redesign.css?v=2':'atlas-redesign.css?v=3','atlas.js?v=7':'atlas.js?v=8','knee-pain-map.js?v=3':'knee-pain-map.js?v=4','shoulder-pain-map.js?v=3':'shoulder-pain-map.js?v=4',
+  // Пошук знаходить зони й теми Атласу (platform-materials v=107): каскад матеріали → інструменти (107), каталог (116), відгук на головній (107), оболонка (111), пошук (16) → шапка (18), головна (8), fat-burning (16).
+  'site-header.js?v=17':'site-header.js?v=18','platform-shell.js?v=110':'platform-shell.js?v=111','directions.js?v=115':'directions.js?v=116','home-feedback.js?v=106':'home-feedback.js?v=107','home-spectrum.js?v=7':'home-spectrum.js?v=8','fat-burning.js?v=15':'fat-burning.js?v=16','changes-page.js?v=32':'changes-page.js?v=33'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

@@ -1,5 +1,6 @@
 import {catalog,learningLocation} from './platform-catalog.js?v=100';
 import {entityRegistry} from './evidence/entities.js?v=59';
+import {painMaps, shoulderTopics, kneeTopics} from './atlas-points.js?v=1';
 
 // Navigation metadata only. No new scientific statements, assessments or sources.
 const guides=[
@@ -13,6 +14,36 @@ const guides=[
  {id:'guide-research',title:'Дослідження простими словами',href:'./research.html',areaId:'supplements',kind:'guide'},
  {id:'guide-mechanisms',title:'Як це працює: анімовані схеми',href:'./mechanisms.html',areaId:'supplements',kind:'guide'}
 ];
+// Атлас (рішення власника 2026-11-10, п. 6): пошук знаходить зони й теми Атласу за словами «плече», «коліно», «хребет», «мозок», «ротаторна манжета» тощо.
+// Це лише навігація (назви зон і тем, які вже є на сторінці Атласу); нових тверджень немає. Теми ведуть до своєї точки карти болю, де вона є.
+const atlasZones=[
+ ['brain','Мозок','мозок мозку нервова система когнітивні функції сон стрес увага кофеїн'],
+ ['shoulder','Плече','плече плеча плечовий суглоб плечовий комплекс ротаторна манжета біль у плечі акроміон ключиця лопатка дельтоподібний м’яз'],
+ ['spine','Хребет','хребет хребта спина біль у спині поперек шия шийний грудний поперековий відділ крижі куприк 3D модель'],
+ ['muscles','М’язи','м’язи м’язова система сила гіпертрофія відновлення вправи'],
+ ['gut','ШКТ','шкт шлунково-кишковий тракт кишківник травлення мікробіом клітковина харчування'],
+ ['knee','Коліно','коліно коліна колінний суглоб надколінок меніск зв’язки біль у коліні']
+];
+const atlasTopicTerms={
+ 'Ротаторна манжета':'ротаторна манжета надостьовий підостьовий плече',
+ 'Субакроміальний біль':'субакроміальний біль акроміон плече імпінджмент',
+ 'Нестабільність плеча':'нестабільність вивих плече',
+ 'Біцепс':'біцепс довга головка сухожилок плече',
+ 'AC-суглоб':'ac суглоб акроміально-ключичний ключиця плече',
+ 'Пателофеморальний біль':'пателофеморальний біль надколінок коліно',
+ 'Меніски':'меніск меніски коліно травма',
+ 'ACL':'acl хрестоподібна зв’язка коліно спорт',
+ 'Сухожилок надколінка':'сухожилок надколінка стрибки коліно тендинопатія',
+ 'Остеоартроз коліна':'остеоартроз артроз коліно суглоб'
+};
+const atlasMaterials=[
+ ...atlasZones.map(([zone,name])=>({id:'atlas-zone-'+zone,title:name+' в Атласі',href:'./atlas.html?zone='+zone})),
+ ...[['shoulder','Плече',shoulderTopics],['knee','Коліно',kneeTopics]].flatMap(([zone,name,topics])=>topics.map(topic=>({id:'atlas-topic-'+zone+'-'+(topic.point||topic.title.toLowerCase()),title:name+': '+(/^[A-ZА-ЯІЇЄҐ]{2}/.test(topic.title)?topic.title:topic.title.charAt(0).toLowerCase()+topic.title.slice(1)),href:'./atlas.html?zone='+zone+(topic.point?'&point='+topic.point:'')})))
+].map(item=>({...item,areaId:'atlas',areaTitle:'Атлас',group:'atlas',kind:'interactive',review:'Навігація до матеріалів; статус наукового перегляду зазначено окремо'}));
+export const atlasSearchTerms={
+ ...Object.fromEntries(atlasZones.map(([zone,,terms])=>['atlas-zone-'+zone,terms])),
+ ...Object.fromEntries([['shoulder',shoulderTopics],['knee',kneeTopics]].flatMap(([zone,topics])=>topics.map(topic=>['atlas-topic-'+zone+'-'+(topic.point||topic.title.toLowerCase()),atlasTopicTerms[topic.title]||''])))
+};
 const navigationMaterials=[
  {id:'navigation-atlas',title:'Атлас людського тіла',href:'./atlas.html',areaId:'atlas',areaTitle:'Атлас',group:'atlas',kind:'interactive'},
  {id:'navigation-exercises',title:'Бібліотека вправ',href:'./exercises.html',areaId:'exercises',areaTitle:'Вправи та практика',group:'movement',kind:'section'},
@@ -27,7 +58,7 @@ const structureMaterials=[
  {areaId:'muscle',file:'muscle-lab',param:'structure',hash:'explorer',ids:['TISSUE-SKELETAL-MUSCLE','STRUCT-FASCICLE','CELL-MUSCLE','STRUCT-MYOFIBRIL','STRUCT-SARCOMERE','PRT-ACTIN-MYOSIN']},
  {areaId:'cell',file:'cell-lab',param:'organelle',hash:'cell-canvas',ids:['ORG-NUCLEUS','ORG-NUCLEOLUS','ORG-MITOCHONDRION','ORG-RIBOSOME','ORG-ROUGH-ER','ORG-SMOOTH-ER','ORG-GOLGI','ORG-LYSOSOME','ORG-PEROXISOME','STRUCT-CYTOSKELETON','STRUCT-PLASMA-MEMBRANE']}
 ].flatMap(config=>config.ids.map(id=>{const area=catalog.getArea(config.areaId);return {id:config.areaId+'-'+id.toLowerCase(),title:entityRegistry.get(id).label,href:`./${config.file}.html?${config.param}=${id}#${config.hash}`,areaId:area.id,areaTitle:area.title,review:area.review,group:area.group,kind:'interactive'};})).filter(m=>!listedMaterials.some(old=>old.href===m.href));
-export const materials=listedMaterials.concat(structureMaterials,navigationMaterials,guides.map(g=>({...g,areaTitle:catalog.getArea(g.areaId).title,review:catalog.getArea(g.areaId).review,group:'evidence'})));
+export const materials=listedMaterials.concat(structureMaterials,navigationMaterials,atlasMaterials,guides.map(g=>({...g,areaTitle:catalog.getArea(g.areaId).title,review:catalog.getArea(g.areaId).review,group:'evidence'})));
 export const normalizeSearch=text=>String(text||'').toLocaleLowerCase('uk').replace(/[’‘ʼ`]/g,"'").replace(/\s+/g,' ').trim().slice(0,120);
 // Пошук за ключовими словами (рішення власника 2026-11-01: «чому воно не шукає по ключовим словам?»).
 // Раніше всі слова запиту мусили стояти в назві матеріалу, тож «як пити креатин» не знаходило нічого: «як» і «пити» там немає.
@@ -112,6 +143,7 @@ const searchTerms={
 };
 // Порожній запит дає всі матеріали в порядку каталогу. Інакше матеріали стоять за вагою збігів: назва (4) > слова для пошуку (3) > назва напрямку (2) > вид матеріалу (1);
 // назва, що починається з усього запиту, піднімається вище («Кофеїн» перед «Про сон і кофеїн»).
+Object.assign(searchTerms,atlasSearchTerms);
 export function findMaterials(query='',group='all'){
  const keys=searchKeywords(query),whole=foldText(normalizeSearch(query)),inGroup=m=>group==='all'||m.group===group;
  if(!keys.length)return materials.filter(inGroup);
@@ -137,7 +169,7 @@ const exerciseShareRules={
  pattern:new Set(['horizontal_pull','scapular_control','shoulder_rotation','multiplanar_mobility','coordination_balance']),
  equipment:new Set(['dumbbell']),view:new Set(['type']),sort:new Set(['title'])
 };
-const atlasShareRules={zone:new Set(['brain','shoulder','spine','muscles','gut','knee'])};
+const atlasShareRules={zone:new Set(['brain','shoulder','spine','muscles','gut','knee']),tab:new Set(['overview','anatomy','symptoms','training','rehab','research']),point:new Set(Object.values(painMaps).flatMap(map=>map.points.map(point=>point.id)))};
 export function contextLink(href){
  const original=new URL(href),clean=new URL(original.pathname,original.origin),route=original.pathname.replace(/\.html$/,'').replace(/\/$/,'');
  const rules=route.endsWith('/exercises')?exerciseShareRules:route.endsWith('/atlas')?atlasShareRules:route.endsWith('/muscle-lab')?{structure:/^(TISSUE-SKELETAL-MUSCLE|STRUCT-FASCICLE|CELL-MUSCLE|STRUCT-MYOFIBRIL|STRUCT-SARCOMERE|PRT-ACTIN-MYOSIN)$/,level:/^(school|university|advanced)$/,tab:/^(description|function|sources)$/}:route.endsWith('/cell-lab')?{organelle:/^(ORG-(NUCLEUS|NUCLEOLUS|MITOCHONDRION|RIBOSOME|ROUGH-ER|SMOOTH-ER|GOLGI|LYSOSOME|PEROXISOME)|STRUCT-(PLASMA-MEMBRANE|CYTOSKELETON))$/,level:/^(school|university|advanced)$/,tab:/^(function|sources)$/}:(route.endsWith('/nutrition')||route.endsWith('/nutrition-inside'))?{nutrient:/^(glucose|protein|lipids)$/,step:/^[0-3]$/,depth:/^(simple|detailed)$/,scale:/^(body|cell)$/,structure:/^(sglt1|glut2|pump|pept1|micelle|chylomicron)$/}:{};

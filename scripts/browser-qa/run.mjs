@@ -11,6 +11,7 @@ import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium} from 'playwright-core';
 import {areas} from '../../src/platform/catalog.mjs';
+import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
 // as runner logs, whose external storage may be inaccessible to a reviewer.
@@ -3627,26 +3628,25 @@ async function muscleGuideFlow(browser, origin, viewport) {
 async function atlasFlow(browser, origin, viewport) {
   const where = `atlas shoulder map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
+  // Рішення власника 2026-11-10 (п. 2): лівої колонки з плитками-дублями немає; фігура (разом із заголовком) стоїть поруч із панеллю зони на комп'ютері й над нею на вужчому екрані.
   const layout = await page.evaluate(() => {
-    const boxes = [...document.querySelectorAll('.atlas-sidebar, .atlas-figure-panel, .atlas-detail')].map(node => node.getBoundingClientRect());
-    return {columns: boxes[0].right <= boxes[1].left && boxes[1].right <= boxes[2].left,
-      tablet: boxes[0].right <= boxes[1].left && Math.max(boxes[0].bottom, boxes[1].bottom) <= boxes[2].top,
-      stacked: boxes[0].bottom <= boxes[1].top && boxes[1].bottom <= boxes[2].top};
+    const [stage, figure, detail] = ['.atlas-stage', '.atlas-figure-panel', '.atlas-detail'].map(selector => document.querySelector(selector).getBoundingClientRect());
+    return {columns: stage.right <= detail.left + 2 && figure.right <= detail.left + 2, stacked: stage.bottom <= detail.top + 2 && figure.bottom <= detail.top + 2};
   });
-  check(where, viewport.width > 900 ? layout.columns : viewport.width > 580 ? layout.tablet : layout.stacked, 'the Atlas layout adapts to the available width');
+  check(where, viewport.width > 900 ? layout.columns : layout.stacked, 'the Atlas layout adapts to the available width');
   const detail = page.locator('.atlas-detail');
   check(where, await detail.evaluate(node => parseFloat(getComputedStyle(node).borderTopLeftRadius) >= 8), 'the Atlas detail panel retains the reference corners');
   check(where, await page.locator('#atlas-actions .eua-module-menu:not([open])').count() === 1, 'the Atlas tools stay folded below the explorer');
   check(where, await page.locator('[data-eua-tool="share"]').count() === 1, 'hidden map headers do not duplicate the share control');
   check(where, await page.locator('.atlas-shoulder-topic').count() === 5, 'the overview contains all five shoulder topics');
   const thumb = page.locator('.atlas-shoulder-topic .atlas-topic-icon').first();
-  check(where, await thumb.evaluate(node => getComputedStyle(node).backgroundImage.includes('atlas-shoulder.webp')), 'the overview has an illustrated thumbnail');
+  check(where, await thumb.evaluate(node => getComputedStyle(node, '::before').backgroundImage.includes('atlas-shoulder.webp')), 'the overview has an illustrated thumbnail (the picture is in ::before so that the light theme can restore its colours)');
   await artifact(page, viewport, 'atlas-redesign', page.locator('.atlas-workspace'));
   await page.locator('[data-atlas-view="back"]').click();
   check(where, await page.locator('[data-body-view="back"]').count() === 1, 'the body view switches to the back');
   await page.locator('[data-atlas-view="front"]').click();
-  await page.locator('[data-atlas-shortcut="anatomy"]').click();
-  check(where, await page.locator('[data-atlas-tab="anatomy"]').getAttribute('aria-selected') === 'true', 'the sidebar opens the selected module tab');
+  await page.locator('[data-atlas-tab="anatomy"]').click();
+  check(where, await page.locator('[data-atlas-tab="anatomy"]').getAttribute('aria-selected') === 'true', 'the tab opens the selected module section (the sidebar shortcuts that duplicated it are gone)');
   await page.click('[data-zone="shoulder"]');
   await page.waitForSelector('#shoulder-pain-map:not([hidden])');
   const tabs = page.locator('#shoulder-pain-map [role="tab"]');
@@ -3666,6 +3666,403 @@ async function atlasFlow(browser, origin, viewport) {
   await context.close();
 }
 
+// ─────────────────────────── Атлас: оновлення 2026-11-10 («1-7 так» після аудиту шаблонності й функціональності) ───────────────────────────
+// Що тримає ця перевірка в справжньому браузері: вкладки за стандартом (ARIA, клавіатура), лівої колонки з плитками-дублями немає, «Стан атласу» збігається з даними,
+// жодних дрібних шрифтів (< 12 px) і малих цілей, у «Мозку» й «ШКТ» немає однакових заглушок, картки тем ведуть до точок карти болю (і назад),
+// адреса й «Назад», пошук знаходить Атлас, підписи схем не виходять за сцену й не налазять один на одного, світла тема читається (за справжніми пікселями),
+// на телефоні результат дотику видно без прокрутки руками. Кожне правило перевірено навмисною поломкою коду (перевірка червоніє).
+const ATLAS_TABS = {
+  shoulder: ['overview', 'anatomy', 'symptoms', 'training', 'rehab', 'research'], knee: ['overview', 'anatomy', 'symptoms', 'training', 'rehab', 'research'],
+  spine: ['overview', 'anatomy', 'symptoms', 'training'], muscles: ['overview', 'anatomy', 'training', 'research'], brain: ['overview'], gut: ['overview']
+};
+const atlasLeaveMap = async page => {
+  for (const selector of ['[data-shoulder-return]', '[data-knee-return]']) {
+    const back = page.locator(selector).first();
+    if (await back.count() && await back.isVisible()) { await back.click(); await page.waitForTimeout(120); }
+  }
+};
+const atlasSelectZone = async (page, zone) => { await atlasLeaveMap(page); await page.locator(`[data-zone="${zone}"]`).click(); await page.waitForTimeout(200); };
+// Дрібний текст у видимій частині Атласу (шлях, картки, схеми, «Стан атласу»), крім прихованого й підписів для скрінрідера.
+const atlasSmallText = page => page.evaluate(() => {
+  const out = [];
+  for (const root of document.querySelectorAll('.atlas-workspace, #atlas-state')) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode, text = node.textContent.trim();
+      if (!text) continue;
+      const element = node.parentElement;
+      if (!element.getClientRects().length || getComputedStyle(element).visibility === 'hidden' || element.closest('[hidden], .atlas-sr-only, svg')) continue;
+      const size = parseFloat(getComputedStyle(element).fontSize);
+      if (size < 12) out.push(`${size}px «${text.slice(0, 30)}»`);
+    }
+  }
+  return out;
+});
+// Цілі дотику: кнопки, посилання й підсумки в Атласі не менші за 44 px (для карток із розтягнутим посиланням міряємо всю картку: саме вона натискна).
+const atlasSmallTargets = page => page.evaluate(() => [...document.querySelectorAll('.atlas-workspace button, .atlas-workspace summary, .atlas-workspace a[href], #atlas-state a[href]')]
+  .filter(element => element.getClientRects().length && !element.closest('[hidden], .atlas-alert, .atlas-copy-card p, .atlas-copy-card li, .atlas-practice-list'))
+  .map(element => { const box = (element.closest('.atlas-topic--link') || element).getBoundingClientRect(); return {name: (element.getAttribute('aria-label') || element.textContent).replace(/\s+/g, ' ').trim().slice(0, 30), w: Math.round(box.width), h: Math.round(box.height)}; })
+  .filter(target => Math.min(target.w, target.h) < 44));
+
+async function atlasUpdateFlow(browser, origin, viewport) {
+  const where = `atlas update @${viewport.name}`;
+  const phone = viewport.width <= 600, stacked = viewport.width <= 900;
+  const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html', {contextOptions: phone ? {hasTouch: true, isMobile: true} : {}, initScript: () => {
+    Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText: async text => {window.__qaCopiedLink = text;}}});
+  }});
+  // 1) Будова: плиток-дублів і смуги «5 принципів» немає, один h1, «Стан атласу» з даних, фігура на першому екрані.
+  const facts = await page.evaluate(() => {
+    const rect = selector => { const node = document.querySelector(selector); return node ? node.getBoundingClientRect().toJSON() : null; };
+    const tabs = [...document.querySelectorAll('[role="tab"][data-atlas-tab]')];
+    return {
+      shortcuts: document.querySelectorAll('[data-atlas-shortcut], .atlas-side-menu, .atlas-evidence-footer, .atlas-sidebar').length,
+      h1: document.querySelectorAll('h1').length,
+      state: [...document.querySelectorAll('#atlas-state .atlas-state-list > div')].map(row => `${row.dataset.state}:${row.querySelector('dt').textContent}:${row.querySelector('dd').textContent}`),
+      tabs: tabs.map(tab => ({name: tab.dataset.atlasTab, id: tab.id, controls: tab.getAttribute('aria-controls'), index: tab.tabIndex, selected: tab.getAttribute('aria-selected')})),
+      panel: (() => { const panel = document.getElementById('atlas-content'); return {role: panel.getAttribute('role'), labelled: panel.getAttribute('aria-labelledby')}; })(),
+      liveOnArticle: !!document.querySelector('article#atlas-detail[aria-live]'), statusRegion: document.getElementById('atlas-status')?.getAttribute('role'),
+      stage: rect('.atlas-stage'), detail: rect('.atlas-detail'), figure: rect('.atlas-body-canvas'), state_box: rect('#atlas-state'),
+      overflow: document.documentElement.scrollWidth - innerWidth
+    };
+  });
+  check(where, facts.shortcuts === 0, 'no tile column, tab-duplicating shortcuts or principles strip');
+  check(where, facts.h1 === 1, 'one h1');
+  check(where, facts.state.join('|') === 'full:Повний модуль:Плече|beta:Бета:Хребет · М’язи · Коліно|planned:Готується:Мозок · ШКТ', `«Стан атласу» is built from the zone data (${facts.state.join('|')})`);
+  check(where, facts.tabs.length === 6 && facts.tabs.every(tab => tab.id === `atlas-tab-${tab.name}` && tab.controls === 'atlas-content'), 'every tab has an id and controls the panel');
+  check(where, facts.tabs.filter(tab => tab.index === 0).map(tab => tab.name).join() === 'overview' && facts.tabs.filter(tab => tab.selected === 'true').length === 1, 'only the selected tab is in the Tab order');
+  check(where, facts.panel.role === 'tabpanel' && facts.panel.labelled === 'atlas-tab-overview', `the content is a tab panel labelled by the selected tab (${JSON.stringify(facts.panel)})`);
+  check(where, !facts.liveOnArticle && facts.statusRegion === 'status', 'the live region is a short status line, not the whole panel');
+  check(where, facts.overflow <= 1, `no horizontal overflow (${facts.overflow}px)`);
+  if (stacked) check(where, facts.stage.bottom <= facts.detail.top + 2, 'on a narrow screen the figure column is above the zone panel');
+  else check(where, facts.stage.right <= facts.detail.left + 2 && Math.abs(facts.stage.top - facts.detail.top) < 6, 'on a computer the figure column and the zone panel stand side by side');
+  check(where, facts.figure.top < viewport.height * 0.4 && facts.figure.bottom < viewport.height + 40, `the body figure starts on the first screen (top ${Math.round(facts.figure.top)} px)`);
+  check(where, facts.state_box.top > facts.detail.bottom - 4, '«Стан атласу» is below the explorer');
+  check(where, (await atlasSmallText(page)).length === 0, `no text under 12 px at the start: ${(await atlasSmallText(page)).slice(0, 4).join(' | ')}`);
+  check(where, (await atlasSmallTargets(page)).length === 0, `no control under 44 px at the start: ${JSON.stringify((await atlasSmallTargets(page)).slice(0, 4))}`);
+  await artifact(page, viewport, 'atlas-update', page.locator('.atlas-workspace'));
+
+  // 2) Клавіатура вкладок: стрілки лише переводять фокус, Enter вибирає, Home/End, Tab виходить із ряду вкладок.
+  await page.locator('#atlas-tab-overview').focus();
+  await page.keyboard.press('ArrowRight');
+  const afterArrow = await page.evaluate(() => ({focus: document.activeElement.dataset.atlasTab, selected: document.querySelector('[data-atlas-tab][aria-selected="true"]').dataset.atlasTab}));
+  check(where, afterArrow.focus === 'anatomy' && afterArrow.selected === 'overview', `an arrow moves focus without choosing (${JSON.stringify(afterArrow)})`);
+  await page.keyboard.press('End');
+  check(where, await page.evaluate(() => document.activeElement.dataset.atlasTab) === 'research', 'End goes to the last tab');
+  await page.keyboard.press('Home');
+  check(where, await page.evaluate(() => document.activeElement.dataset.atlasTab) === 'overview', 'Home goes to the first tab');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Enter');
+  check(where, await page.locator('#atlas-tab-anatomy').getAttribute('aria-selected') === 'true' && await page.locator('#atlas-content').getAttribute('aria-labelledby') === 'atlas-tab-anatomy', 'Enter chooses the focused tab and the panel follows it');
+  check(where, new URL(page.url()).searchParams.get('tab') === 'anatomy' && new URL(page.url()).searchParams.get('zone') === 'shoulder', `the address keeps zone and tab (${page.url()})`);
+  await page.keyboard.press('Tab');
+  check(where, await page.evaluate(() => !document.activeElement.closest('[role="tablist"]')), 'Tab leaves the tab row (one stop, like the standard pattern)');
+  await page.locator('#atlas-tab-overview').click();
+
+  // 3) Зони: вкладки без змісту сховано, однакових заглушок немає, у «Мозку» й «ШКТ» справжні посилання; жива область каже, що обрано.
+  const seenTexts = new Map();
+  for (const [zone, expectedTabs] of Object.entries(ATLAS_TABS)) {
+    await atlasSelectZone(page, zone);
+    const visibleTabs = await page.locator('[role="tab"][data-atlas-tab]:visible').evaluateAll(nodes => nodes.map(node => node.dataset.atlasTab));
+    check(where, visibleTabs.join() === (expectedTabs.length > 1 ? expectedTabs.join() : ''), `${zone}: visible tabs «${visibleTabs.join()}» (expected ${expectedTabs.length > 1 ? expectedTabs.join() : 'no tab row'})`);
+    check(where, await page.locator('#atlas-tablist').isVisible() === (expectedTabs.length > 1), `${zone}: the tab row is ${expectedTabs.length > 1 ? 'shown' : 'hidden'}`);
+    const announced = await page.waitForFunction(zoneName => document.getElementById('atlas-status').textContent.startsWith('Обрано: ' + zoneName), await page.locator('#atlas-zone-title').innerText(), {timeout: 3000}).then(() => true, () => false);
+    check(where, announced, `${zone}: the status line says what was chosen`);
+    for (const tab of expectedTabs) {
+      if (expectedTabs.length > 1) await page.locator(`#atlas-tab-${tab}`).click();
+      if (zone === 'spine' && tab === 'anatomy') await page.waitForSelector('.spine-region-btn');
+      if (tab === 'training' && ['spine', 'muscles'].includes(zone)) await page.waitForSelector('.atlas-practice-list a');
+      const text = (await page.locator('#atlas-content').innerText()).replace(/\s+/g, ' ').trim();
+      check(where, !/Ця вкладка вже є частиною загальної архітектури|Готується\s+\S+ · /.test(text) && text.length > 40, `${zone}/${tab}: real content, not the old placeholder`);
+      const key = text.replace(zoneNameRe(zone), '{зона}');
+      check(where, !seenTexts.has(key), `${zone}/${tab}: not the same text as ${seenTexts.get(key)}`);
+      seenTexts.set(key, `${zone}/${tab}`);
+    }
+    if (zone === 'brain' || zone === 'gut') {
+      const links = await page.locator('#atlas-content a[href]').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
+      check(where, links.join() === (zone === 'brain' ? './sleep.html,./mechanisms.html#caffeine,./index.html#supplement-caffeine' : './nutrition-digestion.html,./nutrition-inside.html'), `${zone}: real links to our own materials (${links.join()})`);
+      check(where, (await page.locator('#atlas-content').innerText()).includes('Що ще готується'), `${zone}: what is still being prepared is kept in one folded note`);
+    }
+    check(where, (await atlasSmallText(page)).length === 0, `${zone}: no text under 12 px (${(await atlasSmallText(page)).slice(0, 3).join(' | ')})`);
+    check(where, (await atlasSmallTargets(page)).length === 0, `${zone}: no control under 44 px (${JSON.stringify((await atlasSmallTargets(page)).slice(0, 3))})`);
+  }
+  await atlasSelectZone(page, 'brain');
+  const brainLink = page.locator('#atlas-content a[href="./sleep.html"]');
+  const linkBox = await brainLink.boundingBox();
+  check(where, linkBox !== null, 'the sleep card is on screen');
+
+  // 4) Картки тем плеча й коліна ведуть до своїх точок (справжній клік по краю картки, де лише розтягнуте посилання) і назад «← Усі теми».
+  for (const [zone, topics] of [['shoulder', shoulderTopics], ['knee', kneeTopics]]) {
+    await atlasSelectZone(page, zone);
+    await page.locator('#atlas-tab-overview').click().catch(() => {});
+    const cards = page.locator('#atlas-content .atlas-topic');
+    check(where, await cards.count() === 5, `${zone}: five topic cards`);
+    for (const [index, topic] of topics.entries()) {
+      const card = cards.nth(index);
+      check(where, (await card.locator('[data-goto-point]').count()) === (topic.point ? 1 : 0), `${zone}/${topic.title}: ${topic.point ? 'a button' : 'no button (no point on the map)'}`);
+      if (!topic.point) { check(where, (await card.innerText()).includes('Окремої точки на карті немає'), `${zone}/${topic.title}: says why it does not open a point`); continue; }
+      await card.scrollIntoViewIfNeeded();
+      const box = await card.boundingBox();
+      await page.mouse.click(box.x + box.width - 18, box.y + box.height / 2);
+      const point = findPoint(zone, topic.point);
+      await page.waitForSelector('[data-point-title]');
+      check(where, (await page.locator('[data-point-title]').innerText()) === point.title, `${zone}/${topic.title}: opens «${point.title}»`);
+      check(where, await page.locator(`[data-${zone}-hotspot="${topic.point}"][aria-pressed="true"]`).count() === 1, `${zone}/${topic.title}: the point is pressed on the map (the right view opened)`);
+      check(where, new URL(page.url()).searchParams.get('point') === topic.point && new URL(page.url()).searchParams.get('zone') === zone, `${zone}/${topic.title}: the address names the point (${page.url()})`);
+      check(where, (await page.locator(`.${zone}-view-switch [aria-selected="true"]`).innerText()) === painMaps[zone].views.find(view => view.id === point.view).label, `${zone}/${topic.title}: the map switched to the view of the point`);
+      await page.locator('[data-atlas-topics]').click();
+      await page.waitForSelector('#atlas-content .atlas-topic');
+      check(where, await page.locator('#atlas-content .atlas-topic').count() === 5 && !new URL(page.url()).searchParams.get('point'), `${zone}/${topic.title}: «← Усі теми» returns to the five topics and clears the point`);
+      check(where, await page.evaluate(() => document.activeElement?.dataset.gotoPoint) === `${zone}:${topic.point}`, `${zone}/${topic.title}: focus returns to the card that was opened`);
+    }
+  }
+
+  // 5) Схеми: підписи на сцені, не налазять один на одного й на точки, лінії-виноски, точки не менші за 44 px, у малюнку немає тексту.
+  for (const [zone, map] of Object.entries(painMaps)) {
+    await atlasSelectZone(page, zone);
+    if (!await page.locator(`#${zone}-pain-map`).isVisible()) await page.locator(`[data-zone="${zone}"]`).click();
+    for (const view of map.views) {
+      await page.locator(`[data-${zone}-view="${view.id}"]`).click();
+      await page.waitForTimeout(120);
+      const geometry = await page.evaluate(zoneName => {
+        const stage = document.querySelector(`.${zoneName}-stage`).getBoundingClientRect();
+        const labels = [...document.querySelectorAll(`.${zoneName}-stage .map-label`)].map(label => ({text: label.textContent, ...label.getBoundingClientRect().toJSON()}));
+        const pins = [...document.querySelectorAll(`.${zoneName}-stage [data-${zoneName}-hotspot]`)].map(pin => pin.getBoundingClientRect().toJSON());
+        const overlap = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const clipped = labels.filter(label => label.left < stage.left - 1 || label.right > stage.right + 1 || label.top < stage.top - 1 || label.bottom > stage.bottom + 1).map(label => label.text);
+        const collide = []; labels.forEach((a, i) => labels.slice(i + 1).forEach(b => { if (overlap(a, b)) collide.push(`${a.text} × ${b.text}`); }));
+        const onPins = labels.filter(label => pins.some(pin => { const cx = (pin.left + pin.right) / 2, cy = (pin.top + pin.bottom) / 2; return cx > label.left - 8 && cx < label.right + 8 && cy > label.top - 8 && cy < label.bottom + 8; })).map(label => label.text);
+        const tapBoxes = pins.map(pin => Math.min(pin.width, pin.height));
+        const diagram = document.querySelector(`.${zoneName}-stage svg.map-diagram`);
+        return {labels: labels.length, clipped, collide, onPins, minPin: Math.min(...tapBoxes), pins: pins.length, svgText: diagram.querySelectorAll('text').length, shapes: diagram.querySelectorAll('path, ellipse, circle, rect').length, leaders: document.querySelectorAll(`.${zoneName}-stage .map-leaders line:not(.dot)`).length, small: [...document.querySelectorAll(`.${zoneName}-stage .map-label`)].filter(label => parseFloat(getComputedStyle(label).fontSize) < 12).length};
+      }, zone);
+      const expectedLabels = map.labels.filter(label => label.view === view.id).length;
+      check(where, geometry.labels === expectedLabels && geometry.leaders === map.labels.filter(label => label.view === view.id && label.line).length, `${zone}/${view.id}: labels and leader lines from the data (${geometry.labels}/${expectedLabels})`);
+      check(where, geometry.clipped.length === 0, `${zone}/${view.id}: labels stay on the stage (${geometry.clipped.join(', ')})`);
+      check(where, geometry.collide.length === 0, `${zone}/${view.id}: labels do not overlap (${geometry.collide.join(', ')})`);
+      check(where, geometry.onPins.length === 0, `${zone}/${view.id}: labels keep clear of the points (${geometry.onPins.join(', ')})`);
+      check(where, geometry.pins === map.points.filter(point => point.view === view.id).length && geometry.minPin >= 43.5, `${zone}/${view.id}: points have 44 px tap areas (${geometry.minPin})`);
+      check(where, geometry.svgText === 0 && geometry.shapes >= 8 && geometry.small === 0, `${zone}/${view.id}: a drawn schematic without text inside (${geometry.shapes} shapes), labels ≥ 12 px`);
+      const english = await page.locator(`#${zone}-pain-map`).innerText();
+      check(where, !/Pain Map|PAIN|\bv1\b|hotspot|clavicle|humerus|deltoid|tibia|fibula|gastrocnemius|acromion|scapula/i.test(english), `${zone}/${view.id}: no English words in the interface or the labels`);
+    }
+    check(where, (await atlasSmallText(page)).length === 0, `${zone} map: no text under 12 px (${(await atlasSmallText(page)).slice(0, 3).join(' | ')})`);
+    check(where, (await atlasSmallTargets(page)).length === 0, `${zone} map: no control under 44 px (${JSON.stringify((await atlasSmallTargets(page)).slice(0, 3))})`);
+    await artifact(page, viewport, `atlas-${zone}-map`, page.locator(`#${zone}-pain-map`));
+  }
+  await atlasLeaveMap(page);
+
+  // 6) Адреса й «Назад»: зона додає запис в історію, вкладка й точка лише оновлюють адресу; глибокі посилання відкривають своє місце.
+  await page.goto(origin + '/atlas.html', {waitUntil: 'load'});
+  const startLength = await page.evaluate(() => history.length);
+  await page.locator('[data-zone="spine"]').click();
+  await page.locator('#atlas-tab-symptoms').click();
+  check(where, await page.evaluate(() => history.length) === startLength + 1 && page.url().endsWith('/atlas.html?zone=spine&tab=symptoms'), `a new zone adds one history entry, a tab only updates the address (${page.url()})`);
+  await page.goBack();
+  await page.waitForFunction(() => document.getElementById('atlas-zone-title').textContent.includes('Плечовий'));
+  check(where, !new URL(page.url()).searchParams.get('zone') && await page.locator('[data-zone="shoulder"]').getAttribute('aria-pressed') === 'true', '«Назад» returns to the previous zone');
+  await page.goForward();
+  await page.waitForFunction(() => document.getElementById('atlas-zone-title').textContent.includes('Хребет'));
+  check(where, await page.locator('#atlas-tab-symptoms').getAttribute('aria-selected') === 'true', '«Вперед» restores zone and tab');
+  for (const [route, title, tab, point] of [['?zone=knee&point=medial-joint-line', 'Колінний', null, 'medial-joint-line'], ['?zone=shoulder&point=ac-joint', 'Плечовий', null, 'ac-joint'], ['?zone=muscles&tab=training', 'М’язова', 'training', null], ['?zone=brain&tab=symptoms', 'Мозок', 'overview', null], ['?zone=spine&tab=rehab', 'Хребет', 'overview', null], ['?zone=nope&tab=nope&point=nope', 'Плечовий', 'overview', null]]) {
+    await page.goto(origin + '/atlas.html' + route, {waitUntil: 'load'});
+    // Чекаємо не фіксований час, а саме стан: назва зони (і картка точки, якщо адреса її називає).
+    await page.waitForFunction(([titlePart, wantPoint]) => document.getElementById('atlas-zone-title').textContent.includes(titlePart) && (!wantPoint || document.querySelector('[data-point-title]')), [title, !!point], {timeout: 4000}).catch(() => {});
+    const state = await page.evaluate(() => ({title: document.getElementById('atlas-zone-title').textContent, tab: document.querySelector('[data-atlas-tab][aria-selected="true"]')?.dataset.atlasTab || null, pressed: document.querySelector('[data-knee-hotspot][aria-pressed="true"], [data-shoulder-hotspot][aria-pressed="true"]')?.dataset.kneeHotspot || document.querySelector('[data-shoulder-hotspot][aria-pressed="true"]')?.dataset.shoulderHotspot || null, detail: document.querySelector('[data-point-title]')?.textContent || null}));
+    check(where, state.title.includes(title) && (tab === null || state.tab === tab || (tab === 'overview' && !state.tab)), `${route}: opens ${title}${tab ? ' / ' + tab : ''} (${JSON.stringify(state)})`);
+    if (point) check(where, state.pressed === point && state.detail === findPoint(route.includes('knee') ? 'knee' : 'shoulder', point).title, `${route}: the point is open (${JSON.stringify(state)})`);
+  }
+  // Сміття в адресі не тримаємо: після першої дії адреса чиста, а чужі параметри (utm) лишаються.
+  await page.goto(origin + '/atlas.html?zone=nope&tab=nope&point=nope&utm_source=qa', {waitUntil: 'load'});
+  await page.locator('#atlas-tab-anatomy').click();
+  const cleaned = new URL(page.url());
+  check(where, cleaned.searchParams.get('zone') === 'shoulder' && cleaned.searchParams.get('tab') === 'anatomy' && !cleaned.searchParams.has('point') && cleaned.searchParams.get('utm_source') === 'qa', `a garbage address is cleaned after the first action and foreign parameters stay (${cleaned.search})`);
+  // Поділитися: посилання зберігає зону, вкладку й точку (і нічого зайвого).
+  await page.goto(origin + '/atlas.html?zone=knee&utm_source=qa', {waitUntil: 'load'});
+  await page.locator('[data-knee-view="medial"]').click();
+  await page.locator('[data-knee-hotspot="medial-joint-line"]').click();
+  const shareButton = page.locator('[data-eua-tool="share"]').first();
+  if (!await shareButton.isVisible()) await shareButton.locator('xpath=ancestor::details[1]').locator(':scope > summary').click();
+  await page.evaluate(() => {window.__qaCopiedLink = null;});
+  await shareButton.click();
+  await page.waitForFunction(() => typeof window.__qaCopiedLink === 'string');
+  const shared = new URL(await page.evaluate(() => window.__qaCopiedLink));
+  check(where, shared.pathname === '/atlas.html' && shared.searchParams.get('zone') === 'knee' && shared.searchParams.get('point') === 'medial-joint-line' && !shared.searchParams.has('utm_source'), `the shared link keeps zone and point only (${shared.search})`);
+
+  // 7) Пошук сайту знаходить Атлас (раніше «плече», «коліно», «хребет», «мозок» не знаходили нічого з Атласу).
+  for (const [query, href] of [['плече', './atlas.html?zone=shoulder'], ['коліно', './atlas.html?zone=knee'], ['хребет', './atlas.html?zone=spine'], ['мозок', './atlas.html?zone=brain'], ['ротаторна манжета', './atlas.html?zone=shoulder&point=posterior-cuff']]) {
+    await page.goto(origin + '/glossary.html', {waitUntil: 'load'});
+    await page.locator('.eua-header-search').click();
+    await page.locator('dialog.eua-search').waitFor({state: 'visible'});
+    await page.fill('#eua-search-q', query);
+    const result = page.locator(`.eua-search-results a[href="${href}"]`);
+    await result.first().waitFor({state: 'visible', timeout: 4000}).catch(() => {});
+    check(where, await result.count() >= 1, `search for «${query}» finds ${href}`);
+    if (query === 'ротаторна манжета' && await result.count()) {
+      await result.first().click();
+      await page.waitForURL('**/atlas.html?zone=shoulder&point=posterior-cuff');
+      await page.waitForSelector('[data-point-title]');
+      check(where, (await page.locator('[data-point-title]').innerText()) === findPoint('shoulder', 'posterior-cuff').title, 'the search result opens the point on the map');
+    }
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0 && seen.badResponses.length === 0, `no third-party or failed requests: ${[...seen.external, ...seen.badResponses].join(', ')}`);
+  await context.close();
+}
+const zoneNameRe = zone => new RegExp({brain: 'Мозок', shoulder: 'Плечовий комплекс', spine: 'Хребет', muscles: 'М’язова система', gut: 'ШКТ', knee: 'Колінний комплекс'}[zone], 'g');
+
+// Світла тема за справжніми пікселями: розрахований колір обманює (тема — фільтр на <html>), тож знімаємо елемент і міряємо контраст тексту з тлом.
+async function paintedContrast(page, locator) {
+  const shot = (await locator.screenshot()).toString('base64');
+  return page.evaluate(async base64 => {
+    const image = new Image(); image.src = 'data:image/png;base64,' + base64; await image.decode();
+    const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+    const context = canvas.getContext('2d'); context.drawImage(image, 0, 0);
+    const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const lin = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; };
+    const lum = (r, g, b) => .2126 * lin(r) + .7152 * lin(g) + .0722 * lin(b);
+    const counts = new Map();
+    for (let i = 0; i < data.length; i += 4) { const key = (data[i] >> 4) << 8 | (data[i + 1] >> 4) << 4 | data[i + 2] >> 4; counts.set(key, (counts.get(key) || 0) + 1); }
+    const [bgKey] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    const bg = lum(((bgKey >> 8) & 15) * 17, ((bgKey >> 4) & 15) * 17, (bgKey & 15) * 17);
+    const distances = [];
+    for (let i = 0; i < data.length; i += 4) distances.push([Math.abs(lum(data[i], data[i + 1], data[i + 2]) - bg), lum(data[i], data[i + 1], data[i + 2])]);
+    distances.sort((a, b) => b[0] - a[0]);
+    const top = distances.slice(0, Math.max(3, Math.round(distances.length * .015)));
+    const fg = top.reduce((sum, item) => sum + item[1], 0) / top.length;
+    const [hi, lo] = fg > bg ? [fg, bg] : [bg, fg];
+    return {ratio: (hi + .05) / (lo + .05), bg};
+  }, shot);
+}
+// Середній колір і яскравість ділянки знімка (inset: скільки пікселів зрізати з країв, size: лише квадрат size × size від кута inset).
+const pixelStats = (page, base64, {inset = 0, size = 0} = {}) => page.evaluate(async ([data, edge, square]) => {
+  const image = new Image(); image.src = 'data:image/png;base64,' + data; await image.decode();
+  const w = square ? Math.min(square, image.width - edge) : image.width - 2 * edge, h = square ? Math.min(square, image.height - edge) : image.height - 2 * edge;
+  const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+  const g = canvas.getContext('2d'); g.drawImage(image, edge, edge, w, h, 0, 0, w, h);
+  const d = g.getImageData(0, 0, w, h).data; let r = 0, b = 0, sum = 0; const n = d.length / 4;
+  for (let i = 0; i < d.length; i += 4) { r += d[i]; b += d[i + 2]; sum += (d[i] + d[i + 1] + d[i + 2]) / 765; }
+  return {r: r / n, b: b / n, bright: sum / n};
+}, [base64, inset, size]);
+async function atlasLightFlow(browser, origin, viewport) {
+  const where = `atlas light theme @${viewport.name}`;
+  const phone = viewport.width <= 600;
+  const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html', {contextOptions: phone ? {hasTouch: true, isMobile: true} : {}, initScript: () => {
+    localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'light', text: 'md', palette: 'cosmic'}));
+  }});
+  check(where, await page.evaluate(() => document.documentElement.dataset.theme) === 'light', 'the light theme is on');
+  const whole = await pixelStats(page, (await page.screenshot()).toString('base64'));
+  check(where, whole.bright > 0.5, `the page really is light (mean brightness ${whole.bright.toFixed(2)}); the own «light» palette used to be inverted back to a dark page`);
+  // Те, що в аудиті зникало: пункти меню шапки, «Куди далі», «Стан атласу», підписи й картки.
+  const targets = [['the site name in the header', page.locator('.eua-site-header a').first(), 4.5], ['h1', page.locator('#atlas-title'), 4.5], ['the zone title', page.locator('#atlas-zone-title'), 3], ['the selected tab', page.locator('.atlas-tabs [aria-selected="true"]'), 3.8], ['a topic title', page.locator('.atlas-topic h3').first(), 4.5], ['the state block title', page.locator('#atlas-state h2'), 4.5], ['the state rows', page.locator('#atlas-state dd').first(), 4.5], ['«Куди далі»', page.locator('main h2', {hasText: 'Куди далі'}).first(), 3]];
+  if (!phone) targets.push(['a menu item', page.locator('.eua-site-header nav a').nth(1), 4.5]);
+  for (const [name, locator, minimum] of targets) {
+    await locator.scrollIntoViewIfNeeded();
+    const {ratio} = await paintedContrast(page, locator);
+    check(where, ratio >= minimum, `${name} is readable in the light theme (contrast ${ratio.toFixed(2)}:1, needs ${minimum}:1)`);
+  }
+  // Картини-фони повертаються до природних кольорів: червоні м'язи, а не інвертовані бірюзово-рожеві.
+  const thumb = page.locator('.atlas-shoulder-topic .atlas-topic-icon').first();
+  await thumb.scrollIntoViewIfNeeded();
+  const colour = await pixelStats(page, (await thumb.screenshot()).toString('base64'), {inset: 4});
+  // Без повторної інверсії фільтр теми дає світлу мініатюру (виміряно: яскравість 0,73 проти природних 0,30), хоча відтінок «червоніє» майже так само, тому міряємо яскравість і відтінок разом.
+  check(where, colour.bright < 0.45 && colour.r > colour.b + 10, `the shoulder thumbnail keeps its natural dark picture with red muscles in the light theme (brightness ${colour.bright.toFixed(2)}, R ${Math.round(colour.r)} vs B ${Math.round(colour.b)})`);
+  // Схема в світлій темі: темна «сцена» з природними кольорами й читабельним підписом.
+  await page.locator('[data-zone="knee"]').click();
+  await page.waitForSelector('.knee-stage .map-label');
+  await page.locator('.knee-stage').scrollIntoViewIfNeeded();
+  const labelContrast = await paintedContrast(page, page.locator('.knee-stage .map-label').first());
+  const corner = await pixelStats(page, (await page.locator('.knee-stage').screenshot()).toString('base64'), {inset: 4, size: 40});
+  check(where, corner.bright < 0.35 && labelContrast.ratio >= 4.5, `the diagram stage stays a dark plate with readable labels in the light theme (corner brightness ${corner.bright.toFixed(2)}, label contrast ${labelContrast.ratio.toFixed(2)}:1)`);
+  await artifact(page, viewport, 'atlas-light', page.locator('.atlas-workspace'));
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  await context.close();
+}
+
+// Телефон: після дотику до піна чи точки болю результат видно (раніше змінювався на 900–1070 px нижче екрана); «↑ До фігури» повертає; зменшений рух без плавності.
+async function atlasPhoneFlow(browser, origin, viewport) {
+  const where = `atlas result in view @${viewport.name}`;
+  const stacked = viewport.width <= 900;
+  for (const reduced of [false, true]) {
+    const label = reduced ? ' (reduced motion)' : '';
+    const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html', {contextOptions: {hasTouch: true, isMobile: viewport.width <= 600, reducedMotion: reduced ? 'reduce' : 'no-preference'}});
+    const inView = selector => page.evaluate(sel => { const box = document.querySelector(sel).getBoundingClientRect(); return box.height > 0 && box.top >= -2 && box.top < innerHeight - 40; }, selector);
+    // Карта після зміни ракурсу перемальовується (розмітка замінюється), тож чекаємо, поки ціль знову матиме розмір, і лише тоді торкаємось.
+    const tap = async selector => {
+      const locator = page.locator(selector).first();
+      let box = null;
+      for (let attempt = 0; attempt < 20 && !box; attempt++) { box = await locator.boundingBox(); if (!box) await page.waitForTimeout(50); }
+      await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    };
+    const settle = () => page.waitForTimeout(reduced ? 150 : 900);
+    check(where + label, !await page.locator('.atlas-to-figure').isVisible() === !stacked, `the «До фігури» button is ${stacked ? 'shown' : 'hidden'} when the panel is ${stacked ? 'below' : 'beside'} the figure`);
+    // зони без карти: результат у кадрі
+    for (const [zone, titlePart] of [['spine', 'Хребет'], ['brain', 'Мозок'], ['muscles', 'М’язова']]) {
+      await page.evaluate(() => scrollTo(0, 0));
+      await tap(`[data-zone="${zone}"]`);
+      await settle();
+      check(where + label, (await page.locator('#atlas-zone-title').innerText()).includes(titlePart), `${zone}: chosen`);
+      if (stacked) {
+        check(where + label, await inView('#atlas-zone-title') && await page.evaluate(() => scrollY) > 200, `${zone}: after a tap the zone panel is on screen (scrollY ${await page.evaluate(() => scrollY)})`);
+        await tap('.atlas-to-figure');
+        await settle();
+        check(where + label, await page.evaluate(() => { const box = document.querySelector('.atlas-figure-panel').getBoundingClientRect(); return box.top > -4 && box.top < 160; }) && await page.evaluate(() => document.activeElement?.dataset.zone) === zone, `${zone}: «До фігури» brings the figure back and focuses the chosen pin`);
+      } else {
+        check(where + label, await page.evaluate(() => scrollY) === 0, `${zone}: on a computer the page does not jump`);
+      }
+    }
+    // зони з картою: карта відкривається на місці, дотик до точки показує картку точки
+    for (const [zone, point] of [['shoulder', 'ac-joint'], ['knee', 'medial-joint-line']]) {
+      await page.evaluate(() => scrollTo(0, 0));
+      await atlasLeaveMap(page);
+      await tap(`[data-zone="${zone}"]`);
+      await settle();
+      check(where + label, await page.locator(`#${zone}-pain-map`).isVisible() && await page.evaluate(() => scrollY) < 260, `${zone}: the map opens in place, without scrolling away from it`);
+      await tap(`[data-${zone}-view="${findPoint(zone, point).view}"]`);
+      await tap(`[data-${zone}-hotspot="${point}"]`);
+      await settle();
+      check(where + label, await page.locator('[data-point-title]').innerText() === findPoint(zone, point).title, `${zone}: the card of the tapped point is shown`);
+      if (stacked) check(where + label, await inView('[data-point-title]'), `${zone}: after tapping a point its card is on screen`);
+    }
+    check(where + label, seen.pageErrors.length === 0 && seen.console.length === 0, `no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+    await context.close();
+  }
+}
+
+// Порядок завантаження скриптів: карти болю (knee-pain-map.js, shoulder-pain-map.js) окремі модулі й можуть завершитись раніше або пізніше за atlas.js.
+// Раніше від цього залежало, чи відкриється карта за «?zone=knee» і чи збережеться картка точки з «?point=…» (огляд зони, який малює atlas.js, затирав картку): це виявила
+// перевірка навмисними поломками (на навантаженому комп'ютері картка іноді зникала). Порядок тут задається точно: початкові скрипти замінюються порожніми, а справжні додаються по черзі.
+async function atlasLoadOrderFlow(browser, origin, viewport) {
+  const where = `atlas load order @${viewport.name}`;
+  const names = ['atlas.js', 'knee-pain-map.js', 'shoulder-pain-map.js'];
+  for (const order of ['map scripts first', 'atlas.js first']) {
+    for (const [route, zone, point] of [['?zone=knee&point=medial-joint-line', 'knee', 'medial-joint-line'], ['?zone=shoulder&point=ac-joint', 'shoulder', 'ac-joint'], ['?zone=knee', 'knee', null]]) {
+      const label = `${order}, ${route}`;
+      const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
+      const page = await context.newPage();
+      const seen = await observePage(page, origin);
+      await page.route(url => names.some(name => url.pathname.endsWith('/' + name)) && !url.searchParams.has('qa'), route => route.fulfill({contentType: 'text/javascript', body: ''}));
+      await page.goto(origin + '/atlas.html' + route, {waitUntil: 'load'});
+      const sources = await page.evaluate(list => list.map(name => { const script = [...document.scripts].find(item => item.src.includes('/' + name)); const url = new URL(script.src); url.searchParams.set('qa', '1'); return url.href; }), names);
+      const add = url => page.addScriptTag({type: 'module', url});
+      if (order === 'map scripts first') { await add(sources[1]); await add(sources[2]); await page.waitForTimeout(250); await add(sources[0]); }
+      else { await add(sources[0]); await page.waitForTimeout(250); await add(sources[1]); await add(sources[2]); }
+      await page.waitForFunction(name => document.getElementById('atlas-zone-title').textContent.includes(name), zone === 'knee' ? 'Колінний' : 'Плечовий', {timeout: 4000}).catch(() => {});
+      await page.waitForTimeout(500);
+      const state = await page.evaluate(zoneName => ({
+        title: document.getElementById('atlas-zone-title').textContent,
+        mapOpen: !document.getElementById(zoneName + '-pain-map').hidden,
+        pressed: document.querySelector(`[data-${zoneName}-hotspot][aria-pressed="true"]`)?.getAttribute(`data-${zoneName}-hotspot`) || null,
+        detail: document.querySelector('[data-point-title]')?.textContent || null,
+        search: location.search
+      }), zone);
+      check(where, state.title.includes(zone === 'knee' ? 'Колінний' : 'Плечовий') && state.mapOpen, `${label}: the zone is chosen and its map is open (${JSON.stringify(state)})`);
+      check(where, state.pressed === point && state.detail === (point ? findPoint(zone, point).title : null), `${label}: ${point ? 'the point and its card are shown' : 'no point is open'} (${JSON.stringify(state)})`);
+      check(where, point ? state.search.includes('point=' + point) : !state.search.includes('point='), `${label}: the address matches (${state.search})`);
+      await context.close();
+    }
+  }
+}
+
 async function musclesFlow(browser, origin, viewport) {
   const where = `atlas muscles zone @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
@@ -3676,8 +4073,8 @@ async function musclesFlow(browser, origin, viewport) {
   await page.waitForSelector('[data-related-practice] .atlas-practice-list');
   const hrefs = await page.locator('.atlas-practice-list a').evaluateAll(links => links.map(a => a.getAttribute('href')));
   check(where, hrefs.length >= 3 && hrefs.every(h => h.startsWith('./exercises.html?e=')), `related exercises look wrong: ${hrefs.length}`);
-  await page.click('[data-atlas-tab="symptoms"]');
-  check(where, /Готується/.test(await page.locator('#atlas-content').innerText()), 'symptoms tab should stay "Готується"');
+  // Рішення власника 2026-11-10 (п. 3): вкладка без змісту не показується (раніше була заглушка «Готується»), для «М'язів» це «Симптоми».
+  check(where, await page.locator('[data-atlas-tab="symptoms"]').isHidden(), 'the empty symptoms tab must be hidden, not a placeholder');
   await page.click('[data-atlas-tab="training"]');
   await page.waitForSelector('.atlas-practice-list a');
   await page.locator('.atlas-practice-list a').first().click();
@@ -4154,7 +4551,7 @@ async function aboutFlow(browser, origin, viewport) {
   check(where, (await page.title()) === 'Про проєкт — Evidence UA', 'the page has its own title');
   check(where, (await page.locator('h1:visible').allInnerTexts()).join('|') === 'Про проєкт', 'one visible heading «Про проєкт»');
   const ids = await page.locator('main h2').evaluateAll(nodes => nodes.map(node => node.id));
-  check(where, ids.join() === 'ab-what,ab-not,ab-method,ab-review,ab-fix,ab-privacy', `six sections with anchors (${ids.join()})`);
+  check(where, ids.join() === 'ab-what,ab-not,ab-method,ab-atlas,ab-review,ab-fix,ab-privacy', `seven sections with anchors (${ids.join()})`);
   check(where, (await page.locator('.eua-header-about').getAttribute('aria-current')) === 'page', 'the header link marks the current page');
   const facts = await page.evaluate(() => {
     const flow = [...document.querySelectorAll('main p, main li')];
@@ -4170,7 +4567,8 @@ async function aboutFlow(browser, origin, viewport) {
   check(where, facts.widest <= 780, `lines stay readable, not wider than 780px (${Math.round(facts.widest)})`);
   check(where, facts.emptyLinks === 0, 'every link has a visible name');
   check(where, facts.closing && facts.closing.h >= 44, `the closing link is a 44px target (${facts.closing && Math.round(facts.closing.h)})`);
-  if (phone) check(where, facts.height / viewport.height <= 4.4, `the page is short on a phone: ${(facts.height / viewport.height).toFixed(2)} screens (limit 4.4)`);
+  // Ліміт на телефоні 4,4 → 4,8 екрана: на сторінку додано розділ «Про Атлас» (рішення власника 2026-11-10, «1-7 так», п. 6; до того 3,82 на 390 і 4,23 на 360 px).
+  if (phone) check(where, facts.height / viewport.height <= 4.8, `the page is short on a phone: ${(facts.height / viewport.height).toFixed(2)} screens (limit 4.8)`);
   else check(where, facts.height / viewport.height <= 3.2, `the page is short on a desktop: ${(facts.height / viewport.height).toFixed(2)} screens (limit 3.2)`);
   await artifact(page, viewport, 'about-top', page.locator('.pb'), {scroll: false});
   // Якорі: кожен розділ відкривається на екрані (на коротких кінцях сторінки допускаємо, що розділ не дійшов до верху, бо далі прокручувати нічого).
@@ -4360,6 +4758,11 @@ try {
     for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
     for (const viewport of viewports) await pineFlow(browser, origin, viewport);
     for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
+    // Атлас: оновлення 2026-11-10 («1-7 так» після аудиту шаблонності й функціональності); 360 включено, бо вузький телефон найтісніший.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasUpdateFlow, browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasLightFlow, browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasPhoneFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(atlasLoadOrderFlow, browser, origin, viewport);
     for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
     for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
     for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);

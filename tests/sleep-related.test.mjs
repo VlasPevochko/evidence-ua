@@ -85,7 +85,8 @@ assert(phoneBlock.includes('@media(max-width:600px)') && !/font-size/.test(phone
 // 4) Журнал: три записи за 2026-11-09, правдиві й без нових наукових тверджень.
 const day = CHANGES.find(d => d.date === '2026-11-09');
 assert(day, 'the journal has the day of the change');
-assert.equal(CHANGES[0].date, '2026-11-09', 'and it is the newest day');
+// 2026-11-10: після записів про сон журнал отримав новий день (Атлас), тож «найновіший день» уже не 2026-11-09; достатньо, щоб день змін існував і не був новішим за журнал.
+assert(CHANGES[0].date >= '2026-11-09', 'and the journal is not older than that day');
 const titles = {scheme: 'Схема ночі на сторінці «Сон і відновлення»', related: 'Сон: блок «Дивись також»', phone: 'Сон: щільніший вигляд на телефоні й одна кнопка в шапці'};
 const entry = key => day.items.find(i => i.title === titles[key]);
 for (const key of Object.keys(titles)) {
@@ -122,6 +123,6 @@ assert(versionOf(page, 'sleep.css') >= 86 && versionOf(page, 'sleep.js') >= 83, 
 // Картка «Нове на сайті» на головній збирається з журналу, тож найновіший запис про сон має бути в ній.
 const home = read('dist/index.html');
 // Картка показує перші записи найновішого дня, тож перевіряємо найновіший запис дня (а не конкретну назву: щойно за цей день додано нові записи, перший з них зсуває старші за межу картки).
-assert(home.includes('<time datetime="2026-11-09">9 листопада</time>') && home.includes(`<li>${CHANGES[0].items[0].title}</li>`), 'the home card «Нове на сайті» shows the newest day with its newest record');
+assert(home.includes(`<time datetime="${CHANGES[0].date}">`) && home.includes(`<li>${CHANGES[0].items[0].title}</li>`), 'the home card «Нове на сайті» shows the newest day with its newest record');
 
 console.log('Sleep related block, hero button, heading space, 44 px targets, phone spacing and journal records passed.');

@@ -1,19 +1,7 @@
-const views=[
- {id:'front',label:'Спереду',title:'Передня поверхня'},
- {id:'lateral',label:'Збоку',title:'Латеральна поверхня'},
- {id:'posterior',label:'Ззаду',title:'Задня поверхня'}
-];
+import {shoulderViews as views, shoulderPoints as hotspots, shoulderLabels as labels} from './atlas-points.js?v=1';
+import {shoulderDiagram} from './atlas-diagrams.js?v=1';
 
-const hotspots=[
- {id:'ac-joint',view:'front',x:62,y:30,title:'Верх плеча · AC-суглоб',location:'Верхня частина плеча в зоні акроміально-ключичного суглоба.',structures:['AC-суглоб','Дистальна ключиця','Акроміон'],similar:['Subacromial зона','Дельтоподібна зона','Гленогумеральні структури'],clarify:'Точна локальна болючість зверху плеча, травма або біль при приведенні руки поперек тіла можуть змінювати клінічну ймовірність, але одна точка не встановлює діагноз.'},
- {id:'bicipital-groove',view:'front',x:62,y:48,title:'Передня борозна плеча',location:'Передня поверхня проксимальної плечової кістки в зоні міжгорбкової борозни.',structures:['Сухожилок: довга голівка біцепса','Міжгорбкова борозна','Rotator cuff interval'],similar:['Передня гленогумеральна зона','Subscapularis','Subacromial структури'],clarify:'Біль попереду плеча може бути пов’язаний із сухожилком довгої голівки біцепса, але він часто співіснує з іншими структурами плечового комплексу.'},
- {id:'anterior-gh',view:'front',x:53,y:42,title:'Передня частина суглоба',location:'Передньо-латеральна зона гленогумерального суглоба.',structures:['Гленогумеральний суглоб','Передня капсула','Subscapularis','Rotator cuff'],similar:['Довга голівка біцепса','Subacromial/subdeltoid region','AC-суглоб'],clarify:'Важливі механізм травми, відчуття нестабільності, обсяг активного й пасивного руху та реакція на навантаження.'},
- {id:'lateral-deltoid',view:'lateral',x:66,y:47,title:'Латеральна дельтоподібна зона',location:'Зовнішня поверхня плеча під акроміоном, де люди часто відчувають біль при підніманні руки.',structures:['Дельтоподібний м’яз','Subacromial/subdeltoid region','Rotator cuff'],similar:['Гленогумеральний суглоб','AC-суглоб','Реферований біль із шийного відділу'],clarify:'Латеральний біль є поширеним патерном при різних shoulder-related станах; сама зона не дозволяє визначити одну конкретну структуру.'},
- {id:'posterior-cuff',view:'posterior',x:63,y:42,title:'Задньо-латеральна зона',location:'Задня частина плеча навколо великого горбка та задньої ротаторної манжети.',structures:['Rotator cuff: infraspinatus, teres minor','Задня капсула','Задня частина гленогумерального комплексу'],similar:['Перискапулярні м’язи','Subacromial зона','Шийний відділ'],clarify:'Контекст зовнішньої ротації, силових рухів, нічного болю, травми та неврологічних симптомів допомагає відрізняти можливі джерела.'},
- {id:'scapular-region',view:'posterior',x:43,y:51,title:'Зона лопатки',location:'Медіальніше плечового суглоба, у над- та міжлопатковій ділянці.',structures:['Лопатка','Перискапулярні м’язи','Suprascapular region'],similar:['Rotator cuff','Шийний відділ хребта','М’язово-фасціальні структури'],clarify:'Біль біля лопатки може виникати локально або бути реферованим; важливі рухи шиї, плеча та супутні неврологічні симптоми.'},
- {id:'cervical-referred',view:'posterior',x:38,y:22,title:'Шия → плече / лопатка',location:'Нижня шийна та надлопаткова зона — патерн, який може віддавати в плече або руку.',structures:['Шийний відділ хребта','Cervical nerve roots','Паравертебральні тканини'],similar:['Локальні структури плеча','Перискапулярна зона','Rotator cuff'],clarify:'реферований біль із шиї стає важливішим у диференціальній оцінці, якщо симптоми починаються в шиї, іррадіюють далі по руці або супроводжуються онімінням, поколюванням чи слабкістю.',kind:'referred'}
-];
-
+const ZONE='shoulder';
 const mount=document.getElementById('shoulder-pain-map');
 const kneeMount=document.getElementById('knee-pain-map');
 const wrap=mount?.closest('.atlas-figure-wrap');
@@ -37,16 +25,15 @@ function kneeMapVisible(){return Boolean(kneeMount&&!kneeMount.hidden);}
 function currentView(){return views.find(view=>view.id===activeView)||views[0];}
 function currentSpots(){return hotspots.filter(spot=>spot.view===activeView);}
 function restoreLegend(){if(legend)legend.innerHTML=originalLegend;}
-function painLegend(){if(legend)legend.innerHTML='<span><i class="atlas-dot atlas-dot--active"></i> Обрана точка болю</span><span><i class="atlas-dot"></i> Локальна зона</span><span><i class="atlas-dot" style="background:#b889ec;box-shadow:0 0 10px #b889ec"></i> Можливий реферований патерн</span>';}
+function painLegend(){if(legend)legend.innerHTML='<span><i class="atlas-dot atlas-dot--active"></i> Обрана точка болю</span><span><i class="atlas-dot"></i> Локальна зона</span><span><i class="atlas-dot atlas-dot--referred"></i> Можливий реферований патерн</span>';}
+function announce(point,user){document.dispatchEvent(new CustomEvent('atlas:point',{detail:{zone:ZONE,point,title:point?hotspots.find(item=>item.id===point)?.title:null,user}}));}
 
-function diagramFor(view){
- const defs='<defs><linearGradient id="shoulderBone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#efe5ca"/><stop offset="1" stop-color="#bcb49f"/></linearGradient></defs>';
- if(view==='front')return `<svg class="shoulder-diagram" viewBox="0 0 360 420" role="img" aria-label="Схема плечового комплексу спереду">${defs}<path class="soft" d="M46 375V132q0-55 51-74l83-28 83 28q51 19 51 74v243Z"/><path class="bone" fill="url(#shoulderBone)" d="M84 105q54-30 96-23 42-7 96 23l-8 19q-54-22-88-15-34-7-88 15Z"/><path class="bone" fill="url(#shoulderBone)" d="M251 122q31 5 43 28l-17 20-30-10-17-22Z"/><circle class="joint" cx="244" cy="161" r="34"/><path class="bone" fill="url(#shoulderBone)" d="M231 184h26l21 183h-68Z"/><path class="cuff" d="M202 143q23-30 55-15M208 159q17 12 33 7"/><path class="tendon" d="M249 132q-5 39-1 104"/><path class="muscle" d="M264 136q48 25 38 84l-35 43-17-53Z"/><text x="208" y="103">clavicle</text><text x="286" y="145">AC</text><text x="274" y="248">deltoid</text><text x="184" y="270">humerus</text></svg>`;
- if(view==='lateral')return `<svg class="shoulder-diagram" viewBox="0 0 360 420" role="img" aria-label="Схема плечового комплексу збоку">${defs}<path class="soft" d="M74 375V95q58-50 137-33 69 15 95 77v236Z"/><path class="bone" fill="url(#shoulderBone)" d="M177 94q50-10 85 25l-13 26-49-12Z"/><circle class="joint" cx="229" cy="162" r="36"/><path class="bone" fill="url(#shoulderBone)" d="M216 187h28l25 180h-77Z"/><path class="cuff" d="M180 140q25-32 61-24M184 157q27 10 52 8"/><path class="muscle" d="M248 128q55 22 54 94l-34 63-26-71Z"/><path class="tendon" d="M232 126q-4 38 0 92"/><text x="263" y="169">deltoid</text><text x="145" y="117">acromion</text><text x="160" y="296">humerus</text></svg>`;
- return `<svg class="shoulder-diagram" viewBox="0 0 360 420" role="img" aria-label="Схема плечового комплексу ззаду">${defs}<path class="soft" d="M45 375V105q31-49 91-61l44-9 44 9q60 12 91 61v270Z"/><path class="bone" fill="url(#shoulderBone)" d="M91 107q51-24 89-20 38-4 89 20l-8 18q-50-17-81-11-31-6-81 11Z"/><path class="bone" fill="url(#shoulderBone)" d="M118 127q44-10 76 21l-19 126-65-40Z"/><path class="bone" fill="url(#shoulderBone)" d="M242 128q35 1 53 28l-17 19-31-9-20-23Z"/><circle class="joint" cx="242" cy="171" r="34"/><path class="bone" fill="url(#shoulderBone)" d="M230 194h25l22 173h-68Z"/><path class="cuff" d="M177 147q31-22 65-9M176 169q33 8 61 12"/><path class="muscle" d="M255 143q43 20 45 77l-30 55-22-66Z"/><path class="nerve" d="M161 35q-10 42 9 74t-3 58"/><text x="92" y="291">scapula</text><text x="260" y="136">posterior cuff</text><text x="117" y="36">cervical</text></svg>`;
+function labelSpans(){
+ const shown=labels.filter(label=>label.view===activeView);
+ const lines=shown.filter(label=>label.line).map(label=>`<line x1="${label.line[0]}" y1="${label.line[1]}" x2="${label.line[2]}" y2="${label.line[3]}"/><line class="dot" x1="${label.line[2]}" y1="${label.line[3]}" x2="${label.line[2]}" y2="${label.line[3]}"/>`).join('');
+ return `<svg class="map-leaders" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>`+shown.map(label=>`<span class="map-label" data-align="${label.align||'left'}" style="--x:${label.x}%;--y:${label.y}%${label.w?`;--w:${label.w}%`:''}" aria-hidden="true">${label.text}</span>`).join('');
 }
-
-function hotspotButtons(){return currentSpots().map(spot=>`<button type="button" class="shoulder-hotspot" data-shoulder-hotspot="${spot.id}" data-kind="${spot.kind||'local'}" aria-pressed="${String(activeHotspot===spot.id)}" style="--x:${spot.x}%;--y:${spot.y}%"><span>${spot.title}</span></button>`).join('');}
+function hotspotButtons(){return currentSpots().map(spot=>`<button type="button" class="shoulder-hotspot" data-shoulder-hotspot="${spot.id}" data-kind="${spot.kind||'local'}" aria-pressed="${String(activeHotspot===spot.id)}" data-edge="${spot.x>64?'right':spot.x<36?'left':'mid'}" style="--x:${spot.x}%;--y:${spot.y}%"><span>${spot.title}</span></button>`).join('');}
 
 function renderMap(){
  if(!mount)return;
@@ -54,7 +41,7 @@ function renderMap(){
  const focusAttribute=mount.contains(focused)?['data-shoulder-view','data-shoulder-hotspot','data-shoulder-return'].find(name=>focused.hasAttribute(name)):null;
  const focusValue=focusAttribute?focused.getAttribute(focusAttribute):null;
  const view=currentView();
- mount.innerHTML=`<header class="shoulder-map-head"><button type="button" data-shoulder-return>← Усе тіло</button><div><strong>Плече · Pain Map</strong><small>${view.title} · натисніть на точну зону болю</small></div><span class="shoulder-map-badge">v1</span></header><div class="shoulder-view-switch" role="tablist" aria-label="Ракурс плеча">${views.map(item=>`<button type="button" role="tab" data-shoulder-view="${item.id}" aria-pressed="${String(item.id===activeView)}">${item.label}</button>`).join('')}</div><div class="shoulder-stage">${diagramFor(activeView)}${hotspotButtons()}</div><div class="shoulder-map-rule"><strong>Точка болю ≠ джерело болю</strong><span>Локалізація допомагає побудувати диференціальну карту, але сама по собі не встановлює діагноз. Для плеча особливо важливо відрізняти локальні структури від реферованого болю з шийного відділу.</span></div>`;
+ mount.innerHTML=`<header class="shoulder-map-head"><button type="button" data-shoulder-return>← Усе тіло</button><div><strong>Плече · карта болю</strong><small>${view.title} · натисніть на точну зону болю</small></div></header><div class="shoulder-view-switch" role="tablist" aria-label="Ракурс плеча">${views.map(item=>`<button type="button" role="tab" data-shoulder-view="${item.id}">${item.label}</button>`).join('')}</div><div class="shoulder-stage">${shoulderDiagram(activeView)}${labelSpans()}${hotspotButtons()}</div><div class="shoulder-map-rule"><strong>Точка болю ≠ джерело болю</strong><span>Локалізація допомагає побудувати диференціальну карту, але сама по собі не встановлює діагноз. Для плеча особливо важливо відрізняти локальні структури від реферованого болю з шийного відділу.</span></div>`;
  mount.querySelectorAll('[data-shoulder-view]').forEach(button=>{
   const selected=button.dataset.shoulderView===activeView;
   button.setAttribute('aria-selected',String(selected));
@@ -79,23 +66,39 @@ function sync(){if(shoulderSelected()&&overviewSelected()&&activated&&!suppresse
 function renderPainDetail(spot){
  if(!content)return;
  const typeCopy=spot.kind==='referred'?'Ця точка позначає не одну тканину плеча, а можливий реферований патерн. Симптоми, що починаються в шиї та йдуть далі по руці, особливо з онімінням, поколюванням або слабкістю, потребують окремої оцінки шийного відділу й нервової системи.':'Це анатомічна зона для навігації. Одна й та сама ділянка болю може відповідати кільком структурам або поєднанню факторів.';
- content.innerHTML=`<div class="shoulder-pain-detail"><p class="shoulder-detail-kicker">PAIN MAP · ${currentView().title}</p><h3>${spot.title}</h3><p class="shoulder-detail-location">${spot.location}</p><div class="shoulder-rule-card"><strong>Точка болю ≠ джерело болю</strong><p>${typeCopy}</p></div><div class="shoulder-detail-grid"><section><h4>Що тут анатомічно</h4><ul>${spot.structures.map(item=>`<li>${item}</li>`).join('')}</ul></section><section><h4>Що може давати схожий патерн</h4><ul>${spot.similar.map(item=>`<li>${item}</li>`).join('')}</ul></section></div><section class="shoulder-detail-note"><h4>Що допомагає уточнити картину</h4><p>${spot.clarify}</p></section><section class="shoulder-red-flags"><h4>Коли потрібна очна оцінка швидше</h4><p>Гостра травма з деформацією або різкою втратою функції, гаряче червоне набрякле плече з температурою, прогресуюча слабкість чи порушення чутливості, або біль у плечі разом із болем у грудях чи задишкою.</p></section><p class="shoulder-pain-disclaimer">Освітній матеріал. Pain Map допомагає структурувати можливі джерела симптомів, але не є автодіагностикою чи персональною медичною рекомендацією.</p></div>`;
- if(breadcrumbTab)breadcrumbTab.textContent=`Pain Map · ${spot.title}`;
+ content.innerHTML=`<div class="shoulder-pain-detail"><button type="button" class="atlas-link-button atlas-topics-back" data-atlas-topics>← Усі теми</button><p class="shoulder-detail-kicker">Карта болю · ${currentView().title}</p><h3 tabindex="-1" data-point-title>${spot.title}</h3><p class="shoulder-detail-location">${spot.location}</p><div class="shoulder-rule-card"><strong>Точка болю ≠ джерело болю</strong><p>${typeCopy}</p></div><div class="shoulder-detail-grid"><section><h4>Що тут анатомічно</h4><ul>${spot.structures.map(item=>`<li>${item}</li>`).join('')}</ul></section><section><h4>Що може давати схожий патерн</h4><ul>${spot.similar.map(item=>`<li>${item}</li>`).join('')}</ul></section></div><section class="shoulder-detail-note"><h4>Що допомагає уточнити картину</h4><p>${spot.clarify}</p></section><section class="shoulder-red-flags"><h4>Коли потрібна очна оцінка швидше</h4><p>Гостра травма з деформацією або різкою втратою функції, гаряче червоне набрякле плече з температурою, прогресуюча слабкість чи порушення чутливості, або біль у плечі разом із болем у грудях чи задишкою.</p></section><p class="shoulder-pain-disclaimer">Освітній матеріал. Карта болю допомагає структурувати можливі джерела симптомів, але не є автодіагностикою чи персональною медичною рекомендацією.</p></div>`;
+ if(breadcrumbTab)breadcrumbTab.textContent=`Карта болю · ${spot.title}`;
 }
 
-function selectHotspot(id){
+function selectHotspot(id,{user=true,focusDetail=false}={}){
  const spot=hotspots.find(item=>item.id===id);if(!spot)return;
  activeHotspot=id;renderMap();
+ const finish=()=>{renderPainDetail(spot);announce(id,user);if(focusDetail)content?.querySelector('[data-point-title]')?.focus({preventScroll:true});};
  if(!overviewSelected()){
   const overview=atlasTabs.find(button=>button.dataset.atlasTab==='overview');
-  if(overview){overview.click();requestAnimationFrame(()=>renderPainDetail(spot));return;}
+  if(overview){overview.click();requestAnimationFrame(finish);return;}
  }
- renderPainDetail(spot);
+ finish();
+}
+function clearHotspot({user=true}={}){
+ if(!activeHotspot)return;
+ activeHotspot=null;renderMap();announce(null,user);
 }
 function selectView(id){
  if(!views.some(view=>view.id===id))return;
+ const had=activeHotspot;
  activeView=id;activeHotspot=null;renderMap();
  if(overviewSelected())atlasTabs.find(button=>button.dataset.atlasTab==='overview')?.click();
+ if(had)announce(null,true);
+}
+// Стан з адреси, історії браузера й карток тем (події atlas:*), див. atlas.js.
+function applyState(zone,point,{user=false,focusDetail=false}={}){
+ if(zone!==ZONE){if(activated||activeHotspot){activated=false;activeHotspot=null;}suppressed=false;sync();return;}
+ const spot=hotspots.find(item=>item.id===point);
+ if(spot){activated=true;suppressed=false;activeView=spot.view;showMap();selectHotspot(spot.id,{user,focusDetail});return;}
+ activeHotspot=null;
+ if(activated&&!suppressed)renderMap();
+ sync();
 }
 
 mount?.addEventListener('click',event=>{
@@ -115,5 +118,9 @@ atlasTabs.forEach(button=>button.addEventListener('click',()=>requestAnimationFr
  sync();
  if(shoulderSelected()&&overviewSelected()&&activeHotspot){const spot=hotspots.find(item=>item.id===activeHotspot);if(spot)renderPainDetail(spot);}
 })));
+document.addEventListener('atlas:goto-point',event=>{const detail=event.detail||{};if(detail.zone===ZONE)applyState(ZONE,detail.point,{user:true,focusDetail:true});});
+document.addEventListener('atlas:state',event=>{const detail=event.detail||{};applyState(detail.zone,detail.point||null);});
+document.addEventListener('atlas:clear-point',event=>{if((event.detail||{}).zone===ZONE)clearHotspot();});
 
 renderMap();sync();
+{const params=new URLSearchParams(location.search);if(params.get('zone')===ZONE&&params.get('point'))applyState(ZONE,params.get('point'));}

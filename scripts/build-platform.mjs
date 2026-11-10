@@ -620,6 +620,17 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
  }
 }
 
+// Рядки схеми ночі по 44 px на телефоні й на сенсорних екранах (2026-11-10, рішення власника «6 так»): sleep.css 88 → 89.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'sleep.css?v=88':'sleep.css?v=89'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
 // Оновлення Атласу (2026-11-10, рішення власника «1-7 так», п. 1–6): atlas-redesign.css 2 → 3, atlas.js 7 → 8, обидві карти болю (скрипти) 3 → 4.
 // Модуль даних atlas-points.js (v=1) імпортують atlas.js і скрипти карт: після зміни точок підняти його v= у цих трьох файлах.
 {

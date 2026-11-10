@@ -38,7 +38,7 @@ body[data-platform-area=sleep]>.eua-platform-nav{max-width:1184px;margin:10px au
 .night-cursor::before{content:'';position:absolute;top:-5px;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--text);box-shadow:0 0 0 2px var(--surface)}
 .sleep-night.is-live .night-cursor{opacity:.92}
 /* Схему можна торкатися (рішення власника «3 так», 2026-11-09): рядки N1…REM діють як кнопки стадій (sleep.js, mountNight). Рука над схемою, підсвітка підпису й смуг під мишею; рядок «Неспання» не реагує.
-   Це швидкий вибір поруч із кнопками стадій (та сама дія, для клавіатури лишаються кнопки), тому рядок 32 px на телефоні. */
+   Це швидкий вибір поруч із кнопками стадій (та сама дія, для клавіатури лишаються кнопки). Рядок не нижчий за 44 px на телефоні й на сенсорних екранах (рішення власника «6 так», 2026-11-10), 34–38 px з мишею. */
 .sleep-night.is-live .night-chart{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .sleep-night.is-live .night-label[data-row=wake],.sleep-night.is-live .night-bar[data-stage=wake]{cursor:default}
 @media (hover:hover){
@@ -52,7 +52,8 @@ body[data-platform-area=sleep]>.eua-platform-nav{max-width:1184px;margin:10px au
 .night-play:hover{border-color:var(--gold)}
 .night-play:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 @media(min-width:1000px){.sleep-stage-top{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:48px;align-items:center}.sleep-night{--row:38px;--bar:20px}}
-@media(max-width:600px){.sleep-night{--row:32px;--bar:16px;--label:58px;padding:14px 12px 8px}.night-head{margin-bottom:10px}.night-foot{flex-wrap:nowrap;gap:10px;margin-top:8px;padding-top:6px}.night-now{flex:1 1 0;min-width:0}.night-play{flex:0 0 auto;min-width:120px;padding:0 12px}}
+@media(max-width:600px){.sleep-night{--row:44px;--bar:20px;--label:58px;padding:14px 12px 8px}.night-head{margin-bottom:10px}.night-foot{flex-wrap:nowrap;gap:10px;margin-top:8px;padding-top:6px}.night-now{flex:1 1 0;min-width:0}.night-play{flex:0 0 auto;min-width:120px;padding:0 12px}}
+@media (pointer:coarse){.sleep-night{--row:44px;--bar:20px}}
 @media(prefers-reduced-motion:reduce){.night-bar,.night-label{transition:none}}
 @media print{.night-foot,.night-cursor{display:none}}
 

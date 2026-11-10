@@ -79,6 +79,13 @@ assert(!/max-width:600px\)\{[^}]*\.related-list a\{[^}]*min-height/.test(css), '
 // Блок «щільніші інтервали» закінчується першим рядком «}» після його коментаря. Раніше зріз ішов до кінця файла; відтоді після нього додано блок карток звичок (там є розмір значка «＋»),
 // тож зріз обмежено самим блоком: він, як і раніше, не має права міняти розміри шрифтів.
 const phoneStart = css.indexOf('/* Телефон: той самий текст');
+// Рядки схеми ночі торкаються пальцем (рішення власника «3 так»; висоту 44 px затверджено «6 так», 2026-11-10): на телефоні й на сенсорних екранах будь-якої ширини рядок не нижчий за 44 px,
+// смуга не вища за 20 px (поточна смуга вища ще на 4 px, тож смуги лишаються не вищими за 24 px).
+const phoneRow = css.match(/@media\(max-width:600px\)\{\.sleep-night\{--row:(\d+)px;--bar:(\d+)px/);
+assert(phoneRow && Number(phoneRow[1]) >= 44 && Number(phoneRow[2]) <= 20, 'on a phone a row of the scheme is at least 44 px tall and its bar at most 20 px');
+const coarse = css.match(/@media \(pointer:coarse\)\{\.sleep-night\{--row:(\d+)px;--bar:(\d+)px\}\}/);
+assert(coarse && Number(coarse[1]) >= 44 && Number(coarse[2]) <= 20, 'the same on touch screens of any width (pointer: coarse)');
+assert(css.indexOf('@media (pointer:coarse)') > css.indexOf('@media(min-width:1000px){.sleep-stage-top'), 'the touch rule comes after the wide-screen rule, so it wins on a wide touch screen too');
 const phoneBlock = css.slice(phoneStart, css.indexOf('\n}\n', phoneStart) + 3);
 assert(phoneBlock.includes('@media(max-width:600px)') && !/font-size/.test(phoneBlock), 'the phone block changes only spacing, never font sizes');
 

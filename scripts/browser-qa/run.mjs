@@ -1966,19 +1966,19 @@ async function waitForWaveIdle(page) {
   await page.locator('canvas#spectrum-wave').evaluate(async canvas => {
     const start = performance.now();
     const view=canvas.ownerDocument.defaultView;
-    let frame = canvas.dataset.waveFrame, stableSince = start;
-    if (frame === undefined) throw new Error('wave frame telemetry is missing');
+    let progress = Number(canvas.dataset.waveProgress), stableSince = start;
+    if (canvas.dataset.waveFrame === undefined) throw new Error('wave frame telemetry is missing');
     while (performance.now() - start < 4000) {
       await new Promise(resolve => setTimeout(resolve, 80));
-      // A temporarily delayed compositor frame can look idle while native-scroll
-      // easing is unfinished. Require the actual target AND the original quiet
-      // window; the later strict frame/pixel equality check remains unchanged.
+      // The canvas keeps a slow idle drift; only scroll progress must settle.
       const target=view.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : Math.min(1,Math.max(0,view.scrollY / Math.max(480,view.innerHeight || 900)));
-      const converged=Math.abs(Number(canvas.dataset.waveProgress)-target)<=.00001;
-      if (canvas.dataset.waveFrame !== frame || !converged) { frame = canvas.dataset.waveFrame; stableSince = performance.now(); }
+      const current = Number(canvas.dataset.waveProgress);
+      const converged=Math.abs(current-target)<=.00001;
+      if (!converged || Math.abs(current-progress) > .00001) stableSince = performance.now();
+      progress = current;
       if (converged && performance.now() - stableSince >= 320) return;
     }
-    throw new Error('wave keeps rendering after native scrolling stops');
+    throw new Error('wave scroll response did not settle');
   });
 }
 
@@ -2390,7 +2390,12 @@ async function homeWaveFlow(browser, origin, viewport, {touch = false, reduced =
     }
     await page.waitForTimeout(400);
     const idle = await waveSnapshot(page);
-    check(where, idle.frame === after.frame && idle.digest === after.digest, 'an idle visible wave must stop drawing: ' + JSON.stringify({after, idle}));
+    if (reduced) {
+      check(where, idle.frame === after.frame && idle.digest === after.digest, 'reduced motion keeps the visible wave static');
+    } else {
+      check(where, idle.progress === after.progress && idle.frame !== after.frame && idle.phase !== after.phase && idle.digest !== after.digest,
+        'the idle wave drifts slowly while scroll progress stays settled');
+    }
     check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'native scrolling must not create horizontal overflow');
     checkBrowserHealth(where, seen);
   } finally { await context.close(); }

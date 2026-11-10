@@ -70,8 +70,15 @@ function scene({width = 1440, height = 360, reduced = false, ratio = 1,
     callbacks.forEach(callback => callback(now));
   }
   function settle() {
-    for (let i = 0; i < 300 && pending.size; i++) tick();
-    assert.equal(pending.size, 0, 'the wave must stop requesting frames when the scroll response settles');
+    if (media.matches) {
+      assert.equal(pending.size, 0, 'reduced motion never schedules animation frames');
+      return;
+    }
+    const expected = Math.min(1, Math.max(0, window.scrollY / Math.max(480, window.innerHeight || 900)));
+    for (let i = 0; i < 300 && Math.abs(Number(canvas.dataset.waveProgress) - expected) > 0.0005; i++) tick();
+    assert.ok(Math.abs(Number(canvas.dataset.waveProgress) - expected) <= 0.0005,
+      'the scroll response must settle at the current page position');
+    assert.equal(pending.size, 1, 'a visible wave keeps one frame scheduled for its slow idle drift');
   }
   function scroll(y) {
     window.scrollY = y;
@@ -115,7 +122,7 @@ for (const width of [390, 1440]) {
   const page = scene({width});
   const destroy = mountSpectrumWave(page.document);
   const before = shape(page.currentPaint());
-  assert.equal(page.pending.size, 0, 'initial still must not start a permanent animation');
+  assert.equal(page.pending.size, 1, 'a visible wave starts one bounded idle animation loop');
   const event = page.scroll(320);
   assert.equal(event.defaultPrevented, false);
   assert.equal(page.window.scrollY, 320, 'the native page position must be left alone');
@@ -134,7 +141,7 @@ for (const width of [390, 1440]) {
   destroy();
 }
 
-// Drawing every 60 Hz frame during active input would exceed this budget.
+// Active input stays near 30 paints per second; slow idle drift paints only 12.
 {
   const page = scene();
   const destroy = mountSpectrumWave(page.document);
@@ -146,9 +153,16 @@ for (const width of [390, 1440]) {
   assert.ok(page.paints.length - originalPaints <= 62, 'continuous input must paint at about 30 FPS or less');
   page.settle();
   const settledPaints = page.paints.length;
+  const settledShape = shape(page.currentPaint());
+  const settledPhase = Number(page.canvas.dataset.wavePhase);
   for (let i = 0; i < 60; i++) page.tick();
-  assert.equal(page.paints.length, settledPaints, 'idle time must not generate new paints');
+  const idlePaints = page.paints.length - settledPaints;
+  assert.ok(idlePaints >= 10 && idlePaints <= 14, `one second of idle drift should paint about 12 times, received ${idlePaints}`);
+  assert.notDeepEqual(shape(page.currentPaint()), settledShape, 'the visible wave slowly changes shape while idle');
+  assert.ok(Number(page.canvas.dataset.wavePhase) > settledPhase, 'idle drift advances independently of scroll progress');
+  assert.equal(page.pending.size, 1, 'idle motion never schedules duplicate animation frames');
   destroy();
+  assert.equal(page.pending.size, 0, 'cleanup stops the idle animation loop');
 }
 
 {

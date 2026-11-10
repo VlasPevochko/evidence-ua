@@ -2,12 +2,14 @@
 // Canvas is unavailable; this module owns no page scroll or navigation behavior.
 const mounted = new WeakMap();
 const noop = () => {};
+const TAU = Math.PI * 2;
 const FRAME_MS = 1000 / 30;
+const IDLE_FRAME_MS = 1000 / 12;
+const IDLE_DRIFT_PER_MS = TAU / 65000;
 const SETTLE_EPSILON = 0.0003;
 const MAX_WIDTH = 1600;
 const MAX_HEIGHT = 480;
 const MAX_DPR = 1.5;
-const TAU = Math.PI * 2;
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
 
 export function mountSpectrumWave(root = globalThis.document) {
@@ -34,6 +36,7 @@ export function mountSpectrumWave(root = globalThis.document) {
   let frame = null;
   let progress = 0;
   let target = 0;
+  let idlePhase = 0;
   let width = 0;
   let height = 0;
   let dpr = 1;
@@ -70,7 +73,7 @@ export function mountSpectrumWave(root = globalThis.document) {
 
   function draw(time = clock()) {
     if (!mayPaint()) return;
-    const phase = progress * TAU;
+    const phase = progress * TAU + idlePhase;
     const samples = width < 600 ? 72 : 112;
     const ink = context.createLinearGradient(0, 0, width, 0);
     ink.addColorStop(0, 'rgba(121, 158, 255, 0.12)');
@@ -122,7 +125,6 @@ export function mountSpectrumWave(root = globalThis.document) {
 
   function queue() {
     if (frame !== null || reduced || !requestFrame || !mayPaint()) return;
-    if (Math.abs(target - progress) <= SETTLE_EPSILON && !dirty) return;
     frame = requestFrame(advance);
   }
 
@@ -134,9 +136,10 @@ export function mountSpectrumWave(root = globalThis.document) {
     progress += (target - progress) * (1 - Math.exp(-elapsed / 115));
     const settled = Math.abs(target - progress) <= SETTLE_EPSILON;
     if (settled) progress = target;
-    if (time - lastPaint >= FRAME_MS - 0.01 || settled) draw(time);
-    if (settled) lastUpdate = null;
-    else queue();
+    idlePhase = (idlePhase + elapsed * IDLE_DRIFT_PER_MS) % TAU;
+    const interval = settled ? IDLE_FRAME_MS : FRAME_MS;
+    if (dirty || time - lastPaint >= interval - 0.01) draw(time);
+    queue();
   }
 
   function resume() {
@@ -172,7 +175,7 @@ export function mountSpectrumWave(root = globalThis.document) {
     reduced = Boolean(media.matches);
     stop();
     dirty = true;
-    if (reduced) progress = target = 0;
+    if (reduced) progress = target = idlePhase = 0;
     resume();
   }
 
@@ -208,6 +211,7 @@ export function mountSpectrumWave(root = globalThis.document) {
     media.addListener(onMotionChange);
     removers.push(() => media.removeListener(onMotionChange));
   }
+  queue();
 
   function destroy() {
     if (destroyed) return;

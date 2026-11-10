@@ -2127,8 +2127,10 @@ async function positionLensOnset(page, {before = 0} = {}) {
     // when the catalogue below it cannot fit in a short viewport.
     const rect = document.querySelector('[data-lens-stage]').getBoundingClientRect();
     const distance = Math.min(320, Math.max(160, innerHeight * .38));
-    const end = Math.min(24, innerHeight - rect.height - 16);
-    scrollTo({top:rect.top + scrollY - end - distance - before, behavior:'instant'});
+    const availableHeight = innerHeight - rect.height - 16;
+    const end = Math.min(24, availableHeight);
+    const actionLead = Math.min(160, Math.max(0, availableHeight - 160));
+    scrollTo({top:rect.top + scrollY - end - distance - actionLead - before, behavior:'instant'});
   }, before);
   await page.waitForTimeout(240);
 }
@@ -2270,8 +2272,10 @@ async function homeLensTouchFlow(browser, origin, viewport) {
     await page.evaluate(() => {
       const rect = document.querySelector('[data-lens-stage]').getBoundingClientRect();
       const distance = Math.min(320, Math.max(160, innerHeight * .38));
-      const end = Math.min(24, innerHeight - rect.height - 16);
-      scrollTo({top: rect.top + scrollY - end - distance, behavior: 'instant'});
+      const availableHeight = innerHeight - rect.height - 16;
+      const end = Math.min(24, availableHeight);
+      const actionLead = Math.min(160, Math.max(0, availableHeight - 160));
+      scrollTo({top: rect.top + scrollY - end - distance - actionLead, behavior: 'instant'});
     });
     await page.waitForTimeout(200);
     const before = await lensSnapshot(page);
@@ -2284,10 +2288,14 @@ async function homeLensTouchFlow(browser, origin, viewport) {
     const after = await lensSnapshot(page);
     check(where, after.scrollY > before.scrollY + 100 && before.progress <= middle.progress && middle.progress <= after.progress, 'real finger scrolling must move the document and monotonically open the lens');
     check(where,after.cards.every(card=>!card.visible),'native finger scrolling must not expose the directions');
-    await positionLensOnset(page);
-    await page.mouse.wheel(0,320);
-    await page.waitForTimeout(300);
-    checkLensAction(`${where} touch action`, await lensSnapshot(page), {onScreen:true});
+    await page.evaluate(() => {
+      const stage = document.querySelector('[data-lens-stage]').getBoundingClientRect();
+      const targetTop = innerHeight * .41;
+      scrollTo({top:stage.top + scrollY - targetTop, behavior:'instant'});
+    });
+    await page.waitForTimeout(240);
+    const earlyAction = await lensSnapshot(page);
+    check(where,earlyAction.interior.opacity>=.7&&earlyAction.action.onScreen&&earlyAction.action.hitPoints.every(Boolean),'the lens action must be ready to tap before scrolling farther down the phone');
     await page.locator('[data-lens-reveal]').tap();
     await page.locator('[data-lens-picker][open]').waitFor({state:'visible'});
     checkLensLinks(`${where} actual touch activation`, await lensSnapshot(page), viewport);
@@ -2316,6 +2324,17 @@ async function homeLensViewportFlow(browser, origin, viewport) {
     await positionLensOnset(page,{before:2});
     const closed=await lensSnapshot(page);
     check(where,closed.progress<=.01 && closed.cards.every(card=>!card.visible&&card.width===0),'closed directions must have no rendered or clickable rectangles');
+    if(viewport.width<=700&&viewport.height>=600) {
+      await page.evaluate(() => {
+        const stage=document.querySelector('[data-lens-stage]').getBoundingClientRect();
+        const targetTop=innerHeight*.41;
+        scrollTo({top:stage.top+scrollY-targetTop,behavior:'instant'});
+      });
+      await page.waitForTimeout(240);
+      const earlyAction=await lensSnapshot(page);
+      check(where,earlyAction.progress>=.45&&earlyAction.interior.opacity>=.7&&earlyAction.action.onScreen&&earlyAction.action.hitPoints.every(Boolean),'the phone action must be legible and clickable as soon as the lens reaches the screen');
+      await positionLensOnset(page,{before:2});
+    }
     const blank=await page.locator('#cards').evaluate(cards=>{
       for(const link of cards.querySelectorAll('a.topic-card')) {
         const r=link.getBoundingClientRect(),top=Math.max(1,r.top),bottom=Math.min(innerHeight-1,r.bottom);

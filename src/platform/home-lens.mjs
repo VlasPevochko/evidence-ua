@@ -5,10 +5,13 @@ import {mountHomePicker} from './home-picker.mjs';
 const mounts = new WeakMap();
 const noop = () => {};
 
-export function lensProgress(top, viewportHeight, targetHeight = 0) {
+export function lensProgress(top, viewportHeight, targetHeight = 0, advanceAction = false) {
   const distance = Math.min(320, Math.max(160, 0.38 * viewportHeight));
-  const end = Math.min(24, viewportHeight - targetHeight - 16);
-  const start = end + distance;
+  const availableHeight = viewportHeight - targetHeight - 16;
+  const end = Math.min(24, availableHeight);
+  // Use spare viewport space to surface the action earlier without shifting short-screen timing.
+  const actionLead = advanceAction ? Math.min(160, Math.max(0, availableHeight - 160)) : 0;
+  const start = end + distance + actionLead;
   // Native scrolling can round the final fractional CSS pixel.
   if (top <= end + 1) return 1;
   return Math.min(1, Math.max(0, (start - top) / distance));
@@ -74,7 +77,7 @@ export function mountHomeLens(doc = globalThis.document) {
     if (!near || reduced || !homeActive()) return;
     try {
       const rect = stage.getBoundingClientRect();
-      paint(lensProgress(rect.top, view.innerHeight, rect.height));
+      paint(lensProgress(rect.top, view.innerHeight, rect.height, stage !== section));
     }
     catch { dispose(); }
   }
@@ -169,7 +172,7 @@ export function mountHomeLens(doc = globalThis.document) {
     observer.observe(section);
     if (homeActive()) {
       const rect = stage.getBoundingClientRect();
-      paint(lensProgress(rect.top, view.innerHeight, rect.height));
+      paint(lensProgress(rect.top, view.innerHeight, rect.height, stage !== section));
     }
     // Apply the hiding styles only after every enhancement dependency is ready.
     section.setAttribute('data-lens-ready', '');

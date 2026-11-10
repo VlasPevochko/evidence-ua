@@ -38,6 +38,7 @@ export const OUTPUT='dist/palette-cosmic.css';
 export const isHomeOnlyCss=file=>/^dist\/(home-[^/]*|desktop|evidence-trainer)\.css$/.test(file);
 // Інші стилі, які навмисно не переводяться в токени, і чому. tests/palette.test.mjs вимагає, щоб кожен стиль у dist був ціллю, стилем головної або тут.
 export const EXCLUDED_CSS={
+  'dist/atlas-redesign.css':'окрема палітра атласу за референсом: темно-синя, зелена та світла теми задані локальними змінними',
   'dist/navigation-v17.css':'вантажиться лише з navigation-v17.js, який підключає тільки головна',
   'dist/directions.css':'залишок до нової головної: жодна сторінка його не підключає',
   'dist/print.css':'друк на білому папері, палітра екрана не потрібна',

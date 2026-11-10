@@ -54,8 +54,17 @@ const previewTopics={
 
 function topicCards(topics){return topics.map((topic,index)=>`<article class="atlas-topic"><div class="atlas-topic-icon" aria-hidden="true">${String(index+1).padStart(2,'0')}</div><div><h3>${topic.title}</h3><p>${topic.copy}</p></div><span class="atlas-topic-tag">${topic.tag}</span></article>`).join('');}
 
+function shoulderTopicCards(){
+ const destinations=['anatomy','symptoms','rehab','anatomy','symptoms'];
+ return shoulderTopics.map((topic,index)=>`<article class="atlas-topic atlas-shoulder-topic" data-shoulder-art="${index+1}">
+  <div class="atlas-topic-icon" aria-hidden="true"></div>
+  <div><h3><button type="button" data-goto-tab="${destinations[index]}" aria-label="${topic.title} · ${tabLabels[destinations[index]]}">${topic.title}</button></h3><p>${topic.copy}</p></div>
+  <span class="atlas-topic-tag">${topic.tag}</span><svg class="atlas-topic-arrow" aria-hidden="true"><use href="#ai-next"/></svg>
+ </article>`).join('');
+}
+
 const shoulderContent={
- overview:()=>`<div class="atlas-copy-card"><h3>Як читати цей модуль</h3><p>Плече — перша повністю розгорнута область Атласу. Тут ми не намагаємося поставити діагноз за точкою болю. Мета — показати структуру знань: що це за область, які питання виникають найчастіше, що варто перевіряти і де закінчується впевненість доказів.</p></div>${topicCards(shoulderTopics)}`,
+ overview:()=>`${shoulderTopicCards()}<details class="atlas-copy-card atlas-reading-note"><summary>Як читати цей модуль</summary><p>Плече — перша повністю розгорнута область Атласу. Тут ми не намагаємося поставити діагноз за точкою болю. Мета — показати структуру знань: що це за область, які питання виникають найчастіше, що варто перевіряти і де закінчується впевненість доказів.</p></details>`,
  anatomy:()=>`<div class="atlas-copy-card"><h3>Анатомія як карта, а не діагноз</h3><p>Плечовий комплекс включає гленогумеральний, акроміально-ключичний і грудино-ключичний суглоби, лопатково-грудну взаємодію, ротаторну манжету та велику кількість м’язів і сухожиль.</p><ul><li>Структура допомагає зрозуміти функцію.</li><li>Зміни на візуалізації не завжди пояснюють біль.</li><li>Оцінка руху й навантаження потребує контексту.</li></ul></div>`,
  symptoms:()=>`<div class="atlas-copy-card"><h3>Симптоми — це початок питання</h3><p>Локалізація болю, провокуючі рухи, травматичний механізм, слабкість, нічний біль та зміни функції можуть спрямувати оцінку, але не замінюють клінічного обстеження.</p><ul><li>Гостра травма з вираженою втратою функції потребує окремої оцінки.</li><li>Одна провокативна проба рідко дає надійний діагноз сама по собі.</li><li>Навантажувальна толерантність змінюється з часом.</li></ul></div>`,
  training:()=>`<div class="atlas-copy-card"><h3>Тренування плеча</h3><p>Evidence UA розглядає тренування через кероване навантаження, доступний діапазон руху, прогресію обсягу та інтенсивності, а не через універсальний список «безпечних» і «небезпечних» вправ.</p><ul><li>Силові вправи можуть бути частиною профілактики й відновлення.</li><li>Біль під час руху оцінюється разом із реакцією після навантаження.</li><li>Прогресія залежить від задачі людини та попереднього рівня.</li></ul><p><a href="./exercises.html?region=shoulder">Вправи для плеча в Бібліотеці вправ →</a></p></div>`,
@@ -114,6 +123,10 @@ function previewContent(zone,tab){
 
 const zoneButtons=[...document.querySelectorAll('[data-zone]')];
 const tabs=[...document.querySelectorAll('[data-atlas-tab]')];
+const shortcuts=[...document.querySelectorAll('[data-atlas-shortcut]')];
+const viewButtons=[...document.querySelectorAll('[data-atlas-view]')];
+const figurePanel=document.querySelector('.atlas-figure-panel');
+const detail=document.getElementById('atlas-detail');
 const title=document.getElementById('atlas-zone-title');
 const summary=document.getElementById('atlas-zone-summary');
 const status=document.getElementById('atlas-zone-status');
@@ -174,10 +187,12 @@ async function hydrateRelatedPractice(){
 
 function render(){
  const meta=zoneMeta[selectedZone];
+ detail.dataset.zoneArt=selectedZone;
  title.textContent=meta.title;summary.textContent=meta.summary;status.textContent=meta.state;status.dataset.state=meta.stateKey;
  breadcrumbZone.textContent=meta.title;breadcrumbTab.textContent=tabLabels[selectedTab];
  zoneButtons.forEach(button=>{const active=button.dataset.zone===selectedZone;button.classList.toggle('is-selected',active);button.setAttribute('aria-pressed',String(active));});
  tabs.forEach(button=>{button.disabled=false;button.hidden=false;button.setAttribute('aria-selected',String(button.dataset.atlasTab===selectedTab));});
+ shortcuts.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.atlasShortcut===selectedTab)));
  content.classList.add('is-changing');
  spineHub?.dispose();spineHub=null;
  content.innerHTML=markupFor(selectedZone,selectedTab);
@@ -192,4 +207,22 @@ tabs.forEach((button,index)=>{
  button.addEventListener('click',()=>{selectedTab=button.dataset.atlasTab;render();});
  button.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight'].includes(event.key))return;event.preventDefault();const step=event.key==='ArrowRight'?1:-1;tabs[(index+step+tabs.length)%tabs.length].focus();});
 });
+shortcuts.forEach(button=>button.addEventListener('click',()=>{
+ const tab=tabs.find(item=>item.dataset.atlasTab===button.dataset.atlasShortcut);
+ tab.click();
+ tab.focus({preventScroll:true});
+ detail.scrollIntoView({block:'nearest'});
+}));
+viewButtons.forEach(button=>button.addEventListener('click',()=>{
+ figurePanel.dataset.bodyView=button.dataset.atlasView;
+ viewButtons.forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+}));
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const actions=document.querySelector('body > .eua-platform-nav');
+ if(actions)document.getElementById('atlas-actions').append(actions);
+ // The shell also sees the headers in the hidden pain maps. Only the page's navigation belongs here.
+ document.querySelectorAll('#knee-pain-map > .eua-platform-nav, #shoulder-pain-map > .eua-platform-nav')
+  .forEach(nav=>nav.remove());
+},{once:true});
 render();

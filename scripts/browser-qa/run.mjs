@@ -622,9 +622,14 @@ async function artPairsFlow(browser, origin, viewport) {
         return {art: img.dataset.art, shown: box.width > 0 && getComputedStyle(img).display !== 'none', loaded: img.complete && img.naturalWidth > 0, corner, alt: img.alt};
       }));
       const tag = `${palette} ${route}`;
-      check(where, images.length > 0 && images.length % 2 === 0 && images.filter(i => i.art === 'green').length === images.filter(i => i.art === 'cosmic').length, `${tag}: every picture comes as a green/cosmic pair (${images.length})`);
-      check(where, images.filter(i => i.art === mine).every(i => i.shown && i.loaded) && images.some(i => i.art === mine && i.shown), `${tag}: the ${mine} pictures are shown and loaded`);
-      check(where, images.filter(i => i.art === other).every(i => !i.shown), `${tag}: no ${other} picture is shown`);
+      if (route === '/atlas.html') {
+        const figure = page.locator('.atlas-body-art > img');
+        check(where, await figure.count() === 1 && await figure.evaluate(img => img.naturalWidth === 1536), `${tag}: the figure loads in either palette`);
+      } else {
+        check(where, images.length > 0 && images.length % 2 === 0 && images.filter(i => i.art === 'green').length === images.filter(i => i.art === 'cosmic').length, `${tag}: every picture comes as a green/cosmic pair (${images.length})`);
+        check(where, images.filter(i => i.art === mine).every(i => i.shown && i.loaded) && images.some(i => i.art === mine && i.shown), `${tag}: the ${mine} pictures are shown and loaded`);
+        check(where, images.filter(i => i.art === other).every(i => !i.shown), `${tag}: no ${other} picture is shown`);
+      }
       check(where, palette === 'cosmic' ? !seen.requested.some(u => ORIGINAL.test(u)) : !seen.requested.some(u => /-cosmic\.(?:svg|webp)/.test(u)), `${tag}: the hidden copies are not downloaded (${seen.requested.filter(u => ORIGINAL.test(u) || /-cosmic\./.test(u)).join(' ')})`);
       if (route === '/nutrition.html') {
         const tiles = images.filter(i => i.art === mine);
@@ -1366,7 +1371,8 @@ async function shapesFlow(browser, origin, viewport) {
     }
     return {rounded: [...new Set(rounded)], raised: [...new Set(raised)], big};
   }, [artOnly, overlays]);
-  for (const file of ['research.html', 'atlas.html', 'muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'nutrition-inside.html', 'supplements.html', 'fat-burning.html', 'exercises.html', 'directions.html']) {
+  // The Atlas reference explicitly uses softly rounded blue panels in both palettes; atlasFlow checks them.
+  for (const file of ['research.html', 'muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'nutrition-inside.html', 'supplements.html', 'fat-burning.html', 'exercises.html', 'directions.html']) {
     const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
     await page.evaluate(() => document.querySelectorAll('details').forEach(d => { d.open = true; }));
     await page.waitForTimeout(300);
@@ -2601,7 +2607,8 @@ async function homeNoScriptFlow(browser, origin, viewport) {
 
 async function compactBannerFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-25: на сторінках зі смугою «Навігація й інструменти» кнопка живе в банері (широкі екрани), на телефоні смуга лишається.
-  for (const route of ['/atlas.html', '/sleep.html', '/movement.html', '/exercises.html', '/protein-meta.html', '/nutrition-digestion.html']) {
+  // The Atlas no longer has a full-width banner. Its tools are beneath the explorer.
+  for (const route of ['/sleep.html', '/movement.html', '/exercises.html', '/protein-meta.html', '/nutrition-digestion.html']) {
     const where = `compact banner ${route} @${viewport.name}`;
     const {context, page, seen} = await open(browser, origin, viewport, route);
     // The strip is built by the platform shell script after load.
@@ -3478,7 +3485,7 @@ async function supplementsFlow(browser, origin, viewport) {
 
 async function pineFlow(browser, origin, viewport) {
   // Pages that adopted the pine theme: patterned band, serif heading, folded tools line, no overflow, motif visible.
-  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['atlas.html', 'asanoha'], ['directions.html', 'kumiko'], ['nutrition.html', 'nami'], ['muscle-lab.html', 'take'], ['cell-lab.html', 'kikko'], ['movement.html', 'seigaiha'], ['sleep.html', 'kasumi'], ['nutrition-digestion.html', 'enso'], ['protein-meta.html', 'shippo']]) {
+  for (const [file, motif] of [['exercises.html', 'yagasuri'], ['directions.html', 'kumiko'], ['nutrition.html', 'nami'], ['muscle-lab.html', 'take'], ['cell-lab.html', 'kikko'], ['movement.html', 'seigaiha'], ['sleep.html', 'kasumi'], ['nutrition-digestion.html', 'enso'], ['protein-meta.html', 'shippo']]) {
     const where = `pine ${file} @${viewport.name}`;
     const {context, page} = await open(browser, origin, viewport, '/' + file);
     await page.waitForSelector('.pb h1');
@@ -3620,6 +3627,26 @@ async function muscleGuideFlow(browser, origin, viewport) {
 async function atlasFlow(browser, origin, viewport) {
   const where = `atlas shoulder map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
+  const layout = await page.evaluate(() => {
+    const boxes = [...document.querySelectorAll('.atlas-sidebar, .atlas-figure-panel, .atlas-detail')].map(node => node.getBoundingClientRect());
+    return {columns: boxes[0].right <= boxes[1].left && boxes[1].right <= boxes[2].left,
+      tablet: boxes[0].right <= boxes[1].left && Math.max(boxes[0].bottom, boxes[1].bottom) <= boxes[2].top,
+      stacked: boxes[0].bottom <= boxes[1].top && boxes[1].bottom <= boxes[2].top};
+  });
+  check(where, viewport.width > 900 ? layout.columns : viewport.width > 580 ? layout.tablet : layout.stacked, 'the Atlas layout adapts to the available width');
+  const detail = page.locator('.atlas-detail');
+  check(where, await detail.evaluate(node => parseFloat(getComputedStyle(node).borderTopLeftRadius) >= 8), 'the Atlas detail panel retains the reference corners');
+  check(where, await page.locator('#atlas-actions .eua-module-menu:not([open])').count() === 1, 'the Atlas tools stay folded below the explorer');
+  check(where, await page.locator('[data-eua-tool="share"]').count() === 1, 'hidden map headers do not duplicate the share control');
+  check(where, await page.locator('.atlas-shoulder-topic').count() === 5, 'the overview contains all five shoulder topics');
+  const thumb = page.locator('.atlas-shoulder-topic .atlas-topic-icon').first();
+  check(where, await thumb.evaluate(node => getComputedStyle(node).backgroundImage.includes('atlas-shoulder.webp')), 'the overview has an illustrated thumbnail');
+  await artifact(page, viewport, 'atlas-redesign', page.locator('.atlas-workspace'));
+  await page.locator('[data-atlas-view="back"]').click();
+  check(where, await page.locator('[data-body-view="back"]').count() === 1, 'the body view switches to the back');
+  await page.locator('[data-atlas-view="front"]').click();
+  await page.locator('[data-atlas-shortcut="anatomy"]').click();
+  check(where, await page.locator('[data-atlas-tab="anatomy"]').getAttribute('aria-selected') === 'true', 'the sidebar opens the selected module tab');
   await page.click('[data-zone="shoulder"]');
   await page.waitForSelector('#shoulder-pain-map:not([hidden])');
   const tabs = page.locator('#shoulder-pain-map [role="tab"]');
@@ -3896,6 +3923,8 @@ async function baselineScreenshots(browser, origin, viewport) {
   await page.locator('#top').waitFor({state: 'visible'});
   await page.evaluate(() => document.fonts.ready);
   await artifact(page, viewport, 'home-first-screen', page.locator('body'), {scroll: false});
+  await page.goto(origin + '/atlas.html', {waitUntil: 'load'});
+  await artifact(page, viewport, 'atlas-redesign', page.locator('.atlas-workspace'));
   await context.close();
 }
 

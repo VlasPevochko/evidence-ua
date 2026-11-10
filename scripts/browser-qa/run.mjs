@@ -58,9 +58,9 @@ async function isolatedFlow(flow, browser, origin, viewport, ...args) {
 let checks = 0;
 const check = (where, ok, message) => { checks++; if (!ok) fail(where, message); };
 
-async function open(browser, origin, viewport, route, {initScript, contextOptions = {}} = {}) {
+async function open(browser, origin, viewport, route, {initScript, initArg, contextOptions = {}} = {}) {
   const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block', ...contextOptions});
-  if (initScript) await context.addInitScript(initScript);
+  if (initScript) await context.addInitScript(initScript, initArg);
   const page = await context.newPage();
   const seen = await observePage(page, origin);
   await page.goto(origin + route, {waitUntil: 'load'});
@@ -3932,7 +3932,17 @@ const zoneNameRe = zone => new RegExp({brain: 'Мозок', shoulder: 'Плеч�
 
 // Світла тема за справжніми пікселями: розрахований колір обманює (тема — фільтр на <html>), тож знімаємо елемент і міряємо контраст тексту з тлом.
 async function paintedContrast(page, locator) {
-  const shot = (await locator.screenshot()).toString('base64');
+  // Міряємо по прямокутнику самого тексту, а не всієї кнопки чи рядка: великий порожній бокс розбавляє колір тексту й давав хибні «провали» (кнопка «← Усі теми» на комп'ютері).
+  await locator.scrollIntoViewIfNeeded();
+  const rect = await locator.evaluate(element => {
+    const range = document.createRange(); range.selectNodeContents(element);
+    const boxes = [...range.getClientRects()].filter(box => box.width > 1 && box.height > 1);
+    const box = boxes.length ? boxes.reduce((a, b) => ({left: Math.min(a.left, b.left), top: Math.min(a.top, b.top), right: Math.max(a.right, b.right), bottom: Math.max(a.bottom, b.bottom)})) : element.getBoundingClientRect();
+    return {x: Math.max(0, box.left - 3), y: Math.max(0, box.top - 3), width: Math.max(4, box.right - box.left + 6), height: Math.max(4, box.bottom - box.top + 6)};
+  });
+  const size = page.viewportSize();
+  rect.width = Math.min(rect.width, size.width - rect.x); rect.height = Math.min(rect.height, size.height - rect.y);
+  const shot = (await page.screenshot({clip: rect})).toString('base64');
   return page.evaluate(async base64 => {
     const image = new Image(); image.src = 'data:image/png;base64,' + base64; await image.decode();
     const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
@@ -3996,6 +4006,45 @@ async function atlasLightFlow(browser, origin, viewport) {
   await artifact(page, viewport, 'atlas-light', page.locator('.atlas-workspace'));
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
   await context.close();
+}
+
+// «Зелений» вигляд Атласу (2026-11-10, рішення власника «1-5 так», п. 4): окремий прохід за контрастом у темній і світлій темі. Прохід нічого не виправляв: 420 вимірів у чотирьох виглядах × двох ширинах
+// (космос/зелений × темна/світла, телефон і комп'ютер) нижче порогу не дали жодного. Потік тримає це далі для «Зеленого» (космічну світлу тему тримає atlasLightFlow).
+async function atlasPaletteFlow(browser, origin, viewport) {
+  const phone = viewport.width <= 600;
+  const start = [['the site name in the header', '.eua-site-header a', 4.5], ['h1', '#atlas-title', 4.5], ['the intro', '.atlas-intro p', 4.5], ['«Про атлас»', '.atlas-about', 4.5], ['a pin label', '.atlas-zone--brain > span', 4.5],
+    ['the figure toggle (chosen)', '.atlas-views [aria-pressed="true"]', 4.5], ['the figure toggle (other)', '.atlas-views [aria-pressed="false"]', 4.5], ['the zone title', '#atlas-zone-title', 3], ['the zone summary', '#atlas-zone-summary', 4.5], ['the zone status', '#atlas-zone-status', 4.5],
+    ['the chosen tab', '.atlas-tabs [aria-selected="true"]', 4.5], ['another tab', '#atlas-tab-anatomy', 4.5], ['a topic title', '.atlas-topic h3', 4.5], ['a topic text', '.atlas-topic p', 4.5], ['a topic chip', '.atlas-topic-goes', 4.5],
+    ['the state block title', '#atlas-state h2', 4.5], ['the state rows (term)', '#atlas-state dt', 4.5], ['the state rows (value)', '#atlas-state dd', 4.5], ['the state note link', '.atlas-state-note a', 4.5], ['the disclaimer', '.atlas-disclaimer', 4.5]];
+  const map = [['the map title', '.knee-map-head strong', 4.5], ['a view tab (other)', '.knee-view-switch [aria-selected="false"]', 4.5], ['a structure label', '.knee-stage .map-label', 4.5], ['the legend', '.atlas-legend', 4.5], ['the point title', '[data-point-title]', 3],
+    ['a list item of the card', '.knee-detail-grid li', 4.5], ['the red flags', '.knee-red-flags p', 4.5], ['«← Усі теми»', '[data-atlas-topics]', 4.5]];
+  for (const theme of ['dark', 'light']) {
+    const where = `atlas green ${theme} @${viewport.name}`;
+    const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html', {contextOptions: phone ? {hasTouch: true, isMobile: true} : {}, initScript: ([mode]) => {
+      localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: mode, text: 'md', palette: 'green'}));
+    }, initArg: [theme]});
+    const facts = await page.evaluate(() => ({palette: document.documentElement.dataset.palette, theme: document.documentElement.dataset.theme || 'dark', surface: getComputedStyle(document.body).getPropertyValue('--atlas-page-bg').trim(), overflow: document.documentElement.scrollWidth - innerWidth}));
+    check(where, facts.palette === 'green' && facts.theme === theme, `the green palette in the ${theme} theme is on (${JSON.stringify(facts)})`);
+    check(where, facts.surface === '#091612', `the Atlas uses its own green surface, not the cosmic navy (${facts.surface})`);
+    check(where, facts.overflow <= 1, `no horizontal overflow (${facts.overflow}px)`);
+    for (const [name, selector, minimum] of start) {
+      const {ratio} = await paintedContrast(page, page.locator(selector).first());
+      check(where, ratio >= minimum, `${name} is readable (contrast ${ratio.toFixed(2)}:1, needs ${minimum}:1)`);
+    }
+    await page.locator('[data-zone="knee"]').click();
+    await page.waitForSelector('.knee-stage .map-label');
+    await page.locator('[data-knee-view="medial"]').click();
+    await page.locator('[data-knee-hotspot="medial-joint-line"]').click();
+    await page.waitForSelector('[data-point-title]');
+    await page.waitForTimeout(350);
+    for (const [name, selector, minimum] of map) {
+      const {ratio} = await paintedContrast(page, page.locator(selector).first());
+      check(where, ratio >= minimum, `${name} is readable on the map (contrast ${ratio.toFixed(2)}:1, needs ${minimum}:1)`);
+    }
+    await artifact(page, viewport, `atlas-green-${theme}`, page.locator('.atlas-workspace'));
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+    await context.close();
+  }
 }
 
 // Телефон: після дотику до піна чи точки болю результат видно (раніше змінювався на 900–1070 px нижче екрана); «↑ До фігури» повертає; зменшений рух без плавності.
@@ -4786,6 +4835,7 @@ try {
     // Атлас: оновлення 2026-11-10 («1-7 так» після аудиту шаблонності й функціональності); 360 включено, бо вузький телефон найтісніший.
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasUpdateFlow, browser, origin, viewport);
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasLightFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(atlasPaletteFlow, browser, origin, viewport);
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasPhoneFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(atlasLoadOrderFlow, browser, origin, viewport);
     for (const viewport of viewports) await musclesFlow(browser, origin, viewport);

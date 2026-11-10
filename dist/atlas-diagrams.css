@@ -1,0 +1,143 @@
+/* Кольори схем карт болю (src/atlas/diagrams.mjs): палітра Атласу, не космічна й не зелена, бо схеми показують анатомію (кістка, м'яз, сухожилок),
+   а не оформлення. Світла тема повертає сцену до природних кольорів (див. atlas-redesign.css). */
+.map-diagram {
+  --bone-a: #f4ecd9; --bone-b: #c3b794; --bone-edge: #8b8064;
+  --muscle-a: #b04a43; --muscle-b: #6c2b2f; --muscle-edge: #de9086;
+  --tendon-a: #f3dfa6; --tendon-b: #d6b06a;
+  --ligament: #86d3e0; --cartilage: #c3dcec; --bursa: #8fc8f0; --nerve: #c9a2f2; --soft: #7094b8;
+  position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 10px 16px #0007);
+}
+.map-diagram .s-bone-a { stop-color: var(--bone-a); }
+.map-diagram .s-bone-b { stop-color: var(--bone-b); }
+.map-diagram .s-muscle-a { stop-color: var(--muscle-a); }
+.map-diagram .s-muscle-b { stop-color: var(--muscle-b); }
+.map-diagram .s-tendon-a { stop-color: var(--tendon-a); }
+.map-diagram .s-tendon-b { stop-color: var(--tendon-b); }
+.map-diagram .soft { fill: var(--soft); opacity: .16; }
+.map-diagram .bone { stroke: var(--bone-edge); stroke-width: 1.4; }
+.map-diagram .bone-end { fill: var(--bone-b); stroke: var(--bone-edge); stroke-width: 1.4; }
+.map-diagram .clavicle, .map-diagram .scapular-spine { fill: none; stroke: var(--bone-edge); stroke-width: 16; stroke-linecap: round; }
+.map-diagram .clavicle-hi, .map-diagram .scapular-spine-hi { fill: none; stroke: var(--bone-a); stroke-width: 11; stroke-linecap: round; opacity: .92; }
+.map-diagram .vertebrae rect { fill: var(--bone-b); stroke: var(--bone-edge); stroke-width: 1.2; }
+.map-diagram .groove { fill: none; stroke: var(--bone-edge); stroke-width: 3; stroke-linecap: round; opacity: .55; }
+.map-diagram .muscle { stroke: var(--muscle-edge); stroke-width: 1.3; opacity: .82; }
+.map-diagram .muscle.overlay { opacity: .56; }
+.map-diagram .fibers { fill: none; stroke: #3d1519; stroke-width: 1.3; stroke-linecap: round; opacity: .38; }
+.map-diagram .tendon { stroke: var(--tendon-b); stroke-width: 1.2; stroke-linecap: round; }
+.map-diagram path.tendon[fill="none"] { stroke: var(--tendon-a); stroke-width: 6; }
+.map-diagram .cuff { fill: none; stroke: var(--ligament); stroke-width: 9; stroke-linecap: round; opacity: .85; }
+.map-diagram .ligament { fill: none; stroke: var(--ligament); stroke-width: 5; stroke-linecap: round; opacity: .9; }
+.map-diagram .ligament.thick { stroke-width: 7; }
+.map-diagram .cartilage { fill: var(--cartilage); stroke: #e9f3fa; stroke-width: 1; opacity: .8; }
+.map-diagram .bursa { fill: var(--bursa); opacity: .38; stroke: var(--bursa); stroke-width: 1; }
+.map-diagram .nerve { fill: none; stroke: var(--nerve); stroke-width: 4; stroke-dasharray: 6 5; stroke-linecap: round; opacity: .9; }
+.map-diagram .joint-line { fill: none; stroke: #07101d; stroke-width: 2.4; stroke-linecap: round; opacity: .55; }
+
+/* ───────── Карти болю плеча й коліна: оболонка, шапка, ракурси, сцена, точки, підписи, картки опису ─────────
+   Було два майже однакових файли в старій фіолетово-бурштиновій гамі; тепер спільні стилі в палітрі Атласу (змінні --atlas-*).
+   Усі підписи не менші за 12 px (аудит 2026-11-10: було 9–11 px). Точки схожі на піни фігури: кільце, світіння, вибрана помаранчева. */
+:is(.shoulder-pain-map, .knee-pain-map)[hidden] { display: none !important; }
+:is(.shoulder-pain-map, .knee-pain-map) { position: relative; display: flex; flex-direction: column; gap: .7rem; padding: .9rem; color: var(--atlas-ink); }
+:is(.shoulder-map-head, .knee-map-head) { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .75rem; }
+:is(.shoulder-map-head, .knee-map-head) button {
+  min-height: 2.75rem; padding: .25rem .85rem; border: 1px solid var(--atlas-border); border-radius: 2rem; background: var(--atlas-surface);
+  color: var(--atlas-ink); font: inherit; font-size: .85rem; cursor: pointer; white-space: nowrap;
+}
+:is(.shoulder-map-head, .knee-map-head) button:hover { border-color: var(--atlas-blue); }
+:is(.shoulder-map-head, .knee-map-head) strong { display: block; font-size: .95rem; line-height: 1.2; }
+:is(.shoulder-map-head, .knee-map-head) small { display: block; margin-top: .15rem; color: var(--atlas-muted); font-size: .78rem; line-height: 1.3; }
+:is(.shoulder-view-switch, .knee-view-switch) {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: .15rem; padding: .18rem;
+  border: 1px solid var(--atlas-border); border-radius: 2rem; background: var(--atlas-panel);
+}
+:is(.shoulder-view-switch, .knee-view-switch) button {
+  min-height: 2.75rem; padding: .2rem .4rem; border: 0; border-radius: 2rem; background: transparent; color: var(--atlas-muted);
+  font: inherit; font-size: .82rem; cursor: pointer;
+}
+:is(.shoulder-view-switch, .knee-view-switch) button:hover { color: var(--atlas-ink); }
+:is(.shoulder-view-switch, .knee-view-switch) button[aria-selected="true"] { background: var(--atlas-active); color: var(--atlas-ink); }
+
+:is(.shoulder-stage, .knee-stage) {
+  position: relative; flex: 0 0 auto; margin: 0 auto; border: 1px solid var(--atlas-border); border-radius: .8rem; overflow: hidden;
+  background: radial-gradient(circle at 55% 42%, rgba(110, 189, 255, .14), transparent 54%), linear-gradient(180deg, var(--atlas-surface), var(--atlas-page-bg));
+}
+.shoulder-stage { width: min(100%, 390px); aspect-ratio: 360 / 420; }
+
+/* Підписи структур і лінії-виноски (дані: src/atlas/points.mjs). */
+.map-leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.map-leaders line { stroke: var(--atlas-muted); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .8; }
+.map-leaders line.dot { stroke-width: 5; stroke-linecap: round; }
+.map-label {
+  position: absolute; left: var(--x); top: var(--y); z-index: 2; width: max-content; max-width: var(--w, 40%); transform: translate(0, -50%);
+  color: var(--atlas-ink); font-size: .78rem; font-weight: 650; line-height: 1.15; text-shadow: 0 1px 3px #000; pointer-events: none;
+}
+.map-label[data-align="right"] { transform: translate(-100%, -50%); text-align: right; }
+.map-label[data-align="center"] { transform: translate(-50%, -50%); text-align: center; }
+
+/* Точки: той самий вигляд, що й піни фігури (кільце, світіння; вибрана помаранчева, реферований патерн фіолетовий). Зона дотику 44 px. */
+:is(.shoulder-hotspot, .knee-hotspot) {
+  --pin: #319bff; --x: 50%; --y: 50%; position: absolute; left: var(--x); top: var(--y); z-index: 4; display: grid; place-items: center;
+  width: 2.75rem; height: 2.75rem; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; transform: translate(-50%, -50%);
+}
+:is(.shoulder-hotspot, .knee-hotspot)::before {
+  content: ""; display: block; width: .94rem; height: .94rem; border: 2px solid #fff; border-radius: 50%; background: var(--pin);
+  box-shadow: 0 0 0 .2rem var(--pin), 0 0 1rem .28rem var(--pin); transition: transform .16s ease;
+}
+.shoulder-hotspot[data-kind="referred"] { --pin: #b889ec; }
+:is(.shoulder-hotspot, .knee-hotspot)[aria-pressed="true"] { --pin: #ed8e2a; }
+:is(.shoulder-hotspot, .knee-hotspot):hover::before, :is(.shoulder-hotspot, .knee-hotspot)[aria-pressed="true"]::before { transform: scale(1.18); }
+:is(.shoulder-hotspot, .knee-hotspot) span {
+  position: absolute; left: 50%; top: calc(100% - .15rem); width: max-content; max-width: 11rem; padding: .3rem .5rem; border: 1px solid var(--atlas-border);
+  border-radius: .4rem; background: var(--atlas-page-bg); color: var(--atlas-ink); font-size: .78rem; font-weight: 700; line-height: 1.25; text-align: center;
+  opacity: 0; pointer-events: none; transform: translateX(-50%); transition: opacity .15s ease;
+}
+:is(.shoulder-hotspot, .knee-hotspot)[data-edge="right"] span { left: auto; right: -.4rem; transform: none; text-align: right; }
+:is(.shoulder-hotspot, .knee-hotspot)[data-edge="left"] span { left: -.4rem; transform: none; text-align: left; }
+:is(.shoulder-hotspot, .knee-hotspot):hover span, :is(.shoulder-hotspot, .knee-hotspot):focus-visible span, :is(.shoulder-hotspot, .knee-hotspot)[aria-pressed="true"] span { opacity: 1; }
+:is(.shoulder-hotspot, .knee-hotspot):focus-visible, :is(.shoulder-map-head, .knee-map-head) button:focus-visible, :is(.shoulder-view-switch, .knee-view-switch) button:focus-visible {
+  outline: 2px solid var(--atlas-blue); outline-offset: 2px;
+}
+/* Позначення під картою: ті самі кольори, що в точок. */
+.atlas-legend .atlas-dot { background: #319bff; box-shadow: 0 0 10px #319bff; }
+.atlas-legend .atlas-dot--active { background: #ed8e2a; box-shadow: 0 0 10px #ed8e2a; }
+.atlas-legend .atlas-dot--referred { background: #b889ec; box-shadow: 0 0 10px #b889ec; }
+
+:is(.shoulder-map-rule, .knee-map-rule) {
+  display: flex; align-items: flex-start; gap: .65rem; padding: .65rem .8rem; border: 1px solid var(--atlas-border); border-radius: .6rem;
+  background: var(--atlas-surface); color: var(--atlas-muted); font-size: .8rem; line-height: 1.45;
+}
+:is(.shoulder-map-rule, .knee-map-rule) strong { flex: 0 0 auto; color: var(--atlas-warm); }
+
+/* Картка обраної точки в панелі зони (текст на сторінці, не всередині малюнка). */
+:is(.shoulder-pain-detail, .knee-pain-detail) { display: grid; gap: .8rem; }
+:is(.shoulder-pain-detail, .knee-pain-detail) h3 { margin: 0; font-size: clamp(1.35rem, 2.1vw, 1.9rem); line-height: 1.15; }
+:is(.shoulder-pain-detail, .knee-pain-detail) h3:focus { outline: none; }
+:is(.shoulder-detail-kicker, .knee-detail-kicker) { margin: 0; color: var(--atlas-blue); font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+:is(.shoulder-detail-location, .knee-detail-location) { margin: 0; color: var(--atlas-muted); line-height: 1.55; }
+:is(.shoulder-rule-card, .knee-rule-card) {
+  padding: .8rem .95rem; border: 1px solid color-mix(in srgb, var(--atlas-warm) 45%, var(--atlas-border)); border-radius: .6rem;
+  background: color-mix(in srgb, var(--atlas-warm) 9%, var(--atlas-surface)); color: var(--atlas-muted);
+}
+:is(.shoulder-rule-card, .knee-rule-card) strong { display: block; margin-bottom: .25rem; color: var(--atlas-warm); }
+:is(.shoulder-rule-card, .knee-rule-card) p { margin: 0; line-height: 1.5; }
+:is(.shoulder-detail-grid, .knee-detail-grid) { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+:is(.shoulder-detail-grid, .knee-detail-grid) section, :is(.shoulder-detail-note, .knee-detail-note), :is(.shoulder-red-flags, .knee-red-flags) {
+  padding: .8rem .9rem; border: 1px solid var(--atlas-border); border-radius: .6rem; background: var(--atlas-surface);
+}
+:is(.shoulder-pain-detail, .knee-pain-detail) h4 { margin: 0 0 .4rem; font-size: .88rem; }
+:is(.shoulder-pain-detail, .knee-pain-detail) ul { margin: 0; padding-left: 1.1rem; color: var(--atlas-muted); font-size: .85rem; line-height: 1.5; }
+:is(.shoulder-detail-note, .knee-detail-note) p, :is(.shoulder-red-flags, .knee-red-flags) p { margin: 0; color: var(--atlas-muted); font-size: .85rem; line-height: 1.5; }
+:is(.shoulder-red-flags, .knee-red-flags) { border-color: color-mix(in srgb, #ff8a6a 45%, var(--atlas-border)); background: color-mix(in srgb, #ff8a6a 8%, var(--atlas-surface)); }
+:is(.shoulder-red-flags, .knee-red-flags) h4 { color: #ffb29e; }
+:is(.shoulder-pain-disclaimer, .knee-pain-disclaimer) { margin: 0; color: var(--atlas-muted); font-size: .78rem; line-height: 1.45; }
+
+@media (max-width: 680px) {
+  :is(.shoulder-pain-map, .knee-pain-map) { padding: .6rem; }
+  .shoulder-stage { width: min(100%, 330px); }
+  :is(.shoulder-detail-grid, .knee-detail-grid) { grid-template-columns: 1fr; }
+  :is(.shoulder-map-rule, .knee-map-rule) { display: block; }
+  :is(.shoulder-map-rule, .knee-map-rule) strong { display: block; margin-bottom: .2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.shoulder-hotspot, .knee-hotspot)::before, :is(.shoulder-hotspot, .knee-hotspot) span { transition: none; }
+}

@@ -51,6 +51,15 @@ if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
  const next=html.replace(/<!-- EUA_HOME_FRESH_START -->[\s\S]*?<!-- EUA_HOME_FRESH_END -->/,()=>'<!-- EUA_HOME_FRESH_START -->'+grid+'<!-- EUA_HOME_FRESH_END -->');
  if(next!==html)fs.writeFileSync(homeFile,next);
 }
+{
+ const html=fs.readFileSync(homeFile,'utf8');
+ if(!html.includes('<details class="home-fresh-fold">')){
+  const section=html.match(/<section class="home-fresh" aria-labelledby="home-fresh-title">[\s\S]*?<\/section>/);
+  if(!section)throw Error('The home fresh section is missing in dist/index.html');
+  const folded='<details class="home-fresh-fold"><summary><span class="home-fresh-fold-copy"><span class="home-fresh-fold-title">Оновлення</span><span class="home-fresh-fold-hint">Розбори, схеми й зміни на сайті</span></span></summary>'+section[0]+'</details>';
+  fs.writeFileSync(homeFile,html.replace(section[0],folded));
+ }
+}
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
  const next=old.replaceAll('platform-shell.js?v=59','platform-shell.js?v=60').replaceAll('home-feedback.js?v=59','home-feedback.js?v=60').replaceAll('home-entry.css?v=57','home-entry.css?v=60').replaceAll('directions.js?v=59','directions.js?v=60');
@@ -638,6 +647,15 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
  const updates={'atlas-redesign.css?v=2':'atlas-redesign.css?v=3','atlas.js?v=7':'atlas.js?v=8','knee-pain-map.js?v=3':'knee-pain-map.js?v=4','shoulder-pain-map.js?v=3':'shoulder-pain-map.js?v=4',
   // Пошук знаходить зони й теми Атласу (platform-materials v=107): каскад матеріали → інструменти (107), каталог (116), відгук на головній (107), оболонка (111), пошук (16) → шапка (18), головна (8), fat-burning (16).
   'site-header.js?v=17':'site-header.js?v=18','platform-shell.js?v=110':'platform-shell.js?v=111','directions.js?v=115':'directions.js?v=116','home-feedback.js?v=106':'home-feedback.js?v=107','home-spectrum.js?v=7':'home-spectrum.js?v=8','fat-burning.js?v=15':'fat-burning.js?v=16','changes-page.js?v=32':'changes-page.js?v=33'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-spectrum.css?v=7':'home-spectrum.css?v=8','home-lens.css?v=5':'home-lens.css?v=6','home-fresh.css?v=3':'home-fresh.css?v=4'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

@@ -56,8 +56,8 @@ const built=inspect(index,`[n.xpath('./summary//*[@class="home-row-hint"]')[0].t
 assert.deepEqual(built,outlines.map(o=>o.hint),'dist/index.html carries the same route previews as the generator');
 
 // 5. Кожен згорнутий рядок на головній має другий рядок тексту (не лише назву): жоден не лишився «голим».
-const all=inspect(index,`[{'id':n.get('id'),'cls':n.get('class'),'secondLine':len(n.xpath('./summary//small'))+len(n.xpath('./summary/span[not(@aria-hidden)]/text()[normalize-space()]')),'open':n.get('open') is not None} for n in root.xpath('//body/*[contains(@class,"page")]//details')]`);
-assert.equal(all.length,9,'The home has nine folded rows; a new one must get a preview line too (update this test)');
+const all=inspect(index,`[{'id':n.get('id'),'cls':n.get('class'),'secondLine':len(n.xpath('./summary//small'))+len(n.xpath('./summary/span[not(@aria-hidden)]/text()[normalize-space()]'))+len(n.xpath('./summary//span[@class="home-fresh-fold-hint"]')),'open':n.get('open') is not None} for n in root.xpath('//body/*[contains(@class,"page")]//details')]`);
+assert.equal(all.length,10,'The home has ten folded rows; a new one must get a preview line too (update this test)');
 for(const row of all){
   assert(row.secondLine>=1,`Folded row ${row.id||row.cls} has a second line under its title`);
   assert(!row.open,`Folded row ${row.id||row.cls} starts closed`);
@@ -81,4 +81,4 @@ assert(/science:'none'/.test(record),'The record is marked as touching no scienc
 // 8. Документ: що, чому, файли, відкат.
 const doc=fs.readFileSync('docs/HOME_ROWS_PREVIEW.md','utf8');
 for(const part of ['Що змінено','Чому','Файли','Тести','Як відкотити'])assert(doc.includes(part),`docs/HOME_ROWS_PREVIEW.md has the section «${part}»`);
-console.log('Home rows preview: six previews, counts equal the markup, route previews equal the step titles, nine folded rows each have a second line passed.');
+console.log('Home rows preview: six previews, counts equal the markup, route previews equal the step titles, ten folded rows each have a second line passed.');

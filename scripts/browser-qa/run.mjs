@@ -2062,6 +2062,7 @@ async function lensSnapshot(page) {
     const interior = section.querySelector('.home-lens-interior');
     const action = section.querySelector('[data-lens-reveal]');
     const stageRect = rect(stage), actionRect = rect(action);
+    const bridgeWidth = parseFloat(getComputedStyle(section.querySelector('.home-lens-core'),'::before').width);
     // Resolve the computed clip, then measure the actual image's visible edge.
     // A transform on a transparent overlay cannot satisfy this geometry gate.
     const halves = [...section.querySelectorAll('.home-lens-half')].map(node => {
@@ -2091,6 +2092,7 @@ async function lensSnapshot(page) {
         pointerEvents:getComputedStyle(action).pointerEvents,
         onScreen:actionRect.left>=0 && actionRect.right<=innerWidth && actionRect.top>=0 && actionRect.bottom<=innerHeight},
       progress: Number(getComputedStyle(section).getPropertyValue('--lens-progress')),
+      bridgeWidth,
       top: box.top, scrollY, overflow: document.documentElement.scrollWidth - innerWidth,
       cards: [...section.querySelectorAll('#cards > a.topic-card')].map(node => {
         const rect = node.getBoundingClientRect();
@@ -2154,7 +2156,14 @@ async function openLensPicker(page) {
   await page.locator('[data-lens-reveal]').focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-lens-picker][open]').waitFor({state:'visible'});
-  await page.locator('[data-lens-picker] img').evaluateAll(nodes=>Promise.all(nodes.map(node=>node.decode())));
+  await page.locator('[data-lens-picker] img').evaluateAll(nodes=>Promise.all(nodes.map(async node=>{
+    node.loading='eager';
+    if(!node.complete)await new Promise((resolve,reject)=>{
+      node.addEventListener('load',resolve,{once:true});
+      node.addEventListener('error',()=>reject(new Error(`Unable to load chooser image ${node.currentSrc||node.src}`)),{once:true});
+    });
+    await node.decode();
+  })));
 }
 // Owner 2026-10-31: the six picture tiles sit on the cosmic violet of the home, not on teal.
 // Measure the edge of what the browser actually decoded (the backdrop of each picture), not the file names.
@@ -2186,7 +2195,9 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.mouse.wheel(0,128);await page.waitForTimeout(240);
     const middle=await lensSnapshot(page);
     check(where,middle.progress>closed.progress&&middle.progress<1&&middle.gap>closed.gap+20,'native scrolling must still separate the actual image halves');
+    check(where,closed.bridgeWidth<=1&&Math.abs(middle.bridgeWidth-middle.gap)<=1,'the original centre pixels fill the exact opening without a dark seam');
     check(where,!(await panel.isVisible())&&middle.cards.every(card=>!card.visible&&card.width===0),'partial reveal must never expose a direction');
+    await artifact(page,viewport,'home-lens-opening',page.locator('[data-lens-stage]'));
     const beforeOpen=await page.evaluate(()=>scrollY);
     await page.mouse.click(middle.action.left+middle.action.width/2,middle.action.top+middle.action.height/2);
     await panel.waitFor({state:'visible'});
@@ -2420,7 +2431,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     const questionBoxes = await page.locator('[data-spectrum-question]').evaluateAll(nodes => nodes.map(node => {
       const box = node.getBoundingClientRect();return {x: box.x, y: box.y, right: box.right, bottom: box.bottom};
     }));
-    check(where, viewport.width <= 700 ? questionBoxes[0].right <= questionBoxes[1].x + 1 && questionBoxes[2].y >= questionBoxes[1].bottom - 1 : questionBoxes.every((box, index) => !index || box.x > questionBoxes[index - 1].right), 'three questions must retain the readable phone 2+1 / desktop three-column hierarchy');
+    check(where, viewport.width <= 700 ? questionBoxes.every((box,index)=>index===0||Math.abs(box.x-questionBoxes[index-1].x)<=1)&&questionBoxes.every((box,index)=>!index||box.y>questionBoxes[index-1].y) : questionBoxes.every((box, index) => !index || box.x > questionBoxes[index - 1].right), 'three questions must retain the readable phone rail / desktop three-column hierarchy');
     check(where, await page.locator('canvas#spectrum-wave').evaluate(canvas => canvas.getAttribute('aria-hidden') === 'true' && getComputedStyle(canvas).pointerEvents === 'none'), 'the decorative wave must stay out of accessibility and pointer navigation');
     await artifact(page, viewport, 'home-first-screen', page.locator('body'), {scroll: false});
     await page.locator('#spectrum-query').focus();
@@ -3342,6 +3353,11 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
   const where = `home fresh cards @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
   try {
+    await page.evaluate(()=>document.fonts.ready);
+    const fold=page.locator('.home-fresh-fold');
+    const closedHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
+    check(where,!(await fold.evaluate(node=>node.open)),'the long secondary section starts compact');
+    await fold.locator('summary').click();
     await page.locator('.home-fresh').scrollIntoViewIfNeeded();
     const info = await page.evaluate(() => {
       const box = node => { const rect = node.getBoundingClientRect(); return {x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height), right: Math.round(rect.right)}; };
@@ -3353,9 +3369,14 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
         thumb: box(cards[0].querySelector('.eua-mini')), frames: [...cards[1].querySelectorAll('.fp-svg')].map(box), captions: [...cards[1].querySelectorAll('.home-fresh-cap')].map(node => node.textContent.trim()),
         days: [...cards[2].querySelectorAll('.home-fresh-day time')].map(node => node.textContent.trim()), entries: [...cards[2].querySelectorAll('.home-fresh-day li')].map(node => ({text: node.textContent.trim(), visible: visible(node), height: Math.round(node.getBoundingClientRect().height)})),
         question: cards[0].querySelector('.home-fresh-question').textContent.trim(), links: cards.map(card => (card.tagName === 'A' ? 1 : 0) + card.querySelectorAll('a').length), small,
-        overflow: document.documentElement.scrollWidth - innerWidth
+        overflow: document.documentElement.scrollWidth - innerWidth, documentHeight: document.documentElement.scrollHeight
       };
     });
+    if(process.env.QA_ARTIFACT_DIR){
+      const dir=path.resolve(process.env.QA_ARTIFACT_DIR);fs.mkdirSync(dir,{recursive:true});
+      fs.writeFileSync(path.join(dir,`home-fresh-height-${viewport.name}.json`),JSON.stringify({viewport,foldedPage:closedHeight,expandedPage:info.documentHeight,reduction:info.documentHeight-closedHeight,expandedSection:info.block.height},null,2));
+    }
+    check(where,info.documentHeight-closedHeight>=500,`folding removes ${info.documentHeight-closedHeight}px from the page while keeping the content available`);
     check(where, info.cards.length === 3 && new Set(info.kinds).size === 3 && info.kinds.join() === 'home-fresh-card--study,home-fresh-card--scheme,home-fresh-card--journal', `three cards with three different forms: ${info.kinds.join()}`);
     check(where, info.cards.every(card => card.height >= 44 && card.right <= viewport.width) && info.overflow <= 1, `every card is tall enough to tap and fits the screen: ${JSON.stringify(info.cards)}`);
     check(where, info.thumb.width >= 100 && info.thumb.height >= 30, `the chart thumbnail is readable: ${JSON.stringify(info.thumb)}`);
@@ -3371,7 +3392,10 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
     } else {
       // Телефон: картки одна під одною, блок вищий не більш ніж на 150 px.
       check(where, new Set(info.cards.map(card => card.x)).size === 1 && info.cards[0].y < info.cards[1].y && info.cards[1].y < info.cards[2].y, 'on the phone the cards are stacked');
-      if (viewport.width === 390) check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
+      if (viewport.width === 390) {
+        check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
+        check(where,closedHeight<=viewport.height*3.5,`the folded home is no taller than 3.5 phone screens (${closedHeight}px)`);
+      }
     }
     await artifact(page, viewport, 'home-fresh-cards', page.locator('.home-fresh'));
     check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
@@ -3384,6 +3408,13 @@ async function homeFreshFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-31: на головній є блок «Нове на сайті»; дрібний текст не менший за 12 px; терміни мають зону дотику 44 px.
   const where = `home fresh @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const fold=page.locator('.home-fresh-fold');
+  const summary=fold.locator('summary');
+  check(where,!(await fold.evaluate(node=>node.open))&&await summary.evaluate(node=>node.getBoundingClientRect().height>=44),'the secondary update block starts folded behind a full-size native control');
+  await summary.scrollIntoViewIfNeeded();
+  await artifact(page,viewport,'home-fresh-folded',fold);
+  await summary.click();
+  check(where,await fold.evaluate(node=>node.open),'the update block opens from its summary');
   await page.locator('.home-fresh').scrollIntoViewIfNeeded();
   const cards = await page.locator('.home-fresh-card').evaluateAll(els => els.map(e => ({h: Math.round(e.getBoundingClientRect().height), href: e.getAttribute('href'), right: e.getBoundingClientRect().right})));
   check(where, cards.length === 3 && cards.every(c => c.h >= 44 && c.right <= viewport.width), 'three cards fit the screen and are tall enough to tap');
@@ -4508,6 +4539,11 @@ async function homeLinkTextFlow(browser, origin, viewport) {
     };
     const home = await read();
     verify(home, {'spectrum-question-open': 3, 'spectrum-route-start': 1, 'path-start': 3, 'home-fresh-go': 3}, 'home');
+    if(viewport.width<=700){
+      const positions=await page.locator('.spectrum-question').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right};}));
+      check(where,positions.length===3&&Math.max(...positions.map(item=>item.left))-Math.min(...positions.map(item=>item.left))<=1,'the three mobile questions share one left edge');
+      check(where,positions.every((item,index)=>index===0||item.top>positions[index-1].top)&&positions.every(item=>item.right<=viewport.width),'the questions form a vertical sequence without horizontal overflow');
+    }
     check(where, home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').every(item => item.height >= 44), 'route start buttons must stay tappable (44px)');
     const routeLabels = home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').map(item => item.label);
     check(where, routeLabels.every(text => /^Почати маршрут: .{4,}/u.test(text)), `route buttons must name the first step: ${routeLabels.join(' | ')}`);
@@ -4753,6 +4789,8 @@ async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLinkTextFlow, browser, origin, viewport);
   // T7 (2026-11-02): поле пошуку в героєві; 360 і 320 px (підказка у два рядки, найвужчі телефони) і 600 px (підказка в один рядок, найвужчий «широкий» вигляд).
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}, {name: 'mobile-tiny', width: 320, height: 640}, {name: 'tablet-small', width: 600, height: 900}, {name: 'tablet', width: 720, height: 900}]) await isolatedFlow(heroSearchFlow, browser, origin, viewport);
+  for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow,browser,origin,viewport);
+  for (const viewport of viewports) await isolatedFlow(homeFreshFlow,browser,origin,viewport);
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
   await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});

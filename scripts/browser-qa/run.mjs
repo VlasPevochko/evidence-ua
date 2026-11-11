@@ -2735,11 +2735,12 @@ async function intervalMotifFlow(browser, origin, viewport) {
     await page.locator('.home-fresh').scrollIntoViewIfNeeded();
     const rules = await page.evaluate(() => [...document.querySelectorAll('.eua-interval-rule')].map(rule => {
       const box = rule.getBoundingClientRect(), style = getComputedStyle(rule), next = rule.nextElementSibling;
-      return {width: Math.round(box.width), right: Math.round(box.right), height: Math.round(box.height), hidden: rule.getAttribute('aria-hidden') === 'true', drawn: style.backgroundImage.includes('radial-gradient') && style.backgroundImage.includes('linear-gradient'), next: next && (next.className || next.tagName), animated: style.animationName !== 'none' || parseFloat(style.transitionDuration) > 0};
+      const fresh = next?.querySelector('.home-fresh');
+      return {width: Math.round(box.width), right: Math.round(box.right), height: Math.round(box.height), hidden: rule.getAttribute('aria-hidden') === 'true', drawn: style.backgroundImage.includes('radial-gradient') && style.backgroundImage.includes('linear-gradient'), next: fresh ? fresh.className : next && (next.className || next.tagName), freshDisclosure: fresh ? next.matches('details.home-fresh-fold') : false, animated: style.animationName !== 'none' || parseFloat(style.transitionDuration) > 0};
     }));
     check(where, rules.length === 2, `two interval rules on the home, found ${rules.length}`);
     check(where, rules.every(rule => rule.hidden && rule.drawn && !rule.animated && rule.width >= 120 && rule.right <= viewport.width && rule.height >= 10 && rule.height <= 20), `the rules are decorative, drawn, still and fit the screen: ${JSON.stringify(rules)}`);
-    check(where, rules.map(rule => rule.next).join('|') === 'home-fresh|home-library-section', `the rules stand before «Нове на сайті» and before the library: ${rules.map(rule => rule.next).join('|')}`);
+    check(where, rules.map(rule => rule.next).join('|') === 'home-fresh|home-library-section'&&rules[0].freshDisclosure, `the rules stand before «Нове на сайті» (inside its compact disclosure) and before the library: ${rules.map(rule => rule.next).join('|')}`);
     check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
     await artifact(page, viewport, 'interval-rule-home', page.locator('.eua-interval-rule').first());
     check(where, home.seen.pageErrors.length === 0 && home.seen.external.length === 0, 'home: no errors and no third-party requests');

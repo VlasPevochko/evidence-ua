@@ -80,7 +80,7 @@ assert(!/animation|transition/.test(css),'the thumbnail has no motion');
 const home=fs.readFileSync('dist/index.html','utf8'),fresh=fs.readFileSync('dist/home-fresh.css','utf8');
 const rules=[...home.matchAll(/<hr class="eua-interval-rule" aria-hidden="true">/g)];
 assert.equal(rules.length,2,'two interval rules: before «Нове на сайті» and before the library');
-assert(home.indexOf('<hr class="eua-interval-rule" aria-hidden="true"><section class="home-fresh"')>0&&/<hr class="eua-interval-rule" aria-hidden="true">\s*<section class="home-library-section"/.test(home),'the rules stand between the big blocks');
+assert(home.indexOf('<hr class="eua-interval-rule" aria-hidden="true"><details class="home-fresh-fold"')>0&&/<hr class="eua-interval-rule" aria-hidden="true">\s*<section class="home-library-section"/.test(home),'the rules stand between the big blocks');
 assert(!/<hr[^>]*eua-interval-rule[^>]*>[\s\S]{0,5}<hr/.test(home),'no two rules in a row');
 assert(/\.eua-interval-rule\{[^}]*height:14px[^}]*radial-gradient[^}]*linear-gradient/.test(fresh)&&!/animation|transition/.test(fresh.slice(fresh.indexOf('T1 (2026-11-02)'))),'the rule is a hairline with a point and whisker caps, without motion');
 assert(Number((home.match(/home-fresh\.css\?v=(\d+)/)||[])[1])>=2,'the home stylesheet version was raised (at least 2)'); // 2026-11-02: «не нижча за 2», бо наступні зміни стилів блоку «Нове» піднімають версію далі (T4: v=3)

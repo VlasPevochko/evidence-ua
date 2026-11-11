@@ -88,7 +88,7 @@ assert(!/animation|transition|@keyframes/.test(mine),'the new cards have no moti
 assert(!/font-size:(9|10|11)px/.test(mine)&&!/https?:\/\//.test(mine),'text not under 12px, no third-party requests');
 assert(/grid-template-columns:minmax\(0,1fr\) minmax\(0,1\.55fr\) minmax\(0,1fr\)/.test(mine),'the middle card is wider on the desktop');
 assert(/@media\(max-width:860px\)\{[^}]*grid-template-columns:1fr/.test(mine),'the cards stack on narrow screens');
-assert(index.includes('./home-fresh.css?v=3'),'the stylesheet version was raised');
+assert(index.includes('./home-fresh.css?v=4'),'the stylesheet version was raised');
 
 // 7. Журнал і документ.
 assert(fs.readFileSync('dist/changes-data.js','utf8').includes('Три різні картки в блоці «Нове на сайті»'),'the change log has a record');

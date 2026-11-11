@@ -1,5 +1,12 @@
 /* Головна, рішення власника 2026-10-31: блок «Нове на сайті» і виправлення дрібного тексту. Колір лишається космічним (відповідно до рішення власника). */
-body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh{margin:18px 0 0;padding:26px 14px 22px;border:1px solid #b294c840;border-radius:2px;background:linear-gradient(110deg,#291a341f,transparent 70%)}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh-fold{margin:18px 0 0;border:1px solid #b294c840;border-radius:2px;background:linear-gradient(110deg,#291a341f,transparent 70%)}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh-fold>summary{display:flex;align-items:center;gap:12px;min-height:64px;padding:14px;cursor:pointer;color:#f7f3ef}
+body[data-platform-area="home"] .home-fresh-fold>summary:focus-visible{outline:2px solid #f4dbff;outline-offset:3px}
+body[data-platform-area="home"] .home-fresh-fold>summary::marker{color:#d1a5ff}
+body[data-platform-area="home"] .home-fresh-fold-copy{display:grid;gap:4px;min-width:0}
+body[data-platform-area="home"] .home-fresh-fold-title{font:400 22px/1.2 var(--spectrum-serif,Georgia,serif);color:#f7f3ef}
+body[data-platform-area="home"] .home-fresh-fold-hint{font:400 12px/1.5 Inter,system-ui,sans-serif;color:#c3b9d1}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh{margin:0;padding:0 14px 22px;border:0;border-radius:0;background:none}
 body[data-platform-area="home"] .home-fresh-eyebrow{margin:0 0 8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#cdb8e0}
 body[data-platform-area="home"] .home-fresh h2{margin:0 0 18px;font:400 clamp(26px,3vw,36px)/1.15 var(--spectrum-serif,Georgia,serif);color:#f7f3ef}
 body[data-platform-area="home"] .home-fresh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -13,7 +20,7 @@ body[data-platform-area="home"] .home-fresh-go{margin-top:4px;font-size:14px;col
 body[data-platform-area="home"] .home-fresh-latest{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px;margin:16px 0 0;padding:14px 0 0;list-style:none;border-top:1px solid #b294c826;font-size:14px}
 body[data-platform-area="home"] .home-fresh-latest li:first-child{color:#cdb8e0}
 body[data-platform-area="home"] .home-fresh-latest a{display:inline-flex;align-items:center;min-height:44px;color:#e7dcf3;text-underline-offset:4px}
-@media(max-width:860px){body[data-platform-area="home"] .home-fresh-grid{grid-template-columns:1fr}body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh{padding:22px 24px 18px}}
+@media(max-width:860px){body[data-platform-area="home"] .home-fresh-grid{grid-template-columns:1fr}body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh{padding:0 24px 18px}}
 /* Дрібний текст: підписи не менші за 12 px (раніше 10–11 px). */
 body[data-platform-area="home"] .start-eyebrow,body[data-platform-area="home"] .supplement-eyebrow,body[data-platform-area="home"] [aria-labelledby="eua-atlas-teaser-title"] span,body[data-platform-area="home"] footer.mission span{font-size:12px!important}
 /* Терміни в тексті: розмір тексту не змінюємо, а зону дотику роблять 44 px невидимі поля. */
@@ -59,4 +66,4 @@ body[data-platform-area="home"] :is(.home-fresh-card--study,.home-fresh-card--sc
 body[data-platform-area="home"] .home-fresh-card--study .home-fresh-foot,body[data-platform-area="home"] .home-fresh-card--scheme .home-fresh-go,body[data-platform-area="home"] .home-fresh-card--journal .home-fresh-go{margin-top:auto}
 @media(max-width:860px){body[data-platform-area="home"] .home-fresh-grid{grid-template-columns:1fr}body[data-platform-area="home"] .home-fresh-card{padding:14px 16px 14px;gap:6px}}
 /* T4: на телефоні поле блоку вужче (24 → 14 px), щоб картки були ширшими й текст у них займав менше рядків. */
-@media(max-width:560px){body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh{padding:22px 14px 18px}}
+@media(max-width:560px){body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh{padding:0 14px 18px}body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh-fold>summary{padding:14px}}

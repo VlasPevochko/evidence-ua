@@ -144,8 +144,8 @@ async function homeModule(searchImport=new URL('../src/platform/search.mjs',impo
   // controller; only resolve its generated browser path to its source module.
   const wave='data:text/javascript,export const mountSpectrumWave=()=>()=>{};';
   const source=(await fs.readFile(new URL('../dist/home-spectrum.js',import.meta.url),'utf8'))
-    .replace('./home-spectrum-wave.mjs?v=1',wave)
-    // 2026-11-02 (пошук у шапці головної, T7): пошук піднято до v=15; 2026-11-10 (Атлас у пошуку): v=16 (матеріали v=107), тож підміняється саме він.
+    .replace('./home-spectrum-wave.mjs?v=2',wave)
+    // 2026-11-10: wave renderer v=2; search v=16 after the Atlas search update.
     .replace('./platform-search.js?v=16',searchImport);
   return import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 }

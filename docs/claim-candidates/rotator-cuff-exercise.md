@@ -37,4 +37,12 @@ Wording rules from the review pack: no "treats", "cures" or "prevents". The stat
 4. Check for newer or Cochrane-level reviews and for retractions/corrections.
 5. Clinician review of the final wording. Mapping to library entries (for example the rotator-cuff complex, scapular control) is a separate step: a review of a programme does not prove that a single video exercise has the same effect.
 
+## 5. Update 2026-11-10: full texts of reviews 3 and 4 read
+
+Open full texts of review 3 (Zhong 2024, PMC10940535) and review 4 (Zhang 2025, PMC12715924) were read for the owner's decision «1-4 так». Details and the trial-overlap table: `docs/claim-candidates/atlas-shoulder-trial-overlap.md`. This changes three notes above (the text above is kept as written on 2026-10-18):
+
+- **Overlap.** Reviews 3 and 4 share only 3 of 22 distinct trials (Başkurt 2011, Hotta 2020, Struyf 2013), so they are largely independent. Reviews 1, 2 and 5 are not checked (no open full text); open issue 1 above remains for them.
+- **Review 3 (Zhong).** The authors' own GRADE table rates pain as low certainty (7 studies, 327 participants) and function as very low (3 studies, 150), while the conclusion says "moderate evidence". Six of the nine trials are recorded as "CG + SSE", i.e. scapular stabilisation exercises added to the comparison programme.
+- **Review 4 (Zhang).** It compares exercise types only (no inactive control; combinations with passive modalities are excluded), so it cannot support an "exercise versus no treatment" statement. The top rank of concentric strengthening rests on two small trials (16 and 14 participants in the concentric arms); the authors call for caution.
+
 Source for retrieval: PubMed (NCBI). Attribution: article details come from PubMed records.

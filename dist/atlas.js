@@ -93,7 +93,7 @@ const spineContent={
  ])}`,
  anatomy:()=>`<div data-spine-hub class="atlas-practice"><p class="atlas-practice-status">Завантаження розділу…</p></div>`,
  symptoms:()=>`<div class="atlas-alert"><h3>Коли звернутися по медичну допомогу</h3><p>Більшість епізодів болю в спині не пов’язані з небезпечними станами, але є ознаки, за яких не слід чекати чи займатися самостійно. Зверніться до лікаря, а за вираженого погіршення викличте швидку допомогу:</p><ul><li>нове оніміння або слабкість у ногах чи руках, що наростає;</li><li>оніміння в ділянці промежини, нетримання або утруднення сечовипускання чи дефекації;</li><li>сильний біль після травми (падіння, удару, аварії);</li><li>біль разом із підвищеною температурою або іншими ознаками інфекції;</li><li>незрозуміла втрата ваги або онкологічне захворювання в минулому;</li><li>сильний біль, який не вщухає в спокої, посилюється вночі або швидко наростає;</li><li>біль у грудях чи утруднене дихання разом із болем у спині.</li></ul><p class="atlas-muted">Це не повний перелік і не діагностика. Матеріал — редакційна чернетка для перегляду фахівцем.</p></div><div class="atlas-copy-card"><h3>Точка болю не дорівнює джерелу болю</h3><p>Біль у спині може відчуватися не там, де його причина, а схожий біль можуть давати різні стани. Тому ця зона не пропонує вибрати точку болю й не підказує діагноз.</p></div><div class="atlas-copy-card"><h3>Як обрати фахівця</h3><p>За потреби зверніться до лікаря (сімейного, невролога, ортопеда) або до ліцензованого фізіотерапевта. Перевірте ліцензію та досвід у вашій ситуації.</p></div>`,
- training:()=>`<div class="atlas-alert"><strong>Спершу про безпеку.</strong><p>Перед будь-якими вправами перегляньте <button type="button" class="atlas-link-button" data-goto-tab="symptoms">«Коли звернутися по медичну допомогу»</button>.</p></div><div class="atlas-copy-card"><h3>Практика</h3><p>Нижче — вправи з Бібліотеки вправ як освітні приклади для цієї зони. Це не персональні призначення: вони не підбираються за місцем болю, не обіцяють результату й не замінюють оцінку фахівця. Поради до вправ — редакційна чернетка.</p></div><div class="atlas-practice" data-related-practice="spine"><p class="atlas-practice-status">Завантаження списку вправ…</p></div>`
+ training:()=>`<div class="atlas-alert"><strong>Спершу про безпеку.</strong><p>Перед будь-якими вправами перегляньте <button type="button" class="atlas-link-button" data-goto-tab="symptoms">«Коли звернутися по медичну допомогу»</button>.</p></div><div class="atlas-copy-card"><h3>Практика</h3><p>Нижче — вправи з Бібліотеки вправ як освітні приклади для цієї зони. Це не персональні призначення: вони не підбираються за місцем болю, не обіцяють результату й не замінюють оцінку фахівця. Поради до вправ — редакційна чернетка.</p><p class="atlas-muted">Вправи охоплюють рухливість грудного відділу, силове навантаження на розгиначі спини та інтегрований рух усього тулуба.</p></div><div class="atlas-practice" data-related-practice="spine"><p class="atlas-practice-status">Завантаження списку вправ…</p></div>`
 };
 
 // Для зон без власного модуля («Готується») заглушок на кожну вкладку більше немає (рішення власника 2026-11-10, п. 3): одна вкладка «Огляд» з посиланнями
@@ -210,13 +210,20 @@ async function hydrateRelatedPractice(){
   const {exercises,contentTypes}=await import('./exercises-data.js?v=4');
   if(!box.isConnected||selectedZone!==zone)return;
   const related=exercises.filter(item=>item.atlasZones.includes(zone));
-  const heading=document.createElement('h3');heading.textContent='Пов’язані вправи';
+  const heading=document.createElement('h3');heading.textContent='Пов’язані вправи з бібліотеки';
   const list=document.createElement('ul');list.className='atlas-practice-list';
   for(const item of related){
-   const li=document.createElement('li');
-   const link=document.createElement('a');link.href=`./exercises.html?e=${encodeURIComponent(item.slug)}`;link.textContent=item.titleUk;
-   const kind=document.createElement('span');kind.textContent=` · ${contentTypes[item.contentType]||item.contentType}`;
-   li.append(link,kind);list.append(li);
+   const li=document.createElement('li');li.className='atlas-practice-item';
+   const info=document.createElement('div');info.className='atlas-practice-info';
+   const link=document.createElement('a');link.href=`./exercises.html?e=${encodeURIComponent(item.slug)}`;link.className='atlas-practice-link';link.textContent=item.titleUk;
+   const desc=document.createElement('p');desc.className='atlas-practice-desc';desc.textContent=item.shortDescriptionUk||'';
+   info.append(link,desc);
+   const meta=document.createElement('div');meta.className='atlas-practice-meta';
+   const kind=document.createElement('span');kind.className='atlas-practice-badge';kind.textContent=contentTypes[item.contentType]||item.contentType;
+   const arrow=document.createElement('span');arrow.className='atlas-practice-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='→';
+   meta.append(kind,arrow);
+   li.append(info,meta);
+   list.append(li);
   }
   box.replaceChildren(heading,list,library());
  }catch{

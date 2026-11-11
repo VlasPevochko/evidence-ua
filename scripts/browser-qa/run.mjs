@@ -2062,7 +2062,7 @@ async function lensSnapshot(page) {
     const interior = section.querySelector('.home-lens-interior');
     const action = section.querySelector('[data-lens-reveal]');
     const stageRect = rect(stage), actionRect = rect(action);
-    const bridgeWidth = parseFloat(getComputedStyle(section.querySelector('.home-lens-core'),'::before').width);
+    const coreOverlay = getComputedStyle(section.querySelector('.home-lens-core'),'::before').content !== 'none';
     // Resolve the computed clip, then measure the actual image's visible edge.
     // A transform on a transparent overlay cannot satisfy this geometry gate.
     const halves = [...section.querySelectorAll('.home-lens-half')].map(node => {
@@ -2092,7 +2092,7 @@ async function lensSnapshot(page) {
         pointerEvents:getComputedStyle(action).pointerEvents,
         onScreen:actionRect.left>=0 && actionRect.right<=innerWidth && actionRect.top>=0 && actionRect.bottom<=innerHeight},
       progress: Number(getComputedStyle(section).getPropertyValue('--lens-progress')),
-      bridgeWidth,
+      coreOverlay,
       top: box.top, scrollY, overflow: document.documentElement.scrollWidth - innerWidth,
       cards: [...section.querySelectorAll('#cards > a.topic-card')].map(node => {
         const rect = node.getBoundingClientRect();
@@ -2190,12 +2190,13 @@ async function homeLensFlow(browser, origin, viewport) {
     check(where,!(await panel.isVisible())&&await page.locator('#cards>a:visible').count()===0,'directions must start outside page layout, pointer and keyboard navigation');
     await positionLensOnset(page,{before:2});
     const closed=await lensSnapshot(page);
-    check(where,closed.progress<=.01&&Math.abs(closed.gap)<=1&&closed.interior.opacity===0&&!closed.action.centerHit,'the two real image halves must begin joined with no invisible core hit');
+    check(where,closed.progress<=.01&&Math.abs(closed.gap)<=1&&closed.interior.opacity===0&&!closed.action.centerHit&&!closed.coreOverlay,'the two real image halves must begin joined without a duplicate lens overlay');
+    await artifact(page,viewport,'home-lens-closed',page.locator('[data-lens-stage]'),{scroll:false});
     await page.mouse.move(viewport.width/2,viewport.height/2);
     await page.mouse.wheel(0,128);await page.waitForTimeout(240);
     const middle=await lensSnapshot(page);
     check(where,middle.progress>closed.progress&&middle.progress<1&&middle.gap>closed.gap+20,'native scrolling must still separate the actual image halves');
-    check(where,closed.bridgeWidth<=1&&Math.abs(middle.bridgeWidth-middle.gap)<=1,'the original centre pixels fill the exact opening without a dark seam');
+    check(where,!middle.coreOverlay&&middle.gap>20,'the widening center opens onto the nebula instead of showing a smaller closed copy of the lens');
     check(where,!(await panel.isVisible())&&middle.cards.every(card=>!card.visible&&card.width===0),'partial reveal must never expose a direction');
     await artifact(page,viewport,'home-lens-opening',page.locator('[data-lens-stage]'));
     const beforeOpen=await page.evaluate(()=>scrollY);
@@ -2224,9 +2225,10 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.locator('[data-home-lens][data-lens-ready]').waitFor({state:'attached'});
     await positionLensOnset(page,{before:2});await page.mouse.wheel(0,324);await page.waitForTimeout(260);
     const full=await lensSnapshot(page);
-    check(where,full.progress===1&&full.gap>100&&full.halves.every(half=>half.loaded),'the short native reveal must retain loaded, substantially separated artwork');
+    check(where,full.progress===1&&full.gap>100&&!full.coreOverlay&&full.halves.every(half=>half.loaded),'the short reveal must leave a clear nebula opening between the separated lens halves');
     check(where,!(await panel.isVisible())&&full.cards.every(card=>!card.visible),'even full scroll reveal keeps choices closed');
     checkLensAction(where,full,{onScreen:true});
+    await artifact(page,viewport,'home-lens-fully-open',page.locator('[data-lens-stage]'));
     const idle=await page.locator('[data-home-lens]').getAttribute('style');
     await page.waitForTimeout(350);
     check(where,await page.locator('[data-home-lens]').getAttribute('style')===idle,'the decorative lens must settle without idle style writes');

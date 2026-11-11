@@ -39,8 +39,14 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
   position:absolute;z-index:1;left:50%;top:50%;width:270px;height:270px;
   transform:translate(-50%,-50%);isolation:isolate;
 }
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-core::before{
+  content:"";position:absolute;z-index:1;top:0;bottom:0;left:50%;
+  width:calc(var(--lens-progress)*var(--lens-travel)*2);
+  transform:translateX(-50%);pointer-events:none;
+  background:url(./home-lens-core.webp) center/270px 270px no-repeat;
+}
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half{
-  position:absolute;inset:0;will-change:auto;
+  position:absolute;z-index:0;inset:0;will-change:auto;
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--left{
   clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)*-1));

@@ -40,5 +40,6 @@ assert.equal(structure.library,1);assert(structure.libraryClosed);assert.equal(s
 assert.equal(structure.choicesDirect,1,'Continue/saved insertion anchor must stay outside closed details');
 // Owner-approved stage timing and visual polish need fresh assets for returning visitors.
 assert.deepEqual(structure.styles,['./home-lens.css?v=6']);
-assert.deepEqual(structure.scripts,['./home-lens.js?v=6']);
+// 2026-11-11: home-lens.js v=6 -> v=7: the earlier mobile lens action (src/platform/home-lens.mjs) must reach returning visitors. This assertion stays on its own line: it used to sit inside the previous comment, so it never ran.
+assert.deepEqual(structure.scripts,['./home-lens.js?v=7']);
 console.log('Home lens layout: split lazy art and accessible interior, six canonical native links, accessible jump, compact retained routes/library and cache wiring passed.');

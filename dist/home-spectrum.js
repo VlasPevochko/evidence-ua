@@ -1,4 +1,4 @@
-import {mountSpectrumWave} from './home-spectrum-wave.mjs?v=1';
+import {mountSpectrumWave} from './home-spectrum-wave.mjs?v=2';
 
 const mounts=new WeakMap();
 const plainActivation=event=>!event.defaultPrevented&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey&&(event.button==null||event.button===0);

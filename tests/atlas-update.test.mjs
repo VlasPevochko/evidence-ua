@@ -32,6 +32,14 @@ assert(/\.atlas-topic-icon::before\s*\{[^}]*background:\s*url\("\.\/atlas-should
 assert(/--atlas-figure-h:\s*clamp\(31rem,\s*min\(51vw,\s*calc\(100vh\s*-\s*17\.5rem\)\),\s*43rem\)/.test(css), 'the figure height follows the window height as well as its width');
 assert(css.includes('min-height: var(--atlas-figure-h)') && css.includes('max-width: calc(var(--atlas-figure-h) * .586)'), 'the figure and its canvas share one height variable');
 
+// «Зелений» вигляд (2026-11-10, рішення «1-5 так», п. 4): власний блок змінних Атласу для зеленої палітри; контраст у ньому міряє atlasPaletteFlow.
+{
+  const green = css.match(/html\[data-palette="green"\] body\[data-platform-area="atlas"\] \{([^}]*)\}/);
+  assert(green, 'the green palette has its own Atlas variable block');
+  for (const name of ['--atlas-page-bg', '--atlas-panel', '--atlas-surface', '--atlas-border', '--atlas-blue', '--atlas-active']) assert(new RegExp(name + ':\\s*#[0-9a-f]{6}').test(green[1]), `the green block sets ${name}`);
+  assert(/--atlas-page-bg:\s*#091612/.test(green[1]), 'the green surface is the dark green one the palette flow checks');
+}
+
 // ── 1) Шрифти не менші за 12 px (аудит: 9–11,5 px) — у стилях Атласу й обох карт болю.
 const fontSizes = text => [...text.matchAll(/font-size:\s*(clamp\(\s*)?([\d.]+)(rem|px)/g)].map(m => ({value: Number(m[2]) * (m[3] === 'rem' ? 16 : 1), raw: m[0]}));
 for (const [name, text] of [['atlas-redesign.css', css], ['atlas-diagrams.css', diagramCss], ['shoulder-pain-map.css', read('dist/shoulder-pain-map.css')], ['knee-pain-map.css', read('dist/knee-pain-map.css')]]) {

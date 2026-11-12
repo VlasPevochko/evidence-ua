@@ -20,10 +20,14 @@ const points=fs.readFileSync('src/atlas/points.mjs','utf8');
 const diagrams=fs.readFileSync('src/atlas/diagrams.mjs','utf8');
 
 const zones=[...html.matchAll(/data-zone="([^"]+)"/g)].map(match=>match[1]);
-assert.deepEqual(zones,['brain','shoulder','spine','muscles','gut','knee']);
+// 2026-11-12 (рішення власника «з першого до 12 одним PR», п. 10 аудиту): кнопки зон у розмітці стоять у тому самому порядку, у якому вони розташовані на фігурі згори вниз
+// (мозок, плече, хребет, ШКТ, м'язи, коліно), тож Tab і читач з екрана ідуть за картиною. Раніше «М'язи» стояли перед «ШКТ», хоча ШКТ на фігурі вище.
+// Порядок у zoneMeta (atlas.js) від цього не залежить: він визначає лише групування в «Стані атласу».
+assert.deepEqual(zones,['brain','shoulder','spine','gut','muscles','knee']);
 assert.match(html,/data-zone="shoulder"[^>]*aria-pressed="true"/);
 // 2026-11-10 (п. 2): бічну колонку з 6 плитками-дублями прибрано; заголовок і вступ стоять над фігурою в одній колонці сцени.
-assert.match(html,/<div class="atlas-stage">[\s\S]*?<h1 id="atlas-title">Атлас Evidence<\/h1>/);
+// h1 має tabindex="-1" (2026-11-12, п. 9): це ціль посилання «Перейти до змісту», яку можна сфокусувати кодом, але яка не стає зайвою зупинкою Tab.
+assert.match(html,/<div class="atlas-stage">[\s\S]*?<h1 id="atlas-title" tabindex="-1">Атлас Evidence<\/h1>/);
 assert(!html.includes('atlas-sidebar')&&!html.includes('data-atlas-shortcut')&&!html.includes('atlas-evidence-footer'),'no tile column, no tab-duplicating shortcuts, no principles strip');
 assert.deepEqual([...html.matchAll(/data-atlas-view="([^"]+)"/g)].map(match=>match[1]),['front','back']);
 assert.match(html,/src="\.\/atlas-body-views\.webp"/);
@@ -37,7 +41,8 @@ assert(html.includes('id="atlas-breadcrumb"'),'Atlas breadcrumb is required');
 for(const title of ['Ротаторна манжета','Субакроміальний біль','Нестабільність плеча','Біцепс','AC-суглоб']){
   assert(points.includes(title),`Missing shoulder topic: ${title}`);
 }
-for(const title of ['Пателофеморальний біль','Меніски','ACL','Сухожилок надколінка','Остеоартроз коліна']){
+// 2026-11-12 (п. 4 аудиту): картка «ACL» названа повністю українською: «Передня хрестоподібна зв'язка» (скорочення «ACL» пояснено на самій картці).
+for(const title of ['Пателофеморальний біль','Меніски','Передня хрестоподібна зв’язка','Сухожилок надколінка','Остеоартроз коліна']){
   assert(points.includes(title),`Missing knee topic: ${title}`);
 }
 // Оновлення Атласу 2026-11-10 (п. 3): запланованих тем для «Хребта» й «М’язів» у atlas.js більше немає (вони мають власний зміст), лишились «Мозок» і «ШКТ»;

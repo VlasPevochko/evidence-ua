@@ -97,7 +97,8 @@ for (const forbidden of ['допоможе', 'лікує', 'гарантує', '
 // ── 4) Картки тем плеча й коліна ведуть до точок карти болю, де збіг очевидний.
 const pointOf = zone => Object.fromEntries((zone === 'shoulder' ? shoulderTopics : kneeTopics).map(topic => [topic.title, topic.point || null]));
 assert.deepEqual(pointOf('shoulder'), {'Ротаторна манжета': 'posterior-cuff', 'Субакроміальний біль': 'lateral-deltoid', 'Нестабільність плеча': 'anterior-gh', 'Біцепс': 'bicipital-groove', 'AC-суглоб': 'ac-joint'}, 'every shoulder topic leads to its own point');
-assert.deepEqual(pointOf('knee'), {'Пателофеморальний біль': 'anterior-patella', 'Меніски': 'medial-joint-line', 'ACL': null, 'Сухожилок надколінка': 'inferior-patella', 'Остеоартроз коліна': null}, 'knee topics lead to a point only where one names the structure (no point for ACL and osteoarthritis, they stay reference cards)');
+// 2026-11-12 (п. 4 аудиту): картка «ACL» названа «Передня хрестоподібна зв’язка» (скорочення ACL стоїть на самій картці й лишається словом для пошуку); точки в неї, як і раніше, немає.
+assert.deepEqual(pointOf('knee'), {'Пателофеморальний біль': 'anterior-patella', 'Меніски': 'medial-joint-line', 'Передня хрестоподібна зв’язка': null, 'Сухожилок надколінка': 'inferior-patella', 'Остеоартроз коліна': null}, 'knee topics lead to a point only where one names the structure (no point for ACL and osteoarthritis, they stay reference cards)');
 for (const zone of ['shoulder', 'knee']) for (const [title, point] of Object.entries(pointOf(zone))) assert(!point || findPoint(zone, point), `${title}: the point exists`);
 assert.equal(new Set(Object.values(pointOf('shoulder'))).size, 5, 'no two shoulder topics share a point');
 assert(js.includes("document.dispatchEvent(new CustomEvent('atlas:goto-point'") && js.includes("'atlas:clear-point'") && js.includes('data-atlas-topics'), 'cards, the way back «← Усі теми» and the maps talk through events');
@@ -122,9 +123,12 @@ for (const [zone, stage] of Object.entries(stages)) {
     const spots = map.points.filter(p => p.view === view.id);
     assert(spots.length >= 1, `${zone}/${view.id}: the view has a point`);
     for (const p of spots) assert(p.x >= 4 && p.x <= 96 && p.y >= 4 && p.y <= 96, `${zone}/${p.id} is inside the stage`);
+    // 2026-11-12 (п. 3 аудиту): зона дотику точки — квадрат 44 × 44, а не коло. Раніше міряли відстань між центрами по прямій (≥ 44): «Передня частина суглоба» і «Передня борозна плеча»
+    // стояли за 52 px по прямій, але зсунуті по діагоналі (28 px по горизонталі, 43,9 по вертикалі), тож їхні квадрати перекривались на 16 × 0,3 px на 390 і 360 px (виміряно в браузері).
+    // Тепер два квадрати не перекриваються, якщо за однією з осей центри віддалені не менш ніж на 44 px.
     for (const [i, a] of spots.entries()) for (const b of spots.slice(i + 1)) {
-      const distance = Math.hypot((a.x - b.x) / 100 * stage.w, (a.y - b.y) / 100 * stage.h);
-      assert(distance >= 44, `${zone}/${view.id}: ${a.id} and ${b.id} are ${Math.round(distance)} px apart on the smallest stage (tap targets must not overlap)`);
+      const dx = Math.abs(a.x - b.x) / 100 * stage.w, dy = Math.abs(a.y - b.y) / 100 * stage.h;
+      assert(dx >= 44 || dy >= 44, `${zone}/${view.id}: ${a.id} and ${b.id} tap squares overlap on the smallest stage (${Math.round(dx)} × ${Math.round(dy)} px between centres; one of them must be at least 44)`);
     }
     for (const label of map[zone === 'shoulder' ? 'labels' : 'labels'].filter(l => l.view === view.id)) {
       assert(label.x >= 0 && label.x <= 100 && label.y >= 0 && label.y <= 100, `${zone}/${label.text}: the label is on the stage`);

@@ -67,7 +67,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 // Loaded from dist/, where the generated copies of the catalogue modules live.
 const defaultLoader=async()=>{
   // Розділи сторінок необов’язкові: якщо файл не завантажився, пошук працює по матеріалах і термінах.
-  const [mat,terms,gl,sec]=await Promise.all([import('./platform-materials.js?v=107'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js'),import('./platform-sections.js?v=3').catch(()=>({sections:[]}))]);
+  const [mat,terms,gl,sec]=await Promise.all([import('./platform-materials.js?v=108'),import('./platform-terms.js?v=4'),import('./platform-glossary-data.js'),import('./platform-sections.js?v=3').catch(()=>({sections:[]}))]);
   const extra=[...(gl.glossary?.movement||[]),...(gl.glossary?.sleep||[])];
   return {materials:mat.materials,findMaterials:mat.findMaterials,scoreFields:mat.scoreFields,searchKeywords:mat.searchKeywords,enoughMatches:mat.enoughMatches,kinds:mat.materialKinds,sections:sec.sections,terms:[...terms.TERMS,...extra]};
 };

@@ -8,7 +8,7 @@ const html=fs.readFileSync('dist/index.html','utf8');
 const css=fs.readFileSync('dist/home-spectrum.css','utf8');
 const entry=fs.readFileSync('dist/home-spectrum.js','utf8');
 const motion=fs.readFileSync('dist/home-spectrum-wave.mjs','utf8');
-assert(html.includes('home-spectrum.css?v=7')&&html.includes('home-spectrum.js?v=8'),'selected hero assets are wired'); // 2026-11-10: bump the entry after increasing the wave renderer to v=2 for slow idle drift.
+assert(html.includes('home-spectrum.css?v=7')&&html.includes('home-spectrum.js?v=9'),'selected hero assets are wired'); // 2026-11-10: bump the entry after increasing the wave renderer to v=2 for slow idle drift.
 for(const name of ['home-geo-hero.js','home-mobile-header.js','home-directions.js'])assert(!html.includes('src="./'+name),'obsolete home controllers are detached');
 assert(entry.includes('home-spectrum-wave.mjs?v=2'),'the active controller imports the tested ribbon renderer');
 assert(css.includes('home-spectrum-ribbon.webp')&&css.includes('radial-gradient'),'decorative static fallback survives missing Canvas/JavaScript');

@@ -10,7 +10,8 @@ import http from 'node:http';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium} from 'playwright-core';
-import {areas} from '../../src/platform/catalog.mjs';
+import {areas,catalog} from '../../src/platform/catalog.mjs';
+import {shoulderRouteFlow} from './shoulder-route.mjs';
 import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
@@ -24,6 +25,7 @@ process.on('uncaughtExceptionMonitor', error => annotateFailure(error.stack || e
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const dist = process.env.QA_DIST_DIRECTORY ? path.resolve(process.env.QA_DIST_DIRECTORY) : path.join(root, 'dist');
 const viewports = [{name: 'mobile', width: 390, height: 844}, {name: 'desktop', width: 1440, height: 900}];
+const shoulderViewports = [...viewports, {name: 'mobile-narrow', width: 360, height: 844}];
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
@@ -2379,6 +2381,7 @@ async function homeWaveFlow(browser, origin, viewport, {touch = false, reduced =
     await page.waitForFunction(y => scrollY > y + 20, before.scrollY);
     await waitForWaveIdle(page);
     const after = await waveSnapshot(page);
+    if (reduced && process.env.QA_HOME_WAVE_ONLY === '1') console.log(JSON.stringify({where,before,after}));
     check(where, after.scrollY > before.scrollY + 20, 'ordinary native input must move the document');
     check(where, after.visible, 'the wave must remain in view while its geometry is compared');
     check(where, after.width === before.width && after.height === before.height, 'scrolling must not resize the canvas backing buffer');
@@ -4297,7 +4300,7 @@ async function homeLowerFlow(browser, origin, viewport) {
   await examples.locator('summary').click();
   await toggleHomeFold(page,'#home-learning-paths',true);
   const starts=page.locator('#home-learning-paths .path-card>.path-start');
-  check(where,await starts.count()===3&&await starts.evaluateAll(nodes=>nodes.every(node=>{const rect=node.getBoundingClientRect();return rect.width>=44&&rect.height>=44;})),'all three route starts must remain visible without opening lesson outlines');
+  check(where,await starts.count()===catalog.paths.length&&await starts.evaluateAll(nodes=>nodes.every(node=>{const rect=node.getBoundingClientRect();return rect.width>=44&&rect.height>=44;})),'every catalog route start must remain visible without opening lesson outlines');
   check(where,await page.locator('.home-path-outline[open]').count()===0,'full lesson outlines must start folded to keep the route previews compact');
   const outline=page.locator('.home-path-outline').first(),outlineSummary=outline.locator('summary');
   await outlineSummary.focus();await page.keyboard.press('Enter');
@@ -4443,7 +4446,7 @@ async function homeRowsFlow(browser, origin, viewport) {
         };
       });
     });
-    check(where, rows.length === 6, `six rows carry a preview, found ${rows.length}`);
+    check(where, rows.length === catalog.paths.length + 3, `every route and the three service rows carry a preview, found ${rows.length}`);
     for (const row of rows) {
       const name = `${row.name} (${row.height}px)`;
       check(where, row.hintVisible && row.titleAbove, `${name}: the preview is visible under the title`);
@@ -4507,7 +4510,7 @@ async function homeLinkTextFlow(browser, origin, viewport) {
       for (const kind of Object.keys(expected)) { const set = labels.filter(item => item.kind === kind).map(item => item.label); check(where, new Set(set).size === set.length, `${stage}: the «${kind}» labels must differ from each other: ${set.join(' | ')}`); }
     };
     const home = await read();
-    verify(home, {'spectrum-question-open': 3, 'spectrum-route-start': 1, 'path-start': 3, 'home-fresh-go': 3}, 'home');
+    verify(home, {'spectrum-question-open': 3, 'spectrum-route-start': 1, 'path-start': catalog.paths.length, 'home-fresh-go': 3}, 'home');
     check(where, home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').every(item => item.height >= 44), 'route start buttons must stay tappable (44px)');
     const routeLabels = home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').map(item => item.label);
     check(where, routeLabels.every(text => /^Почати маршрут: .{4,}/u.test(text)), `route buttons must name the first step: ${routeLabels.join(' | ')}`);
@@ -4768,15 +4771,20 @@ const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
   ? {executablePath: process.env.BROWSER_EXECUTABLE, args: ['--no-sandbox']}
   : {channel: 'chrome'});
 try {
-  if (process.env.QA_SCREENSHOT_ONLY === '1') {
+  if (process.env.QA_SHOULDER_BASELINE === '1' || process.env.QA_SHOULDER_ONLY === '1') {
+    for (const viewport of shoulderViewports) await shoulderRouteFlow(browser, origin, viewport, {open, artifact, baseline:process.env.QA_SHOULDER_BASELINE === '1'});
+  } else if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
   } else if (sectionsOnly) {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
+  } else if (process.env.QA_HOME_WAVE_ONLY === '1') {
+    for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced:true,touch:viewport.name==='mobile'});
   } else if (homeOnly) {
     await homeFlows(browser, origin);
     for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);
     await isolatedFlow(homeLowerFlow, browser, origin, {name: 'mobile-narrow', width: 360, height: 844});
   } else {
+    for (const viewport of shoulderViewports) await isolatedFlow((browser,origin,viewport) => shoulderRouteFlow(browser,origin,viewport,{open,artifact}), browser, origin, viewport);
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
@@ -4854,6 +4862,14 @@ try {
   server.close();
 }
 
+if (process.env.QA_SHOULDER_BASELINE === '1') {
+  console.log('Shoulder baseline captured; no regression verdict.');
+  process.exit(0);
+}
+if (process.env.QA_SHOULDER_ONLY === '1') {
+  console.log('Focused shoulder route Browser QA passed at 360, 390 and 1440 px.');
+  process.exit(0);
+}
 if (process.env.QA_SCREENSHOT_ONLY === '1') {
   console.log('Historical-state screenshots captured; browser regression checks were not run.');
   process.exit(0);

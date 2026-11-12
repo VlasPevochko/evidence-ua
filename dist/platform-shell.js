@@ -1,8 +1,8 @@
-import './site-header.js?v=18';
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=107';
+import './site-header.js?v=19';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=108';
 import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=6';
 import {mountTerms} from './platform-terms.js?v=4';
-import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=100';
+import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=101';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
 const atlasLink=current=>`<a class="eua-atlas-link" href="./atlas.html"${current==='atlas'?' aria-current="page"':''}>Атлас</a>`;
@@ -42,7 +42,7 @@ export function articleBarHTML(){return '<a class="eua-article-back" href="./sup
 export function mountPlatformNavigation(root=document){
   if(root.defaultView&&root.defaultView.self!==root.defaultView.top)return;
   const head=root.head??root.document?.head;
-  if(head&&typeof head.append==='function'&&!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=86';css.dataset.platformStyle='';head.append(css);}
+  if(head&&typeof head.append==='function'&&!root.querySelector('link[data-platform-style]')){const css=root.createElement('link');css.rel='stylesheet';css.href='./platform.css?v=87';css.dataset.platformStyle='';head.append(css);}
   const selected=root.body.dataset.platformArea||null;
   // Keep the existing home hero height: compact header entries only.
   if(selected==='home'){
@@ -78,14 +78,20 @@ export function mountPlatformNavigation(root=document){
     root.querySelector('.eua-learning-nav')?.remove();
     const href=root.defaultView?.location?.href;
     if(href&&new URL(href).hash==='#home-learning-paths'){const routes=root.getElementById('home-learning-paths');if(routes)routes.open=true;}
-    const position=learningLocation(href);if(!position)return;
+    const position=learningLocation(href);
+    root.querySelectorAll('[data-shoulder-route-entry]').forEach(link=>{link.hidden=position?.path.id==='shoulder';});
+    if(!position)return;
     const anchor=new URL(position.step.href,href).hash.slice(1),target=anchor?root.getElementById(anchor):root.querySelector('main');if(!target)return;
     const nav=root.createElement('nav');nav.className='eua-learning-nav';nav.setAttribute('aria-label','Поточний маршрут навчання');nav.innerHTML=learningNavigationHTML(position);
-    if(anchor)target.before(nav);else target.prepend(nav);
+    if(position.path.id==='shoulder'){
+      const note=root.createElement('small');note.textContent='Приклади практики, не персональне призначення. Джерела наприкінці пояснюють модель руху; наукові твердження про вправи ще не оцінено.';nav.append(note);
+    }
+    // The Atlas detail is itself a grid item; a sibling nav would displace it to another row.
+    if(anchor && target.id!=='atlas-detail')target.before(nav);else target.prepend(nav);
   };
   const previous=learningListeners.get(root);
-  if(previous)for(const event of ['hashchange','popstate'])root.defaultView?.removeEventListener?.(event,previous);
-  renderLearning();for(const event of ['hashchange','popstate'])root.defaultView?.addEventListener(event,renderLearning);
+  if(previous)for(const event of ['hashchange','popstate','eua:locationchange'])root.defaultView?.removeEventListener?.(event,previous);
+  renderLearning();for(const event of ['hashchange','popstate','eua:locationchange'])root.defaultView?.addEventListener(event,renderLearning);
   learningListeners.set(root,renderLearning);
 }
 if(typeof document!=='undefined')mountPlatformNavigation();

@@ -59,6 +59,14 @@ export const areas = [
   {id:'evi',title:'Еві',group:'planned',available:false,state:'Заплановано',description:'Майбутній провідник у межах перевіреної доказової бази.',units:[]}
 ];
 export const learningPaths = [
+  {id:'shoulder',title:'Плече: від будови до практики',preview:'Будова · Рух · 2 приклади практики · Докази · Джерела',description:'Будова й рух плеча, два приклади практики та джерела навчального пояснення. Наукові твердження про вправи ще не оцінено.',steps:[
+    {href:'./atlas.html?zone=shoulder&tab=anatomy#atlas-detail',title:'Плече: будова й функція'},
+    {areaId:'movement',unitId:'shoulder'},
+    {href:'./exercises.html?e=kontrol-lopatky',title:'Контроль лопатки (активація лопатки)'},
+    {href:'./exercises.html?e=rotatorna-manzheta-kompleks',title:'Комплекс для ротаторної манжети'},
+    {href:'./index.html#evidence-guide-title',title:'Як читати докази'},
+    {areaId:'movement',unitId:'sources'}
+  ]},
   {id:'structure',title:'Будова і рух',description:'Послідовність для знайомства зі структурами.',steps:[{areaId:'cell',unitId:'general'},{areaId:'muscle',unitId:'structure'},{areaId:'muscle',unitId:'contraction'}]},
   {id:'energy',title:'Клітина та енергія',description:'Перехід від органели до волокна й окремого механізму.',steps:[{areaId:'cell',unitId:'mitochondrion'},{areaId:'muscle',unitId:'fiber'},{areaId:'supplements',unitId:'atp-pcr'}]},
   {id:'evidence',title:'Харчування і читання доказів',description:'Від навчальної схеми до джерел і розбору конкретної теми.',steps:[{areaId:'nutrition',unitId:'digestion'},{areaId:'supplements',unitId:'protein'},{href:'./protein-meta.html',title:'Розбір метааналізу білка'},{href:'./index.html#evidence-guide-title',title:'Як читати докази'}]}
@@ -92,6 +100,8 @@ export function learningLocation(href){
   const step=catalog.resolveStep(path.steps[index]),target=new URL(step.href,url);
   const route=p=>p.replace(/\/index\.html$/,'/').replace(/\.html$/,'').replace(/\/$/,'')||'/';
   if(route(url.pathname)!==route(target.pathname)||url.hash!==target.hash)return null;
+  // A lesson is a particular material, not just a page that happens to host it.
+  if([...target.searchParams].some(([key,value])=>url.searchParams.get(key)!==value))return null;
   return {path,index,step};
 }
 export function findAreas(query='',group='all'){

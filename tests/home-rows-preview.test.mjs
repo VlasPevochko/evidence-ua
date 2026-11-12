@@ -13,8 +13,9 @@ function inspect(markup,expression){return JSON.parse(execFileSync('python',['-c
 
 // 1. Усі шість рядків мають підказку: три маршрути («Кроки маршруту») і три службові блоки.
 const rows=inspect(index,`[{'id':n.get('id'),'cls':n.get('class'),'title':(n.xpath('./summary//*[@class="home-row-title"]')[0].text_content()).strip(),'hint':n.xpath('./summary//*[@class="home-row-hint"]')[0].text_content().strip(),'hints':len(n.xpath('./summary//*[@class="home-row-hint"]')),'summaryChildren':len(n.xpath('./summary/*'))} for n in root.xpath('//body/*[contains(@class,"page")]//details[summary//*[@class="home-row-hint"]]')]`);
-assert.equal(rows.length,6,'Six home rows carry a preview: three route outlines, the about group, the overview and the feedback form');
-assert.equal(rows.filter(r=>/home-path-outline/.test(r.cls||'')).length,3,'Every route outline has a preview');
+// EU-01 adds a fourth route; service rows and compactness limits stay unchanged.
+assert.equal(rows.length,catalog.paths.length+3,'Every route outline and the three service rows carry a preview');
+assert.equal(rows.filter(r=>/home-path-outline/.test(r.cls||'')).length,catalog.paths.length,'Every route outline has a preview');
 assert.deepEqual(rows.filter(r=>r.id).map(r=>r.id),['home-about','home-overview','home-feedback'],'The three service rows keep their ids');
 for(const row of rows){
   assert.equal(row.hints,1,`${row.title}: one preview line per row, not several`);
@@ -47,7 +48,8 @@ assert(/нічого не надсилає/.test(byId['home-feedback'].hint)&&/�
 const outlines=inspect(homeLearningHTML(),`[{'count':n.xpath('./summary//*[@class="home-row-title"]/span')[0].text_content(),'hint':n.xpath('./summary//*[@class="home-row-hint"]')[0].text_content(),'steps':[a.text_content().strip() for a in n.xpath('.//ol/li/a')]} for n in root.xpath('//details[@class="home-path-outline"]')]`);
 assert.equal(outlines.length,catalog.paths.length,'One outline per learning path');
 for(const [i,o] of outlines.entries()){
-  assert.equal(o.hint,o.steps.join(' · '),`Route ${i+1}: the preview lists the step titles of the outline, in order`);
+  // Longer routes may have a short editorial preview; the expanded list retains all exact titles.
+  assert.equal(o.hint,catalog.paths[i].preview||o.steps.join(' · '),`Route ${i+1}: the preview matches its catalog summary or complete step titles`);
   assert.equal(Number(o.count),o.steps.length,`Route ${i+1}: the number in the title equals the number of steps`);
   assert.equal(o.steps.length,catalog.paths[i].steps.length,`Route ${i+1}: the outline still has every catalog step`);
 }
@@ -57,7 +59,7 @@ assert.deepEqual(built,outlines.map(o=>o.hint),'dist/index.html carries the same
 
 // 5. Кожен згорнутий рядок на головній має другий рядок тексту (не лише назву): жоден не лишився «голим».
 const all=inspect(index,`[{'id':n.get('id'),'cls':n.get('class'),'secondLine':len(n.xpath('./summary//small'))+len(n.xpath('./summary/span[not(@aria-hidden)]/text()[normalize-space()]')),'open':n.get('open') is not None} for n in root.xpath('//body/*[contains(@class,"page")]//details')]`);
-assert.equal(all.length,9,'The home has nine folded rows; a new one must get a preview line too (update this test)');
+assert.equal(all.length,catalog.paths.length+6,'Every route plus the six existing disclosures has a preview line');
 for(const row of all){
   assert(row.secondLine>=1,`Folded row ${row.id||row.cls} has a second line under its title`);
   assert(!row.open,`Folded row ${row.id||row.cls} starts closed`);

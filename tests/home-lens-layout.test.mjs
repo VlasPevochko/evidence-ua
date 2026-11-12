@@ -19,6 +19,20 @@ assert(parsed.images.every(n=>n.lazy==='lazy'&&Number(n.width)>0&&Number(n.heigh
 assert.equal(parsed.controls,1,'The central jump is the only internal action');
 const lensCSS=fs.readFileSync('dist/home-lens.css','utf8');
 assert(!/\.home-lens-core::before/.test(lensCSS),'the opening must show the nebula behind the halves, never another closed copy of the lens');
+// 2026-11-12 («немає корекції»): two abutting clipped copies leave a dark one-pixel line down the closed lens wherever the join
+// falls between device pixels (measured on 23 of 33 desktop and phone sizes, up to 91 of 255 levels deep). While progress is exactly 0
+// the left copy is shown whole and the right copy is not painted; both turn into halves within the first pixel of scroll. The real
+// pixels are measured by Browser QA (homeLensSeamFlow); this pins the mechanism and the rules that must stay in the right order.
+assert.match(lensCSS,/\.home-lens-core\{[^}]*--lens-split:clamp\(0,calc\(var\(--lens-progress\)\*400\),1\)/,'the split factor is 0 only at progress 0 and 1 after the first pixel of scroll');
+const supports=lensCSS.indexOf('@supports (clip-path:inset(0 calc(50% * clamp(0,calc(1*400),1)) 0 0)){');
+assert(supports>0,'the whole-image rules sit behind @supports, so a browser that cannot evaluate them keeps the two halves');
+const whole=lensCSS.slice(supports);
+assert(/\.home-lens-half--left\{clip-path:inset\(0 calc\(50% \* var\(--lens-split\)\) 0 0\)\}/.test(whole),'the left copy is unclipped at progress 0');
+assert(/\.home-lens-half--right\{opacity:var\(--lens-split\)\}/.test(whole),'the right copy is not painted at progress 0');
+assert(whole.includes('mask-image:linear-gradient(90deg,#000 calc(100% - 50% * var(--lens-split) - var(--lens-progress)*12px),transparent calc(100% - 50% * var(--lens-split)))'),'the left copy keeps its soft inner edge and loses its mask at progress 0');
+assert(lensCSS.includes('clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)*-1))')&&lensCSS.includes('clip-path:inset(0 0 0 50%);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)))'),'without @supports the original two clipped halves still apply');
+assert(supports>lensCSS.lastIndexOf('.home-lens-half--right .home-lens-art{'),'the whole-image rules must come after the base mask rules; at equal specificity the later rule wins');
+assert(/mask-image:linear-gradient\(90deg,#000 calc\(50% - var\(--lens-progress\)\*12px\),transparent 50%\)/.test(lensCSS.slice(0,supports)),'the base rule keeps the half mask for browsers without @supports');
 // Owner 2026-10-31: choices are a closed dialog; without JS the real link opens the directory.
 assert.deepEqual(parsed.jump,[{href:'./directions.html',stage:1,interior:1,hidden:0,label:'Обрати напрям →'}],'A unique native fallback sits inside the stage outside hidden decoration');
 const chooser=inspect(homeDirectionsHTML(topics),`{'closed':len(root.xpath('.//dialog[@data-lens-picker][not(@open)]')),'inside':len(root.xpath('.//dialog//*[@id="cards"]/a')),'outside':len(root.xpath('.//*[@id="cards"]/a[not(ancestor::dialog)]')),'close':len(root.xpath('.//dialog//button[@data-lens-picker-close]')),'images':len(root.xpath('.//dialog//*[@id="cards"]/a/img[@loading="lazy"]'))}`);
@@ -39,7 +53,8 @@ assert.equal(structure.lens,1);assert(structure.routeClosed,'Auxiliary route out
 assert.equal(structure.library,1);assert(structure.libraryClosed);assert.equal(structure.libraryTargets.length,11);
 assert.equal(structure.choicesDirect,1,'Continue/saved insertion anchor must stay outside closed details');
 // Owner-approved stage timing and visual polish need fresh assets for returning visitors.
-assert.deepEqual(structure.styles,['./home-lens.css?v=7']);
+// 2026-11-12: home-lens.css v=7 -> v=8: the closed lens is one whole image (no dark join line); returning visitors must receive it.
+assert.deepEqual(structure.styles,['./home-lens.css?v=8']);
 // 2026-11-11: home-lens.js v=6 -> v=7: the earlier mobile lens action (src/platform/home-lens.mjs) must reach returning visitors. This assertion stays on its own line: it used to sit inside the previous comment, so it never ran.
 assert.deepEqual(structure.scripts,['./home-lens.js?v=7']);
 console.log('Home lens layout: split lazy art and accessible interior, six canonical native links, accessible jump, compact retained routes/library and cache wiring passed.');

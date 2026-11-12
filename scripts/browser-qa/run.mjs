@@ -4352,6 +4352,9 @@ async function atlasAuditFlow(browser, origin, viewport) {
   check(where, await page.title() === 'Атлас · Колінний комплекс · Анатомія — Evidence UA', `a tab of the open zone is part of the title (${await page.title()})`);
   await page.locator('#atlas-tab-overview').click();
   check(where, await page.title() === 'Атлас · Колінний комплекс — Evidence UA', `the overview tab drops it again (${await page.title()})`);
+  // Карта коліна повертається на «Огляд» на наступному кадрі (requestAnimationFrame в knee-pain-map.js). Чекаємо її, а не гадаємо: на повільній машині CI кнопка зони ще була видима
+  // під час перевірки в atlasLeaveMap, а за мить ховалась під картою, і клік чекав 30 с (перший прогін CI на телефонах).
+  await page.waitForFunction(() => !document.getElementById('knee-pain-map').hidden, null, {timeout: 5000});
   await atlasSelectZone(page, 'spine');
   await page.locator('#atlas-tab-symptoms').click();
   check(where, await page.title() === 'Атлас · Хребет · Симптоми — Evidence UA', `a tab is part of the title (${await page.title()})`);

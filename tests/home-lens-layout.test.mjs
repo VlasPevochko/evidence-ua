@@ -18,7 +18,7 @@ assert.deepEqual(parsed.images.map(n=>n.src),['./home-lens-nebula.webp','./home-
 assert(parsed.images.every(n=>n.lazy==='lazy'&&Number(n.width)>0&&Number(n.height)>0&&n.alt===''),'Below-hero decorative art must have stable dimensions and lazy loading');
 assert.equal(parsed.controls,1,'The central jump is the only internal action');
 const lensCSS=fs.readFileSync('dist/home-lens.css','utf8');
-assert(/\.home-lens-core::before\{[^}]*width:calc\(var\(--lens-progress\)\*var\(--lens-travel\)\*2\)[^}]*home-lens-core\.webp/.test(lensCSS),'the original centre pixels fill the exact opening between the moving halves');
+assert(!/\.home-lens-core::before/.test(lensCSS),'the opening must show the nebula behind the halves, never another closed copy of the lens');
 // Owner 2026-10-31: choices are a closed dialog; without JS the real link opens the directory.
 assert.deepEqual(parsed.jump,[{href:'./directions.html',stage:1,interior:1,hidden:0,label:'Обрати напрям →'}],'A unique native fallback sits inside the stage outside hidden decoration');
 const chooser=inspect(homeDirectionsHTML(topics),`{'closed':len(root.xpath('.//dialog[@data-lens-picker][not(@open)]')),'inside':len(root.xpath('.//dialog//*[@id="cards"]/a')),'outside':len(root.xpath('.//*[@id="cards"]/a[not(ancestor::dialog)]')),'close':len(root.xpath('.//dialog//button[@data-lens-picker-close]')),'images':len(root.xpath('.//dialog//*[@id="cards"]/a/img[@loading="lazy"]'))}`);
@@ -39,7 +39,7 @@ assert.equal(structure.lens,1);assert(structure.routeClosed,'Auxiliary route out
 assert.equal(structure.library,1);assert(structure.libraryClosed);assert.equal(structure.libraryTargets.length,11);
 assert.equal(structure.choicesDirect,1,'Continue/saved insertion anchor must stay outside closed details');
 // Owner-approved stage timing and visual polish need fresh assets for returning visitors.
-assert.deepEqual(structure.styles,['./home-lens.css?v=6']);
+assert.deepEqual(structure.styles,['./home-lens.css?v=7']);
 // 2026-11-11: home-lens.js v=6 -> v=7: the earlier mobile lens action (src/platform/home-lens.mjs) must reach returning visitors. This assertion stays on its own line: it used to sit inside the previous comment, so it never ran.
 assert.deepEqual(structure.scripts,['./home-lens.js?v=7']);
 console.log('Home lens layout: split lazy art and accessible interior, six canonical native links, accessible jump, compact retained routes/library and cache wiring passed.');

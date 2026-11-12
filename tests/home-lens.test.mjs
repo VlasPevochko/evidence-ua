@@ -118,9 +118,11 @@ test('landscape reveal follows the stage while the central action is still on sc
 
 test('portrait reveal uses the stage offset instead of its heading and choices', () => {
   const f = fixture({top: 230, viewportHeight: 844, sectionHeight: 807, stageHeight: 232, stageOffset: 114});
-  f.mount(); assert.equal(f.progress(), 0, 'stage top 344px is the closed onset');
+  f.mount();
+  assert.equal(f.progress(), 0.5, 'the action is already visible and active when the stage reaches 344px');
+  assert.equal(f.section.hasAttribute('data-lens-open'), true);
   f.intersect(true); f.move(70); f.win.fire('scroll'); f.flush();
-  assert.equal(f.progress(), 0.5);
+  assert.equal(f.progress(), 1);
   f.move(-90); f.win.fire('scroll'); f.flush(); assert.equal(f.progress(), 1);
 });
 

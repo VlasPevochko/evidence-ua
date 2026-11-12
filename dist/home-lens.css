@@ -38,9 +38,11 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-core{
   position:absolute;z-index:1;left:50%;top:50%;width:270px;height:270px;
   transform:translate(-50%,-50%);isolation:isolate;
+  /* 0 only while progress is exactly 0, 1 after the first pixel of scroll */
+  --lens-split:clamp(0,calc(var(--lens-progress)*400),1);
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half{
-  position:absolute;inset:0;will-change:auto;
+  position:absolute;z-index:0;inset:0;will-change:auto;
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--left{
   clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)*-1));
@@ -60,6 +62,19 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--right .home-lens-art{
   mask-image:linear-gradient(90deg,transparent 50%,#000 calc(50% + var(--lens-progress)*12px));
   -webkit-mask-image:linear-gradient(90deg,transparent 50%,#000 calc(50% + var(--lens-progress)*12px));
+}
+/* 2026-11-12: two abutting clipped copies leave a one-pixel dark hairline down
+   the closed lens wherever the join falls between device pixels (found on 23 of
+   33 desktop and phone sizes, up to 91 of 255 brightness levels). While
+   progress is 0 the left copy is therefore shown whole and the right copy is
+   not painted; both become halves within the first pixel of scroll. */
+@supports (clip-path:inset(0 calc(50% * clamp(0,calc(1*400),1)) 0 0)){
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--left{clip-path:inset(0 calc(50% * var(--lens-split)) 0 0)}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--right{opacity:var(--lens-split)}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--left .home-lens-art{
+    mask-image:linear-gradient(90deg,#000 calc(100% - 50% * var(--lens-split) - var(--lens-progress)*12px),transparent calc(100% - 50% * var(--lens-split)));
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 50% * var(--lens-split) - var(--lens-progress)*12px),transparent calc(100% - 50% * var(--lens-split)));
+  }
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half::after{
   content:"";position:absolute;top:15%;bottom:15%;left:50%;width:2px;border-radius:50%;pointer-events:none;

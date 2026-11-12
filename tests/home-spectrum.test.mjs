@@ -154,3 +154,9 @@ console.log('Home spectrum: semantic search fallback, canonical links/route, six
   assert(!/#(?:ffdc7e|e3bd6b|e7bd46|ffd77e)/i.test(block),'no gold in the lavender block');
   assert(block.split('\n').filter(l=>/^body\[/.test(l)).every(l=>l.startsWith(homeScope)),'every new rule is scoped to the non-article home');
 }
+
+const mobile=css.slice(css.indexOf('@media(max-width:700px){'));
+assert(/\.spectrum-questions\{grid-template-columns:minmax\(0,1fr\);gap:0;/.test(mobile),'mobile questions use one aligned column');
+assert(/\.spectrum-questions::before\{[^}]*position:absolute[^}]*background:linear-gradient/.test(mobile),'one continuous line connects the questions');
+assert(/\.spectrum-question::after\{left:-16px;top:2px;/.test(mobile),'each question sits on the shared line');
+assert(/\.spectrum-question--muscle,[\s\S]*?\.spectrum-question--creatine\{grid-column:1;width:auto;margin:0\}/.test(mobile),'the three questions share the same starting edge');

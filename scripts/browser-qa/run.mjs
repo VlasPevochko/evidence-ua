@@ -1,6 +1,6 @@
 // Browser QA for the static site. Run from the repository root:
 //   npm ci --prefix scripts/browser-qa --ignore-scripts && node scripts/browser-qa/run.mjs
-// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_SECTIONS_ONLY=1 (search by page sections)
+// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_LENS_ONLY=1 (the home lens only), QA_SECTIONS_ONLY=1 (search by page sections)
 // The default run and CI still execute every page and regression flow.
 // Uses the Chrome already installed on the machine (BROWSER_EXECUTABLE overrides the path).
 // Everything is served from a throw-away local server and third-party requests are blocked, so
@@ -13,6 +13,7 @@ import {chromium} from 'playwright-core';
 import {areas,catalog} from '../../src/platform/catalog.mjs';
 import {shoulderRouteFlow} from './shoulder-route.mjs';
 import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
+import {decodePng, seamDepth, gapResidue} from './lens-pixels.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
 // as runner logs, whose external storage may be inaccessible to a reviewer.
@@ -2064,6 +2065,7 @@ async function lensSnapshot(page) {
     const interior = section.querySelector('.home-lens-interior');
     const action = section.querySelector('[data-lens-reveal]');
     const stageRect = rect(stage), actionRect = rect(action);
+    const coreOverlay = getComputedStyle(section.querySelector('.home-lens-core'),'::before').content !== 'none';
     // Resolve the computed clip, then measure the actual image's visible edge.
     // A transform on a transparent overlay cannot satisfy this geometry gate.
     const halves = [...section.querySelectorAll('.home-lens-half')].map(node => {
@@ -2072,10 +2074,13 @@ async function lensSnapshot(page) {
       const values = clip.match(/^inset\(([^)]+)\)$/)?.[1].split(/\s+/) || [];
       const inset = [values[0], values[1] || values[0], values[2] || values[0], values[3] || values[1] || values[0]];
       const pixels = (value, size) => parseFloat(value) * (value?.endsWith('%') ? size / 100 : 1);
-      return {image: imageRect, transform:getComputedStyle(node).transform, clip,
+      return {image: imageRect, transform:getComputedStyle(node).transform, clip, opacity:Number(getComputedStyle(node).opacity),
         left:imageRect.left + pixels(inset[3], imageRect.width), right:imageRect.right - pixels(inset[1], imageRect.width),
         loaded:image.complete && image.naturalWidth > 0, src:image.getAttribute('src')};
     });
+    // 2026-11-12: while progress is 0 the left copy is the whole lens and the right copy is not painted,
+    // so a closed lens is one image with no join (two abutting copies left a dark line there).
+    const whole = halves.length === 2 && halves[1].opacity === 0 && Math.abs(halves[0].left - halves[0].image.left) <= 1 && Math.abs(halves[0].right - halves[0].image.right) <= 1;
     const hit = (x,y) => {const node = document.elementFromPoint(x,y);return !!node && (node === action || action.contains(node));};
     const hitPoints = [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].map(([x,y]) => hit(actionRect.left+actionRect.width*x,actionRect.top+actionRect.height*y));
     const textFits = [...interior.querySelectorAll('p,a')].every(node => {
@@ -2085,7 +2090,7 @@ async function lensSnapshot(page) {
     return {
       height:document.documentElement.scrollHeight,
       complete:section.hasAttribute('data-lens-complete'),
-      stage:stageRect, halves, gap:halves.length === 2 ? halves[1].left-halves[0].right : null,
+      stage:stageRect, halves, whole, gap:halves.length === 2 ? (whole ? 0 : halves[1].left-halves[0].right) : null,
       interior:{...rect(interior), opacity:Number(getComputedStyle(interior).opacity), text:interior.innerText, textFits},
       action:{...actionRect, visible:rendered(action), href:action.getAttribute('href'), tag:action.tagName,
         inside:stage.contains(action), accessible:!action.closest('[hidden], [inert], [aria-hidden="true"]'), focused:document.activeElement===action, controls:stage.querySelectorAll('a,button,input,[role="button"]').length,
@@ -2093,6 +2098,7 @@ async function lensSnapshot(page) {
         pointerEvents:getComputedStyle(action).pointerEvents,
         onScreen:actionRect.left>=0 && actionRect.right<=innerWidth && actionRect.top>=0 && actionRect.bottom<=innerHeight},
       progress: Number(getComputedStyle(section).getPropertyValue('--lens-progress')),
+      coreOverlay,
       top: box.top, scrollY, overflow: document.documentElement.scrollWidth - innerWidth,
       cards: [...section.querySelectorAll('#cards > a.topic-card')].map(node => {
         const rect = node.getBoundingClientRect();
@@ -2130,8 +2136,10 @@ async function positionLensOnset(page, {before = 0} = {}) {
     // when the catalogue below it cannot fit in a short viewport.
     const rect = document.querySelector('[data-lens-stage]').getBoundingClientRect();
     const distance = Math.min(320, Math.max(160, innerHeight * .38));
-    const end = Math.min(24, innerHeight - rect.height - 16);
-    scrollTo({top:rect.top + scrollY - end - distance - before, behavior:'instant'});
+    const availableHeight = innerHeight - rect.height - 16;
+    const end = Math.min(24, availableHeight);
+    const actionLead = Math.min(160, Math.max(0, availableHeight - 160));
+    scrollTo({top:rect.top + scrollY - end - distance - actionLead - before, behavior:'instant'});
   }, before);
   await page.waitForTimeout(240);
 }
@@ -2156,7 +2164,14 @@ async function openLensPicker(page) {
   await page.locator('[data-lens-reveal]').focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-lens-picker][open]').waitFor({state:'visible'});
-  await page.locator('[data-lens-picker] img').evaluateAll(nodes=>Promise.all(nodes.map(node=>node.decode())));
+  await page.locator('[data-lens-picker] img').evaluateAll(nodes=>Promise.all(nodes.map(async node=>{
+    node.loading='eager';
+    if(!node.complete)await new Promise((resolve,reject)=>{
+      node.addEventListener('load',resolve,{once:true});
+      node.addEventListener('error',()=>reject(new Error(`Unable to load chooser image ${node.currentSrc||node.src}`)),{once:true});
+    });
+    await node.decode();
+  })));
 }
 // Owner 2026-10-31: the six picture tiles sit on the cosmic violet of the home, not on teal.
 // Measure the edge of what the browser actually decoded (the backdrop of each picture), not the file names.
@@ -2174,6 +2189,86 @@ async function lensTileColours(page) {
     return {src:node.currentSrc.split('/').pop().replace('card-art-','').replace('.webp',''),hue,sat:max?d/max:0,val:max,width:w};
   }));
 }
+// Owner 2026-11-12: the lens is judged on painted pixels, not CSS values. Two screenshots of the same area,
+// as the visitor sees it and with the lens artwork swapped for a reference, are compared by
+// scripts/browser-qa/lens-pixels.mjs (its own unit test proves the measuring code).
+const LENS_SINGLE_IMAGE_CSS = '.home-lens-half--right{display:none!important}.home-lens-half--left{clip-path:none!important}.home-lens-half--left .home-lens-art{mask-image:none!important;-webkit-mask-image:none!important}';
+const LENS_NO_ARTWORK_CSS = '.home-lens-core{display:none!important}';
+async function lensPixelPair(page, clip, referenceCss) {
+  // Lazy artwork and web fonts that finish between the two screenshots would read as a difference.
+  await page.locator('[data-home-lens] .home-lens-art, [data-home-lens] .home-lens-nebula').evaluateAll(nodes => Promise.all(nodes.map(async node => {
+    node.loading = 'eager';
+    if (!node.complete) await new Promise((resolve, reject) => {
+      node.addEventListener('load', resolve, {once: true});
+      node.addEventListener('error', () => reject(new Error(`Unable to load lens image ${node.currentSrc || node.src}`)), {once: true});
+    });
+    await node.decode();
+  })));
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(120);
+  // A page that is still scrolling between the two screenshots would read as a difference: retry once.
+  for (let attempt = 0; ; attempt++) {
+    const scrolled = await page.evaluate(() => scrollY);
+    const actual = decodePng(await page.screenshot({clip}));
+    const style = await page.addStyleTag({content: referenceCss});
+    await page.waitForTimeout(160);
+    const reference = decodePng(await page.screenshot({clip}));
+    await style.evaluate(node => node.remove());
+    if (await page.evaluate(() => scrollY) === scrolled || attempt > 0) return {actual, reference};
+    await page.waitForTimeout(300);
+  }
+}
+
+// The opening between the separated halves is the lens core: only the nebula behind and the readable text
+// may be there. A copy of the lens (the 2026-11-11 overlay) differs from the reference by tens of levels.
+async function checkLensOpeningIsClean(where, page, viewport, snapshot) {
+  const gap = snapshot.halves[1].left - snapshot.halves[0].right, middle = (snapshot.halves[0].right + snapshot.halves[1].left) / 2;
+  // Stay clear of the soft edges and their light (about 14px on each side).
+  const half = Math.min(30, gap / 2 - 16);
+  check(where, half >= 4, `the opening between the halves must be wide enough to inspect (${gap.toFixed(1)}px)`);
+  const top = Math.max(0, snapshot.stage.top), bottom = Math.min(snapshot.stage.bottom, viewport.height);
+  check(where, bottom - top >= 100, 'the opening must be on screen to inspect');
+  if (half < 4 || bottom - top < 100) return;
+  const clip = {x: Math.floor(middle - half), y: Math.ceil(top), width: Math.ceil(half * 2), height: Math.floor(bottom - top) - 1};
+  const {actual, reference} = await lensPixelPair(page, clip, LENS_NO_ARTWORK_CSS);
+  const residue = gapResidue(actual, reference);
+  check(where, residue.max <= 6, `the opening between the halves must show only the nebula and the readable core, not another piece of the lens (difference ${residue.max.toFixed(1)}/255 at pixel column ${residue.column})`);
+}
+
+// Owner 2026-11-12 («немає корекції»): two abutting clipped copies left a one-pixel dark line down the closed
+// lens wherever the join fell between device pixels: 23 of 33 desktop and phone sizes measured, up to 91 of 255
+// levels deep. These screens reproduced it on the previous build (laptops at 1x, 1.5x, 2x; phones at 2x, 2.75x).
+const lensSeamScreens = [
+  {name: 'desktop-1x', width: 1440, height: 900, dpr: 1},
+  {name: 'desktop-2x', width: 1440, height: 900, dpr: 2},
+  {name: 'laptop-1.5x', width: 1366, height: 768, dpr: 1.5},
+  {name: 'phone-375-2x', width: 375, height: 812, dpr: 2, mobile: true},
+  {name: 'phone-393-2.75x', width: 393, height: 852, dpr: 2.75, mobile: true}
+];
+async function homeLensSeamFlow(browser, origin, screen) {
+  const where = `home lens closed seam @${screen.name}`;
+  const {context, page, seen} = await open(browser, origin, screen, '/index.html', {contextOptions: {reducedMotion: 'no-preference', deviceScaleFactor: screen.dpr, ...(screen.mobile ? {isMobile: true, hasTouch: true} : {})}});
+  try {
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    await positionLensOnset(page, {before: 2});
+    const closed = await lensSnapshot(page);
+    check(where, closed.progress <= .001 && closed.whole, 'the lens must rest closed as one whole image at the start of the reveal');
+    const core = await page.locator('.home-lens-core').evaluate(node => { const r = node.getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}; });
+    const x = Math.floor(core.x) - 2, y = Math.max(0, Math.floor(core.y)), bottom = Math.min(Math.ceil(core.y + core.height), screen.height);
+    const clip = {x, y, width: Math.ceil(core.width) + 5, height: bottom - y};
+    check(where, clip.height >= 150, `enough of the closed lens must be on screen to measure (${clip.height}px)`);
+    if (clip.height < 150) return;
+    // The device pixel column that holds the join of the two halves.
+    const centre = Math.round((core.x + core.width / 2 - x) * screen.dpr - .5);
+    const {actual, reference} = await lensPixelPair(page, clip, LENS_SINGLE_IMAGE_CSS);
+    // Chrome versions round a fractional device width up or down; one pixel either way is the same scale.
+    check(where, Math.abs(actual.width - clip.width * screen.dpr) <= 1, `screenshots must be taken at ${screen.dpr}x (${actual.width}px for ${clip.width} CSS px)`);
+    const seam = seamDepth(actual, reference, centre);
+    check(where, seam.depth <= 3, `the closed lens must be one seamless image, but a dark line ${seam.depth.toFixed(1)}/255 deep runs through pixel column ${seam.column} (join at ${centre})`);
+    checkBrowserHealth(where, seen);
+  } finally { await context.close(); }
+}
+
 async function homeLensFlow(browser, origin, viewport) {
   const where=`home lens chooser @${viewport.name}`;
   const {context,page,seen}=await open(browser,origin,viewport,'/index.html',{contextOptions:{reducedMotion:'no-preference'}});
@@ -2183,12 +2278,17 @@ async function homeLensFlow(browser, origin, viewport) {
     check(where,!(await panel.isVisible())&&await page.locator('#cards>a:visible').count()===0,'directions must start outside page layout, pointer and keyboard navigation');
     await positionLensOnset(page,{before:2});
     const closed=await lensSnapshot(page);
-    check(where,closed.progress<=.01&&Math.abs(closed.gap)<=1&&closed.interior.opacity===0&&!closed.action.centerHit,'the two real image halves must begin joined with no invisible core hit');
+    check(where,closed.progress<=.01&&Math.abs(closed.gap)<=1&&closed.interior.opacity===0&&!closed.action.centerHit&&!closed.coreOverlay,'the two real image halves must begin joined without a duplicate lens overlay');
+    check(where,closed.whole&&closed.halves.every(half=>half.loaded),'a closed lens is one whole image (left copy unclipped, right copy not painted), so no join can show as a dark line');
+    await artifact(page,viewport,'home-lens-closed',page.locator('[data-lens-stage]'),{scroll:false});
     await page.mouse.move(viewport.width/2,viewport.height/2);
     await page.mouse.wheel(0,128);await page.waitForTimeout(240);
     const middle=await lensSnapshot(page);
     check(where,middle.progress>closed.progress&&middle.progress<1&&middle.gap>closed.gap+20,'native scrolling must still separate the actual image halves');
+    check(where,!middle.coreOverlay&&middle.gap>20&&!middle.whole,'the widening center opens onto the nebula instead of showing a smaller closed copy of the lens');
+    await checkLensOpeningIsClean(`${where} opening`,page,viewport,middle);
     check(where,!(await panel.isVisible())&&middle.cards.every(card=>!card.visible&&card.width===0),'partial reveal must never expose a direction');
+    await artifact(page,viewport,'home-lens-opening',page.locator('[data-lens-stage]'));
     const beforeOpen=await page.evaluate(()=>scrollY);
     await page.mouse.click(middle.action.left+middle.action.width/2,middle.action.top+middle.action.height/2);
     await panel.waitFor({state:'visible'});
@@ -2215,9 +2315,11 @@ async function homeLensFlow(browser, origin, viewport) {
     await page.locator('[data-home-lens][data-lens-ready]').waitFor({state:'attached'});
     await positionLensOnset(page,{before:2});await page.mouse.wheel(0,324);await page.waitForTimeout(260);
     const full=await lensSnapshot(page);
-    check(where,full.progress===1&&full.gap>100&&full.halves.every(half=>half.loaded),'the short native reveal must retain loaded, substantially separated artwork');
+    check(where,full.progress===1&&full.gap>100&&!full.coreOverlay&&full.halves.every(half=>half.loaded),'the short reveal must leave a clear nebula opening between the separated lens halves');
+    await checkLensOpeningIsClean(`${where} fully open`,page,viewport,full);
     check(where,!(await panel.isVisible())&&full.cards.every(card=>!card.visible),'even full scroll reveal keeps choices closed');
     checkLensAction(where,full,{onScreen:true});
+    await artifact(page,viewport,'home-lens-fully-open',page.locator('[data-lens-stage]'));
     const idle=await page.locator('[data-home-lens]').getAttribute('style');
     await page.waitForTimeout(350);
     check(where,await page.locator('[data-home-lens]').getAttribute('style')===idle,'the decorative lens must settle without idle style writes');
@@ -2273,8 +2375,10 @@ async function homeLensTouchFlow(browser, origin, viewport) {
     await page.evaluate(() => {
       const rect = document.querySelector('[data-lens-stage]').getBoundingClientRect();
       const distance = Math.min(320, Math.max(160, innerHeight * .38));
-      const end = Math.min(24, innerHeight - rect.height - 16);
-      scrollTo({top: rect.top + scrollY - end - distance, behavior: 'instant'});
+      const availableHeight = innerHeight - rect.height - 16;
+      const end = Math.min(24, availableHeight);
+      const actionLead = Math.min(160, Math.max(0, availableHeight - 160));
+      scrollTo({top: rect.top + scrollY - end - distance - actionLead, behavior: 'instant'});
     });
     await page.waitForTimeout(200);
     const before = await lensSnapshot(page);
@@ -2287,10 +2391,14 @@ async function homeLensTouchFlow(browser, origin, viewport) {
     const after = await lensSnapshot(page);
     check(where, after.scrollY > before.scrollY + 100 && before.progress <= middle.progress && middle.progress <= after.progress, 'real finger scrolling must move the document and monotonically open the lens');
     check(where,after.cards.every(card=>!card.visible),'native finger scrolling must not expose the directions');
-    await positionLensOnset(page);
-    await page.mouse.wheel(0,320);
-    await page.waitForTimeout(300);
-    checkLensAction(`${where} touch action`, await lensSnapshot(page), {onScreen:true});
+    await page.evaluate(() => {
+      const stage = document.querySelector('[data-lens-stage]').getBoundingClientRect();
+      const targetTop = innerHeight * .41;
+      scrollTo({top:stage.top + scrollY - targetTop, behavior:'instant'});
+    });
+    await page.waitForTimeout(240);
+    const earlyAction = await lensSnapshot(page);
+    check(where,earlyAction.interior.opacity>=.7&&earlyAction.action.onScreen&&earlyAction.action.hitPoints.every(Boolean),'the lens action must be ready to tap before scrolling farther down the phone');
     await page.locator('[data-lens-reveal]').tap();
     await page.locator('[data-lens-picker][open]').waitFor({state:'visible'});
     checkLensLinks(`${where} actual touch activation`, await lensSnapshot(page), viewport);
@@ -2319,6 +2427,17 @@ async function homeLensViewportFlow(browser, origin, viewport) {
     await positionLensOnset(page,{before:2});
     const closed=await lensSnapshot(page);
     check(where,closed.progress<=.01 && closed.cards.every(card=>!card.visible&&card.width===0),'closed directions must have no rendered or clickable rectangles');
+    if(viewport.width<=700&&viewport.height>=600) {
+      await page.evaluate(() => {
+        const stage=document.querySelector('[data-lens-stage]').getBoundingClientRect();
+        const targetTop=innerHeight*.41;
+        scrollTo({top:stage.top+scrollY-targetTop,behavior:'instant'});
+      });
+      await page.waitForTimeout(240);
+      const earlyAction=await lensSnapshot(page);
+      check(where,earlyAction.progress>=.45&&earlyAction.interior.opacity>=.7&&earlyAction.action.onScreen&&earlyAction.action.hitPoints.every(Boolean),'the phone action must be legible and clickable as soon as the lens reaches the screen');
+      await positionLensOnset(page,{before:2});
+    }
     const blank=await page.locator('#cards').evaluate(cards=>{
       for(const link of cards.querySelectorAll('a.topic-card')) {
         const r=link.getBoundingClientRect(),top=Math.max(1,r.top),bottom=Math.min(innerHeight-1,r.bottom);
@@ -2423,7 +2542,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     const questionBoxes = await page.locator('[data-spectrum-question]').evaluateAll(nodes => nodes.map(node => {
       const box = node.getBoundingClientRect();return {x: box.x, y: box.y, right: box.right, bottom: box.bottom};
     }));
-    check(where, viewport.width <= 700 ? questionBoxes[0].right <= questionBoxes[1].x + 1 && questionBoxes[2].y >= questionBoxes[1].bottom - 1 : questionBoxes.every((box, index) => !index || box.x > questionBoxes[index - 1].right), 'three questions must retain the readable phone 2+1 / desktop three-column hierarchy');
+    check(where, viewport.width <= 700 ? questionBoxes.every((box,index)=>index===0||Math.abs(box.x-questionBoxes[index-1].x)<=1)&&questionBoxes.every((box,index)=>!index||box.y>questionBoxes[index-1].y) : questionBoxes.every((box, index) => !index || box.x > questionBoxes[index - 1].right), 'three questions must retain the readable phone rail / desktop three-column hierarchy');
     check(where, await page.locator('canvas#spectrum-wave').evaluate(canvas => canvas.getAttribute('aria-hidden') === 'true' && getComputedStyle(canvas).pointerEvents === 'none'), 'the decorative wave must stay out of accessibility and pointer navigation');
     await artifact(page, viewport, 'home-first-screen', page.locator('body'), {scroll: false});
     await page.locator('#spectrum-query').focus();
@@ -2727,11 +2846,12 @@ async function intervalMotifFlow(browser, origin, viewport) {
     await page.locator('.home-fresh').scrollIntoViewIfNeeded();
     const rules = await page.evaluate(() => [...document.querySelectorAll('.eua-interval-rule')].map(rule => {
       const box = rule.getBoundingClientRect(), style = getComputedStyle(rule), next = rule.nextElementSibling;
-      return {width: Math.round(box.width), right: Math.round(box.right), height: Math.round(box.height), hidden: rule.getAttribute('aria-hidden') === 'true', drawn: style.backgroundImage.includes('radial-gradient') && style.backgroundImage.includes('linear-gradient'), next: next && (next.className || next.tagName), animated: style.animationName !== 'none' || parseFloat(style.transitionDuration) > 0};
+      const fresh = next?.querySelector('.home-fresh');
+      return {width: Math.round(box.width), right: Math.round(box.right), height: Math.round(box.height), hidden: rule.getAttribute('aria-hidden') === 'true', drawn: style.backgroundImage.includes('radial-gradient') && style.backgroundImage.includes('linear-gradient'), next: fresh ? fresh.className : next && (next.className || next.tagName), freshDisclosure: fresh ? next.matches('details.home-fresh-fold') : false, animated: style.animationName !== 'none' || parseFloat(style.transitionDuration) > 0};
     }));
     check(where, rules.length === 2, `two interval rules on the home, found ${rules.length}`);
     check(where, rules.every(rule => rule.hidden && rule.drawn && !rule.animated && rule.width >= 120 && rule.right <= viewport.width && rule.height >= 10 && rule.height <= 20), `the rules are decorative, drawn, still and fit the screen: ${JSON.stringify(rules)}`);
-    check(where, rules.map(rule => rule.next).join('|') === 'home-fresh|home-library-section', `the rules stand before «Нове на сайті» and before the library: ${rules.map(rule => rule.next).join('|')}`);
+    check(where, rules.map(rule => rule.next).join('|') === 'home-fresh|home-library-section'&&rules[0].freshDisclosure, `the rules stand before «Нове на сайті» (inside its compact disclosure) and before the library: ${rules.map(rule => rule.next).join('|')}`);
     check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, 'the home must not scroll sideways');
     await artifact(page, viewport, 'interval-rule-home', page.locator('.eua-interval-rule').first());
     check(where, home.seen.pageErrors.length === 0 && home.seen.external.length === 0, 'home: no errors and no third-party requests');
@@ -3345,6 +3465,11 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
   const where = `home fresh cards @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
   try {
+    await page.evaluate(()=>document.fonts.ready);
+    const fold=page.locator('.home-fresh-fold');
+    const closedHeight=await page.evaluate(()=>document.documentElement.scrollHeight);
+    check(where,!(await fold.evaluate(node=>node.open)),'the long secondary section starts compact');
+    await fold.locator('summary').click();
     await page.locator('.home-fresh').scrollIntoViewIfNeeded();
     const info = await page.evaluate(() => {
       const box = node => { const rect = node.getBoundingClientRect(); return {x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height), right: Math.round(rect.right)}; };
@@ -3356,9 +3481,14 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
         thumb: box(cards[0].querySelector('.eua-mini')), frames: [...cards[1].querySelectorAll('.fp-svg')].map(box), captions: [...cards[1].querySelectorAll('.home-fresh-cap')].map(node => node.textContent.trim()),
         days: [...cards[2].querySelectorAll('.home-fresh-day time')].map(node => node.textContent.trim()), entries: [...cards[2].querySelectorAll('.home-fresh-day li')].map(node => ({text: node.textContent.trim(), visible: visible(node), height: Math.round(node.getBoundingClientRect().height)})),
         question: cards[0].querySelector('.home-fresh-question').textContent.trim(), links: cards.map(card => (card.tagName === 'A' ? 1 : 0) + card.querySelectorAll('a').length), small,
-        overflow: document.documentElement.scrollWidth - innerWidth
+        overflow: document.documentElement.scrollWidth - innerWidth, documentHeight: document.documentElement.scrollHeight
       };
     });
+    if(process.env.QA_ARTIFACT_DIR){
+      const dir=path.resolve(process.env.QA_ARTIFACT_DIR);fs.mkdirSync(dir,{recursive:true});
+      fs.writeFileSync(path.join(dir,`home-fresh-height-${viewport.name}.json`),JSON.stringify({viewport,foldedPage:closedHeight,expandedPage:info.documentHeight,reduction:info.documentHeight-closedHeight,expandedSection:info.block.height},null,2));
+    }
+    check(where,info.documentHeight-closedHeight>=500,`folding removes ${info.documentHeight-closedHeight}px from the page while keeping the content available`);
     check(where, info.cards.length === 3 && new Set(info.kinds).size === 3 && info.kinds.join() === 'home-fresh-card--study,home-fresh-card--scheme,home-fresh-card--journal', `three cards with three different forms: ${info.kinds.join()}`);
     check(where, info.cards.every(card => card.height >= 44 && card.right <= viewport.width) && info.overflow <= 1, `every card is tall enough to tap and fits the screen: ${JSON.stringify(info.cards)}`);
     check(where, info.thumb.width >= 100 && info.thumb.height >= 30, `the chart thumbnail is readable: ${JSON.stringify(info.thumb)}`);
@@ -3374,7 +3504,10 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
     } else {
       // Телефон: картки одна під одною, блок вищий не більш ніж на 150 px.
       check(where, new Set(info.cards.map(card => card.x)).size === 1 && info.cards[0].y < info.cards[1].y && info.cards[1].y < info.cards[2].y, 'on the phone the cards are stacked');
-      if (viewport.width === 390) check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
+      if (viewport.width === 390) {
+        check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
+        check(where,closedHeight<=viewport.height*3.5,`the folded home is no taller than 3.5 phone screens (${closedHeight}px)`);
+      }
     }
     await artifact(page, viewport, 'home-fresh-cards', page.locator('.home-fresh'));
     check(where, seen.pageErrors.length === 0 && seen.console.length === 0 && seen.external.length === 0, 'no errors and no third-party requests');
@@ -3387,6 +3520,13 @@ async function homeFreshFlow(browser, origin, viewport) {
   // Рішення власника 2026-10-31: на головній є блок «Нове на сайті»; дрібний текст не менший за 12 px; терміни мають зону дотику 44 px.
   const where = `home fresh @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  const fold=page.locator('.home-fresh-fold');
+  const summary=fold.locator('summary');
+  check(where,!(await fold.evaluate(node=>node.open))&&await summary.evaluate(node=>node.getBoundingClientRect().height>=44),'the secondary update block starts folded behind a full-size native control');
+  await summary.scrollIntoViewIfNeeded();
+  await artifact(page,viewport,'home-fresh-folded',fold);
+  await summary.click();
+  check(where,await fold.evaluate(node=>node.open),'the update block opens from its summary');
   await page.locator('.home-fresh').scrollIntoViewIfNeeded();
   const cards = await page.locator('.home-fresh-card').evaluateAll(els => els.map(e => ({h: Math.round(e.getBoundingClientRect().height), href: e.getAttribute('href'), right: e.getBoundingClientRect().right})));
   check(where, cards.length === 3 && cards.every(c => c.h >= 44 && c.right <= viewport.width), 'three cards fit the screen and are tall enough to tap');
@@ -4511,6 +4651,11 @@ async function homeLinkTextFlow(browser, origin, viewport) {
     };
     const home = await read();
     verify(home, {'spectrum-question-open': 3, 'spectrum-route-start': 1, 'path-start': catalog.paths.length, 'home-fresh-go': 3}, 'home');
+    if(viewport.width<=700){
+      const positions=await page.locator('.spectrum-question').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right};}));
+      check(where,positions.length===3&&Math.max(...positions.map(item=>item.left))-Math.min(...positions.map(item=>item.left))<=1,'the three mobile questions share one left edge');
+      check(where,positions.every((item,index)=>index===0||item.top>positions[index-1].top)&&positions.every(item=>item.right<=viewport.width),'the questions form a vertical sequence without horizontal overflow');
+    }
     check(where, home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').every(item => item.height >= 44), 'route start buttons must stay tappable (44px)');
     const routeLabels = home.filter(item => item.kind === 'path-start' || item.kind === 'spectrum-route-start').map(item => item.label);
     check(where, routeLabels.every(text => /^Почати маршрут: .{4,}/u.test(text)), `route buttons must name the first step: ${routeLabels.join(' | ')}`);
@@ -4737,8 +4882,15 @@ async function noticeThemeFlow(browser, origin, viewport) {
   }
 }
 
-async function homeFlows(browser, origin) {
+// The lens flows alone (QA_LENS_ONLY=1) take about a minute; homeFlows runs them first, as before.
+async function lensFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
+  // 2026-11-12: закрита лінза без темного шва на різних щільностях пікселів (1×, 1,5×, 2×, 2,75×).
+  for (const screen of lensSeamScreens) await isolatedFlow(homeLensSeamFlow, browser, origin, screen);
+}
+
+async function homeFlows(browser, origin) {
+  await lensFlows(browser, origin);
   for (const viewport of [
     {name:'mobile-short',width:390,height:667},
     {name:'landscape-short',width:844,height:390},
@@ -4756,6 +4908,8 @@ async function homeFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLinkTextFlow, browser, origin, viewport);
   // T7 (2026-11-02): поле пошуку в героєві; 360 і 320 px (підказка у два рядки, найвужчі телефони) і 600 px (підказка в один рядок, найвужчий «широкий» вигляд).
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}, {name: 'mobile-tiny', width: 320, height: 640}, {name: 'tablet-small', width: 600, height: 900}, {name: 'tablet', width: 720, height: 900}]) await isolatedFlow(heroSearchFlow, browser, origin, viewport);
+  for (const viewport of viewports) await isolatedFlow(homeFreshCardsFlow,browser,origin,viewport);
+  for (const viewport of viewports) await isolatedFlow(homeFreshFlow,browser,origin,viewport);
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport);
   await isolatedFlow(homeWaveFlow, browser, origin, viewports[0], {touch: true});
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});
@@ -4779,6 +4933,8 @@ try {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
   } else if (process.env.QA_HOME_WAVE_ONLY === '1') {
     for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced:true,touch:viewport.name==='mobile'});
+  } else if (process.env.QA_LENS_ONLY === '1') {
+    await lensFlows(browser, origin);
   } else if (homeOnly) {
     await homeFlows(browser, origin);
     for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);

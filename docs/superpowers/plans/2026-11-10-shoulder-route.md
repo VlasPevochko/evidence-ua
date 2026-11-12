@@ -58,3 +58,4 @@ Files: `scripts/browser-qa/shoulder-route.mjs`, `scripts/browser-qa/run.mjs`, `d
 - Independent final review found no unresolved material defects. Existing continue-reading behavior, extra hotspot/back coverage and later EU tasks were not classified as defects of this route.
 - EU-02 editorial follow-up: all 13 DOI entries in PR #119 compared with current data; 10 already referenced. Scientific approval remains pending. See `docs/DIETS_PR119_RECONCILIATION_2026-11-11.md`.
 - Two reduced-motion wave failures reproduced on an untouched archive of b2fe447. They are recorded separately from route verification; no wave implementation was changed.
+- 2026-11-12: owner authorized integration. Merged current main 1cecc80 into the feature branch, retaining upstream lens and Atlas changes; exact Atlas cache version is now 10. Build, validate, smoke, 12 affected static test files and the focused route browser flow pass. Full PR CI remains the integration gate.

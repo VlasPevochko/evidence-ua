@@ -1,4 +1,4 @@
-import {shoulderViews as views, shoulderPoints as hotspots, shoulderLabels as labels} from './atlas-points.js?v=1';
+import {shoulderViews as views, shoulderPoints as hotspots, shoulderLabels as labels} from './atlas-points.js?v=2';
 import {shoulderDiagram} from './atlas-diagrams.js?v=1';
 
 const ZONE='shoulder';

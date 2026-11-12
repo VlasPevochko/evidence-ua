@@ -1,6 +1,6 @@
 // Browser QA for the static site. Run from the repository root:
 //   npm ci --prefix scripts/browser-qa --ignore-scripts && node scripts/browser-qa/run.mjs
-// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_LENS_ONLY=1 (the home lens only), QA_SECTIONS_ONLY=1 (search by page sections)
+// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_LENS_ONLY=1 (the home lens only), QA_ATLAS_ONLY=1 (every Atlas flow), QA_SECTIONS_ONLY=1 (search by page sections)
 // The default run and CI still execute every page and regression flow.
 // Uses the Chrome already installed on the machine (BROWSER_EXECUTABLE overrides the path).
 // Everything is served from a throw-away local server and third-party requests are blocked, so
@@ -13,6 +13,7 @@ import {chromium} from 'playwright-core';
 import {areas} from '../../src/platform/catalog.mjs';
 import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
 import {decodePng, seamDepth, gapResidue} from './lens-pixels.mjs';
+import {glyphContrast} from './glyph-contrast.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
 // as runner logs, whose external storage may be inaccessible to a reviewer.
@@ -1178,7 +1179,9 @@ async function headerFlow(browser, origin, viewport) {
   for (const file of ['directions.html', 'sleep.html']) {
     const {context, page, seen} = await open(browser, origin, viewport, '/' + file, {initScript: green});
     const f = await page.evaluate(probe);
-    check(where, f.height > 79 && f.emblem && f.tagline && f.word.family === 'Inter' && f.word.weight === '800' && f.search && f.search.radius > 2 && (mobile || f.links.every(l => l.icon)), `green ${file}: the old header stays (height ${f.height}, emblem ${f.emblem}, name ${f.word.family} ${f.word.weight}, icons ${f.links.map(l => l.icon).join('/')})`);
+    // 2026-11-12 (Атлас, п. 12 аудиту): підпис під назвою в «Зеленому» тепер 12 px замість 9 (на сайті жодного тексту дрібнішого за 12 px). На телефонах (≤ 430 px) він не вміщується в один ряд з кнопками
+    // й розтягував шапку з 81 до 139 px, тому там схований, як у космічній палітрі; від 431 px він показаний. Решта «колишньої шапки» (емблема, Inter 800, рамка, іконки) без змін.
+    check(where, f.height > 79 && f.emblem && f.tagline === !mobile && f.word.family === 'Inter' && f.word.weight === '800' && f.search && f.search.radius > 2 && (mobile || f.links.every(l => l.icon)), `green ${file}: the old header stays (height ${f.height}, emblem ${f.emblem}, tagline ${f.tagline}, name ${f.word.family} ${f.word.weight}, icons ${f.links.map(l => l.icon).join('/')})`);
     check(where, f.borderBottom === 1 && f.line === null, `green ${file}: the old full-width border stays`);
     check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `green ${file}: no errors`);
     await context.close();
@@ -3996,15 +3999,22 @@ async function atlasUpdateFlow(browser, origin, viewport) {
         const clipped = labels.filter(label => label.left < stage.left - 1 || label.right > stage.right + 1 || label.top < stage.top - 1 || label.bottom > stage.bottom + 1).map(label => label.text);
         const collide = []; labels.forEach((a, i) => labels.slice(i + 1).forEach(b => { if (overlap(a, b)) collide.push(`${a.text} × ${b.text}`); }));
         const onPins = labels.filter(label => pins.some(pin => { const cx = (pin.left + pin.right) / 2, cy = (pin.top + pin.bottom) / 2; return cx > label.left - 8 && cx < label.right + 8 && cy > label.top - 8 && cy < label.bottom + 8; })).map(label => label.text);
+        // 2026-11-12 (аудит): раніше міряли лише, чи центр точки лежить поблизу підпису, і чи підписи налазять один на одного. Цього не вистачило: синя точка «Верх плеча · AC-суглоб» закривала
+        // підпис «дельтоподібний м’яз» (перекриття 44 × 10,8 px), а дві сусідні зони дотику плеча перекривались на 16 × 0,3 px (390 і 360 px). Тепер міряємо перекриття самих прямокутників.
+        const area = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+        const labelOnTap = labels.filter(label => pins.some(pin => area(label, pin) > 0.5)).map(label => label.text);
+        const tapOverlap = []; pins.forEach((a, i) => pins.slice(i + 1).forEach(b => { if (area(a, b) > 0.5) tapOverlap.push(`${Math.round(a.left)},${Math.round(a.top)} × ${Math.round(b.left)},${Math.round(b.top)}`); }));
         const tapBoxes = pins.map(pin => Math.min(pin.width, pin.height));
         const diagram = document.querySelector(`.${zoneName}-stage svg.map-diagram`);
-        return {labels: labels.length, clipped, collide, onPins, minPin: Math.min(...tapBoxes), pins: pins.length, svgText: diagram.querySelectorAll('text').length, shapes: diagram.querySelectorAll('path, ellipse, circle, rect').length, leaders: document.querySelectorAll(`.${zoneName}-stage .map-leaders line:not(.dot)`).length, small: [...document.querySelectorAll(`.${zoneName}-stage .map-label`)].filter(label => parseFloat(getComputedStyle(label).fontSize) < 12).length};
+        return {labels: labels.length, clipped, collide, onPins, labelOnTap, tapOverlap, minPin: Math.min(...tapBoxes), pins: pins.length, svgText: diagram.querySelectorAll('text').length, shapes: diagram.querySelectorAll('path, ellipse, circle, rect').length, leaders: document.querySelectorAll(`.${zoneName}-stage .map-leaders line:not(.dot)`).length, small: [...document.querySelectorAll(`.${zoneName}-stage .map-label`)].filter(label => parseFloat(getComputedStyle(label).fontSize) < 12).length};
       }, zone);
       const expectedLabels = map.labels.filter(label => label.view === view.id).length;
       check(where, geometry.labels === expectedLabels && geometry.leaders === map.labels.filter(label => label.view === view.id && label.line).length, `${zone}/${view.id}: labels and leader lines from the data (${geometry.labels}/${expectedLabels})`);
       check(where, geometry.clipped.length === 0, `${zone}/${view.id}: labels stay on the stage (${geometry.clipped.join(', ')})`);
       check(where, geometry.collide.length === 0, `${zone}/${view.id}: labels do not overlap (${geometry.collide.join(', ')})`);
       check(where, geometry.onPins.length === 0, `${zone}/${view.id}: labels keep clear of the points (${geometry.onPins.join(', ')})`);
+      check(where, geometry.labelOnTap.length === 0, `${zone}/${view.id}: no label lies under the tap square of a point (${geometry.labelOnTap.join(', ')})`);
+      check(where, geometry.tapOverlap.length === 0, `${zone}/${view.id}: the tap squares of two points do not overlap (${geometry.tapOverlap.join(' | ')})`);
       check(where, geometry.pins === map.points.filter(point => point.view === view.id).length && geometry.minPin >= 43.5, `${zone}/${view.id}: points have 44 px tap areas (${geometry.minPin})`);
       check(where, geometry.svgText === 0 && geometry.shapes >= 8 && geometry.small === 0, `${zone}/${view.id}: a drawn schematic without text inside (${geometry.shapes} shapes), labels ≥ 12 px`);
       const english = await page.locator(`#${zone}-pain-map`).innerText();
@@ -4054,7 +4064,7 @@ async function atlasUpdateFlow(browser, origin, viewport) {
   check(where, shared.pathname === '/atlas.html' && shared.searchParams.get('zone') === 'knee' && shared.searchParams.get('point') === 'medial-joint-line' && !shared.searchParams.has('utm_source'), `the shared link keeps zone and point only (${shared.search})`);
 
   // 7) Пошук сайту знаходить Атлас (раніше «плече», «коліно», «хребет», «мозок» не знаходили нічого з Атласу).
-  for (const [query, href] of [['плече', './atlas.html?zone=shoulder'], ['коліно', './atlas.html?zone=knee'], ['хребет', './atlas.html?zone=spine'], ['мозок', './atlas.html?zone=brain'], ['ротаторна манжета', './atlas.html?zone=shoulder&point=posterior-cuff']]) {
+  for (const [query, href] of [['плече', './atlas.html?zone=shoulder'], ['коліно', './atlas.html?zone=knee'], ['хребет', './atlas.html?zone=spine'], ['мозок', './atlas.html?zone=brain'], ['ротаторна манжета', './atlas.html?zone=shoulder&point=posterior-cuff'], ['постава', './atlas.html?zone=spine'], ['карта болю', './atlas.html?zone=shoulder'], ['карта болю', './atlas.html?zone=knee'], ['передня хрестоподібна зв’язка', './atlas.html?zone=knee']]) {
     await page.goto(origin + '/glossary.html', {waitUntil: 'load'});
     await page.locator('.eua-header-search').click();
     await page.locator('dialog.eua-search').waitFor({state: 'visible'});
@@ -4277,6 +4287,287 @@ async function atlasLoadOrderFlow(browser, origin, viewport) {
       check(where, state.title.includes(zone === 'knee' ? 'Колінний' : 'Плечовий') && state.mapOpen, `${label}: the zone is chosen and its map is open (${JSON.stringify(state)})`);
       check(where, state.pressed === point && state.detail === (point ? findPoint(zone, point).title : null), `${label}: ${point ? 'the point and its card are shown' : 'no point is open'} (${JSON.stringify(state)})`);
       check(where, point ? state.search.includes('point=' + point) : !state.search.includes('point='), `${label}: the address matches (${state.search})`);
+      await context.close();
+    }
+  }
+}
+
+// ─────────────────────────── Атлас: виправлення за аудитом 2026-11-12 («з першого до 12 одним PR») ───────────────────────────
+// Що тримають ці перевірки у справжньому Chromium (кожну перевірено навмисною поломкою коду, див. docs/ATLAS-AUDIT-FIXES.md):
+// підписи пінів читаються за пікселями в темній і світлій темі; назва вкладки браузера своя для кожної зони; «Перейти до змісту» перша зупинка Tab; Tab іде в порядку фігури згори вниз;
+// шлях «зона → вкладка» не довший за два рядки й без стрілки в кінці рядка; низ сторінки без дубля застереження; «Куди далі» лише там, де не дублює зону; українські назви й чесна примітка про докази;
+// карта коліна лише на «Огляді», як карта плеча; друк (світлі картки, темний текст, перша сторінка не порожня, шапка не друкується ні на одній сторінці); режим без JavaScript; підпис у шапці «Зеленого» вигляду ≥ 12 px.
+const ATLAS_ZONE_ORDER = ['brain', 'shoulder', 'spine', 'gut', 'muscles', 'knee'];
+const ATLAS_ZONE_NAME = {brain: 'Мозок', shoulder: 'Плечовий комплекс', spine: 'Хребет', muscles: 'М’язова система', gut: 'ШКТ', knee: 'Колінний комплекс'};
+const ATLAS_DISCLAIMER = 'Симптоми та діагноз не визначаються лише за вибором області на схемі.';
+
+// Підписи пінів на фігурі: контраст за пікселями самих літер. Знімок із текстом і без нього (колір тексту прозорий), різниця дає літери, і кожна літера порівнюється з тим, що справді під нею
+// (сторінка, плашка, малюнок). paintedContrast() для цього не годиться: він бере найчастіший колір прямокутника за тло, тож для тексту прямо на малюнку фігури показував 10 : 1
+// там, де справжній контраст був 3,4 : 1 (аудит 2026-11-12). Медіана літерних пікселів краща за «найкращий піксель»: край тонкої літери завжди згладжений, тому для тексту 12 px ця міра
+// приблизно втричі нижча за номінальний контраст, і поріг 4,5 на ній суворіший за 4,5 за стандартом.
+async function atlasPinLabelContrast(page) {
+  await page.evaluate(() => document.querySelector('.atlas-body-canvas').scrollIntoView({block: 'center'}));
+  await page.waitForTimeout(200);
+  const scale = await page.evaluate(() => devicePixelRatio);
+  const labels = await page.evaluate(() => {
+    const out = [];
+    for (const zone of document.querySelectorAll('.atlas-zone')) {
+      for (const [kind, element] of [['name', zone.querySelector('span')], ['sub', zone.querySelector('small')]]) {
+        if (!element || !element.getClientRects().length) continue;
+        const range = document.createRange();
+        range.selectNodeContents(kind === 'name' ? ([...element.childNodes].find(node => node.nodeType === 3) || element) : element);
+        const box = range.getBoundingClientRect();
+        if (box.width > 2) out.push({zone: zone.dataset.zone, kind, x: box.x, y: box.y, width: box.width, height: box.height});
+      }
+    }
+    return out;
+  });
+  const withText = decodePng(await page.screenshot());
+  const hide = await page.addStyleTag({content: '.atlas-zone span, .atlas-zone small { color: transparent !important; text-shadow: none !important; -webkit-text-stroke: 0 !important; }'});
+  await page.waitForTimeout(200);
+  const withoutText = decodePng(await page.screenshot());
+  await hide.evaluate(element => element.remove());
+  return labels.map(label => ({...label, ...glyphContrast(withText, withoutText, {x: label.x * scale, y: label.y * scale, width: label.width * scale, height: label.height * scale})}));
+}
+
+async function atlasAuditFlow(browser, origin, viewport) {
+  const where = `atlas audit fixes @${viewport.name}`;
+  const phone = viewport.width <= 600, stacked = viewport.width <= 900;
+  // reducedMotion: прокрутка до результату після дотику до піна тоді миттєва, і підписи не рухаються під час знімків пікселів.
+  const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html', {contextOptions: {reducedMotion: 'reduce', ...(phone ? {hasTouch: true, isMobile: true} : {})}});
+
+  // 1) Назва вкладки браузера (п. 9): раніше однакова для всіх зон. Тепер зона, а за потреби й вкладка.
+  // Типовий стан (плече, «Огляд») лишає звичайну назву сторінки: «Зберегти в мій список» запам'ятовує назву на момент завантаження, а посилання веде на atlas.html без зони.
+  const baseTitle = 'Атлас Evidence — Evidence UA';
+  check(where, await page.title() === baseTitle, `the default state keeps the page title (${await page.title()})`);
+  const titles = new Set();
+  for (const zone of ATLAS_ZONE_ORDER) {
+    await atlasSelectZone(page, zone);
+    const title = await page.title();
+    titles.add(title);
+    check(where, title === (zone === 'shoulder' ? baseTitle : `Атлас · ${ATLAS_ZONE_NAME[zone]} — Evidence UA`), `${zone}: the title names the zone (${title})`);
+  }
+  check(where, titles.size === ATLAS_ZONE_ORDER.length, 'every zone has its own title');
+  await page.locator('#atlas-tab-anatomy').click();
+  check(where, await page.title() === 'Атлас · Колінний комплекс · Анатомія — Evidence UA', `a tab of the open zone is part of the title (${await page.title()})`);
+  await page.locator('#atlas-tab-overview').click();
+  check(where, await page.title() === 'Атлас · Колінний комплекс — Evidence UA', `the overview tab drops it again (${await page.title()})`);
+  await atlasSelectZone(page, 'spine');
+  await page.locator('#atlas-tab-symptoms').click();
+  check(where, await page.title() === 'Атлас · Хребет · Симптоми — Evidence UA', `a tab is part of the title (${await page.title()})`);
+  await page.goBack();
+  await page.waitForFunction(() => document.getElementById('atlas-zone-title').textContent.includes('Колінний'));
+  check(where, await page.title() === 'Атлас · Колінний комплекс — Evidence UA', `«Назад» restores the title of the previous zone (${await page.title()})`);
+
+  // 2) «Перейти до змісту» (п. 9) і порядок Tab (п. 10): перша зупинка — це посилання (спільна шапка вставляється перед ним після завантаження, скрипт ставить його першим),
+  // воно видиме й читабельне, Enter веде до заголовка сторінки; далі Tab іде піном згори вниз, як вони стоять на фігурі.
+  await page.goto(origin + '/atlas.html', {waitUntil: 'load'});
+  await page.waitForSelector('.eua-site-header');
+  await page.keyboard.press('Tab');
+  const first = await page.evaluate(() => { const element = document.activeElement, box = element.getBoundingClientRect(); return {cls: element.className, href: element.getAttribute('href'), text: element.textContent.trim(), top: box.top, bottom: box.bottom, left: box.left, right: box.right, height: box.height}; });
+  check(where, first.cls.includes('atlas-skip') && first.href === '#atlas-title' && first.text === 'Перейти до змісту', `the first Tab stop is the skip link (${JSON.stringify(first)})`);
+  check(where, first.top >= 0 && first.bottom <= viewport.height && first.left >= 0 && first.right <= viewport.width && first.height >= 44, `the focused skip link is fully on screen and at least 44 px tall (${JSON.stringify(first)})`);
+  const skipContrast = await paintedContrast(page, page.locator('.atlas-skip'));
+  check(where, skipContrast.ratio >= 4.5, `the focused skip link is readable (${skipContrast.ratio.toFixed(2)}:1)`);
+  await page.keyboard.press('Enter');
+  const afterSkip = await page.evaluate(() => ({id: document.activeElement.id, hash: location.hash}));
+  check(where, afterSkip.id === 'atlas-title' && afterSkip.hash === '#atlas-title', `Enter moves focus to the page heading (${JSON.stringify(afterSkip)})`);
+  await page.keyboard.press('Tab');
+  check(where, await page.evaluate(() => document.activeElement.classList.contains('atlas-about')), 'the next Tab stop is the first control of the content (the shared header was skipped)');
+  const tabbed = [];
+  for (let step = 0; step < 80 && tabbed.length < ATLAS_ZONE_ORDER.length; step++) {
+    await page.keyboard.press('Tab');
+    const zone = await page.evaluate(() => document.activeElement.dataset?.zone || null);
+    if (zone) tabbed.push(zone);
+  }
+  const visual = await page.evaluate(() => [...document.querySelectorAll('.atlas-zone')].map(button => ({zone: button.dataset.zone, top: button.getBoundingClientRect().top})).sort((a, b) => a.top - b.top).map(item => item.zone));
+  check(where, tabbed.join() === visual.join() && visual.join() === ATLAS_ZONE_ORDER.join(), `Tab goes through the pins in the order of the figure, top to bottom (Tab: ${tabbed.join()}; figure: ${visual.join()})`);
+
+  // 3) Підписи пінів на фігурі (п. 2): контраст за пікселями літер у обох темах. Вибрана зона «Хребет» (оранжева) була найгіршою: 3,41 : 1 на комп’ютері й 3,88 : 1 на телефоні у світлій темі.
+  await page.goto(origin + '/atlas.html', {waitUntil: 'load'});
+  for (const theme of ['dark', 'light']) {
+    await page.evaluate(value => { if (value === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme; }, theme);
+    await atlasSelectZone(page, 'spine');
+    const labels = await atlasPinLabelContrast(page);
+    check(where, labels.length === (viewport.width > 580 ? 12 : 6), `${theme} theme: every pin label was measured (${labels.length})`);
+    for (const label of labels) check(where, label.median >= 4.5, `${theme} theme: the ${label.kind === 'name' ? 'label' : 'sub-label'} of «${ATLAS_ZONE_NAME[label.zone]}»${label.zone === 'spine' && label.kind === 'name' ? ' (selected, orange)' : ''} reads at ${label.median === undefined ? 'nothing' : label.median.toFixed(2) + ':1'} on the pixels of its letters (needs 4.5; ${label.pixels ?? 0} pixels)`);
+  }
+  await page.evaluate(() => { delete document.documentElement.dataset.theme; });
+
+  // 4) Шлях «Атлас → зона → вкладка» (п. 8): абзац, а не порожній орієнтир nav; не довший за два рядки; смуга з кнопкою «До фігури» не вища за 44 px (раніше 61 px на 360 і 320);
+  // стрілка стоїть на початку ланки, що йде за нею, і ніколи не лишається самотньою в кінці рядка; довга ланка (назва точки болю) скорочується трикрапкою.
+  for (const route of ['?zone=shoulder&tab=rehab', '?zone=knee&tab=anatomy', '?zone=muscles&tab=research', '?zone=shoulder&point=bicipital-groove']) {
+    await page.goto(origin + '/atlas.html' + route, {waitUntil: 'load'});
+    if (route.includes('point')) await page.waitForSelector('[data-point-title]');
+    const crumb = await page.evaluate(() => {
+      const path = document.getElementById('atlas-breadcrumb'), bar = path.closest('.atlas-detail-bar');
+      const shown = [...path.querySelectorAll('.atlas-crumb')].filter(item => item.getClientRects().length);
+      return {tag: path.tagName, bar: bar.getBoundingClientRect().height, lines: new Set(shown.map(item => Math.round(item.getBoundingClientRect().top))).size, single: shown.every(item => item.getClientRects().length === 1),
+        arrows: shown.map(item => { const style = getComputedStyle(item, '::before'); return style.display === 'none' ? 'none' : style.content; }), text: shown.map(item => item.textContent), clipped: shown.filter(item => item.scrollWidth > item.clientWidth + 1).map(item => item.textContent),
+        emptyNavs: [...document.querySelectorAll('nav')].filter(nav => !nav.querySelector('a[href]')).map(nav => nav.getAttribute('aria-label') || nav.className)};
+    });
+    const label = `${route}: ${crumb.text.join(' → ')}`;
+    check(where, crumb.tag === 'P' && crumb.emptyNavs.length === 0, `${label}: the path is a paragraph and no navigation landmark is empty (${crumb.tag}; ${crumb.emptyNavs.join(', ')})`);
+    check(where, crumb.lines <= 2 && crumb.single, `${label}: at most two lines and no crumb is split (${crumb.lines} lines)`);
+    check(where, stacked ? crumb.bar <= 46 : crumb.bar <= 24, `${label}: the bar is not taller than its button (${Math.round(crumb.bar)} px)`);
+    check(where, !/→/.test(crumb.arrows[0]) && crumb.arrows.slice(1).every(content => content.includes('→')), `${label}: the arrow leads the crumb that follows it, the first crumb has none (${JSON.stringify(crumb.arrows)})`);
+    if (!route.includes('point')) check(where, crumb.clipped.length === 0, `${label}: no crumb is cut (${crumb.clipped.join(', ')})`);
+    check(where, phone ? !crumb.text.includes('Атлас') : crumb.text[0] === 'Атлас', `${label}: «Атлас» as the first crumb only where there is room (${crumb.text.join(' | ')})`);
+  }
+
+  // 5) Низ сторінки (п. 5) і «Куди далі»: застереження Атласу лише своє, перше речення спільної примітки одне на сторінку; три картки «Куди далі» там, де вони не дублюють зону; кнопки «Зберегти» й «Друкувати» завжди.
+  for (const zone of ATLAS_ZONE_ORDER) {
+    await page.goto(origin + `/atlas.html?zone=${zone}`, {waitUntil: 'load'});
+    await page.waitForSelector('.eua-next');
+    const bottom = await page.evaluate(() => {
+      const visible = element => !!element && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
+      const next = document.querySelector('.eua-next');
+      return {heading: visible(next.querySelector('h2')), cards: [...next.querySelectorAll('li a')].filter(visible).length, tags: [...next.querySelectorAll('li a span')].map(item => item.textContent), save: visible(next.querySelector('.eua-save')), print: visible(next.querySelector('.eua-print')),
+        disclaimer: document.querySelector('.atlas-disclaimer').textContent.trim(), notice: document.querySelector('.eua-site-notice p').textContent.trim(), repeats: document.body.innerText.split('Матеріал освітній і не є персональною медичною рекомендацією').length - 1};
+    });
+    const wantNext = ['shoulder', 'spine', 'knee'].includes(zone);
+    check(where, bottom.heading === wantNext && bottom.cards === (wantNext ? 3 : 0), `${zone}: «Куди далі» is ${wantNext ? 'shown with three cards' : 'folded away (the zone has its own links)'} (${bottom.heading}, ${bottom.cards})`);
+    check(where, bottom.save && bottom.print, `${zone}: the «Зберегти» and «Друкувати» buttons stay`);
+    check(where, bottom.tags.every(tag => tag && !/[A-Za-z]/.test(tag)), `${zone}: the kickers of «Куди далі» are Ukrainian (${bottom.tags.join(', ')})`);
+    check(where, bottom.disclaimer === ATLAS_DISCLAIMER && bottom.notice === NOTICE_TEXT && bottom.repeats === 1, `${zone}: the first sentence of the shared notice stands once on the page (${bottom.repeats}×; «${bottom.disclaimer}»)`);
+  }
+
+  // 6) Назви без англійських слів (п. 4) і чесна примітка про докази (п. 6) на всіх станах «зона × вкладка».
+  for (const [zone, tabs] of Object.entries(ATLAS_TABS)) {
+    await atlasSelectZone(page, zone);
+    for (const tab of tabs) {
+      if (tabs.length > 1) await page.locator(`#atlas-tab-${tab}`).click();
+      if (zone === 'spine' && tab === 'anatomy') await page.waitForSelector('.spine-region-btn');
+      if (tab === 'training' && ['spine', 'muscles'].includes(zone)) await page.waitForSelector('.atlas-practice-list a');
+      const text = await page.locator('.atlas-detail').innerText();
+      check(where, !/Muscle Lab|Movement Lab|\bAtlas\b/.test(text), `${zone}/${tab}: no English section names in the zone panel`);
+      if (['shoulder', 'knee'].includes(zone) && tab === 'research') check(where, text.includes('Поки що в цьому модулі немає наведених джерел і оцінених рівнів впевненості'), `${zone}/research: says plainly that sources and confidence levels are not there yet`);
+      if (zone === 'knee' && tab === 'overview') check(where, !(await page.locator('.atlas-topic h3').allInnerTexts()).includes('ACL') && (await page.locator('.atlas-topic h3').allInnerTexts()).includes('Передня хрестоподібна зв’язка'), 'the knee card is named in full, not «ACL»');
+    }
+  }
+
+  // 7) Карта коліна лише на «Огляді», як карта плеча (п. 10): на іншій вкладці ліворуч знову фігура з кнопками зон, а не карта, що залишалась би на місці.
+  const mapState = zone => page.evaluate(name => ({map: !document.getElementById(`${name}-pain-map`).hidden, pins: [...document.querySelectorAll('.atlas-zone')].filter(pin => pin.getClientRects().length).length, tab: document.querySelector('[data-atlas-tab][aria-selected="true"]').dataset.atlasTab}), zone);
+  await page.goto(origin + '/atlas.html?zone=knee', {waitUntil: 'load'});
+  await page.waitForSelector('.knee-stage');
+  check(where, JSON.stringify(await mapState('knee')) === JSON.stringify({map: true, pins: 0, tab: 'overview'}), `knee: the map is open on the overview (${JSON.stringify(await mapState('knee'))})`);
+  await page.locator('#atlas-tab-anatomy').click();
+  await page.waitForFunction(() => document.getElementById('knee-pain-map').hidden, null, {timeout: 4000}).catch(() => {});
+  check(where, JSON.stringify(await mapState('knee')) === JSON.stringify({map: false, pins: 6, tab: 'anatomy'}), `knee: on another tab the figure with its six pins is back (${JSON.stringify(await mapState('knee'))})`);
+  await page.locator('#atlas-tab-overview').click();
+  await page.waitForFunction(() => !document.getElementById('knee-pain-map').hidden, null, {timeout: 4000}).catch(() => {});
+  check(where, JSON.stringify(await mapState('knee')) === JSON.stringify({map: true, pins: 0, tab: 'overview'}), 'knee: the overview opens the map again');
+  await page.goto(origin + '/atlas.html?zone=knee&tab=symptoms', {waitUntil: 'load'});
+  await page.waitForSelector('[data-atlas-tab="symptoms"][aria-selected="true"]');
+  check(where, JSON.stringify(await mapState('knee')) === JSON.stringify({map: false, pins: 6, tab: 'symptoms'}), `knee: an address with a tab opens that tab without the map (${JSON.stringify(await mapState('knee'))})`);
+  await page.goto(origin + '/atlas.html', {waitUntil: 'load'});
+  await page.locator('[data-zone="shoulder"]').click();
+  await page.waitForFunction(() => !document.getElementById('shoulder-pain-map').hidden);
+  await page.locator('#atlas-tab-anatomy').click();
+  await page.waitForFunction(() => document.getElementById('shoulder-pain-map').hidden, null, {timeout: 4000}).catch(() => {});
+  check(where, (await mapState('shoulder')).pins === 6 && !(await mapState('shoulder')).map, 'shoulder: the same behaviour (the map only on the overview)');
+
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0 && seen.badResponses.length === 0, `no third-party or failed requests: ${[...seen.external, ...seen.badResponses].join(', ')}`);
+  await context.close();
+}
+
+// Друк (п. 1): шапка сайту не друкується ні на одній сторінці (правило display:flex!important із site-header.css перемагало друкове), на папері світлі картки й темний текст,
+// без фігури, вкладок, перемикача «Спереду / Ззаду» й «До фігури», а перша сторінка не порожня: панель зони починається майже зверху.
+async function atlasPrintFlow(browser, origin, viewport) {
+  const where = `atlas print @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, {name: viewport.name, width: 794, height: 1123}, '/atlas.html');
+  const states = [['', 'shoulder overview'], ['?zone=spine&tab=training', 'spine training'], ['?zone=knee&tab=symptoms', 'knee symptoms'], ['?zone=muscles', 'muscles overview'], ['?zone=muscles&tab=training', 'muscles training'], ['?zone=brain', 'brain overview'], ['?zone=gut', 'gut overview']];
+  for (const [route, name] of states) {
+    await page.emulateMedia({media: 'screen'});
+    await page.goto(origin + '/atlas.html' + route, {waitUntil: 'load'});
+    if (route.includes('training')) await page.waitForSelector('.atlas-practice-list a');
+    await page.waitForTimeout(250);
+    await page.emulateMedia({media: 'print'});
+    const facts = await page.evaluate(() => {
+      const visible = element => !!element && element.getClientRects().length > 0 && getComputedStyle(element).display !== 'none' && getComputedStyle(element).visibility !== 'hidden';
+      const parse = value => { const numbers = value.match(/[\d.]+/g).map(Number); return {r: numbers[0], g: numbers[1], b: numbers[2], a: numbers.length > 3 ? numbers[3] : 1}; };
+      const linear = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; };
+      const luminance = c => .2126 * linear(c.r) + .7152 * linear(c.g) + .0722 * linear(c.b);
+      const backdrop = element => { for (let node = element; node; node = node.parentElement) { const c = parse(getComputedStyle(node).backgroundColor); if (c.a > .5) return c; } return {r: 255, g: 255, b: 255}; };
+      const ratio = (a, b) => (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+      const page = document.querySelector('.atlas-page');
+      const weak = [], dark = [];
+      for (const element of page.querySelectorAll('*')) {
+        if (!visible(element) || element.closest('.atlas-sr-only, svg')) continue;
+        if (element.closest('#atlas-content, .atlas-detail') && luminance(backdrop(element)) < .5) dark.push(`${element.tagName.toLowerCase()}.${String(element.className).split(' ')[0]}`);
+        const own = [...element.childNodes].some(node => node.nodeType === 3 && node.textContent.trim());
+        if (own && ratio(luminance(parse(getComputedStyle(element).color)), luminance(backdrop(element))) < 4.5) weak.push(`${element.tagName.toLowerCase()}.${String(element.className).split(' ')[0]} «${element.textContent.trim().slice(0, 24)}»`);
+      }
+      const detail = document.querySelector('.atlas-detail');
+      return {header: visible(document.querySelector('header.eua-site-header')), nextSteps: visible(document.querySelector('.eua-next')), figure: visible(document.querySelector('.atlas-figure-panel')), tabs: visible(document.querySelector('.atlas-tabs')), views: visible(document.querySelector('.atlas-views')), toFigure: visible(document.querySelector('.atlas-to-figure')),
+        zoneButtons: [...document.querySelectorAll('.atlas-zone')].filter(visible).length, detailTop: detail.getBoundingClientRect().top + scrollY, breakInside: getComputedStyle(detail).breakInside, weak: weak.slice(0, 5), dark: dark.slice(0, 5), body: getComputedStyle(document.body).backgroundColor, colorScheme: getComputedStyle(document.documentElement).colorScheme};
+    });
+    check(where, !facts.header && !facts.nextSteps, `${name}: the site header and «Куди далі» are not printed`);
+    check(where, !facts.figure && !facts.tabs && !facts.views && !facts.toFigure && facts.zoneButtons === 0, `${name}: the figure, the tabs, «Спереду / Ззаду» and «До фігури» are not printed`);
+    check(where, facts.detailTop < 450, `${name}: the zone panel starts on the first page, not below an empty block (${Math.round(facts.detailTop)} px from the top)`);
+    check(where, facts.breakInside === 'auto', `${name}: the zone panel may break across pages (${facts.breakInside})`);
+    check(where, facts.dark.length === 0, `${name}: no dark card on paper (${facts.dark.join(', ')})`);
+    check(where, facts.weak.length === 0, `${name}: every printed text reads against its own background at 4.5:1 (${facts.weak.join(' | ')})`);
+    check(where, facts.body === 'rgb(255, 255, 255)' && facts.colorScheme === 'light', `${name}: a white page in the light colour scheme (${facts.body}, ${facts.colorScheme})`);
+  }
+  // Шапка сайту не друкується й на інших сторінках (правило було спільне).
+  for (const route of ['/index.html', '/sleep.html', '/supplements.html', '/nutrition.html', '/muscle-lab.html']) {
+    await page.emulateMedia({media: 'screen'});
+    await page.goto(origin + route, {waitUntil: 'load'});
+    await page.waitForSelector('header.eua-site-header');
+    await page.emulateMedia({media: 'print'});
+    const header = await page.evaluate(() => getComputedStyle(document.querySelector('header.eua-site-header')).display);
+    check(where, header === 'none', `${route}: the site header is not printed (display: ${header})`);
+  }
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `no errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  await context.close();
+}
+
+// Без JavaScript (п. 7): кнопки зон, вкладки й перемикач вигляду нічого не роблять, а панель порожня. Тепер їх немає, а замість них пояснення з прямими посиланнями, які справді відкриваються.
+async function atlasNoScriptFlow(browser, origin, viewport) {
+  const where = `atlas without JavaScript @${viewport.name}`;
+  const phone = viewport.width <= 600;
+  const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block', javaScriptEnabled: false, ...(phone ? {hasTouch: true, isMobile: true} : {})});
+  const page = await context.newPage();
+  const seen = await observePage(page, origin);
+  await page.goto(origin + '/atlas.html', {waitUntil: 'load'});
+  const facts = await page.evaluate(() => {
+    const visible = element => !!element && element.getClientRects().length > 0 && getComputedStyle(element).display !== 'none' && getComputedStyle(element).visibility !== 'hidden';
+    return {note: visible(document.querySelector('.atlas-nojs')), heading: document.querySelector('.atlas-nojs h2')?.textContent, links: [...document.querySelectorAll('.atlas-nojs a')].map(link => link.getAttribute('href')), figure: visible(document.querySelector('.atlas-figure-panel')), detail: visible(document.querySelector('.atlas-detail')),
+      deadControls: [...document.querySelectorAll('button, [role="tab"]')].filter(visible).length, h1: visible(document.querySelector('h1')), state: visible(document.querySelector('#atlas-state')), overflow: document.documentElement.scrollWidth - innerWidth};
+  });
+  check(where, facts.note && facts.heading === 'Для інтерактивного атласу потрібен JavaScript', `the note says what is missing (${facts.heading})`);
+  check(where, !facts.figure && !facts.detail && facts.deadControls === 0, `no dead figure, empty panel or button remains (${facts.deadControls} controls)`);
+  check(where, facts.h1 && facts.state && facts.overflow <= 1, `the heading and the state block stay and nothing overflows (${facts.overflow} px)`);
+  check(where, facts.links.length >= 4 && facts.links.every(href => href.startsWith('./')), `the note links to our own pages (${facts.links.join(', ')})`);
+  for (const href of facts.links) {
+    const response = await context.request.get(origin + '/' + href.replace('./', ''));
+    check(where, response.status() === 200, `${href} opens (${response.status()})`);
+  }
+  check(where, seen.external.length === 0, `no third-party requests: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
+// Підпис «НАУКА · ЗДОРОВ’Я · РУХ» у шапці «Зеленого» вигляду мав 9 px (мінімум на сайті — 12 px, п. 12). На всіх ширинах до найвужчої (320 px) без горизонтального прокручування.
+async function atlasGreenHeaderFlow(browser, origin, viewport) {
+  const where = `atlas green header @${viewport.name}`;
+  for (const width of [320, 360, 390, 768, 1100, 1440]) {
+    for (const route of ['/atlas.html', '/sleep.html']) {
+      const {context, page} = await open(browser, origin, {name: `${width}`, width, height: 800}, route, {contextOptions: width <= 600 ? {hasTouch: true, isMobile: true} : {}, initScript: () => { localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'})); }});
+      const facts = await page.evaluate(() => {
+        const tagline = document.querySelector('.eua-site-header .eua-header-wordmark small'), box = tagline?.getBoundingClientRect();
+        const small = []; const walker = document.createTreeWalker(document.querySelector('header.eua-site-header'), NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) { const element = node.parentElement; if (node.textContent.trim() && element.getClientRects().length && parseFloat(getComputedStyle(element).fontSize) < 12) small.push(`${parseFloat(getComputedStyle(element).fontSize)}px «${node.textContent.trim().slice(0, 24)}»`); }
+        return {palette: document.documentElement.dataset.palette, shown: !!box && box.width > 0, size: tagline ? parseFloat(getComputedStyle(tagline).fontSize) : 0, small, height: Math.round(document.querySelector('header.eua-site-header').getBoundingClientRect().height), overflow: document.documentElement.scrollWidth - innerWidth, right: Math.max(...[...document.querySelectorAll('.eua-site-header button, .eua-site-header .eua-header-brand')].map(item => item.getBoundingClientRect().right))};
+      });
+      // Від 431 px підпис показано й не менший за 12 px; на телефонах (≤ 430 px) він схований, як у космічній палітрі: 12 px не вміщується в один ряд з кнопками, і шапка на 390 px розтягувалась би з 81 до 139 px.
+      const expectShown = width > 430;
+      check(where, facts.palette === 'green' && facts.shown === expectShown && (!expectShown || facts.size >= 12), `${width} px ${route}: the tagline under the site name is ${expectShown ? 'shown at 12 px or more' : 'hidden on a phone'} (${facts.size}px, shown: ${facts.shown}, palette: ${facts.palette})`);
+      const heightLimit = width <= 360 ? 145 : width <= 1100 ? 90 : 125;
+      check(where, facts.height <= heightLimit, `${width} px ${route}: the header keeps its height (${facts.height} px, at most ${heightLimit})`);
+      check(where, facts.small.length === 0, `${width} px ${route}: no header text under 12 px (${facts.small.join(' | ')})`);
+      check(where, facts.overflow <= 1 && facts.right <= width + 1, `${width} px ${route}: the header fits the screen (overflow ${facts.overflow} px, right edge ${Math.round(facts.right)} px)`);
       await context.close();
     }
   }
@@ -4912,6 +5203,25 @@ async function homeFlows(browser, origin) {
   for (const viewport of viewports) await isolatedFlow(homeWaveFlow, browser, origin, viewport, {reduced: true, touch: viewport.name === 'mobile'});
 }
 
+// Усі потоки Атласу разом: повний прогін і QA_ATLAS_ONLY=1 (швидка перевірка лише Атласу під час роботи).
+// QA_ATLAS_FLOWS=atlasAuditFlow,atlasPrintFlow залишає лише названі потоки (для перевірки навмисною поломкою: один потік замість п'яти хвилин).
+const atlasWanted = name => !process.env.QA_ATLAS_FLOWS || process.env.QA_ATLAS_FLOWS.split(',').includes(name);
+async function atlasFlows(browser, origin) {
+  const narrow = {name: 'mobile-narrow', width: 360, height: 780};
+  if (atlasWanted('atlasFlow')) for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
+  // Атлас: оновлення 2026-11-10 («1-7 так» після аудиту шаблонності й функціональності); 360 включено, бо вузький телефон найтісніший.
+  if (atlasWanted('atlasUpdateFlow')) for (const viewport of [...viewports, narrow]) await isolatedFlow(atlasUpdateFlow, browser, origin, viewport);
+  if (atlasWanted('atlasLightFlow')) for (const viewport of [...viewports, narrow]) await isolatedFlow(atlasLightFlow, browser, origin, viewport);
+  if (atlasWanted('atlasPaletteFlow')) for (const viewport of viewports) await isolatedFlow(atlasPaletteFlow, browser, origin, viewport);
+  if (atlasWanted('atlasPhoneFlow')) for (const viewport of [...viewports, narrow]) await isolatedFlow(atlasPhoneFlow, browser, origin, viewport);
+  if (atlasWanted('atlasLoadOrderFlow')) for (const viewport of viewports) await isolatedFlow(atlasLoadOrderFlow, browser, origin, viewport);
+  // Атлас: виправлення за аудитом 2026-11-12 («з першого до 12 одним PR»). 360 включено (найвужчий телефон), 320 міряє шапка «Зеленого» вигляду.
+  if (atlasWanted('atlasAuditFlow')) for (const viewport of [...viewports, narrow]) await isolatedFlow(atlasAuditFlow, browser, origin, viewport);
+  if (atlasWanted('atlasPrintFlow')) await isolatedFlow(atlasPrintFlow, browser, origin, viewports[1]);
+  if (atlasWanted('atlasNoScriptFlow')) for (const viewport of viewports) await isolatedFlow(atlasNoScriptFlow, browser, origin, viewport);
+  if (atlasWanted('atlasGreenHeaderFlow')) await isolatedFlow(atlasGreenHeaderFlow, browser, origin, viewports[0]);
+}
+
 const homeOnly = process.env.QA_HOME_ONLY === '1';
 const sectionsOnly = process.env.QA_SECTIONS_ONLY === '1';
 const webgl = [];
@@ -4928,6 +5238,8 @@ try {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
   } else if (process.env.QA_LENS_ONLY === '1') {
     await lensFlows(browser, origin);
+  } else if (process.env.QA_ATLAS_ONLY === '1') {
+    await atlasFlows(browser, origin);
   } else if (homeOnly) {
     await homeFlows(browser, origin);
     for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);
@@ -4992,13 +5304,7 @@ try {
     for (const viewport of viewports) await videosFlow(browser, origin, viewport);
     for (const viewport of viewports) await dietsFlow(browser, origin, viewport);
     for (const viewport of viewports) await pineFlow(browser, origin, viewport);
-    for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
-    // Атлас: оновлення 2026-11-10 («1-7 так» після аудиту шаблонності й функціональності); 360 включено, бо вузький телефон найтісніший.
-    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasUpdateFlow, browser, origin, viewport);
-    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasLightFlow, browser, origin, viewport);
-    for (const viewport of viewports) await isolatedFlow(atlasPaletteFlow, browser, origin, viewport);
-    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(atlasPhoneFlow, browser, origin, viewport);
-    for (const viewport of viewports) await isolatedFlow(atlasLoadOrderFlow, browser, origin, viewport);
+    await atlasFlows(browser, origin);
     for (const viewport of viewports) await musclesFlow(browser, origin, viewport);
     for (const viewport of viewports) webgl.push(await spineFlow(browser, origin, viewport));
     for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);

@@ -655,7 +655,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 }
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
- const updates={'home-spectrum.css?v=7':'home-spectrum.css?v=8','home-lens.css?v=5':'home-lens.css?v=6','home-lens.css?v=6':'home-lens.css?v=7','home-fresh.css?v=3':'home-fresh.css?v=4'};
+ const updates={'home-spectrum.css?v=7':'home-spectrum.css?v=8','home-lens.css?v=5':'home-lens.css?v=6','home-lens.css?v=6':'home-lens.css?v=7','home-lens.css?v=7':'home-lens.css?v=8','home-fresh.css?v=3':'home-fresh.css?v=4'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

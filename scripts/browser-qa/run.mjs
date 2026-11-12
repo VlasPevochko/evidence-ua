@@ -1,6 +1,6 @@
 // Browser QA for the static site. Run from the repository root:
 //   npm ci --prefix scripts/browser-qa --ignore-scripts && node scripts/browser-qa/run.mjs
-// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_SECTIONS_ONLY=1 (search by page sections)
+// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_LENS_ONLY=1 (the home lens only), QA_SECTIONS_ONLY=1 (search by page sections)
 // The default run and CI still execute every page and regression flow.
 // Uses the Chrome already installed on the machine (BROWSER_EXECUTABLE overrides the path).
 // Everything is served from a throw-away local server and third-party requests are blocked, so
@@ -12,6 +12,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium} from 'playwright-core';
 import {areas} from '../../src/platform/catalog.mjs';
 import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
+import {decodePng, seamDepth, gapResidue} from './lens-pixels.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
 // as runner logs, whose external storage may be inaccessible to a reviewer.
@@ -2071,10 +2072,13 @@ async function lensSnapshot(page) {
       const values = clip.match(/^inset\(([^)]+)\)$/)?.[1].split(/\s+/) || [];
       const inset = [values[0], values[1] || values[0], values[2] || values[0], values[3] || values[1] || values[0]];
       const pixels = (value, size) => parseFloat(value) * (value?.endsWith('%') ? size / 100 : 1);
-      return {image: imageRect, transform:getComputedStyle(node).transform, clip,
+      return {image: imageRect, transform:getComputedStyle(node).transform, clip, opacity:Number(getComputedStyle(node).opacity),
         left:imageRect.left + pixels(inset[3], imageRect.width), right:imageRect.right - pixels(inset[1], imageRect.width),
         loaded:image.complete && image.naturalWidth > 0, src:image.getAttribute('src')};
     });
+    // 2026-11-12: while progress is 0 the left copy is the whole lens and the right copy is not painted,
+    // so a closed lens is one image with no join (two abutting copies left a dark line there).
+    const whole = halves.length === 2 && halves[1].opacity === 0 && Math.abs(halves[0].left - halves[0].image.left) <= 1 && Math.abs(halves[0].right - halves[0].image.right) <= 1;
     const hit = (x,y) => {const node = document.elementFromPoint(x,y);return !!node && (node === action || action.contains(node));};
     const hitPoints = [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].map(([x,y]) => hit(actionRect.left+actionRect.width*x,actionRect.top+actionRect.height*y));
     const textFits = [...interior.querySelectorAll('p,a')].every(node => {
@@ -2084,7 +2088,7 @@ async function lensSnapshot(page) {
     return {
       height:document.documentElement.scrollHeight,
       complete:section.hasAttribute('data-lens-complete'),
-      stage:stageRect, halves, gap:halves.length === 2 ? halves[1].left-halves[0].right : null,
+      stage:stageRect, halves, whole, gap:halves.length === 2 ? (whole ? 0 : halves[1].left-halves[0].right) : null,
       interior:{...rect(interior), opacity:Number(getComputedStyle(interior).opacity), text:interior.innerText, textFits},
       action:{...actionRect, visible:rendered(action), href:action.getAttribute('href'), tag:action.tagName,
         inside:stage.contains(action), accessible:!action.closest('[hidden], [inert], [aria-hidden="true"]'), focused:document.activeElement===action, controls:stage.querySelectorAll('a,button,input,[role="button"]').length,
@@ -2183,6 +2187,86 @@ async function lensTileColours(page) {
     return {src:node.currentSrc.split('/').pop().replace('card-art-','').replace('.webp',''),hue,sat:max?d/max:0,val:max,width:w};
   }));
 }
+// Owner 2026-11-12: the lens is judged on painted pixels, not CSS values. Two screenshots of the same area,
+// as the visitor sees it and with the lens artwork swapped for a reference, are compared by
+// scripts/browser-qa/lens-pixels.mjs (its own unit test proves the measuring code).
+const LENS_SINGLE_IMAGE_CSS = '.home-lens-half--right{display:none!important}.home-lens-half--left{clip-path:none!important}.home-lens-half--left .home-lens-art{mask-image:none!important;-webkit-mask-image:none!important}';
+const LENS_NO_ARTWORK_CSS = '.home-lens-core{display:none!important}';
+async function lensPixelPair(page, clip, referenceCss) {
+  // Lazy artwork and web fonts that finish between the two screenshots would read as a difference.
+  await page.locator('[data-home-lens] .home-lens-art, [data-home-lens] .home-lens-nebula').evaluateAll(nodes => Promise.all(nodes.map(async node => {
+    node.loading = 'eager';
+    if (!node.complete) await new Promise((resolve, reject) => {
+      node.addEventListener('load', resolve, {once: true});
+      node.addEventListener('error', () => reject(new Error(`Unable to load lens image ${node.currentSrc || node.src}`)), {once: true});
+    });
+    await node.decode();
+  })));
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(120);
+  // A page that is still scrolling between the two screenshots would read as a difference: retry once.
+  for (let attempt = 0; ; attempt++) {
+    const scrolled = await page.evaluate(() => scrollY);
+    const actual = decodePng(await page.screenshot({clip}));
+    const style = await page.addStyleTag({content: referenceCss});
+    await page.waitForTimeout(160);
+    const reference = decodePng(await page.screenshot({clip}));
+    await style.evaluate(node => node.remove());
+    if (await page.evaluate(() => scrollY) === scrolled || attempt > 0) return {actual, reference};
+    await page.waitForTimeout(300);
+  }
+}
+
+// The opening between the separated halves is the lens core: only the nebula behind and the readable text
+// may be there. A copy of the lens (the 2026-11-11 overlay) differs from the reference by tens of levels.
+async function checkLensOpeningIsClean(where, page, viewport, snapshot) {
+  const gap = snapshot.halves[1].left - snapshot.halves[0].right, middle = (snapshot.halves[0].right + snapshot.halves[1].left) / 2;
+  // Stay clear of the soft edges and their light (about 14px on each side).
+  const half = Math.min(30, gap / 2 - 16);
+  check(where, half >= 4, `the opening between the halves must be wide enough to inspect (${gap.toFixed(1)}px)`);
+  const top = Math.max(0, snapshot.stage.top), bottom = Math.min(snapshot.stage.bottom, viewport.height);
+  check(where, bottom - top >= 100, 'the opening must be on screen to inspect');
+  if (half < 4 || bottom - top < 100) return;
+  const clip = {x: Math.floor(middle - half), y: Math.ceil(top), width: Math.ceil(half * 2), height: Math.floor(bottom - top) - 1};
+  const {actual, reference} = await lensPixelPair(page, clip, LENS_NO_ARTWORK_CSS);
+  const residue = gapResidue(actual, reference);
+  check(where, residue.max <= 6, `the opening between the halves must show only the nebula and the readable core, not another piece of the lens (difference ${residue.max.toFixed(1)}/255 at pixel column ${residue.column})`);
+}
+
+// Owner 2026-11-12 («немає корекції»): two abutting clipped copies left a one-pixel dark line down the closed
+// lens wherever the join fell between device pixels: 23 of 33 desktop and phone sizes measured, up to 91 of 255
+// levels deep. These screens reproduced it on the previous build (laptops at 1x, 1.5x, 2x; phones at 2x, 2.75x).
+const lensSeamScreens = [
+  {name: 'desktop-1x', width: 1440, height: 900, dpr: 1},
+  {name: 'desktop-2x', width: 1440, height: 900, dpr: 2},
+  {name: 'laptop-1.5x', width: 1366, height: 768, dpr: 1.5},
+  {name: 'phone-375-2x', width: 375, height: 812, dpr: 2, mobile: true},
+  {name: 'phone-393-2.75x', width: 393, height: 852, dpr: 2.75, mobile: true}
+];
+async function homeLensSeamFlow(browser, origin, screen) {
+  const where = `home lens closed seam @${screen.name}`;
+  const {context, page, seen} = await open(browser, origin, screen, '/index.html', {contextOptions: {reducedMotion: 'no-preference', deviceScaleFactor: screen.dpr, ...(screen.mobile ? {isMobile: true, hasTouch: true} : {})}});
+  try {
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    await positionLensOnset(page, {before: 2});
+    const closed = await lensSnapshot(page);
+    check(where, closed.progress <= .001 && closed.whole, 'the lens must rest closed as one whole image at the start of the reveal');
+    const core = await page.locator('.home-lens-core').evaluate(node => { const r = node.getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}; });
+    const x = Math.floor(core.x) - 2, y = Math.max(0, Math.floor(core.y)), bottom = Math.min(Math.ceil(core.y + core.height), screen.height);
+    const clip = {x, y, width: Math.ceil(core.width) + 5, height: bottom - y};
+    check(where, clip.height >= 150, `enough of the closed lens must be on screen to measure (${clip.height}px)`);
+    if (clip.height < 150) return;
+    // The device pixel column that holds the join of the two halves.
+    const centre = Math.round((core.x + core.width / 2 - x) * screen.dpr - .5);
+    const {actual, reference} = await lensPixelPair(page, clip, LENS_SINGLE_IMAGE_CSS);
+    // Chrome versions round a fractional device width up or down; one pixel either way is the same scale.
+    check(where, Math.abs(actual.width - clip.width * screen.dpr) <= 1, `screenshots must be taken at ${screen.dpr}x (${actual.width}px for ${clip.width} CSS px)`);
+    const seam = seamDepth(actual, reference, centre);
+    check(where, seam.depth <= 3, `the closed lens must be one seamless image, but a dark line ${seam.depth.toFixed(1)}/255 deep runs through pixel column ${seam.column} (join at ${centre})`);
+    checkBrowserHealth(where, seen);
+  } finally { await context.close(); }
+}
+
 async function homeLensFlow(browser, origin, viewport) {
   const where=`home lens chooser @${viewport.name}`;
   const {context,page,seen}=await open(browser,origin,viewport,'/index.html',{contextOptions:{reducedMotion:'no-preference'}});
@@ -2193,12 +2277,14 @@ async function homeLensFlow(browser, origin, viewport) {
     await positionLensOnset(page,{before:2});
     const closed=await lensSnapshot(page);
     check(where,closed.progress<=.01&&Math.abs(closed.gap)<=1&&closed.interior.opacity===0&&!closed.action.centerHit&&!closed.coreOverlay,'the two real image halves must begin joined without a duplicate lens overlay');
+    check(where,closed.whole&&closed.halves.every(half=>half.loaded),'a closed lens is one whole image (left copy unclipped, right copy not painted), so no join can show as a dark line');
     await artifact(page,viewport,'home-lens-closed',page.locator('[data-lens-stage]'),{scroll:false});
     await page.mouse.move(viewport.width/2,viewport.height/2);
     await page.mouse.wheel(0,128);await page.waitForTimeout(240);
     const middle=await lensSnapshot(page);
     check(where,middle.progress>closed.progress&&middle.progress<1&&middle.gap>closed.gap+20,'native scrolling must still separate the actual image halves');
-    check(where,!middle.coreOverlay&&middle.gap>20,'the widening center opens onto the nebula instead of showing a smaller closed copy of the lens');
+    check(where,!middle.coreOverlay&&middle.gap>20&&!middle.whole,'the widening center opens onto the nebula instead of showing a smaller closed copy of the lens');
+    await checkLensOpeningIsClean(`${where} opening`,page,viewport,middle);
     check(where,!(await panel.isVisible())&&middle.cards.every(card=>!card.visible&&card.width===0),'partial reveal must never expose a direction');
     await artifact(page,viewport,'home-lens-opening',page.locator('[data-lens-stage]'));
     const beforeOpen=await page.evaluate(()=>scrollY);
@@ -2228,6 +2314,7 @@ async function homeLensFlow(browser, origin, viewport) {
     await positionLensOnset(page,{before:2});await page.mouse.wheel(0,324);await page.waitForTimeout(260);
     const full=await lensSnapshot(page);
     check(where,full.progress===1&&full.gap>100&&!full.coreOverlay&&full.halves.every(half=>half.loaded),'the short reveal must leave a clear nebula opening between the separated lens halves');
+    await checkLensOpeningIsClean(`${where} fully open`,page,viewport,full);
     check(where,!(await panel.isVisible())&&full.cards.every(card=>!card.visible),'even full scroll reveal keeps choices closed');
     checkLensAction(where,full,{onScreen:true});
     await artifact(page,viewport,'home-lens-fully-open',page.locator('[data-lens-stage]'));
@@ -4792,8 +4879,15 @@ async function noticeThemeFlow(browser, origin, viewport) {
   }
 }
 
-async function homeFlows(browser, origin) {
+// The lens flows alone (QA_LENS_ONLY=1) take about a minute; homeFlows runs them first, as before.
+async function lensFlows(browser, origin) {
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLensFlow, browser, origin, viewport);
+  // 2026-11-12: закрита лінза без темного шва на різних щільностях пікселів (1×, 1,5×, 2×, 2,75×).
+  for (const screen of lensSeamScreens) await isolatedFlow(homeLensSeamFlow, browser, origin, screen);
+}
+
+async function homeFlows(browser, origin) {
+  await lensFlows(browser, origin);
   for (const viewport of [
     {name:'mobile-short',width:390,height:667},
     {name:'landscape-short',width:844,height:390},
@@ -4832,6 +4926,8 @@ try {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
   } else if (sectionsOnly) {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
+  } else if (process.env.QA_LENS_ONLY === '1') {
+    await lensFlows(browser, origin);
   } else if (homeOnly) {
     await homeFlows(browser, origin);
     for (const viewport of viewports) await isolatedFlow(homeLowerFlow, browser, origin, viewport);

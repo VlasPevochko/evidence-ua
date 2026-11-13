@@ -1,6 +1,6 @@
 // Дані точок карт болю й тем плеча та коліна лежать в окремому модулі. Завантажуємо його з запасним варіантом: якщо він не завантажиться, плече й коліно покажуть
 // лише довідкову частину, а безпековий текст хребта й решта зон (він статичний, див. комент. біля spineContent) працюватимуть, як і раніше.
-const {painMaps,shoulderTopics,kneeTopics}=await import('./atlas-points.js?v=1').catch(()=>({painMaps:{},shoulderTopics:[],kneeTopics:[]}));
+const {painMaps,shoulderTopics,kneeTopics}=await import('./atlas-points.js?v=2').catch(()=>({painMaps:{},shoulderTopics:[],kneeTopics:[]}));
 
 const zoneMeta={
  brain:{title:'Мозок',summary:'Сон, стрес, когнітивні функції, фізична активність і фактори, що впливають на роботу нервової системи.',state:'Готується',stateKey:'planned'},
@@ -50,7 +50,7 @@ const shoulderContent={
  symptoms:()=>`<div class="atlas-copy-card"><h3>Симптоми — це початок питання</h3><p>Локалізація болю, провокуючі рухи, травматичний механізм, слабкість, нічний біль та зміни функції можуть спрямувати оцінку, але не замінюють клінічного обстеження.</p><ul><li>Гостра травма з вираженою втратою функції потребує окремої оцінки.</li><li>Одна провокативна проба рідко дає надійний діагноз сама по собі.</li><li>Навантажувальна толерантність змінюється з часом.</li></ul></div>`,
  training:()=>`<div class="atlas-copy-card"><h3>Тренування плеча</h3><p>Evidence UA розглядає тренування через кероване навантаження, доступний діапазон руху, прогресію обсягу та інтенсивності, а не через універсальний список «безпечних» і «небезпечних» вправ.</p><ul><li>Силові вправи можуть бути частиною профілактики й відновлення.</li><li>Біль під час руху оцінюється разом із реакцією після навантаження.</li><li>Прогресія залежить від задачі людини та попереднього рівня.</li></ul><p><a href="./exercises.html?region=shoulder">Вправи для плеча в Бібліотеці вправ →</a></p></div>`,
  rehab:()=>`<div class="atlas-copy-card"><h3>Реабілітація</h3><p>Базова логіка — повернути функцію й толерантність до необхідних навантажень. Конкретний план залежить від стану, тяжкості, часу після травми, вимог спорту чи роботи та супутніх факторів.</p><ul><li>Освіта та керування навантаженням.</li><li>Поступова силова робота.</li><li>Відновлення специфічних для задачі рухів.</li></ul></div>`,
- research:()=>`<div class="atlas-copy-card"><h3>Як тут з’являються докази</h3><p>Кожен завершений матеріал Atlas має розділяти висновок, рівень впевненості, практичну інтерпретацію та першоджерела. Ми не використовуємо декоративний «відсоток ефективності».</p><ul><li>Систематичні огляди та клінічні рекомендації — для широкої картини.</li><li>RCT та спостережні роботи — для конкретних питань.</li><li>Обмеження й невизначеність показуються поруч із висновком.</li></ul></div>`
+ research:()=>`<div class="atlas-copy-card"><h3>Як тут з’являються докази</h3><p>Кожен завершений матеріал Атласу має розділяти висновок, рівень впевненості, практичну інтерпретацію та першоджерела. Ми не використовуємо декоративний «відсоток ефективності».</p><ul><li>Систематичні огляди та клінічні рекомендації — для широкої картини.</li><li>RCT та спостережні роботи — для конкретних питань.</li><li>Обмеження й невизначеність показуються поруч із висновком.</li></ul><p class="atlas-muted">Поки що в цьому модулі немає наведених джерел і оцінених рівнів впевненості: вони з’являться разом із перевіреними висновками.</p></div>`
 };
 
 const kneeContent={
@@ -59,7 +59,7 @@ const kneeContent={
  symptoms:()=>`<div class="atlas-copy-card"><h3>Симптоми потребують контексту</h3><p>Передній, медіальний або латеральний біль, набряк, нестабільність і обмеження руху мають різне значення залежно від механізму появи, тривалості та функціональних вимог.</p><ul><li>Локалізація болю сама по собі не встановлює діагноз.</li><li>Після гострої травми важливі механізм, набряк, функція та стабільність.</li><li>Структурні зміни на зображеннях інтерпретують разом із симптомами.</li></ul></div>`,
  training:()=>`<div class="atlas-copy-card"><h3>Тренування коліна</h3><p>Основна ідея — не уникати руху як категорії, а керувати дозою навантаження відповідно до конкретної задачі та реакції тканин і симптомів.</p><ul><li>Прогресія може включати силу, контроль, швидкість і специфічні спортивні задачі.</li><li>Глибина руху та зовнішнє навантаження змінюються поступово.</li><li>Оцінюється не лише відчуття під час вправи, а й реакція після неї.</li></ul></div>`,
  rehab:()=>`<div class="atlas-copy-card"><h3>Реабілітація коліна</h3><p>План залежить від конкретного стану: пателофеморальний біль, травма ACL, меніск, тендинопатія та остеоартроз не повинні мати одну універсальну програму.</p><ul><li>Цілі формують від побутової функції до бігу, стрибків або спорту.</li><li>Силову роботу й функціональні задачі прогресують за переносимістю.</li><li>Повернення до активності оцінюють за функцією, а не лише календарем.</li></ul></div>`,
- research:()=>`<div class="atlas-copy-card"><h3>Докази для коліна</h3><p>Бета-модуль уже розділяє клінічні сценарії, але кожна тема отримає власний набір джерел, рівень впевненості й окремі практичні висновки.</p><ul><li>Для пателофеморального болю окремо розглядаємо активну реабілітацію та освіту.</li><li>Для менісків і ACL розділяємо травматичні сценарії, хірургічні та нехірургічні шляхи.</li><li>Для остеоартрозу оцінюємо функцію, фізичну активність, симптоми й довгострокове ведення.</li></ul></div>`
+ research:()=>`<div class="atlas-copy-card"><h3>Докази для коліна</h3><p>Бета-модуль уже розділяє клінічні сценарії, але кожна тема отримає власний набір джерел, рівень впевненості й окремі практичні висновки.</p><ul><li>Для пателофеморального болю окремо розглядаємо активну реабілітацію та освіту.</li><li>Для менісків і ACL розділяємо травматичні сценарії, хірургічні та нехірургічні шляхи.</li><li>Для остеоартрозу оцінюємо функцію, фізичну активність, симптоми й довгострокове ведення.</li></ul><p class="atlas-muted">Поки що в цьому модулі немає наведених джерел і оцінених рівнів впевненості: вони з’являться разом із перевіреними висновками.</p></div>`
 };
 
 function topicLinks(items){return items.map(item=>`<article class="atlas-topic atlas-topic--link"><div><h3><a href="${item.href}">${item.title}</a></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span>${arrow}</article>`).join('');}
@@ -67,18 +67,18 @@ function topicLinks(items){return items.map(item=>`<article class="atlas-topic a
 // «М’язи» is a navigation beta: it links existing Evidence UA materials and the exercise library and adds no new scientific claims.
 const musclesContent={
  overview:()=>`<div class="atlas-copy-card"><h3>Як читати цей модуль</h3><p>«М’язова система» — навігаційна зона Атласу. Вона не ставить діагнозів і не дає персональних порад: збирає в одному місці навчальні матеріали Evidence UA про будову м’яза, його роботу в русі та практику. Науковий перегляд цих матеріалів ще не завершено.</p></div>${topicLinks([
-  {title:'Muscle Lab: від м’яза до молекул',copy:'Будова м’яза, скорочення, ріст і атрофія.',href:'./muscle-lab.html#explorer',tag:'Будова'},
+  {title:'М’язи та тренування: від м’яза до молекул',copy:'Будова м’яза, скорочення, ріст і атрофія.',href:'./muscle-lab.html#explorer',tag:'Будова'},
   {title:'Ролі м’язів у русі',copy:'Як м’язи працюють разом: агоністи, синергісти й антагоністи.',href:'./movement.html#muscle-team',tag:'Рух'},
   {title:'Бібліотека вправ',copy:'Практика, пов’язана з анатомією та Атласом. Поради поки що редакційна чернетка.',href:'./exercises.html',tag:'Практика'}
  ])}`,
- anatomy:()=>`<div class="atlas-copy-card"><h3>Від м’яза до молекул</h3><p>Muscle Lab показує рівні організації: від тканини й пучка до волокна, міофібрили та саркомера. Оберіть рівень:</p></div>${topicLinks([
+ anatomy:()=>`<div class="atlas-copy-card"><h3>Від м’яза до молекул</h3><p>Розділ «М’язи та тренування» показує рівні організації: від тканини й пучка до волокна, міофібрили та саркомера. Оберіть рівень:</p></div>${topicLinks([
   {title:'Від м’яза до молекул',copy:'Інтерактивна будова скелетного м’яза.',href:'./muscle-lab.html#explorer',tag:'Будова'},
   {title:'М’язове волокно',copy:'Клітина м’яза та її складові.',href:'./muscle-lab.html?structure=CELL-MUSCLE#explorer',tag:'Волокно'},
   {title:'Скорочення м’яза',copy:'Як працює скорочення на рівні білків.',href:'./muscle-lab.html#contraction',tag:'Скорочення'},
   {title:'Ролі м’язів: агоністи, синергісти, антагоністи',copy:'Спільна робота м’язів у русі.',href:'./movement.html#muscle-team',tag:'Рух'}
  ])}`,
- training:()=>`<div class="atlas-copy-card"><h3>Тренування та практика</h3><p>Evidence UA розділяє три шари: опис руху й анатомію, редакційні поради та наукові твердження про результат. Вправи нижче — редакційна чернетка: вони не обіцяють результату й не замінюють оцінку фахівця.</p><ul><li>Ріст м’яза як процес: <a href="./muscle-lab.html#growth">Muscle Lab · Ріст м’яза</a>.</li></ul></div><div class="atlas-practice" data-related-practice="muscles"><p class="atlas-practice-status">Завантаження списку вправ…</p></div>`,
- research:()=>`<div class="atlas-copy-card"><h3>Джерела й межі</h3><p>Для цієї зони рівні впевненості ще не оцінено: науковий перегляд матеріалів Muscle Lab і Movement Lab не завершено. Джерела та межі пояснень — у самих модулях:</p><ul><li><a href="./muscle-lab.html#sources">Muscle Lab · Джерела та межі пояснень</a></li><li><a href="./movement.html#sources">Movement Lab · Джерела та межі моделі</a></li></ul></div>`
+ training:()=>`<div class="atlas-copy-card"><h3>Тренування та практика</h3><p>Evidence UA розділяє три шари: опис руху й анатомію, редакційні поради та наукові твердження про результат. Вправи нижче — редакційна чернетка: вони не обіцяють результату й не замінюють оцінку фахівця.</p><ul><li>Ріст м’яза як процес: <a href="./muscle-lab.html#growth">М’язи та тренування · Ріст м’яза</a>.</li></ul></div><div class="atlas-practice" data-related-practice="muscles"><p class="atlas-practice-status">Завантаження списку вправ…</p></div>`,
+ research:()=>`<div class="atlas-copy-card"><h3>Джерела й межі</h3><p>Для цієї зони рівні впевненості ще не оцінено: науковий перегляд матеріалів розділів «М’язи та тренування» і «Рух і біомеханіка» не завершено. Джерела та межі пояснень — у самих модулях:</p><ul><li><a href="./muscle-lab.html#sources">М’язи та тренування · Джерела та межі пояснень</a></li><li><a href="./movement.html#sources">Рух і біомеханіка · Джерела та межі моделі</a></li></ul></div>`
 };
 
 function topicTabs(items){return items.map(item=>`<article class="atlas-topic atlas-topic--link"><div><h3><button type="button" class="atlas-link-button" data-goto-tab="${item.tab}">${item.title}</button></h3><p>${item.copy}</p></div><span class="atlas-topic-tag">${item.tag}</span>${arrow}</article>`).join('');}
@@ -142,6 +142,7 @@ const statusLine=document.getElementById('atlas-status');
 const breadcrumbZone=document.getElementById('atlas-breadcrumb-zone');
 const breadcrumbTab=document.getElementById('atlas-breadcrumb-tab');
 const DEFAULT_ZONE='shoulder';
+const baseTitle=document.title;
 const hasZone=zone=>typeof zone==='string'&&Object.prototype.hasOwnProperty.call(zoneMeta,zone);
 let selectedZone=DEFAULT_ZONE;
 let selectedTab='overview';
@@ -251,6 +252,10 @@ function render({user=false}={}){
  detail.dataset.zoneArt=selectedZone;
  title.textContent=meta.title;summary.textContent=meta.summary;status.textContent=meta.state;status.dataset.state=meta.stateKey;
  breadcrumbZone.textContent=meta.title;breadcrumbTab.textContent=tabLabels[selectedTab];
+ document.body.dataset.atlasZone=selectedZone;
+ // Назва вкладки браузера (і запису в історії): «Атлас · Хребет · Симптоми — Evidence UA»; вкладку називаємо лише там, де їх кілька. Типовий стан (плече, «Огляд») лишає назву сторінки:
+ // кнопка «Зберегти в мій список» запам'ятовує назву на момент завантаження, а посилання веде на atlas.html без зони.
+ document.title=selectedZone===DEFAULT_ZONE&&selectedTab==='overview'?baseTitle:`Атлас · ${meta.title}${available.length>1&&selectedTab!=='overview'?` · ${tabLabels[selectedTab]}`:''} — Evidence UA`;
  zoneButtons.forEach(button=>{const active=button.dataset.zone===selectedZone;button.classList.toggle('is-selected',active);button.setAttribute('aria-pressed',String(active));});
  // Вкладка з'являється лише там, де в неї є зміст; одну вкладку «Огляд» окремо не показуємо.
  tabs.forEach(button=>{
@@ -326,6 +331,12 @@ window.addEventListener('popstate',()=>{
  document.dispatchEvent(new CustomEvent('atlas:state',{detail:state}));
 });
 
+// «Перейти до змісту» має бути першою зупинкою Tab. Спільна шапка вставляється на початок <body> після завантаження сторінки (подія eua:header-mounted),
+// тож без цього вона опинилась би перед посиланням: ставимо посилання першим щоразу, коли шапка з'являється.
+const skipLink=document.querySelector('.atlas-skip');
+const placeSkipLink=()=>{if(skipLink&&document.body.firstElementChild!==skipLink)document.body.prepend(skipLink);};
+document.addEventListener('eua:header-mounted',placeSkipLink);
+if(document.querySelector('.eua-site-header'))placeSkipLink();
 document.addEventListener('DOMContentLoaded',()=>{
  const actions=document.querySelector('body > .eua-platform-nav');
  if(actions)document.getElementById('atlas-actions').append(actions);

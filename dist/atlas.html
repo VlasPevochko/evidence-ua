@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./knee-pain-map.css?v=4">
   <link rel="stylesheet" href="./shoulder-pain-map.css?v=3">
   <link rel="stylesheet" href="./atlas-coordinate-map.css?v=4">
-  <link rel="stylesheet" href="./atlas-redesign.css?v=4">
+  <link rel="stylesheet" href="./atlas-redesign.css?v=5">
   <link rel="stylesheet" href="./atlas-diagrams.css?v=1">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="icon" href="./favicon.ico" sizes="48x48">
@@ -28,8 +28,10 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Картка сторінки: Атлас Evidence — Evidence UA">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="./palette-cosmic.css?v=8"><link rel="stylesheet" href="./appearance.css?v=6"><script>try{var a=JSON.parse(localStorage.getItem('eua-appearance-v1')||'{}'),d=document.documentElement,t=a.theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';if(t==='light')d.dataset.theme='light';if(a.text==='lg'||a.text==='xl')d.dataset.text=a.text;if(a.palette==='green')d.dataset.palette='green'}catch(e){}</script><script type="module" src="./appearance.js?v=4"></script><link rel="stylesheet" href="./print.css?v=1" media="print"><script type="module" src="./anchor-reveal.js?v=1"></script><link rel="stylesheet" href="./site-notice.css?v=1"></head>
+<link rel="stylesheet" href="./palette-cosmic.css?v=8"><link rel="stylesheet" href="./appearance.css?v=6"><script>try{var a=JSON.parse(localStorage.getItem('eua-appearance-v1')||'{}'),d=document.documentElement,t=a.theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';if(t==='light')d.dataset.theme='light';if(a.text==='lg'||a.text==='xl')d.dataset.text=a.text;if(a.palette==='green')d.dataset.palette='green'}catch(e){}</script><script type="module" src="./appearance.js?v=4"></script><link rel="stylesheet" href="./print.css?v=2" media="print"><script type="module" src="./anchor-reveal.js?v=1"></script><link rel="stylesheet" href="./site-notice.css?v=1">
+<noscript><style>.atlas-figure-panel,.atlas-detail{display:none!important}</style></noscript></head>
 <body data-platform-area="atlas" data-pine>
+  <a class="atlas-skip" href="#atlas-title">Перейти до змісту</a>
   <svg class="atlas-icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <symbol id="ai-anatomy" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7m-6-3 2-3 4-1 4 1 2 3m-6 3-3 7m3-7 3 7m-7-9-3 6m11-6 3 6"/></symbol>
     <symbol id="ai-symptoms" viewBox="0 0 24 24"><path d="M12 3 2.8 19.5a1 1 0 0 0 .9 1.5h16.6a1 1 0 0 0 .9-1.5L12 3Z"/><path d="M12 9v5m0 3h.01"/></symbol>
@@ -59,11 +61,12 @@
     <section class="atlas-workspace" aria-label="Інтерактивний атлас людини">
       <div class="atlas-stage">
         <div class="atlas-intro">
-          <h1 id="atlas-title">Атлас Evidence</h1>
+          <h1 id="atlas-title" tabindex="-1">Атлас Evidence</h1>
           <p>Досліджуй людське тіло через науку.</p>
           <a class="atlas-about" href="./about.html#ab-atlas">Про атлас: статуси й межі&nbsp;→</a>
           <a class="eua-route-entry" data-shoulder-route-entry href="./atlas.html?zone=shoulder&amp;tab=anatomy&amp;path=shoulder&amp;lesson=0#atlas-detail">Маршрут «Плече: від будови до практики»</a>
         </div>
+        <noscript><div class="atlas-nojs" role="note"><h2>Для інтерактивного атласу потрібен JavaScript</h2><p>Схема тіла, вкладки й карти болю працюють лише з увімкненим JavaScript. Без нього можна відкрити матеріали напряму:</p><ul><li><a href="./exercises.html?region=shoulder">Вправи для плеча</a></li><li><a href="./muscle-lab.html">М’язи та тренування</a></li><li><a href="./movement.html">Рух і біомеханіка</a></li><li><a href="./exercises.html">Бібліотека вправ</a></li></ul></div></noscript>
       <div class="atlas-figure-panel">
         <div class="atlas-figure-wrap">
           <div class="atlas-body-canvas">
@@ -71,8 +74,8 @@
             <button class="atlas-zone atlas-zone--brain" type="button" data-zone="brain" data-state="planned" aria-pressed="false" aria-label="Мозок"><span>Мозок<small>Сон і когнітивні функції</small></span></button>
             <button class="atlas-zone atlas-zone--shoulder is-selected" type="button" data-zone="shoulder" data-state="full" aria-pressed="true" aria-label="Плече"><span>Плече<small>Біль і стабільність</small></span></button>
             <button class="atlas-zone atlas-zone--spine" type="button" data-zone="spine" data-state="beta" aria-pressed="false" aria-label="Хребет"><span>Хребет<small>Постава і рух</small></span></button>
-            <button class="atlas-zone atlas-zone--muscles" type="button" data-zone="muscles" data-state="beta" aria-pressed="false" aria-label="М’язи"><span>М’язи<small>Сила й відновлення</small></span></button>
             <button class="atlas-zone atlas-zone--gut" type="button" data-zone="gut" data-state="planned" aria-pressed="false" aria-label="ШКТ"><span>ШКТ<small>Травлення й харчування</small></span></button>
+            <button class="atlas-zone atlas-zone--muscles" type="button" data-zone="muscles" data-state="beta" aria-pressed="false" aria-label="М’язи"><span>М’язи<small>Сила й відновлення</small></span></button>
             <button class="atlas-zone atlas-zone--knee" type="button" data-zone="knee" data-state="beta" aria-pressed="false" aria-label="Коліно"><span>Коліно<small>Травми й навантаження</small></span></button>
           </div>
           <section class="knee-pain-map" id="knee-pain-map" hidden aria-label="Точна карта болю коліна"></section>
@@ -92,9 +95,7 @@
       <article class="atlas-detail" id="atlas-detail" data-zone-art="shoulder" aria-labelledby="atlas-zone-title">
         <p class="atlas-sr-only" id="atlas-status" role="status" aria-live="polite"></p>
         <div class="atlas-detail-bar">
-          <nav class="atlas-breadcrumb" id="atlas-breadcrumb" aria-label="Шлях в Атласі">
-            <span>Атлас</span><i aria-hidden="true">→</i><strong id="atlas-breadcrumb-zone">Плечовий комплекс</strong><i aria-hidden="true">→</i><span id="atlas-breadcrumb-tab">Огляд</span>
-          </nav>
+          <p class="atlas-breadcrumb" id="atlas-breadcrumb"><span class="atlas-sr-only">Шлях в Атласі: </span><span class="atlas-crumb atlas-crumb--root">Атлас</span><strong class="atlas-crumb" id="atlas-breadcrumb-zone">Плечовий комплекс</strong><span class="atlas-crumb" id="atlas-breadcrumb-tab">Огляд</span></p>
           <button type="button" class="atlas-to-figure" data-atlas-to-figure>↑ До фігури</button>
         </div>
         <div class="atlas-detail-head">
@@ -130,13 +131,13 @@
       <p class="atlas-state-note">Статус показує, наскільки область розгорнута, а не силу доказів. <a href="./about.html#ab-atlas">Що це означає&nbsp;→</a></p>
     </section>
     <div id="atlas-actions"></div>
-    <aside class="atlas-disclaimer">Матеріал освітній і не є персональною медичною рекомендацією. Симптоми та діагноз не визначаються лише за вибором області на схемі.</aside>
+    <aside class="atlas-disclaimer">Симптоми та діагноз не визначаються лише за вибором області на схемі.</aside>
   </main>
 
   <div class="eua-site-notice" role="note"><p>Матеріал освітній і не є персональною медичною рекомендацією.</p><a href="./about.html">Про проєкт</a></div>
-<script type="module" src="./atlas.js?v=10"></script>
-  <script type="module" src="./knee-pain-map.js?v=4"></script>
-  <script type="module" src="./shoulder-pain-map.js?v=4"></script>
+<script type="module" src="./atlas.js?v=11"></script>
+  <script type="module" src="./knee-pain-map.js?v=5"></script>
+  <script type="module" src="./shoulder-pain-map.js?v=5"></script>
   <script type="module" src="./platform-shell.js?v=112"></script>
 </body>
 </html>

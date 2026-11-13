@@ -9,7 +9,7 @@ export const NEXT_STEPS={
   'cell-lab.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./atlas.html','Атлас людського тіла','Атлас']],
   'movement.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./exercises.html','Бібліотека вправ','Практика'],['./atlas.html','Атлас людського тіла','Атлас']],
   'sleep.html':[['./movement.html','Рух і біомеханіка','Movement Lab'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./fat-burning.html','Куди зникає жир?','Харчування']],
-  'atlas.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./movement.html','Рух і біомеханіка','Movement Lab'],['./exercises.html','Бібліотека вправ','Практика']],
+  'atlas.html':[['./muscle-lab.html','Від м’яза до молекул','М’язи'],['./movement.html','Рух і біомеханіка','Рух'],['./exercises.html','Бібліотека вправ','Практика']],
   'exercises.html':[['./muscle-lab.html','Від м’яза до молекул','Muscle Lab'],['./movement.html','Рух і біомеханіка','Movement Lab'],['./atlas.html','Атлас людського тіла','Атлас']],
   'supplements.html':[['./protein-meta.html','Розбір метааналізу білка','Докази'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./index.html#evidence-guide-title','Як читати докази','Докази']],
   'protein-meta.html':[['./supplements.html','Що відомо про добавки','Докази'],['./nutrition-inside.html','Харчування зсередини','Харчування'],['./exercises.html','Бібліотека вправ','Практика']]

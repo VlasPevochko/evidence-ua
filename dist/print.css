@@ -1,11 +1,14 @@
 /* Друк і PDF: світла сторінка, лише читальний текст. Шапка, кнопки, підказки й навігація не друкуються;
    адреси джерел показуються поруч із посиланнями, щоб на папері було видно, куди вони ведуть. */
 @media print{
-  html,html[data-theme="light"]{filter:none!important;background:#fff!important;zoom:1!important}
+  html,html[data-theme="light"]{filter:none!important;background:#fff!important;zoom:1!important;color-scheme:light!important}
   body,body[data-pine],body[data-platform-area]{background:#fff!important;color:#111!important}
   *{box-shadow:none!important;text-shadow:none!important;animation:none!important;transition:none!important}
   .eua-site-header,.eua-platform-nav,.eua-appearance,.eua-next,.eua-save,.eua-print,.eua-learning-nav,.eua-term-pop,.km-stage,.fb-skip,
   header.lab-header,.fb-jumps,canvas,[class*="skip"],#term-dialog,dialog{display:none!important}
+  /* Шапка сайту має правило display:flex!important з вищою специфічністю (site-header.css: body header.eua-site-header.eua-site-header), тому простого .eua-site-header було замало:
+     шапка друкувалась зверху кожної сторінки сайту. Повторюємо клас і додаємо html, щоб правило друку було сильнішим. */
+  html body header.eua-site-header.eua-site-header.eua-site-header,html body[data-platform-area] header.eua-site-header.eua-site-header.eua-site-header{display:none!important}
   .pb{background:#fff!important;border-bottom:1px solid #999!important}
   .pb::before{display:none!important}
   .pb h1,.pb .pb-lead,.pb .pb-eyebrow,h1,h2,h3,h4,p,li,dt,dd,summary,strong,span,a,td,th{color:#111!important}

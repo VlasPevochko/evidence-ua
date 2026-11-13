@@ -24,7 +24,7 @@ const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.t
 const homeDirections=homeDirectionsHTML(homeTopics);
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
 fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=108'"));
-fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'").replace("'../atlas/points.mjs'","'./atlas-points.js?v=1'"));
+fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'").replace("'../atlas/points.mjs'","'./atlas-points.js?v=2'"));
 fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=108'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
@@ -657,6 +657,20 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  const updates={"platform-catalog.js?v=100":"platform-catalog.js?v=101","platform-materials.js?v=107":"platform-materials.js?v=108","platform-tools.js?v=107":"platform-tools.js?v=108","platform-learning.js?v=87":"platform-learning.js?v=88","platform-search.js?v=16":"platform-search.js?v=17","site-header.js?v=18":"site-header.js?v=19","platform-shell.js?v=111":"platform-shell.js?v=112","home-feedback.js?v=107":"home-feedback.js?v=108","directions.js?v=116":"directions.js?v=117","home-spectrum.js?v=8":"home-spectrum.js?v=9","fat-burning.js?v=16":"fat-burning.js?v=17","platform.css?v=86":"platform.css?v=87","atlas.js?v=9":"atlas.js?v=10","home-spectrum.css?v=7":"home-spectrum.css?v=8","home-lens.css?v=5":"home-lens.css?v=6","home-lens.css?v=6":"home-lens.css?v=7","home-lens.css?v=7":"home-lens.css?v=8","home-fresh.css?v=3":"home-fresh.css?v=4"};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// Оновлення Атласу (2026-11-12, рішення власника «з першого до 12 одним PR»): запис у журналі (changes-data.js) і нова версія сторінки журналу 33 → 34.
+// Файли самого Атласу (atlas.html, atlas.js, обидві карти, atlas-redesign.css, print.css на сторінці Атласу) змінено вручну, бо лише atlas.html їх підключає.
+// Спільні модулі (platform-materials, platform-next-steps, site-header.css, print.css на решті сторінок) свідомо БЕЗ каскаду версій: див. docs/ATLAS-AUDIT-FIXES.md, «Межі».
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ // EU-01 also adds route-location notifications to the audited Atlas controller.
+ const updates={'changes-page.js?v=33':'changes-page.js?v=34','atlas.js?v=10':'atlas.js?v=11'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);

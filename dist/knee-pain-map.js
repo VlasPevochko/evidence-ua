@@ -1,4 +1,4 @@
-import {kneeViews as views, kneePoints as hotspots, kneeLabels as labels} from './atlas-points.js?v=1';
+import {kneeViews as views, kneePoints as hotspots, kneeLabels as labels} from './atlas-points.js?v=2';
 import {kneeDiagram} from './atlas-diagrams.js?v=1';
 
 const ZONE='knee';
@@ -56,8 +56,9 @@ function hideMap(){
  mount.hidden=true;wrap.classList.remove('is-knee-map');
  if(globalFigure)globalFigure.hidden=false;zoneButtons.forEach(button=>button.hidden=false);restoreLegend();
 }
+// Карта коліна відкрита лише на вкладці «Огляд» (як карта плеча); на інших вкладках ліворуч повертається фігура з кнопками зон.
 function sync(){
- if(kneeSelected()&&!suppressed)showMap();
+ if(kneeSelected()&&overviewSelected()&&!suppressed)showMap();
  else {hideMap();if(!kneeSelected())activeHotspot=null;}
 }
 
@@ -95,7 +96,7 @@ function applyState(zone,point,{user=false,focusDetail=false}={}){
  suppressed=false;
  const spot=hotspots.find(item=>item.id===point);
  if(spot){activeView=spot.view;showMap();selectHotspot(spot.id,{user,focusDetail});return;}
- activeHotspot=null;showMap();
+ activeHotspot=null;sync();
 }
 
 mount?.addEventListener('click',event=>{
@@ -108,7 +109,10 @@ mount?.addEventListener('keydown',event=>{
  event.preventDefault();const index=views.findIndex(view=>view.id===viewButton.dataset.kneeView);const step=event.key==='ArrowRight'?1:-1;const next=views[(index+step+views.length)%views.length];selectView(next.id);mount.querySelector(`[data-knee-view="${next.id}"]`)?.focus();
 });
 zoneButtons.forEach(button=>button.addEventListener('click',()=>requestAnimationFrame(()=>{suppressed=false;sync();})));
-atlasTabs.forEach(button=>button.addEventListener('click',()=>requestAnimationFrame(()=>{if(kneeSelected()&&overviewSelected()&&activeHotspot){const spot=hotspots.find(item=>item.id===activeHotspot);if(spot)renderPainDetail(spot);}})));
+atlasTabs.forEach(button=>button.addEventListener('click',()=>requestAnimationFrame(()=>{
+ sync();
+ if(kneeSelected()&&overviewSelected()&&activeHotspot){const spot=hotspots.find(item=>item.id===activeHotspot);if(spot)renderPainDetail(spot);}
+})));
 document.addEventListener('atlas:goto-point',event=>{const detail=event.detail||{};if(detail.zone===ZONE)applyState(ZONE,detail.point,{user:true,focusDetail:true});});
 document.addEventListener('atlas:state',event=>{const detail=event.detail||{};applyState(detail.zone,detail.point||null);});
 document.addEventListener('atlas:clear-point',event=>{if((event.detail||{}).zone===ZONE)clearHotspot();});

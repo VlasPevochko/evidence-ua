@@ -219,12 +219,13 @@ assert.equal(
   // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): tools 106, header 17, shell 110 (лише версії в query-рядках).
   // 2026-11-02 (пошук у шапці головної, T7): materials 105 (слова «сном»), tools 105, header 16, search 14 (група «Розбори»). Змінились лише версії в query-рядках.
   // 2026-11-01 (пошук за ключовими словами): каскад версій через materials.mjs (materials 104, tools 104, directions 110, home-feedback 104, shell 107, search 12, header 14). Змінились лише версії в query-рядках.
-  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=6'").replace("'./terms.mjs'", "'./platform-terms.js?v=4'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=100'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=107'").replace("'./site-header.mjs'", "'./site-header.js?v=18'"),
+  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=6'").replace("'./terms.mjs'", "'./platform-terms.js?v=4'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=101'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=108'").replace("'./site-header.mjs'", "'./site-header.js?v=19'"),
   'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
 );
 assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');
-const catalogSource = fs.readFileSync('src/platform/catalog.mjs', 'utf8');
-assert(!catalogSource.includes('exercises.html'), 'The library is a practice entry, not a new top-level catalog direction');
+// EU-01 reuses exercises as learning-route steps; they are still not a new catalog area.
+const {catalog} = await import('../src/platform/catalog.mjs');
+assert(!catalog.areas.some(area => area.href?.includes('exercises.html')), 'The library is a practice entry, not a new top-level catalog direction');
 
 fs.rmSync(temp, {recursive: true, force: true});
 

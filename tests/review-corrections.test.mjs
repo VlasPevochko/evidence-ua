@@ -29,7 +29,7 @@ import json
 root=html.parse('dist/index.html')
 routes=root.xpath('//*[@id="home-learning-paths"]')
 print(json.dumps({'count':len(routes),'open':bool(routes and 'open' in routes[0].attrib),'insideAbout':bool(routes and routes[0].xpath('ancestor::*[@id="home-about"]')),'cards':len(routes[0].xpath('.//article')) if routes else 0}))`], {encoding:'utf8'}));
-  assert.deepEqual(result, {count:1, open:false, insideAbout:false, cards:3});
+  assert.deepEqual(result, {count:1, open:false, insideAbout:false, cards:catalog.paths.length}); // EU-01 adds a reusable route.
 });
 
 test('the digestion starter opens the promised material directly', () => {

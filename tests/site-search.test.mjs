@@ -34,7 +34,7 @@ assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|https?:\/
 assert(src.includes("e.key!=='/'")&&src.includes('isContentEditable'),'the / shortcut ignores typing fields');
 assert(fs.readFileSync('src/platform/site-header.css','utf8').includes('.eua-search::backdrop'),'the dialog is styled');
 assert.equal(fs.readFileSync('dist/platform-search.js','utf8'),src,'the built copy equals the source');
-assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=16')"),'the header loads search lazily'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): v=14 -> v=15 (матеріали v=106). 2026-11-02 (пошук у шапці головної, T7): v=13 -> v=14 (група «Розбори», новий порожній результат)
+assert(fs.readFileSync('dist/site-header.js','utf8').includes("import('./platform-search.js?v=17')"),'the header loads search lazily'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): v=14 -> v=15 (матеріали v=106). 2026-11-02 (пошук у шапці головної, T7): v=13 -> v=14 (група «Розбори», новий порожній результат)
 console.log('Site search: ranking, terms, suggestions, accessible button and no-network source passed.');
 
 // 2026-10-22: supplement cards are found by the topics of their approved Claims, not only by name.

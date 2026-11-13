@@ -96,7 +96,8 @@ for expression in ['//body/section[@id="creatine" or starts-with(@id,"supplement
     actual={n.get('id'):hashlib.sha256(html.tostring(n,encoding='utf-8')).hexdigest() for n in sections}
     assert expected==actual, 'Scientific article HTML changed from the independent v59 baseline'
 routes=after.xpath('//*[@id="home-learning-paths"]')
-assert len(routes)==1 and len(routes[0].xpath('.//article'))==3
+# EU-01 adds the shoulder route; keep the exact curriculum count in sync.
+assert len(routes)==1 and len(routes[0].xpath('.//article'))==${catalog.paths.length}
 assert after.xpath('//label[@for="feedback-material"]')
 assert after.xpath('//*[@id="feedback-clear" and @type="button"]')
 ids=after.xpath('//@id'); assert len(ids)==len(set(ids)), 'Duplicate HTML IDs'

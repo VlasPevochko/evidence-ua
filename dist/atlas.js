@@ -163,6 +163,7 @@ function writeLocation(mode){
  if(currentPoint)next.searchParams.set('point',currentPoint);else next.searchParams.delete('point');
  if(next.href===location.href)return;
  try{history[mode==='push'?'pushState':'replaceState'](null,'',next);}catch{}
+ window.dispatchEvent(new Event('eua:locationchange'));
 }
 {const initial=readLocation();selectedZone=initial.zone;selectedTab=initial.tab;currentPoint=initial.point;}
 

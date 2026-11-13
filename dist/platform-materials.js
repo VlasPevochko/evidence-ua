@@ -1,4 +1,4 @@
-import {catalog,learningLocation} from './platform-catalog.js?v=100';
+import {catalog,learningLocation} from './platform-catalog.js?v=101';
 import {entityRegistry} from './evidence/entities.js?v=59';
 import {painMaps, shoulderTopics, kneeTopics} from './atlas-points.js?v=2';
 
@@ -177,6 +177,6 @@ export function contextLink(href){
  for(const [key,rule] of Object.entries(rules)){const value=original.searchParams.get(key);if(value&&(rule instanceof Set?rule.has(value):rule.test(value)))clean.searchParams.set(key,value);}
  const hashes=new Set(['#top','#start-here','#home-learning-paths','#home-feedback','#categories','#cards','#supplement-library','#pubmed-live','#evidence-card','#explorer','#sources',...materials.map(m=>new URL(m.href,original).hash)]);
  if(hashes.has(original.hash)||/^#creatine-(short|mechanism|evidence|dosing|kidney|myths|sources|review)$/.test(original.hash))clean.hash=original.hash;
- const position=learningLocation(original.href);if(position){clean.searchParams.set('path',position.path.id);clean.searchParams.set('lesson',String(position.index));}
+ const position=learningLocation(original.href);if(position){clean.searchParams.set('path',position.path.id);clean.searchParams.set('lesson',String(position.index));clean.hash=new URL(position.step.href,original).hash;}
  return clean.href;
 }

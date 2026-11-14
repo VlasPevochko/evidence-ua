@@ -8,7 +8,7 @@ const html=fs.readFileSync('dist/index.html','utf8');
 const css=fs.readFileSync('dist/home-spectrum.css','utf8');
 const entry=fs.readFileSync('dist/home-spectrum.js','utf8');
 const motion=fs.readFileSync('dist/home-spectrum-wave.mjs','utf8');
-assert(html.includes('home-spectrum.css?v=8')&&html.includes('home-spectrum.js?v=9'),'selected hero assets are wired');
+assert(html.includes('home-spectrum.css?v=8')&&html.includes('home-spectrum.js?v=10'),'selected hero assets are wired');
 for(const name of ['home-geo-hero.js','home-mobile-header.js','home-directions.js'])assert(!html.includes('src="./'+name),'obsolete home controllers are detached');
 assert(entry.includes('home-spectrum-wave.mjs?v=2'),'the active controller imports the tested ribbon renderer');
 assert(css.includes('home-spectrum-ribbon.webp')&&css.includes('radial-gradient'),'decorative static fallback survives missing Canvas/JavaScript');
@@ -21,3 +21,4 @@ assert(css.includes('@font-face')&&css.includes('font-display:swap'),'local head
 assert(fs.statSync('dist/home-spectrum-ribbon.webp').size<180000,'static ribbon stays under180KB');
 for(const file of ['home-geo-hero.js','home-geo-hero.css','home-typography.css'])assert(fs.existsSync('dist/'+file),'previous assets remain available for rollback');
 console.log('Spectrum home: active wiring, static fallback, local fonts, bounded asset and retained history passed.');
+// 2026-11-14: Atlas anatomy search metadata requires a new shared-cache cascade; science fixtures stay unchanged.

@@ -72,4 +72,14 @@ const templates=renderFoundationTemplates();
 for(const zone of ['brain','gut'])for(const tab of foundationTabs)assert.ok(templates.includes('id="atlas-foundation-'+zone+'-'+tab+'"'));
 assert.match(templates,/<noscript[\s>]/);
 assert.ok(templates.includes('Мозок')&&templates.includes('ШКТ'));
+// 2026-11-14: new terms must lead to actual educational modules, with honest public status.
+const {findMaterials}=await import('../src/platform/materials.mjs');
+for(const [term,id] of [['мозочок','brain'],['синапс','brain'],['гіпоталамус','brain'],['лактоза','gut'],['тонка кишка','gut'],['всмоктування','gut']]){
+ const result=findMaterials(term).find(m=>m.id==='atlas-zone-'+id);
+ assert.ok(result,'discoverable term: '+term);
+ assert.match(result.review,/Науковий перегляд не завершено/);
+}
+const about=fs.readFileSync('dist/about.html','utf8');
+assert.ok(about.includes('«Бета» (мозок, хребет, м’язи, ШКТ, коліно)'));
+assert.ok(!about.includes('мозок, ШКТ: власного змісту ще немає'));
 console.log('Atlas foundations: real content, registered references, unchanged physiology, complete readable anatomy and noscript templates passed.');

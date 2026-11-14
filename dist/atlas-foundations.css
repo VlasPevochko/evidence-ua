@@ -69,6 +69,7 @@
  .af-part {break-inside:avoid}
  .af-borrowed>* {display:block!important}
  .af-borrowed {content-visibility:visible}
+ .af-borrowed::details-content {content-visibility:visible;display:block}
  .af-source-link {min-height:0}
  .af-boundary,.af-diagram-note {color:inherit}
 }

@@ -15,7 +15,7 @@ button:disabled{opacity:.45;cursor:default}
 .skip-link{position:absolute;left:16px;top:-100px;z-index:20;padding:12px 18px;background:var(--c-142722,#142722);border:2px solid var(--c-e3bd6b,#e3bd6b);border-radius:var(--rd-8,8px)}
 .skip-link:focus{top:12px}
 .small{font-size:13px;color:var(--muted);line-height:1.55}
-.eyebrow{margin:0 0 6px;font-size:11px;letter-spacing:.12em;color:var(--gold);font-weight:700}
+.eyebrow{margin:0 0 6px;font-size:12px;letter-spacing:.12em;color:var(--gold);font-weight:700}
 
 .lab-header{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:18px max(20px,4vw);border-bottom:1px solid #ffffff16;background:var(--bg)}
 .brand{font-size:26px;font-weight:800;text-decoration:none;color:#fff;line-height:1.2;white-space:nowrap}
@@ -185,7 +185,7 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
  .topic,.mirror{padding:16px;border-radius:var(--rd-18,18px)}
  .contraction-grid,.mirror-grid{grid-template-columns:minmax(0,1fr)}
  .panel{padding:12px}
- .step-dot{width:40px;height:40px}
+ .step-dot{width:44px;height:44px}
  .step-picker{gap:5px}
  .cycle-controls,.mirror-controls{gap:6px}
  .mirror-tabs{width:100%}
@@ -201,9 +201,9 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
  .lab-footer{flex-direction:column}
  #sources h2,.evidence-index h2{font-size:24px}
  body[data-platform-area="muscle"] .eua-platform-nav{padding:6px 14px}
- body[data-platform-area="muscle"] .eua-platform-nav a{min-height:36px;padding:4px 10px}
+ body[data-platform-area="muscle"] .eua-platform-nav a{min-height:44px;padding:4px 10px}
  body[data-platform-area="muscle"] .eua-platform-nav .eua-tools{flex-wrap:nowrap;overflow-x:auto;width:100%}
- body[data-platform-area="muscle"] .eua-platform-nav .eua-tools>*{flex:0 0 auto;min-height:36px;padding:6px 12px;white-space:nowrap;overflow-wrap:normal;font-size:12px}
+ body[data-platform-area="muscle"] .eua-platform-nav .eua-tools>*{flex:0 0 auto;min-height:44px;padding:6px 12px;white-space:nowrap;overflow-wrap:normal;font-size:12px}
 }
 @media(prefers-reduced-motion:reduce){
  html{scroll-behavior:auto}
@@ -217,7 +217,11 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
 .mg-quick h2{margin:0 0 8px}
 .mg-quick>p{margin:0 0 14px;color:#d3d5da;max-width:72ch}
 .mg-molecules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
-.mg-molecules li{display:grid;gap:4px;padding:12px 14px;border:1px solid #ffffff14;border-radius:var(--rd-14,14px);background:var(--panel2);font-size:14px;line-height:1.45;color:#c9ccd2}
+.mg-molecules li{border:1px solid #ffffff14;border-radius:var(--rd-14,14px);background:var(--panel2);font-size:14px;line-height:1.45;color:#c9ccd2;transition:border-color .2s}
+.mg-molecules li:hover{border-color:var(--gold)}
+.mg-mol{display:grid;gap:4px;align-content:start;height:100%;box-sizing:border-box;padding:12px 14px;color:inherit;text-decoration:none;border-radius:inherit}
+.mg-mol small{margin-top:4px;font-size:12px;line-height:1.4;color:var(--cyan)}
+.mg-mol:hover small{text-decoration:underline;text-underline-offset:3px}
 .mg-molecules strong{font-size:18px;color:var(--gold)}
 .mg-guide{margin:40px 0 8px}
 .mg-guide-lead{margin:0 0 14px;color:#c9ccd2}
@@ -310,7 +314,7 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
 .mg-ev-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .mg-ev-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(140px,1fr);grid-template-areas:"label track" "label value";column-gap:16px;row-gap:2px;align-items:center}
 .mg-ev-label{grid-area:label;font-size:14px;line-height:1.4}
-.mg-ev-label a{font-size:12px;white-space:nowrap}
+.mg-ev-label a{font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px}
 .mg-ev-track{grid-area:track;position:relative;height:18px}
 .mg-ev-track::before{content:'';position:absolute;left:0;right:0;top:8px;height:2px;background:#ffffff12}
 .mg-ev-zero{position:absolute;top:0;bottom:0;width:1px;background:#ffffff66}
@@ -350,9 +354,9 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
 .mg-take li{padding-left:4px}
 .mg-take strong{display:block}
 .mg-take span{font-size:14px;color:#c9ccd2}
-.mg-source-list{margin:0 0 10px;padding-left:20px;display:grid;gap:8px;font-size:14px}
+.mg-source-list{margin:0 0 10px;padding-left:20px;display:grid;gap:0;font-size:14px}
 .mg-source-list li>span{display:block}
-.mg-source-list a{overflow-wrap:anywhere}
+.mg-source-list a{overflow-wrap:anywhere;display:inline-block;padding:12px 0;line-height:1.5}
 #guide-sources{margin-top:10px}
 @media(max-width:1000px){
  .mg-flow{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -361,7 +365,8 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
 @media(max-width:760px){
  .mg-quick{padding:16px;border-radius:var(--rd-18,18px)}
  .mg-molecules{grid-template-columns:repeat(2,minmax(0,1fr))}
- .mg-molecules li{padding:10px 12px;font-size:13px}
+ .mg-molecules li{font-size:13px}
+ .mg-mol{padding:10px 12px}
  .mg-guide{margin-top:28px}
  .mg-chapter>summary{padding:10px 12px;gap:10px}
  .mg-ch-title{font-size:16px}
@@ -410,7 +415,8 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
 .mg-claim-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .mg-claim{padding:12px;border:1px solid #ffffff14;border-radius:var(--rd-12,12px);background:var(--panel2)}
 .mg-claim-text{margin:0 0 8px!important;color:var(--c-f0eee8,#f0eee8);font-size:15px;line-height:1.5}
-.mg-claim .eua-provisional{margin:6px 0 0}
+.mg-claim .eua-provisional{margin:6px 0 0;font-size:12px}
+main .eua-kicker{font-size:12px}
 .mg-claim .eua-evidence-button{margin-top:10px}
 .muscle-practice-dialog.muscle-shared{background:var(--c-101615,#101615);color:#edf3f8;border-color:var(--c-364b46,#364b46);z-index:10}
 .muscle-practice-dialog .eua-drawer-head{background:var(--c-101615,#101615)}
@@ -419,3 +425,68 @@ body.lesson #lesson-exit{position:fixed;right:16px;bottom:16px;z-index:3}
  .mg-claims{padding:10px}
  .muscle-practice-dialog.muscle-shared{width:100%;max-width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0;padding:20px 16px;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 }
+
+/* Схема шляху сигналу (2026-11-14, «апгрейд сторінки»): власний малюнок без тексту, підписи це список поруч.
+   Кожна частина має data-chain-part="N" (крок у signalChain); світло дає атрибут data-chain-step, який уже ставить muscle-guide.js. */
+.mg-signal{display:block;width:100%;max-width:560px;height:auto;margin:4px auto 14px;border-radius:var(--rd-14,14px);background:var(--c-0a0f0e,#0a0f0e)}
+.mg-signal .sg-fiber{fill:#ff849614}
+.mg-signal .sg-sr rect{fill:#a895ff1f;stroke:#a895ff66;stroke-width:1.2}
+.mg-signal .sg-ca-in{fill:#6b6f77;transition:opacity .4s}
+.mg-signal .sg-actin{stroke:#a895ff;stroke-width:3;stroke-linecap:round;opacity:.8}
+.mg-signal .sg-myosin{stroke:#ff8496;stroke-width:7;stroke-linecap:round;opacity:.8}
+.mg-signal .sg-p{stroke:#6b6f77;fill:#6b6f77;stroke-width:2.2;stroke-linecap:round;transition:stroke .35s,fill .35s,opacity .35s;transform-box:fill-box;transform-origin:center}
+.mg-signal .sg-p0,.mg-signal .sg-p3,.mg-signal .sg-p6,.mg-signal .sg-p7{fill:none}
+.mg-signal .sg-p1,.mg-signal .sg-p2,.mg-signal .sg-p4,.mg-signal .sg-p5{stroke:none}
+.mg-signal .sg-p0{stroke-width:3.5}
+.mg-signal path.sg-p3{stroke-width:7}
+.mg-signal .sg-p6{stroke-width:3;opacity:.4}
+.mg-signal .sg-p7{stroke-width:3}
+.mg-signal .sg-ca-out .sg-p4{opacity:0}
+.mg-signal .sg-spike{fill:var(--gold);opacity:0}
+.mg-signal .sg-l,.mg-signal .sg-r{transition:transform .8s ease}
+.mg-chain:is([data-chain-step="0"],[data-chain-step="1"],[data-chain-step="2"],[data-chain-step="3"],[data-chain-step="4"],[data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-p0{stroke:var(--gold)}
+.mg-chain:is([data-chain-step="1"],[data-chain-step="2"],[data-chain-step="3"],[data-chain-step="4"],[data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-p1{fill:var(--gold)}
+.mg-chain:is([data-chain-step="2"],[data-chain-step="3"],[data-chain-step="4"],[data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-p2{fill:var(--gold)}
+.mg-chain:is([data-chain-step="3"],[data-chain-step="4"],[data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-p3{stroke:var(--gold)}
+.mg-chain:is([data-chain-step="4"],[data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-p4{fill:var(--cyan)}
+.mg-chain:is([data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-p5{fill:var(--cyan)}
+.mg-chain:is([data-chain-step="6"],[data-chain-step="7"]) .sg-p6{stroke:#ff8496}
+.mg-chain:is([data-chain-step="7"]) .sg-p7{stroke:#c3d5e5}
+.mg-chain:is([data-chain-step="4"],[data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-ca-out .sg-p4{opacity:1}
+.mg-chain:is([data-chain-step="4"],[data-chain-step="5"],[data-chain-step="6"],[data-chain-step="7"]) .sg-ca-in{opacity:.25}
+.mg-chain:is([data-chain-step="6"],[data-chain-step="7"]) .sg-p6{opacity:1}
+.mg-chain[data-chain-step="7"] .sg-l{transform:translateX(14px)}
+.mg-chain[data-chain-step="7"] .sg-r{transform:translateX(-14px)}
+@keyframes sg-pop{from{transform:scale(1.9);opacity:.5}to{transform:none;opacity:1}}
+@keyframes sg-line{from{stroke-width:7}}
+@keyframes sg-run{from{transform:translateX(0);opacity:1}to{transform:translateX(82px);opacity:0}}
+@keyframes sg-cross{from{transform:translateX(-26px)}}
+@keyframes sg-rise{from{transform:translateY(-34px);opacity:0}}
+.mg-chain[data-chain-step="1"] .sg-p1{animation:sg-pop .8s ease-out}
+.mg-chain[data-chain-step="2"] .sg-p2{animation:sg-pop .8s ease-out}
+.mg-chain[data-chain-step="5"] .sg-p5{animation:sg-pop .8s ease-out}
+.mg-chain[data-chain-step="0"] .sg-p0{animation:sg-line .8s ease-out}
+.mg-chain[data-chain-step="3"] .sg-p3{animation:sg-line .8s ease-out}
+.mg-chain[data-chain-step="6"] .sg-p6{animation:sg-line .8s ease-out}
+.mg-chain[data-chain-step="7"] .sg-p7{animation:sg-line .8s ease-out}
+.mg-chain[data-chain-step="4"] .sg-ca-out .sg-p4{animation:sg-rise .9s ease-out}
+.mg-chain[data-chain-step="0"] .sg-spike{animation:sg-run .9s linear forwards}
+.mg-chain[data-chain-step="1"] .sg-ach{animation:sg-cross .9s ease-out}
+@media(min-width:860px){
+ .mg-chain{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:28px;align-items:start}
+ .mg-chain>.mg-chain-play,.mg-chain>p{grid-column:1/-1;justify-self:start}
+ .mg-chain>.mg-signal{grid-column:1;grid-row:2;margin:0;position:sticky;top:16px}
+ .mg-chain>.mg-chain-list{grid-column:2;grid-row:2}
+}
+@media(prefers-reduced-motion:reduce){
+ .mg-signal .sg-p,.mg-signal .sg-l,.mg-signal .sg-r,.mg-signal .sg-ca-in{transition:none}
+ .mg-chain[data-chain-step] .sg-p,.mg-chain[data-chain-step] .sg-spike,.mg-chain[data-chain-step] .sg-ach{animation:none!important}
+}
+@media(max-width:859px){
+ /* На телефоні малюнок «прилипає» вгорі, поки читаєте список кроків: видно, який крок світиться. */
+ .mg-chain>.mg-signal{position:sticky;top:8px;z-index:3;box-shadow:var(--sd-card,0 8px 20px #000000b3)}
+}
+/* Посилання «DOI ↗» у картках джерел: ціль дотику 44 px (аудит 2026-11-14). */
+.muscle-shared .eua-source-links a{display:inline-flex;align-items:center;min-height:44px;padding:0 8px}
+/* Рішення власника 2026-11-14 («2 прибрати»): у рядку під шапкою на цій сторінці немає дублів меню й пошуку з шапки. Лишились «Скопіювати посилання» і «Поділитися враженням». Спільну розмітку не змінено: інші сторінки як були. */
+body[data-platform-area="muscle"] .eua-platform-nav .eua-atlas-link,body[data-platform-area="muscle"] .eua-platform-nav .eua-exercises-link,body[data-platform-area="muscle"] .eua-platform-nav .eua-tools [data-eua-tool="search"]{display:none}

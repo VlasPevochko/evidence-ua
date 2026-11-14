@@ -1,3 +1,10 @@
+# Muscle Lab — page upgrade of 2026-11-14 (owner: «повний аудит, потім апгрейд сторінки»)
+
+- Audit numbers, what was changed and what was only recorded: `docs/MUSCLE_PAGE_UPGRADE.md`. Science (structures, topics, sources, Claims, levels) is untouched.
+- `signal-art.mjs`: own drawing of the nerve → calcium → contraction path inside the chain of chapter 2. No `<text>`; part N lights when `data-chain-step` ≥ N (CSS written next to `.mg-signal` in `dist/muscle-lab.css`; `signalLightSelectors` is the single source the test checks it against). `guide-ui.mjs` is unchanged.
+- «М’яз за 30 секунд» tiles link to their chapter (`molecules[].chapter`; the destination label comes from `chapters`).
+- Tests: `tests/muscle-signal-art.test.mjs`; Browser QA: `muscleSignalFlow`.
+
 # Muscle Lab — «Від нерва до росту» (2026-10-26, owner: «м’язи та тренування» from the PDF)
 
 - Content of the owner's PDF «Від м’яза до молекул…», rewritten in plain words, lives in `guide.mjs`; `scripts/build-muscle.mjs` renders it into the marked blocks `MUSCLE-GUIDE:QUICK|GUIDE|SOURCES` of `dist/muscle-lab.html`. Behaviour (signal chain player, disorder map, deep links into folded chapters) is `guide-ui.mjs` → `dist/muscle-guide.js`.

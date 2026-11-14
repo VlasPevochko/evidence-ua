@@ -6,6 +6,7 @@
 // external links only (no request before a click), one control per action.
 
 import {practiceBase} from './practice.mjs';
+import {signalArt} from './signal-art.mjs';
 import {ConfidenceBadge,claimButton,getClaim} from '../evidence/core/components.mjs';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -53,16 +54,16 @@ const claimsList=(ids,title='Твердження й докази')=>`<section c
 
 // ── «М’яз за 30 секунд» (visible) ───────────────────────────────────────────
 export const molecules=[
- {name:'Ca²⁺',text:'«Дозвіл» на скорочення: зв’язується з тропоніном C і відкриває актин для міозину.'},
- {name:'АТФ',text:'Енергія для кожного кроку головки міозину і для повернення кальцію назад, тобто для розслаблення.'},
- {name:'mTORC1',text:'Один із центральних регуляторів синтезу білка й росту клітини.'},
- {name:'Міостатин',text:'Одне з природних «гальм» м’язової маси.'}
+ {name:'Ca²⁺',chapter:'signal',text:'«Дозвіл» на скорочення: зв’язується з тропоніном C і відкриває актин для міозину.'},
+ {name:'АТФ',chapter:'signal',text:'Енергія для кожного кроку головки міозину і для повернення кальцію назад, тобто для розслаблення.'},
+ {name:'mTORC1',chapter:'why-grow',text:'Один із центральних регуляторів синтезу білка й росту клітини.'},
+ {name:'Міостатин',chapter:'why-shrink',text:'Одне з природних «гальм» м’язової маси.'}
 ];
 export function renderQuick(){
  return `<section id="quick" class="mg-quick" aria-labelledby="quick-title">
 <h2 id="quick-title">М’яз за 30 секунд</h2>
 <p>М’яз складається з пучків, пучки — з волокон, волокна — з міофібрил, а міофібрили — з тисяч саркомерів. Усередині саркомера актин і міозин ковзають один уздовж одного. Нерв дає електричну команду, кальцій «відмикає» актин, а АТФ живить і скорочення, і розслаблення.</p>
-<ul class="mg-molecules" aria-label="Чотири молекули, які варто запам’ятати">${molecules.map(m=>`<li><strong>${esc(m.name)}</strong><span>${esc(m.text)}</span></li>`).join('')}</ul>
+<ul class="mg-molecules" aria-label="Чотири молекули, які варто запам’ятати">${molecules.map(m=>{const ch=chapters.find(c=>c.id===m.chapter);return `<li><a class="mg-mol" href="#${esc(m.chapter)}"><strong>${esc(m.name)}</strong><span>${esc(m.text)}</span><small>Докладніше: ${esc(ch.title)}</small></a></li>`;}).join('')}</ul>
 </section>`;
 }
 
@@ -128,6 +129,7 @@ function chapterSignal(){
  return `<p class="mg-lead">Скорочення починається не в м’язі, а в нервовій системі. Натисніть кнопку — сигнал пройде всім ланцюгом.</p>
 <div class="mg-chain" data-chain data-chain-step="-1">
 <button type="button" class="play-btn mg-chain-play" data-chain-play aria-pressed="false">▶ Пустити сигнал</button>
+${signalArt()}
 <ol class="mg-chain-list">${signalChain.map((s,i)=>`<li data-chain-index="${i}"><span class="mg-chain-dot" aria-hidden="true"></span><strong>${esc(s.title)}</strong><span>${esc(s.text)}</span></li>`).join('')}</ol>
 <p class="small" data-chain-status aria-live="polite">Схема умовна: швидкість анімації не відповідає реальному часу (у тілі це мілісекунди).</p>
 </div>

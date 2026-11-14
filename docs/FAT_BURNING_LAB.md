@@ -59,3 +59,14 @@ Changed (UI only, scientific sentences verbatim; `tests/fat-burning-science.test
 Not done and why: the 84 % CO₂ / 16 % water split from Meerman & Brown was **not** added. PubMed gives no numbers in the abstract and the full text is not open there; per the project rule, numbers come from the full text, so it stays out until someone reads the BMJ page (and its figure correction g7782).
 
 Measured on 390 px: 6110 px before → see PR for the current number. All answer text is now visible instead of folded, so the phone page is not much shorter; this is a deliberate trade (no hidden main text).
+
+## Section «Рух» (2026-11-14, owner request: how aerobic / interval / strength training affect fat; decision «1 три групи разом»)
+
+New section `#exercise` between Balance and Practice (kickers 04–06 renumbered; section bar has six items). Two questions, two panels, always visible, no JS needed to read:
+
+- **During a session** (slider «Темп навантаження», `mountPace` in `dist/fat-burning.js`): schematic curves, no axes or numbers. Fat-oxidation rate rises from low to moderate pace and falls at high pace; total energy use keeps rising. Source: Achten & Jeukendrup 2004, **abstract only** (full text not open) — said on the page.
+- **Over months**: two intervals (aerobic vs strength −1,06 kg [−1,88…−0,24]; combined vs strength −1,09 kg [−1,91…−0,27], ≥10 weeks, Lafontant 2025) drawn from the same numbers as their labels, plus four notes: interval vs moderate aerobic = no fat-mass difference when energy expenditure is equalised (Bellicha 2021); all three modes with matched workload = similar, few studies, diet not controllable (Lafontant); strength preserves ~0,8 kg more fat-free mass during weight loss (0,4–1,3; one review, Bellicha); under 10 weeks no differences (Lafontant).
+
+Numbers were read in the open full texts (PMC12107660 Lafontant, PMC8365736 Bellicha, PMC8244024 Morze), not the abstracts. Findings from full text that the abstracts hide: **Morze 2021 contains no HIIT trials** ("None of the identified studies used HIIT"; no long-term RCTs on HIIT in obesity), so its network ranking says nothing about interval training; its certainty is low–moderate and inconsistency was found for all outcomes; Lafontant could not control diet.
+
+Protected by `tests/fat-burning-exercise.test.mjs` (allowed-number set, interval positions, stated limits, no prescriptions, static chart equals script output). Not done: no per-person advice, no HIIT-vs-aerobic numbers (no full-text number was verified), no claim about «anaerobic» as a separate class (the three groups are aerobic, interval, resistance). Not a reviewed Claim: status line on the page says so.

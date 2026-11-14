@@ -21,7 +21,8 @@ assert.notEqual(equal.weight,equal.fat);
 assert(!html.includes('Обрати питання'),'no duplicate hero control');
 const nav=html.match(/<nav class="fb-jumps"[\s\S]*?<\/nav>/)[0];
 const targets=[...nav.matchAll(/href="#([a-z]+)"/g)].map(m=>m[1]);
-assert.deepEqual(targets,['process','balance','practice','myths','sources']);
+// 2026-11-14: додано «Рух»
+assert.deepEqual(targets,['process','balance','exercise','practice','myths','sources']);
 for(const id of targets)assert(html.includes(`id="${id}"`),`${id} exists`);
 assert(/\.fb-jumps\{position:sticky;top:0/.test(css),'the bar sticks to the top');
 assert(js.includes('aria-current')&&js.includes('IntersectionObserver'),'the bar marks the current section (not colour only)');

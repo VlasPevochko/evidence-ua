@@ -4819,6 +4819,20 @@ async function fatBurningFlow(browser, origin, viewport) {
   await page.locator('[data-fb-balance="surplus"]').click();
   check(where, (await page.locator("#fb-store-fat").getAttribute("d")).startsWith("M"), "store chart is drawn for each scenario");
   check(where, await page.locator(".fb-jumps").evaluate(el => getComputedStyle(el).position === "sticky"), "section bar is sticky");
+  // 2026-11-14 (розділ «Рух»): повзунок темпу рухає маркери по кривих і міняє слова; інтервали намальовані; смуга має шість розділів.
+  check(where, await page.locator(".fb-jumps a").count() === 6, "section bar has six sections");
+  await page.locator("#fb-pace").fill("10");
+  check(where, (await page.locator("#fb-pace-name").innerText()) === "Низький темп", "slider low pace words");
+  const lowY = Number(await page.locator("#fb-pace-fat").getAttribute("cy"));
+  await page.locator("#fb-pace").fill("50");
+  const midY = Number(await page.locator("#fb-pace-fat").getAttribute("cy"));
+  await page.locator("#fb-pace").fill("95");
+  check(where, (await page.locator("#fb-pace-name").innerText()) === "Високий темп", "slider high pace words");
+  const highY = Number(await page.locator("#fb-pace-fat").getAttribute("cy"));
+  check(where, midY < lowY && midY < highY, "the fat-oxidation marker peaks at moderate pace (SVG y inverted)");
+  check(where, await page.locator(".fb-fr-ci").evaluateAll(els => els.length === 2 && els.every(e => e.getBoundingClientRect().width > 20)), "two difference intervals are drawn");
+  check(where, await page.locator("#exercise").evaluate(el => el.getBoundingClientRect().width <= innerWidth), "exercise section fits the width");
+  check(where, await page.locator("#fb-pace").evaluate(el => el.getBoundingClientRect().height >= 40), "slider is tall enough to touch");
   check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "the upgraded page does not overflow sideways");
   await page.emulateMedia({reducedMotion:"reduce"});
   check(where, await page.locator('[data-visual="2"] .fb-piece').first().evaluate(el => getComputedStyle(el).animationName === "none"), "reduced motion must stop diagram animation"); // 2026-11-14: .fb-trace замінено рухом станцій

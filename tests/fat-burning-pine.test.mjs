@@ -11,7 +11,7 @@ assert(pageCss.includes('.pb[data-motif="uroko"]'),'the uroko motif is defined o
 for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='fat-burning.html'))assert(!fs.readFileSync('dist/'+f,'utf8').includes('data-motif="uroko"'),`${f} must not reuse the uroko motif`);
 // Sources are folded, not removed; the status note stays visible outside the fold.
 const fold=html.match(/<details class="fb-sources-fold" id="sources-fold">([\s\S]*?)<\/details>/);
-assert(fold&&(fold[1].match(/<article>/g)||[]).length===4,'all four sources live inside the fold');
+assert(fold&&(fold[1].match(/<article>/g)||[]).length===8,'all eight sources live inside the fold'); // 2026-11-14: чотири нові джерела розділу «Рух» (Bellicha, Lafontant, Morze, Achten) додано до тих самих чотирьох; нічого не вилучено
 for(const part of ['bmj.g7257','body-weight-planner','bmjsem-2024-002363','nccih.nih.gov'])assert(fold[1].includes(part),`${part} still listed`);
 assert(!fold[1].includes('fb-source-disclaimer')&&html.includes('Формальний Claim/EVR-перегляд матеріалу ще не завершено'),'the preliminary-review note stays visible');
 assert(js.includes('sources-fold')&&js.includes('a[href="#sources"]'),'links to #sources open the fold');

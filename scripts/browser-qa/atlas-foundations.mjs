@@ -125,6 +125,14 @@ async function foundationsFallbacks(browser,origin,viewport,{open}){
    await failed.page.locator('[data-zone="'+zone+'"]').click();
    assert.equal(await failed.page.locator('#atlas-detail').getAttribute('data-zone-art'),zone);
    assert.ok((await failed.page.locator('#atlas-content').innerText()).length>100);
+   // Map activation runs in requestAnimationFrame. The synchronous detail update
+   // is not a readiness signal: on CI the next loop could skip the return button
+   // just before the new map hid every body pin, then wait forever for the knee.
+   // Await the actual map and its user-facing return action, without a timed sleep.
+   if(zone==='shoulder'||zone==='knee'){
+    await failed.page.locator('#'+zone+'-pain-map').waitFor({state:'visible'});
+    await failed.page.locator('[data-'+zone+'-return]').waitFor({state:'visible'});
+   }
   }
   assert.equal(failed.seen.pageErrors.length,0);
  }finally{await failed.context.close();}

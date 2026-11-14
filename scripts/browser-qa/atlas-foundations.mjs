@@ -47,6 +47,7 @@ export async function atlasFoundationsFlow(browser,origin,viewport,{open,artifac
    assert.equal(await buttons.nth(1).getAttribute('aria-pressed'),'true','anatomy selection survives tab switches');
    await page.emulateMedia({media:'print'});
    assert.equal(await root.locator('[data-foundation-part]:visible').count(),names.length,'all anatomy explanations print');
+   assert.equal(await root.locator('.af-diagram-key li:visible').count(),names.length+(zone==='gut'?3:0),'every printed silhouette keeps its HTML name');
    await page.emulateMedia({media:'screen'});
    await page.locator('[data-atlas-tab="research"]').click();
    assert.equal(await page.locator('#atlas-breadcrumb-tab').innerText(),'Джерела');

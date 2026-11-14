@@ -63,6 +63,19 @@ for(const [zone,module] of Object.entries(foundationModules)){
 assert.deepEqual(foundationModules.gut.parts.map(x=>x.id),['mouth','esophagus','stomach','small-intestine','large-intestine','rectum']);
 assert.deepEqual(foundationModules.gut.helpers.map(x=>x.id),['liver','gallbladder','pancreas'],'Helper organs stay outside the path food travels');
 const gut=renderFoundation('gut','overview');
+// Final review: the Sources tab must fulfil its promise of all borrowed references.
+const sourceView=renderFoundation('gut','research');
+for(const record of atlasFoundationBase.records){
+ const source=atlasFoundationBase.sources.find(s=>s.id===record.sourceId);
+ assert.ok(sourceView.includes(source.url),'Sources exposes each borrowed reference: '+source.id);
+}
+// Every silhouette has a persistent HTML mark and a matching name legend, including print.
+for(const [zone,module]of Object.entries(foundationModules)){
+ const html=renderFoundation(zone,'anatomy');
+ for(const part of [...module.parts,...(module.helpers||[])])
+  assert.ok(html.includes('data-diagram-mark="'+part.id+'"'),'identified silhouette: '+part.id);
+ assert.match(html,/class="af-diagram-key(?:[ "])/,'persistent printable HTML legend');
+}
 assert.match(gut,/CLM-000052/);
 assert.match(gut,/алергі/);
 for(const claim of atlasFoundationBase.claims)assert.ok(renderFoundation('gut','research').includes(claim.statement),'Full borrowed statements must remain available with their references');

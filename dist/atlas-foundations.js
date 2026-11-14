@@ -4,10 +4,10 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 const sourceById=new Map(atlasFoundationBase.sources.map(s=>[s.id,s]));
 const selectionByZone=new Map();
 const sourceLink=s=>'<a class="af-source-link" href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.shortCitation||s.title)+'</a>';
-function citation(ids){
+function citation(ids,all=false){
  const sources=[...new Set(ids)].map(id=>sourceById.get(id)).filter(Boolean);
  if(!sources.length)return '';
- return '<div class="af-citation"><span>Джерело</span>'+sourceLink(sources[0])+(sources.length>1?'<span>Інші першоджерела — у «Джерелах».</span>':'')+'</div>';
+ return '<div class="af-citation"><span>Джерело</span>'+(all?sources.map(sourceLink).join(' '):sourceLink(sources[0]))+(!all&&sources.length>1?'<span>Інші першоджерела — у «Джерелах».</span>':'')+'</div>';
 }
 function lessonHTML(item){
  return '<section class="af-lesson"'+(item.claimId?' data-claim-id="'+esc(item.claimId)+'"':'')+'><h3>'+esc(item.title)+'</h3><p>'+esc(item.body)+'</p>'+(item.boundary?'<p class="af-boundary">'+esc(item.boundary)+'</p>':'')+citation(item.sourceIds)+'</section>';
@@ -38,9 +38,20 @@ function helperHTML(module){
  if(!module.helpers?.length)return '';
  return '<aside class="af-helpers"><h3>Допоміжні органи — поза шляхом їжі</h3><dl>'+module.helpers.map(p=>'<div><dt>'+esc(p.title)+'</dt><dd>'+esc(p.body)+'</dd></div>').join('')+'</dl>'+citation(['SRC-000122'])+'</aside>';
 }
+const diagramPositions={
+ brain:{cerebrum:[41,34],cerebellum:[75,66],brainstem:[55,84],hypothalamus:[51,54]},
+ gut:{mouth:[52,9],esophagus:[52,24],stomach:[59,45],'small-intestine':[48,66],'large-intestine':[66,69],rectum:[58,92],liver:[26,37],gallbladder:[32,45],pancreas:[74,47]}
+};
+function diagramLabels(zone,module){
+ const items=[...module.parts.map((p,i)=>({...p,key:String(i+1),primary:true})),...(module.helpers||[]).map((p,i)=>({...p,key:['A','B','C'][i]}))];
+ const marks=items.map(p=>{const [x,y]=diagramPositions[zone][p.id];return '<span class="af-diagram-mark" data-diagram-mark="'+p.id+'" style="left:'+x+'%;top:'+y+'%" aria-hidden="true">'+p.key+'</span>';}).join('');
+ const key='<ul class="af-diagram-key'+(zone==='brain'?' af-diagram-key--brain':'')+'" aria-label="Позначення на схемі">'+items.map(p=>'<li'+(p.primary?' class="af-key-primary"':'')+'><span>'+p.key+'</span> '+esc(p.title)+'</li>').join('')+'</ul>';
+ return {marks,key};
+}
 function anatomyHTML(zone,module){
+ const labels=diagramLabels(zone,module);
  return '<p class="af-diagram-note">'+esc(module.diagramNote)+'</p><div class="af-explorer" data-foundation-root="'+zone+'">'
- +'<div class="af-map">'+(zone==='brain'?brainSVG():gutSVG())+'<p class="af-selection" data-foundation-selection aria-live="polite">Усі пояснення наведено нижче. Інтерактивний вибір завантажується.</p></div>'
+ +'<div class="af-map"><div class="af-picture">'+(zone==='brain'?brainSVG():gutSVG())+labels.marks+'</div><p class="af-selection" data-foundation-selection aria-live="polite">Усі пояснення наведено нижче. Інтерактивний вибір завантажується.</p>'+labels.key+'</div>'
  +'<div class="af-choices" role="group" aria-label="'+(zone==='brain'?'Відділи мозку':'Шлях їжі')+'">'+module.parts.map((p,i)=>'<button type="button" id="af-choice-'+zone+'-'+p.id+'" data-foundation-choice="'+p.id+'" aria-pressed="false" aria-controls="af-part-'+zone+'-'+p.id+'" disabled><span aria-hidden="true">'+(i+1)+'</span>'+esc(p.title)+'</button>').join('')+'</div>'
  +'<div class="af-readings">'+module.parts.map(p=>'<section class="af-part" id="af-part-'+zone+'-'+p.id+'" data-foundation-part="'+p.id+'" aria-labelledby="af-choice-'+zone+'-'+p.id+'"><h3>'+esc(p.title)+'</h3><p>'+esc(p.body)+'</p>'+(p.boundary?'<p class="af-boundary">'+esc(p.boundary)+'</p>':'')+citation(p.sourceIds)+'</section>').join('')+'</div></div>'+helperHTML(module);
 }
@@ -48,7 +59,7 @@ function researchHTML(zone,module){
  const sources=module.sourceIds.map(id=>sourceById.get(id));
  let html='<section class="af-review"><h3>Джерела й межі пояснень</h3><p>Навчальний матеріал про будову й фізіологію. Незалежний науковий перегляд не завершено; рівні впевненості не присвоєно.</p><p>Ці довідкові сторінки не є випробуваннями лікування. Схеми спрощують будову й не визначають причини симптомів.</p></section>'
  +'<h3>Навчальні першоджерела</h3><ol class="af-sources">'+sources.map(s=>'<li data-source-id="'+esc(s.id)+'">'+sourceLink(s)+'<p>'+esc(s.title)+'</p><p class="af-boundary">Навчальний матеріал NIH. Прочитано повну сторінку 14.11.2026; дату публікації не встановлено.</p></li>').join('')+'</ol>';
- if(zone==='gut')html+='<details class="af-borrowed"><summary>Чинні фізіологічні твердження</summary><p>Формулювання й записи доказів повторно використано з «Шляху їжі». Це механізми, а не доведення клінічного ефекту; їхні рівні впевненості не оцінено.</p>'+atlasFoundationBase.claims.map(c=>'<section class="af-physiology" data-claim-id="'+esc(c.id)+'"><p>'+esc(c.statement)+'</p>'+citation(atlasFoundationBase.records.filter(r=>r.claimId===c.id).map(r=>r.sourceId))+'</section>').join('')+'<a class="af-source-link" href="./nutrition-digestion.html">Повний розбір, першоджерела та межі — «Шлях їжі»</a></details>';
+ if(zone==='gut')html+='<details class="af-borrowed"><summary>Чинні фізіологічні твердження</summary><p>Формулювання й записи доказів повторно використано з «Шляху їжі». Це механізми, а не доведення клінічного ефекту; їхні рівні впевненості не оцінено.</p>'+atlasFoundationBase.claims.map(c=>'<section class="af-physiology" data-claim-id="'+esc(c.id)+'"><p>'+esc(c.statement)+'</p>'+citation(atlasFoundationBase.records.filter(r=>r.claimId===c.id).map(r=>r.sourceId),true)+'</section>').join('')+'<a class="af-source-link" href="./nutrition-digestion.html">Повний розбір, першоджерела та межі — «Шлях їжі»</a></details>';
  return html;
 }
 export function renderFoundation(zone,tab){

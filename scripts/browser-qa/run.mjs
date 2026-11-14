@@ -12,6 +12,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium} from 'playwright-core';
 import {areas,catalog} from '../../src/platform/catalog.mjs';
 import {shoulderRouteFlow} from './shoulder-route.mjs';
+import {atlasFoundationsFlow} from './atlas-foundations.mjs';
 import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
 import {decodePng, seamDepth, gapResidue} from './lens-pixels.mjs';
 import {glyphContrast} from './glyph-contrast.mjs';
@@ -3842,7 +3843,8 @@ async function atlasFlow(browser, origin, viewport) {
 // на телефоні результат дотику видно без прокрутки руками. Кожне правило перевірено навмисною поломкою коду (перевірка червоніє).
 const ATLAS_TABS = {
   shoulder: ['overview', 'anatomy', 'symptoms', 'training', 'rehab', 'research'], knee: ['overview', 'anatomy', 'symptoms', 'training', 'rehab', 'research'],
-  spine: ['overview', 'anatomy', 'symptoms', 'training'], muscles: ['overview', 'anatomy', 'training', 'research'], brain: ['overview'], gut: ['overview']
+  // 2026-11-14: owner-approved educational modules add three substantive views each.
+  spine: ['overview', 'anatomy', 'symptoms', 'training'], muscles: ['overview', 'anatomy', 'training', 'research'], brain: ['overview','anatomy','research'], gut: ['overview','anatomy','research']
 };
 const atlasLeaveMap = async page => {
   for (const selector of ['[data-shoulder-return]', '[data-knee-return]']) {
@@ -3896,7 +3898,7 @@ async function atlasUpdateFlow(browser, origin, viewport) {
   });
   check(where, facts.shortcuts === 0, 'no tile column, tab-duplicating shortcuts or principles strip');
   check(where, facts.h1 === 1, 'one h1');
-  check(where, facts.state.join('|') === 'full:Повний модуль:Плече|beta:Бета:Хребет · М’язи · Коліно|planned:Готується:Мозок · ШКТ', `«Стан атласу» is built from the zone data (${facts.state.join('|')})`);
+  check(where, facts.state.join('|') === 'full:Повний модуль:Плече|beta:Бета:Мозок · Хребет · М’язи · ШКТ · Коліно', `«Стан атласу» is built from the zone data (${facts.state.join('|')})`);
   check(where, facts.tabs.length === 6 && facts.tabs.every(tab => tab.id === `atlas-tab-${tab.name}` && tab.controls === 'atlas-content'), 'every tab has an id and controls the panel');
   check(where, facts.tabs.filter(tab => tab.index === 0).map(tab => tab.name).join() === 'overview' && facts.tabs.filter(tab => tab.selected === 'true').length === 1, 'only the selected tab is in the Tab order');
   check(where, facts.panel.role === 'tabpanel' && facts.panel.labelled === 'atlas-tab-overview', `the content is a tab panel labelled by the selected tab (${JSON.stringify(facts.panel)})`);
@@ -3949,9 +3951,11 @@ async function atlasUpdateFlow(browser, origin, viewport) {
       seenTexts.set(key, `${zone}/${tab}`);
     }
     if (zone === 'brain' || zone === 'gut') {
-      const links = await page.locator('#atlas-content a[href]').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
-      check(where, links.join() === (zone === 'brain' ? './sleep.html,./mechanisms.html#caffeine,./index.html#supplement-caffeine' : './nutrition-digestion.html,./nutrition-inside.html'), `${zone}: real links to our own materials (${links.join()})`);
-      check(where, (await page.locator('#atlas-content').innerText()).includes('Що ще готується'), `${zone}: what is still being prepared is kept in one folded note`);
+      // 2026-11-14: related links live in the new substantive overview.
+      await page.locator('#atlas-tab-overview').click();
+      const links = await page.locator('#atlas-content .af-related a').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
+      const required=zone==='brain'?['./sleep.html','./mechanisms.html#caffeine','./index.html#supplement-caffeine']:['./nutrition-digestion.html','./nutrition-inside.html'];
+      check(where, required.every(href=>links.includes(href)), zone+': prior useful links retained');
     }
     check(where, (await atlasSmallText(page)).length === 0, `${zone}: no text under 12 px (${(await atlasSmallText(page)).slice(0, 3).join(' | ')})`);
     check(where, (await atlasSmallTargets(page)).length === 0, `${zone}: no control under 44 px (${JSON.stringify((await atlasSmallTargets(page)).slice(0, 3))})`);
@@ -5213,6 +5217,7 @@ async function homeFlows(browser, origin) {
 // QA_ATLAS_FLOWS=atlasAuditFlow,atlasPrintFlow залишає лише названі потоки (для перевірки навмисною поломкою: один потік замість п'яти хвилин).
 const atlasWanted = name => !process.env.QA_ATLAS_FLOWS || process.env.QA_ATLAS_FLOWS.split(',').includes(name);
 async function atlasFlows(browser, origin) {
+  if (atlasWanted('atlasFoundationsFlow')) for (const viewport of viewports) await atlasFoundationsFlow(browser,origin,viewport,{open,artifact});
   const narrow = {name: 'mobile-narrow', width: 360, height: 780};
   if (atlasWanted('atlasFlow')) for (const viewport of viewports) await atlasFlow(browser, origin, viewport);
   // Атлас: оновлення 2026-11-10 («1-7 так» після аудиту шаблонності й функціональності); 360 включено, бо вузький телефон найтісніший.
@@ -5240,6 +5245,8 @@ const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
 try {
   if (process.env.QA_SHOULDER_BASELINE === '1' || process.env.QA_SHOULDER_ONLY === '1') {
     for (const viewport of shoulderViewports) await shoulderRouteFlow(browser, origin, viewport, {open, artifact, baseline:process.env.QA_SHOULDER_BASELINE === '1'});
+  } else if (process.env.QA_FOUNDATIONS_BASELINE === '1' || process.env.QA_FOUNDATIONS_ONLY === '1') {
+    for (const viewport of viewports) await atlasFoundationsFlow(browser, origin, viewport, {open, artifact, baseline:process.env.QA_FOUNDATIONS_BASELINE === '1'});
   } else if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
   } else if (sectionsOnly) {
@@ -5329,6 +5336,14 @@ try {
 
 if (process.env.QA_SHOULDER_BASELINE === '1') {
   console.log('Shoulder baseline captured; no regression verdict.');
+  process.exit(0);
+}
+if (process.env.QA_FOUNDATIONS_BASELINE === '1') {
+  console.log('Atlas brain/GI baseline captured at 390 and 1440 px; no regression verdict.');
+  process.exit(0);
+}
+if (process.env.QA_FOUNDATIONS_ONLY === '1') {
+  console.log('Atlas brain/GI Browser QA passed at 390 and 1440 px.');
   process.exit(0);
 }
 if (process.env.QA_SHOULDER_ONLY === '1') {

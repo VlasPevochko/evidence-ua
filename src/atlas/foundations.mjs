@@ -83,7 +83,7 @@ export function mountFoundation(root){
   for(const p of panels)p.hidden=p.dataset.foundationPart!==id;
   for(const shape of root.querySelectorAll('[data-foundation-shape]'))shape.classList.toggle('is-selected',shape.dataset.foundationShape===id);
   const label=root.querySelector('[data-foundation-selection]');
-  if(label)label.textContent='Обрано: '+target.textContent.replace(/^\\s*\\d+\\s*/,'').trim();
+  if(label)label.textContent='Обрано: '+target.textContent.replace(/^\s*\d+\s*/,'').trim();
  }
  root.addEventListener('click',event=>{
   const b=event.target?.closest?.('[data-foundation-choice]');

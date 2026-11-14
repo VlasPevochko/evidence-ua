@@ -135,6 +135,7 @@ export const foundationModules={
       }
     ],
     "related": [
+      {"title":"Кофеїн: наявний розбір","copy":"Відкрити окремий розбір кофеїну з його джерелами та обмеженнями.","href":"./index.html#supplement-caffeine"},
       {
         "title": "Сон і відновлення",
         "copy": "Стадії сну, ритм ночі й межі практичних порад.",

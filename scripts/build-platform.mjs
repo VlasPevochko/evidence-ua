@@ -9,6 +9,7 @@ import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
 import {homeFreshGridHTML} from '../src/platform/home-fresh.mjs';
 import {renderNight} from '../src/sleep/night.mjs';
+import {buildAtlasFoundations} from './build-atlas-foundations.mjs';
 // Дані, з яких збирається блок «Нове на сайті» (T4): ті самі модулі, що вантажать сторінки розборів, схем і журналу.
 import {STUDIES} from '../dist/research-data.js';
 import {miniInterval} from '../dist/research-chart.js';
@@ -86,6 +87,7 @@ fs.writeFileSync('dist/sleep-night.js',fs.readFileSync('src/sleep/night.mjs','ut
 // Точки карт болю плеча й коліна (рішення власника 2026-11-10): один модуль даних для карт, карток тем, пошуку й тестів.
 fs.writeFileSync('dist/atlas-points.js',fs.readFileSync('src/atlas/points.mjs','utf8'));
 fs.writeFileSync('dist/atlas-diagrams.js',fs.readFileSync('src/atlas/diagrams.mjs','utf8'));
+buildAtlasFoundations();
 fs.writeFileSync('dist/sleep.js',fs.readFileSync('src/sleep/page.mjs','utf8').replace("'./night.mjs'","'./sleep-night.js?v=1'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');

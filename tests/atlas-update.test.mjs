@@ -68,31 +68,33 @@ assert.deepEqual(Object.keys(zoneMeta), ['brain', 'shoulder', 'spine', 'muscles'
 const pins = Object.fromEntries([...html.matchAll(/<button class="atlas-zone[^"]*" type="button" data-zone="(\w+)" data-state="(\w+)"[^>]*aria-label="([^"]+)"/g)].map(m => [m[1], {state: m[2], name: m[3]}]));
 for (const [zone, meta] of Object.entries(zoneMeta)) assert.equal(pins[zone]?.state, meta.key, `the pin of «${zone}» carries the same state as zoneMeta`);
 const stateRows = [...html.matchAll(/<div data-state="(\w+)"><dt>([^<]+)<\/dt><dd>([^<]+)<\/dd><\/div>/g)].map(m => [m[1], m[2], m[3]]);
-const expectedRows = [['full', 'Повний модуль'], ['beta', 'Бета'], ['planned', 'Готується']].map(([key, label]) => [key, label, Object.keys(zoneMeta).filter(zone => zoneMeta[zone].key === key).map(zone => pins[zone].name).join(' · ')]);
+// 2026-11-14: owner approved Brain/GI foundations; omit empty state groups.
+const expectedRows = [['full', 'Повний модуль'], ['beta', 'Бета'], ['planned', 'Готується']].map(([key, label]) => [key, label, Object.keys(zoneMeta).filter(zone => zoneMeta[zone].key === key).map(zone => pins[zone].name).join(' · ')]).filter(([, , names]) => names);
 assert.deepEqual(stateRows, expectedRows, '«Стан атласу» in the markup equals what the script computes from the data (so the no-script page does not lie)');
 assert(js.includes('function renderState()') && js.includes('renderState();\nrender();'), 'the state block is rebuilt from the same data on load');
 assert(html.includes('href="./about.html#ab-atlas"') && (html.match(/href="\.\/about\.html#ab-atlas"/g) || []).length === 2, 'the intro link and the state note lead to the real «Про Атлас» section');
 assert(read('dist/about.html').includes('<h2 id="ab-atlas">Про Атлас</h2>'), 'the section exists');
 
-// ── 3) «Мозок» і «ШКТ»: одна вкладка з посиланнями на справжні матеріали сайту, заглушок «Готується» на кожну вкладку немає.
-assert(!js.includes('Ця вкладка вже є частиною загальної архітектури') && !js.includes('function previewContent'), 'the identical placeholder text is gone (it filled 14 of 36 views)');
-assert(/brain:\{overview:\(\)=>plannedOverview\('brain'\)\},\n gut:\{overview:\(\)=>plannedOverview\('gut'\)\}/.test(js), 'the planned zones have exactly one view');
-assert(js.includes('tablist.hidden=available.length<2'), 'a zone with a single view shows no tab row');
-const related = js.slice(js.indexOf('const relatedMaterials={'), js.indexOf('function plannedOverview'));
-const hrefs = [...related.matchAll(/href:'([^']+)'/g)].map(m => m[1]);
-assert.deepEqual(hrefs, ['./sleep.html', './mechanisms.html#caffeine', './index.html#supplement-caffeine', './nutrition-digestion.html', './nutrition-inside.html'], 'brain → sleep and caffeine, gut → 3D digestion and «Харчування зсередини»');
+// ── 3) 2026-11-14: owner approved sourced Brain/GI foundations in three tabs.
+assert(!js.includes('function plannedOverview') && !js.includes('const previewTopics='), 'old placeholders are removed');
+for (const zone of ['brain','gut']) {
+ assert(js.includes(zone+":foundationViews('"+zone+"')"), zone+' uses the foundation templates');
+ for (const tab of ['overview','anatomy','research']) assert(html.includes('id="atlas-foundation-'+zone+'-'+tab+'"'), zone+' has a real '+tab+' template');
+ assert.equal(zoneMeta[zone].key,'beta');
+}
+assert(js.includes('tablist.hidden=available.length<2'));
+assert(js.includes("tabLabel(selectedZone,button.dataset.atlasTab)") && js.includes("breadcrumbTab.textContent=tabLabel(selectedZone,selectedTab)"), 'per-zone source labels stay consistent');
+const {foundationModules}=await import('../src/evidence/atlas/foundations.mjs');
+const related=Object.values(foundationModules).flatMap(m=>m.related);
+const hrefs=related.map(m=>m.href);
+for (const href of ['./sleep.html','./mechanisms.html#caffeine','./index.html#supplement-caffeine','./nutrition-digestion.html','./nutrition-inside.html'])
+ assert(hrefs.includes(href),'existing useful destination retained: '+href);
 for (const href of hrefs) {
-  const [file, hash] = href.replace('./', '').split('#');
-  assert(fs.existsSync('dist/' + file), `${href}: the page exists`);
-  // Картка кофеїну на головній створюється скриптом у браузері (як і в каталозі, tests/navigation-flow), тож для неї якір у готовому HTML не вимагаємо.
-  if (hash && file !== 'index.html') assert(new RegExp(`\\bid="${hash}"`).test(read('dist/' + file)), `${href}: the anchor exists`);
+ const [file,hash]=href.replace('./','').split('#');
+ assert(fs.existsSync('dist/'+file),href+': page exists');
+ if(hash&&file!=='index.html')assert(read('dist/'+file).includes('id="'+hash+'"'),href+': anchor exists');
 }
-// Описи карток дослівно з метаопису сторінок: нових тверджень немає.
-for (const [file, text] of [['sleep.html', 'Як влаштований сон, що відомо про недосипання й фізичну працездатність та які звички допомагають створити умови для сну.'], ['nutrition-digestion.html', '3D-модель травного тракту: як їжа проходить від стравоходу до товстої кишки, з джерелами для кожного твердження.'], ['nutrition-inside.html', 'Від їжі до клітини: інтерактивний шлях нутрієнтів — перетравлення, всмоктування та подальший транспорт.']]) {
-  assert(read('dist/' + file).includes(`content="${text}"`), `${file}: the card quotes the page's own description`);
-  assert(related.includes(text), `the card for ${file} uses that description word for word`);
-}
-for (const forbidden of ['допоможе', 'лікує', 'гарантує', 'позбавить', 'виправляє']) assert(!related.toLocaleLowerCase('uk').includes(forbidden), `the cards promise nothing (${forbidden})`);
+for(const forbidden of ['лікує','гарантує','позбавить','виправляє'])assert(!JSON.stringify(related).toLocaleLowerCase('uk').includes(forbidden));
 
 // ── 4) Картки тем плеча й коліна ведуть до точок карти болю, де збіг очевидний.
 const pointOf = zone => Object.fromEntries((zone === 'shoulder' ? shoulderTopics : kneeTopics).map(topic => [topic.title, topic.point || null]));

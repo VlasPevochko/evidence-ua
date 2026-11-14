@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Muscle Lab — Evidence UA</title><meta name="description" content="Від м’яза до молекул: будова, нерв і кальцій, ріст і атрофія, тренування, сон, старіння та хвороби м’язів — з джерелами."><link rel="stylesheet" href="./page-pine.css?v=22">
-<link rel="stylesheet" href="./evidence/evidence.css?v=59"><link rel="stylesheet" href="./muscle-lab.css?v=76"><link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./evidence/evidence.css?v=59"><link rel="stylesheet" href="./muscle-lab.css?v=78"><link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="icon" href="./favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="canonical" href="https://vlaspevochko.github.io/evidence-ua/muscle-lab.html">
@@ -33,7 +33,7 @@
 <!-- MUSCLE-GUIDE:QUICK:START --><section id="quick" class="mg-quick" aria-labelledby="quick-title">
 <h2 id="quick-title">М’яз за 30 секунд</h2>
 <p>М’яз складається з пучків, пучки — з волокон, волокна — з міофібрил, а міофібрили — з тисяч саркомерів. Усередині саркомера актин і міозин ковзають один уздовж одного. Нерв дає електричну команду, кальцій «відмикає» актин, а АТФ живить і скорочення, і розслаблення.</p>
-<ul class="mg-molecules" aria-label="Чотири молекули, які варто запам’ятати"><li><strong>Ca²⁺</strong><span>«Дозвіл» на скорочення: зв’язується з тропоніном C і відкриває актин для міозину.</span></li><li><strong>АТФ</strong><span>Енергія для кожного кроку головки міозину і для повернення кальцію назад, тобто для розслаблення.</span></li><li><strong>mTORC1</strong><span>Один із центральних регуляторів синтезу білка й росту клітини.</span></li><li><strong>Міостатин</strong><span>Одне з природних «гальм» м’язової маси.</span></li></ul>
+<ul class="mg-molecules" aria-label="Чотири молекули, які варто запам’ятати"><li><a class="mg-mol" href="#signal"><strong>Ca²⁺</strong><span>«Дозвіл» на скорочення: зв’язується з тропоніном C і відкриває актин для міозину.</span><small>Докладніше: Нерв → кальцій → скорочення</small></a></li><li><a class="mg-mol" href="#signal"><strong>АТФ</strong><span>Енергія для кожного кроку головки міозину і для повернення кальцію назад, тобто для розслаблення.</span><small>Докладніше: Нерв → кальцій → скорочення</small></a></li><li><a class="mg-mol" href="#why-grow"><strong>mTORC1</strong><span>Один із центральних регуляторів синтезу білка й росту клітини.</span><small>Докладніше: Чому м’яз росте</small></a></li><li><a class="mg-mol" href="#why-shrink"><strong>Міостатин</strong><span>Одне з природних «гальм» м’язової маси.</span><small>Докладніше: Чому м’яз зникає</small></a></li></ul>
 </section><!-- MUSCLE-GUIDE:QUICK:END -->
 <section id="explorer">
 <details class="module-status">
@@ -94,6 +94,40 @@
 <details class="mg-chapter" id="signal"><summary><span class="mg-num" aria-hidden="true">2</span><span class="mg-ch-text"><h3 class="mg-ch-title">Нерв → кальцій → скорочення</h3><small>Анімований ланцюг сигналу, цикл міозину, роль АТФ</small></span></summary><div class="mg-chapter-body"><p class="mg-lead">Скорочення починається не в м’язі, а в нервовій системі. Натисніть кнопку — сигнал пройде всім ланцюгом.</p>
 <div class="mg-chain" data-chain data-chain-step="-1">
 <button type="button" class="play-btn mg-chain-play" data-chain-play aria-pressed="false">▶ Пустити сигнал</button>
+<svg class="mg-signal" viewBox="0 0 360 176" aria-hidden="true" focusable="false">
+<rect class="sg-fiber" x="150" y="14" width="202" height="154" rx="16"/>
+<g class="sg-sr">
+<rect x="226" y="40" width="12" height="48" rx="5"/><rect x="254" y="40" width="12" height="48" rx="5"/>
+<circle class="sg-ca-in" cx="232" cy="52" r="2.4"/><circle class="sg-ca-in" cx="232" cy="64" r="2.4"/><circle class="sg-ca-in" cx="232" cy="76" r="2.4"/>
+<circle class="sg-ca-in" cx="260" cy="52" r="2.4"/><circle class="sg-ca-in" cx="260" cy="64" r="2.4"/><circle class="sg-ca-in" cx="260" cy="76" r="2.4"/>
+</g>
+<path class="sg-p sg-p0" data-chain-part="0" d="M10 40H88" fill="none"/>
+<ellipse class="sg-p sg-p0" data-chain-part="0" cx="102" cy="40" rx="16" ry="14" fill="none"/>
+<circle class="sg-spike" cx="10" cy="40" r="4.5"/>
+<circle class="sg-p sg-p1" data-chain-part="1" cx="97" cy="36" r="3"/><circle class="sg-p sg-p1" data-chain-part="1" cx="106" cy="43" r="3"/><circle class="sg-p sg-p1" data-chain-part="1" cx="98" cy="46" r="3"/>
+<g class="sg-ach"><circle class="sg-p sg-p1" data-chain-part="1" cx="128" cy="32" r="2.6"/><circle class="sg-p sg-p1" data-chain-part="1" cx="134" cy="40" r="2.6"/><circle class="sg-p sg-p1" data-chain-part="1" cx="128" cy="48" r="2.6"/></g>
+<rect class="sg-p sg-p2" data-chain-part="2" x="144" y="27" width="9" height="9" rx="3"/><rect class="sg-p sg-p2" data-chain-part="2" x="144" y="36" width="9" height="9" rx="3"/><rect class="sg-p sg-p2" data-chain-part="2" x="144" y="45" width="9" height="9" rx="3"/>
+<rect class="sg-p sg-p3" data-chain-part="3" x="150" y="14" width="202" height="154" rx="16" fill="none"/>
+<path class="sg-p sg-p3" data-chain-part="3" d="M246 14V76" fill="none"/>
+<rect class="sg-p sg-p4" data-chain-part="4" x="238" y="50" width="4" height="8" rx="1.5"/><rect class="sg-p sg-p4" data-chain-part="4" x="238" y="68" width="4" height="8" rx="1.5"/>
+<rect class="sg-p sg-p4" data-chain-part="4" x="250" y="50" width="4" height="8" rx="1.5"/><rect class="sg-p sg-p4" data-chain-part="4" x="250" y="68" width="4" height="8" rx="1.5"/>
+<g class="sg-ca-out"><circle class="sg-p sg-p4" data-chain-part="4" cx="214" cy="96" r="2.8"/><circle class="sg-p sg-p4" data-chain-part="4" cx="228" cy="100" r="2.8"/><circle class="sg-p sg-p4" data-chain-part="4" cx="240" cy="96" r="2.8"/><circle class="sg-p sg-p4" data-chain-part="4" cx="252" cy="100" r="2.8"/><circle class="sg-p sg-p4" data-chain-part="4" cx="264" cy="96" r="2.8"/><circle class="sg-p sg-p4" data-chain-part="4" cx="278" cy="100" r="2.8"/></g>
+<g class="sg-strip">
+<line class="sg-myosin" x1="196" y1="136" x2="306" y2="136"/>
+<g class="sg-l">
+<line class="sg-p sg-p7" data-chain-part="7" x1="170" y1="112" x2="170" y2="160"/>
+<line class="sg-actin" x1="170" y1="124" x2="246" y2="124"/><line class="sg-actin" x1="170" y1="148" x2="246" y2="148"/>
+<circle class="sg-p sg-p5" data-chain-part="5" cx="206" cy="124" r="3.6"/><circle class="sg-p sg-p5" data-chain-part="5" cx="226" cy="148" r="3.6"/>
+<path class="sg-p sg-p6" data-chain-part="6" d="M212 136L219 125M232 136L225 147" fill="none"/>
+</g>
+<g class="sg-r">
+<line class="sg-p sg-p7" data-chain-part="7" x1="332" y1="112" x2="332" y2="160"/>
+<line class="sg-actin" x1="332" y1="124" x2="256" y2="124"/><line class="sg-actin" x1="332" y1="148" x2="256" y2="148"/>
+<circle class="sg-p sg-p5" data-chain-part="5" cx="296" cy="124" r="3.6"/><circle class="sg-p sg-p5" data-chain-part="5" cx="276" cy="148" r="3.6"/>
+<path class="sg-p sg-p6" data-chain-part="6" d="M290 136L283 125M270 136L277 147" fill="none"/>
+</g>
+</g>
+</svg>
 <ol class="mg-chain-list"><li data-chain-index="0"><span class="mg-chain-dot" aria-hidden="true"></span><strong>Мотонейрон</strong><span>Потенціал дії біжить аксоном α-мотонейрона.</span></li><li data-chain-index="1"><span class="mg-chain-dot" aria-hidden="true"></span><strong>Ацетилхолін</strong><span>У закінченні нерва входить Ca²⁺, і бульбашки викидають ацетилхолін у синаптичну щілину.</span></li><li data-chain-index="2"><span class="mg-chain-dot" aria-hidden="true"></span><strong>Рецептори на м’язі</strong><span>Ацетилхолін відкриває нікотинові рецептори — виникає потенціал кінцевої пластинки, а за ним потенціал дії волокна. Ацетилхолінестераза швидко прибирає медіатор.</span></li><li data-chain-index="3"><span class="mg-chain-dot" aria-hidden="true"></span><strong>Сарколема → T-трубочки</strong><span>Електричний сигнал біжить мембраною і заходить углиб волокна.</span></li><li data-chain-index="4"><span class="mg-chain-dot" aria-hidden="true"></span><strong>CaV1.1 → RyR1</strong><span>CaV1.1 відчуває напругу й механічно відчиняє RyR1. Кальцій виходить із ретикулума.</span></li><li data-chain-index="5"><span class="mg-chain-dot" aria-hidden="true"></span><strong>Тропонін C</strong><span>Ca²⁺ сідає на тропонін C, тропоміозин зсувається — актин відкритий для міозину.</span></li><li data-chain-index="6"><span class="mg-chain-dot" aria-hidden="true"></span><strong>Крос-містки</strong><span>Головки міозину чіпляються, тягнуть, відпускають — і так по колу, поки є кальцій і АТФ.</span></li><li data-chain-index="7"><span class="mg-chain-dot" aria-hidden="true"></span><strong>Сила</strong><span>Саркомери коротшають, м’яз тягне сухожилок.</span></li></ol>
 <p class="small" data-chain-status aria-live="polite">Схема умовна: швидкість анімації не відповідає реальному часу (у тілі це мілісекунди).</p>
 </div>

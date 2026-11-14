@@ -3794,6 +3794,57 @@ async function muscleGuideFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function muscleSignalFlow(browser, origin, viewport) {
+  // 2026-11-14, апгрейд сторінки «Від м’яза до молекул»: схема сигналу світиться разом зі списком, плитки «за 30 секунд» ведуть у розділи, цілі дотику ≥ 44 px.
+  const where = `muscle signal drawing @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
+  await page.waitForSelector('#quick');
+  // 1) Плитка молекули веде в розділ і відкриває його.
+  await page.locator('.mg-mol', {hasText: 'mTORC1'}).click();
+  await page.waitForTimeout(300);
+  check(where, await page.locator('#why-grow').evaluate(node => node.open), 'the mTORC1 tile must open its chapter');
+  check(where, await page.locator('.mg-mol small').first().evaluate(node => getComputedStyle(node).fontSize === '12px'), 'tile destination hint is at least 12 px');
+  // 2) Схема: спокій, світло, зсув ниток.
+  await page.locator('#signal > summary').click();
+  const read = () => page.evaluate(() => {
+    const color = (sel, prop) => getComputedStyle(document.querySelector(sel))[prop];
+    const left = document.querySelector('.mg-signal .sg-l').getBoundingClientRect().left;
+    return {axon: color('.mg-signal path.sg-p0', 'stroke'), ach: color('.mg-signal .sg-ach .sg-p1', 'fill'), ca: color('.mg-signal .sg-p5', 'fill'), left};
+  });
+  const idle = await read();
+  await page.locator('[data-chain-play]').click();
+  await page.waitForTimeout(8600);
+  const done = await read();
+  check(where, idle.axon !== done.axon && idle.ach !== done.ach && idle.ca !== done.ca, `lit parts must differ from idle: ${JSON.stringify({idle, done})}`);
+  check(where, done.left - idle.left > 8, `at the last step the filaments slide inward (${done.left - idle.left} px)`);
+  const box = await page.locator('.mg-signal').boundingBox();
+  check(where, box.width >= 240 && box.x >= 0 && box.x + box.width <= viewport.width + 1, `the drawing fits the screen (${Math.round(box.width)} px)`);
+  check(where, (await page.locator('.mg-signal text').count()) === 0, 'no text inside the drawing (labels are HTML)');
+  // 3) Зменшений рух: одразу весь ланцюг, без анімацій.
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.reload();
+  await page.waitForSelector('#signal');
+  await page.locator('#signal > summary').click();
+  await page.locator('[data-chain-play]').click();
+  await page.waitForTimeout(300);
+  check(where, Number(await page.locator('[data-chain]').getAttribute('data-chain-step')) === 7, 'reduced motion shows the whole chain at once');
+  check(where, await page.locator('.mg-signal .sg-p0').first().evaluate(node => getComputedStyle(node).animationName === 'none'), 'reduced motion switches the drawing animations off');
+  // 4) Цілі дотику: кружки кроків, рядок службових кнопок, джерела.
+  await page.evaluate(() => document.querySelectorAll('main details').forEach(d => { d.open = true; }));
+  const targets = await page.evaluate(() => [...document.querySelectorAll('.step-dot, .eua-platform-nav .eua-tools > *, .mg-source-list a, .mg-ev-label a, .muscle-shared .eua-source-links a')].filter(e => e.getBoundingClientRect().width > 0).map(e => {
+    const r = e.getBoundingClientRect();
+    return {cls: e.className || e.tagName, w: Math.round(r.width), h: Math.round(r.height)};
+  }).filter(t => t.h < 44 || t.w < 44));
+  check(where, targets.length === 0, `touch targets under 44 px: ${JSON.stringify(targets.slice(0, 6))}`);
+  const textSmall = await page.evaluate(() => [...document.querySelectorAll('main *')].filter(e => e.children.length === 0 && e.textContent.trim() && e.getBoundingClientRect().width > 0 && parseFloat(getComputedStyle(e).fontSize) < 12).length);
+  check(where, textSmall === 0, `visible text under 12 px on the page: ${textSmall}`);
+  check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'the page does not scroll sideways');
+  await artifact(page, viewport, 'muscle-signal', page.locator('#signal .mg-chain'));
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party request: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
 async function atlasFlow(browser, origin, viewport) {
   const where = `atlas shoulder map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
@@ -5265,6 +5316,11 @@ try {
     for (const viewport of shoulderViewports) await shoulderRouteFlow(browser, origin, viewport, {open, artifact, baseline:process.env.QA_SHOULDER_BASELINE === '1'});
   } else if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
+  } else if (process.env.QA_MUSCLE_ONLY === '1') {
+    // Швидка перевірка лише сторінки «Від м’яза до молекул» (2026-11-14); повний прогін і CI виконують усе, як і раніше.
+    for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
+    for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
   } else if (sectionsOnly) {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
   } else if (process.env.QA_HOME_WAVE_ONLY === '1') {
@@ -5283,6 +5339,7 @@ try {
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
     for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
     for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
     for (const viewport of viewports) await continueFlow(browser, origin, viewport);

@@ -1,0 +1,85 @@
+/* Atlas educational foundations: existing Atlas colors, flat reading layout, HTML labels. */
+.atlas-foundation {min-width:0}
+.af-editorial-note {font-size:.875rem;line-height:1.5;border-inline-start:3px solid currentColor;padding-inline-start:.7rem;margin:0 0 1.1rem}
+.af-lesson {padding:.8rem 0;border-block-end:1px solid var(--atlas-border,currentColor)}
+.af-lesson h3,.af-part h3,.af-review h3 {margin:0 0 .45rem;font-size:1.1rem}
+.af-lesson p,.af-part p,.af-review p,.af-helpers dd {font-size:.94rem;line-height:1.65;margin:.45rem 0}
+.af-boundary,.af-diagram-note {font-size:.875rem!important;line-height:1.6;color:var(--atlas-muted,inherit)}
+.af-citation {display:flex;align-items:center;flex-wrap:wrap;gap:.3rem .7rem;font-size:.875rem}
+.af-citation>span {color:var(--atlas-muted,inherit)}
+.af-source-link {display:inline-flex;align-items:center;min-height:44px;max-width:100%;line-height:1.45;overflow-wrap:anywhere;text-underline-offset:.2em;color:inherit}
+.af-source-link:focus-visible,.af-related a:focus-visible,.af-choice:focus-visible {outline:2px solid currentColor;outline-offset:3px}
+.af-signal {display:flex;flex-wrap:wrap;list-style:none;margin:1rem 0;padding:0;gap:.5rem;font-size:.875rem}
+.af-signal li {padding:.35rem .45rem;border-block-end:2px solid var(--atlas-blue,currentColor)}
+.af-signal li+li::before {content:'→';margin-inline-end:.6rem}
+.af-related {margin-block-start:1.3rem}
+.af-related h3 {font-size:1.05rem}
+.af-related>a {display:flex;flex-direction:column;gap:.25rem;min-height:44px;padding:.65rem 0;border-block-end:1px solid var(--atlas-border,currentColor);text-decoration:none;color:inherit}
+.af-related a strong {text-decoration:underline;text-underline-offset:.2em}
+.af-related a span {font-size:.9rem;line-height:1.5}
+.af-explorer {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:.75rem 1rem;align-items:start}
+.af-map {min-width:0}
+.af-picture {position:relative;width:min(100%,260px);margin:auto}
+.af-picture .af-diagram {width:100%;max-height:none}
+.af-diagram-mark {position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;min-width:1.15rem;height:1.15rem;font-size:.75rem;font-weight:700;color:inherit;background:var(--atlas-page-bg);border:1px solid currentColor;border-radius:50%;pointer-events:none}
+.af-diagram-key {list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.3rem .7rem;font-size:.8rem;line-height:1.5}
+.af-diagram-key span {font-weight:700}
+.af-key-primary,.af-diagram-key--brain {display:none}
+.af-diagram {display:block;width:100%;max-height:245px;margin:0 auto;color:var(--atlas-blue,currentColor)}
+.af-shape {fill:currentColor;fill-opacity:.08;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;transition:fill-opacity .15s,stroke-width .15s}
+.af-shape.is-selected {fill-opacity:.35;stroke-width:4}
+.af-inner {stroke-dasharray:3 2}
+.af-folds {fill:none;stroke:currentColor;stroke-width:1;opacity:.55;pointer-events:none}
+.af-food-route {fill:none;stroke:currentColor;stroke-width:2}
+.af-food-route marker path {fill:currentColor;stroke:none}
+.af-helper-shapes {fill:currentColor;fill-opacity:.06;stroke:currentColor;stroke-width:1}
+.af-helper-duct {fill:none;stroke-dasharray:3 3}
+.af-selection {font-size:.875rem;line-height:1.5;margin:.45rem 0}
+.af-choices {display:grid;grid-template-columns:1fr;gap:.35rem;min-width:0}
+.af-choices button {display:flex;align-items:center;gap:.55rem;min-height:44px;min-width:0;padding:.5rem .65rem;border:1px solid var(--atlas-border,currentColor);border-radius:0;background:none;color:inherit;text-align:start;font:inherit;font-size:.9rem;line-height:1.35;cursor:pointer}
+.af-choices button>span {flex:none;font-size:.8rem;width:1.2rem}
+.af-choices button[aria-pressed="true"] {border:2px solid currentColor;padding:calc(.5rem - 1px) calc(.65rem - 1px);font-weight:700}
+.af-choices button[aria-pressed="true"]>span::after {content:'✓'}
+.af-choices button:disabled {cursor:default;border-style:dashed}
+.af-readings {grid-column:1/-1;min-width:0}
+.af-part {padding:.75rem 0;border-block-start:1px solid var(--atlas-border,currentColor)}
+.af-helpers {margin-top:1rem;padding-top:.75rem;border-block-start:1px solid var(--atlas-border,currentColor)}
+.af-helpers h3 {font-size:1.05rem}
+.af-helpers dl {margin:0}
+.af-helpers dl>div {padding:.35rem 0}
+.af-helpers dt {font-weight:650}
+.af-helpers dd {margin-inline:0}
+.af-sources {padding-inline-start:1.35rem}
+.af-sources li {padding:.5rem 0;border-block-end:1px solid var(--atlas-border,currentColor)}
+.af-sources p {margin:.25rem 0;font-size:.9rem;line-height:1.55}
+.af-borrowed {margin-top:1rem}
+.af-borrowed summary {min-height:44px;padding:.6rem 0;cursor:pointer}
+.af-physiology {padding:.5rem 0;border-block-end:1px solid var(--atlas-border,currentColor)}
+.af-physiology p {font-size:.94rem;line-height:1.65}
+.af-noscript {max-width:70rem;margin:1.5rem auto;padding:1rem}
+.af-transcript {margin-bottom:2rem}
+@media(max-width:600px){
+ .af-picture {width:min(100%,230px)}
+ .af-explorer {grid-template-columns:1fr}
+ .af-diagram {width:min(100%,265px);max-height:195px}
+ .af-choices {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .af-map {display:grid;grid-template-columns:1fr}
+ .af-signal {gap:.2rem;font-size:.82rem}
+ .af-signal li {padding:.25rem .3rem}
+}
+@media(prefers-reduced-motion:reduce){.af-shape{transition:none}}
+@media print{
+ .af-picture {width:220px}
+ .af-key-primary {display:list-item}
+ .af-diagram-key--brain {display:flex}
+ .af-choices,.af-selection {display:none!important}
+ .af-explorer {display:block}
+ .af-diagram {max-width:220px;max-height:180px}
+ .af-readings [data-foundation-part][hidden] {display:block!important}
+ .af-part {break-inside:avoid}
+ .af-borrowed>* {display:block!important}
+ .af-borrowed {content-visibility:visible}
+ .af-borrowed::details-content {content-visibility:visible;display:block}
+ .af-source-link {min-height:0}
+ .af-boundary,.af-diagram-note {color:inherit}
+}

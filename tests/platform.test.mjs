@@ -65,7 +65,7 @@ assert.equal(directory.querySelector('#search-empty').hidden,true);
 assert(!/<a[\s>]/.test(directory.querySelector('#planned-list').innerHTML));
 const muscle=root('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE');mountMuscle(muscle);assert.equal(muscle.querySelector('#structure-title').textContent,'М’язове волокно');
 const cell=root('https://evidence.invalid/cell-lab.html?organelle=ORG-RIBOSOME');mountCell(cell);assert.equal(cell.querySelector('#organelle-title').textContent,'Рибосома');assert(cell.querySelector('#cell-canvas').innerHTML.includes('data-organelle="ORG-RIBOSOME" role="button" tabindex="0" aria-pressed="true"'));
-for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=112')); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): v=110. 2026-11-02 (пошук у шапці головної, T7): v=109 (шапка v=16, пошук v=14). 2026-11-02: v=108 (пошук по розділах сторінок: шапка v=15). 2026-11-01: v=107 (пошук за ключовими словами, каскад версій). 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
+for(const page of ['index','muscle-lab','cell-lab','nutrition','nutrition-digestion','movement','protein-meta','sleep'])assert(fs.readFileSync(`dist/${page}.html`,'utf8').includes('platform-shell.js?v=113')); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): v=110. 2026-11-02 (пошук у шапці головної, T7): v=109 (шапка v=16, пошук v=14). 2026-11-02: v=108 (пошук по розділах сторінок: шапка v=15). 2026-11-01: v=107 (пошук за ключовими словами, каскад версій). 2026-10-31: версія піднята, бо стилі/оболонка переведені на токени кольору (палітра «космос / зелений»); зміст сторінки той самий
 console.log('Platform: registry, links/anchors, planned states, search/reset, learning routes and actual selected-entity initialization passed. Browser visual QA not performed.');
 
 const created=[],header={nextElementSibling:null,closest(){return null;},after(element){this.nextElementSibling=element;}};
@@ -80,3 +80,4 @@ const embedded={defaultView:{self:{},top:{}},createElement(){throw Error('Embedd
 mountPlatformNavigation(embedded);
 const extra={...catalog.areas[0],id:'test-area',title:'Тестовий напрям',units:[]};assert.equal(createCatalog([extra],[]).getArea('test-area').title,'Тестовий напрям');assert(areaCard(extra).includes('Тестовий напрям'));
 console.log('Shared shell mounts once, iframe is preserved, and generic catalog accepts another area.');
+// 2026-11-14: Atlas anatomy search metadata requires a new shared-cache cascade; science fixtures stay unchanged.

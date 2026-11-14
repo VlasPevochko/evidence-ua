@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+// Match the complete cache version: legacy ?v=2 must never rewrite ?v=20.
+const bumpVersion=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
 import {readBase} from './site-url.mjs';
 const SITE_BASE=readBase();
 import {learningNotesHTML} from '../src/platform/learning-notes.mjs';
@@ -9,6 +11,7 @@ import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
 import {homeFreshGridHTML} from '../src/platform/home-fresh.mjs';
 import {renderNight} from '../src/sleep/night.mjs';
+import {buildAtlasFoundations} from './build-atlas-foundations.mjs';
 // Дані, з яких збирається блок «Нове на сайті» (T4): ті самі модулі, що вантажать сторінки розборів, схем і журналу.
 import {STUDIES} from '../dist/research-data.js';
 import {miniInterval} from '../dist/research-chart.js';
@@ -33,7 +36,7 @@ fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learn
 fs.writeFileSync('dist/home-picker.js',fs.readFileSync('src/platform/home-picker.mjs','utf8'));
 fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8').replace("'./home-picker.mjs'","'./home-picker.js?v=2'"));
 fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'./materials.mjs'","'./platform-materials.js?v=108'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=108'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=88'").replace("'./site-header.mjs'","'./site-header.js?v=19'"));
-for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replaceAll('platform-shell.js?v=54','platform-shell.js?v=59').replaceAll('nutrition-lab.js?v=55','nutrition-lab.js?v=59').replaceAll('cell-lab.js?v=56','cell-lab.js?v=59').replaceAll('muscle-lab.js?v=58','muscle-lab.js?v=59').replaceAll('home-feedback.js?v=57','home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
+for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=54(?![0-9.])/g,'platform-shell.js?v=59').replace(/(?<![A-Za-z0-9_-])nutrition-lab\.js\?v=55(?![0-9.])/g,'nutrition-lab.js?v=59').replace(/(?<![A-Za-z0-9_-])cell-lab\.js\?v=56(?![0-9.])/g,'cell-lab.js?v=59').replace(/(?<![A-Za-z0-9_-])muscle-lab\.js\?v=58(?![0-9.])/g,'muscle-lab.js?v=59').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=57(?![0-9.])/g,'home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
 const home=fs.readFileSync(homeFile,'utf8');
@@ -62,7 +65,7 @@ if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
 }
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
- const next=old.replaceAll('platform-shell.js?v=59','platform-shell.js?v=60').replaceAll('home-feedback.js?v=59','home-feedback.js?v=60').replaceAll('home-entry.css?v=57','home-entry.css?v=60').replaceAll('directions.js?v=59','directions.js?v=60');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=59(?![0-9.])/g,'platform-shell.js?v=60').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=59(?![0-9.])/g,'home-feedback.js?v=60').replace(/(?<![A-Za-z0-9_-])home-entry\.css\?v=57(?![0-9.])/g,'home-entry.css?v=60').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=59(?![0-9.])/g,'directions.js?v=60');
  if(next!==old)fs.writeFileSync(path,next);
 }
 const directoryPath='dist/directions.html';
@@ -74,7 +77,7 @@ if(directoryCounts!==directorySource)fs.writeFileSync(directoryPath,directoryCou
 // Cache references for the shared search experience.
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
- const next=old.replaceAll('platform-shell.js?v=60','platform-shell.js?v=63').replaceAll('home-feedback.js?v=60','home-feedback.js?v=63').replaceAll('directions.js?v=60','directions.js?v=63').replaceAll('platform.css?v=59','platform.css?v=63');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=60(?![0-9.])/g,'platform-shell.js?v=63').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=60(?![0-9.])/g,'home-feedback.js?v=63').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=60(?![0-9.])/g,'directions.js?v=63').replace(/(?<![A-Za-z0-9_-])platform\.css\?v=59(?![0-9.])/g,'platform.css?v=63');
  if(next!==old)fs.writeFileSync(path,next);
 }
 // The two learning pages use the existing static delivery and shared catalog.
@@ -86,10 +89,11 @@ fs.writeFileSync('dist/sleep-night.js',fs.readFileSync('src/sleep/night.mjs','ut
 // Точки карт болю плеча й коліна (рішення власника 2026-11-10): один модуль даних для карт, карток тем, пошуку й тестів.
 fs.writeFileSync('dist/atlas-points.js',fs.readFileSync('src/atlas/points.mjs','utf8'));
 fs.writeFileSync('dist/atlas-diagrams.js',fs.readFileSync('src/atlas/diagrams.mjs','utf8'));
+buildAtlasFoundations();
 fs.writeFileSync('dist/sleep.js',fs.readFileSync('src/sleep/page.mjs','utf8').replace("'./night.mjs'","'./sleep-night.js?v=1'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){
  const path='dist/'+file,old=fs.readFileSync(path,'utf8');
- let next=old.replace(/platform-shell\.js\?v=(?:63|81|82)/g,'platform-shell.js?v=83').replace(/directions\.js\?v=(?:63|70|82)/g,'directions.js?v=83') .replaceAll('home-catalog.js?v=82','home-catalog.js?v=83').replaceAll('home-feedback.js?v=82','home-feedback.js?v=83').replaceAll('home-coast.css?v=82','home-coast.css?v=83').replaceAll('home-catalog.js?v=57','home-catalog.js?v=83').replaceAll('home-feedback.js?v=63','home-feedback.js?v=83').replaceAll('home-coast.css?v=80','home-coast.css?v=83');
+ let next=old.replace(/platform-shell\.js\?v=(?:63|81|82)/g,'platform-shell.js?v=83').replace(/directions\.js\?v=(?:63|70|82)/g,'directions.js?v=83') .replace(/(?<![A-Za-z0-9_-])home-catalog\.js\?v=82(?![0-9.])/g,'home-catalog.js?v=83').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=82(?![0-9.])/g,'home-feedback.js?v=83').replace(/(?<![A-Za-z0-9_-])home-coast\.css\?v=82(?![0-9.])/g,'home-coast.css?v=83').replace(/(?<![A-Za-z0-9_-])home-catalog\.js\?v=57(?![0-9.])/g,'home-catalog.js?v=83').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=63(?![0-9.])/g,'home-feedback.js?v=83').replace(/(?<![A-Za-z0-9_-])home-coast\.css\?v=80(?![0-9.])/g,'home-coast.css?v=83');
  if(file==='index.html')next=next.replace(/EVIDENCE UA \/ \d+ НАПРЯМІВ/g,'EVIDENCE UA / '+homeTopics.length+' НАПРЯМІВ').replace(/(class="home-direction-count" aria-hidden="true">)\d+</g,'$1'+homeTopics.length+'<').replace(/aria-label="(?:П’ять|Шість|\d+) напрямів Evidence UA"/g,'aria-label="'+homeTopics.length+' напрямів Evidence UA"');
  if(next!==old)fs.writeFileSync(path,next);
 }
@@ -116,50 +120,50 @@ for(const area of ['movement','sleep']){
 fs.copyFileSync('src/platform/site-header.mjs','dist/site-header.js');
 fs.copyFileSync('src/platform/search.mjs','dist/platform-search.js');
 fs.copyFileSync('src/platform/site-header.css','dist/site-header.css');
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=83','platform-shell.js?v=84').replaceAll('directions.js?v=83','directions.js?v=84');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=83(?![0-9.])/g,'platform-shell.js?v=84').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=83(?![0-9.])/g,'directions.js?v=84');if(next!==old)fs.writeFileSync(file,next);}
 
 // Geometry fix must reach returning visitors as well as fresh loads.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=84','platform-shell.js?v=85').replaceAll('./directions.js?v=84','./directions.js?v=85');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=84(?![0-9.])/g,'platform-shell.js?v=85').replace(/(?<![A-Za-z0-9_-])\.\/directions\.js\?v=84(?![0-9.])/g,'./directions.js?v=85');if(next!==old)fs.writeFileSync(file,next);}
 
 // The tools block folds into the one-line disclosure on the Atlas and Exercises pages too (pine theme rollout).
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=85','platform-shell.js?v=86');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=85(?![0-9.])/g,'platform-shell.js?v=86');if(next!==old)fs.writeFileSync(file,next);}
 
 // Every page with the pine theme (data-pine) folds the tools line, whatever its area.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=86','platform-shell.js?v=87');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=86(?![0-9.])/g,'platform-shell.js?v=87');if(next!==old)fs.writeFileSync(file,next);}
 
 // Study-UI pages (Nutrition, Cell Lab) keep their own compact tools row; only other pine pages fold it.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=87','platform-shell.js?v=88');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=87(?![0-9.])/g,'platform-shell.js?v=88');if(next!==old)fs.writeFileSync(file,next);}
 
 // Pages that keep their own compact tools row opt out of the fold with data-pine-tools (Muscle Lab).
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=88','platform-shell.js?v=89');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=88(?![0-9.])/g,'platform-shell.js?v=89');if(next!==old)fs.writeFileSync(file,next);}
 
 // Home: the share tool joins the folded «Про сайт» group (owner decision 2026-10-19), so the shell mounts it there.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=89','platform-shell.js?v=90');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=89(?![0-9.])/g,'platform-shell.js?v=90');if(next!==old)fs.writeFileSync(file,next);}
 
 // Home: «Продовжити з місця» (останній відкритий матеріал, лише в браузері відвідувача).
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=90','platform-shell.js?v=91');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=90(?![0-9.])/g,'platform-shell.js?v=91');if(next!==old)fs.writeFileSync(file,next);}
 
 // Вигляд сайту (тема й розмір тексту): модуль, стилі й ранній скрипт у <head> кожної сторінки (без мигання теми).
 fs.copyFileSync('src/platform/appearance.mjs','dist/appearance.js');
 const {earlyScript}=await import('../src/platform/appearance.mjs');
 const appearanceHead=`<link rel="stylesheet" href="./appearance.css?v=1"><script>${earlyScript}</script><script type="module" src="./appearance.js?v=1"></script></head>`;
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');if(old.includes('eua-appearance-v1'))continue;const next=old.replace('</head>',appearanceHead);if(next!==old)fs.writeFileSync(file,next);}
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=1','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=2','appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('appearance.css?v=3','appearance.css?v=4');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])appearance\.css\?v=1(?![0-9.])/g,'appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])appearance\.css\?v=2(?![0-9.])/g,'appearance.css?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])appearance\.css\?v=3(?![0-9.])/g,'appearance.css?v=4');if(next!==old)fs.writeFileSync(file,next);}
 
 // Посилання на розділ приводить саме до розділу (2026-11-02): відкриває згорнутий блок, доводить ціль до верху вікна, знаходить заголовок за ?section=.
 fs.copyFileSync('src/platform/anchor-reveal.mjs','dist/anchor-reveal.js');
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');if(old.includes('anchor-reveal.js'))continue;const next=old.replace('</head>','<script type="module" src="./anchor-reveal.js?v=1"></script></head>');if(next!==old)fs.writeFileSync(file,next);}
 
 // «Куди далі» внизу сторінок (модуль підключає shell): нова версія оболонки.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=91','platform-shell.js?v=92');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=91(?![0-9.])/g,'platform-shell.js?v=92');if(next!==old)fs.writeFileSync(file,next);}
 
 // «Мій список» і підказки до термінів: нова версія оболонки та модуля «Куди далі».
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=92','platform-shell.js?v=93').replaceAll('platform-next-steps.js?v=1','platform-next-steps.js?v=4');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=92(?![0-9.])/g,'platform-shell.js?v=93').replace(/(?<![A-Za-z0-9_-])platform-next-steps\.js\?v=1(?![0-9.])/g,'platform-next-steps.js?v=4');if(next!==old)fs.writeFileSync(file,next);}
 
 // Словник термінів: підказки отримали посилання «У словнику», тож модуль термінів і оболонка змінили версії.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=93','platform-shell.js?v=94').replaceAll('platform-terms.js?v=1','platform-terms.js?v=2');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=93(?![0-9.])/g,'platform-shell.js?v=94').replace(/(?<![A-Za-z0-9_-])platform-terms\.js\?v=1(?![0-9.])/g,'platform-terms.js?v=2');if(next!==old)fs.writeFileSync(file,next);}
 
 // Картки для поширення й друк: у кожної сторінки своє превʼю (dist/og/<назва>.jpg, див. scripts/make-og-cards.mjs) і print.css.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
@@ -174,49 +178,49 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
 }
 
 // Модуль «Куди далі» отримав кнопку друку: нова версія модуля й оболонки.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-next-steps.js?v=2','platform-next-steps.js?v=4').replaceAll('platform-shell.js?v=94','platform-shell.js?v=95');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-next-steps\.js\?v=2(?![0-9.])/g,'platform-next-steps.js?v=4').replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=94(?![0-9.])/g,'platform-shell.js?v=95');if(next!==old)fs.writeFileSync(file,next);}
 
 // Шапка отримала кнопку пошуку: нова версія модуля шапки.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('site-header.js?v=2','site-header.js?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=2(?![0-9.])/g,'site-header.js?v=3');if(next!==old)fs.writeFileSync(file,next);}
 
 // Досьє на головній: тонка смуга «← Усі добавки» замість старого блоку інструментів (рішення власника 21.10.2026).
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('platform-shell.js?v=95','platform-shell.js?v=96');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=95(?![0-9.])/g,'platform-shell.js?v=96');if(next!==old)fs.writeFileSync(file,next);}
 
 // Пошук знаходить добавки за темами (судоми, тиск, сон…) — нові ключові слова в platform-materials (22.10.2026). Каскад версій.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replaceAll('site-header.js?v=3','site-header.js?v=5').replaceAll('platform-shell.js?v=96','platform-shell.js?v=97').replaceAll('home-feedback.js?v=83','home-feedback.js?v=84').replaceAll('directions.js?v=85','directions.js?v=86').replaceAll('directions.js?v=84','directions.js?v=86').replaceAll('fat-burning.js?v=3','fat-burning.js?v=4');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=3(?![0-9.])/g,'site-header.js?v=5').replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=96(?![0-9.])/g,'platform-shell.js?v=97').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=83(?![0-9.])/g,'home-feedback.js?v=84').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=85(?![0-9.])/g,'directions.js?v=86').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=84(?![0-9.])/g,'directions.js?v=86').replace(/(?<![A-Za-z0-9_-])fat-burning\.js\?v=3(?![0-9.])/g,'fat-burning.js?v=4');if(next!==old)fs.writeFileSync(file,next);}
 
 // Nutrition architecture (2026-10-25): shared discovery points to the separated physiology page.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const next=old.replaceAll('platform-shell.js?v=97','platform-shell.js?v=98').replaceAll('directions.js?v=86','directions.js?v=98').replaceAll('home-feedback.js?v=84','home-feedback.js?v=98').replaceAll('site-header.js?v=4','site-header.js?v=5');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=97(?![0-9.])/g,'platform-shell.js?v=98').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=86(?![0-9.])/g,'directions.js?v=98').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=84(?![0-9.])/g,'home-feedback.js?v=98').replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=4(?![0-9.])/g,'site-header.js?v=5');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
 // Muscle Lab guide (2026-10-26): new muscle units and search words in catalog/materials → cascade of versions.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const next=old.replaceAll('platform-shell.js?v=98','platform-shell.js?v=99').replaceAll('directions.js?v=98','directions.js?v=99').replaceAll('home-feedback.js?v=98','home-feedback.js?v=99').replaceAll('site-header.js?v=5','site-header.js?v=6').replaceAll('platform-learning.js?v=83','platform-learning.js?v=84');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=98(?![0-9.])/g,'platform-shell.js?v=99').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=98(?![0-9.])/g,'directions.js?v=99').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=98(?![0-9.])/g,'home-feedback.js?v=99').replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=5(?![0-9.])/g,'site-header.js?v=6').replace(/(?<![A-Za-z0-9_-])platform-learning\.js\?v=83(?![0-9.])/g,'platform-learning.js?v=84');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
 // Review corrections: refresh shared UI parents after changing their imports.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const next=old.replaceAll('platform-shell.js?v=99','platform-shell.js?v=100').replaceAll('directions.js?v=99','directions.js?v=100').replaceAll('home-feedback.js?v=99','home-feedback.js?v=100').replaceAll('platform-learning.js?v=84','platform-learning.js?v=85').replaceAll('site-header.js?v=6','site-header.js?v=7').replaceAll('navigation-v17.js?v=75','navigation-v17.js?v=76').replaceAll('cell-lab.js?v=73','cell-lab.js?v=74').replaceAll('muscle-lab.js?v=70','muscle-lab.js?v=71').replaceAll('muscle-guide.js?v=2','muscle-guide.js?v=3').replaceAll('digestion-viewer.js?v=2','digestion-viewer.js?v=3').replaceAll('nutrition-lab.js?v=63','nutrition-lab.js?v=64').replaceAll('fat-burning.js?v=4','fat-burning.js?v=5');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=99(?![0-9.])/g,'platform-shell.js?v=100').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=99(?![0-9.])/g,'directions.js?v=100').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=99(?![0-9.])/g,'home-feedback.js?v=100').replace(/(?<![A-Za-z0-9_-])platform-learning\.js\?v=84(?![0-9.])/g,'platform-learning.js?v=85').replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=6(?![0-9.])/g,'site-header.js?v=7').replace(/(?<![A-Za-z0-9_-])navigation-v17\.js\?v=75(?![0-9.])/g,'navigation-v17.js?v=76').replace(/(?<![A-Za-z0-9_-])cell-lab\.js\?v=73(?![0-9.])/g,'cell-lab.js?v=74').replace(/(?<![A-Za-z0-9_-])muscle-lab\.js\?v=70(?![0-9.])/g,'muscle-lab.js?v=71').replace(/(?<![A-Za-z0-9_-])muscle-guide\.js\?v=2(?![0-9.])/g,'muscle-guide.js?v=3').replace(/(?<![A-Za-z0-9_-])digestion-viewer\.js\?v=2(?![0-9.])/g,'digestion-viewer.js?v=3').replace(/(?<![A-Za-z0-9_-])nutrition-lab\.js\?v=63(?![0-9.])/g,'nutrition-lab.js?v=64').replace(/(?<![A-Za-z0-9_-])fat-burning\.js\?v=4(?![0-9.])/g,'fat-burning.js?v=5');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
 // Research page (2026-10-27): new material in the catalog and search → cascade of versions for everything that imports it.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const next=old.replaceAll('platform-shell.js?v=100','platform-shell.js?v=101').replaceAll('directions.js?v=100','directions.js?v=101').replaceAll('home-feedback.js?v=100','home-feedback.js?v=101').replaceAll('site-header.js?v=7','site-header.js?v=8').replaceAll('page-pine.css?v=17','page-pine.css?v=18');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=100(?![0-9.])/g,'platform-shell.js?v=101').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=100(?![0-9.])/g,'directions.js?v=101').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=100(?![0-9.])/g,'home-feedback.js?v=101').replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=7(?![0-9.])/g,'site-header.js?v=8').replace(/(?<![A-Za-z0-9_-])page-pine\.css\?v=17(?![0-9.])/g,'page-pine.css?v=18');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
 // Mechanisms page (2026-10-27): new material in the catalog and search → cascade of versions for everything that imports it.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const next=old.replaceAll('platform-shell.js?v=101','platform-shell.js?v=102').replaceAll('directions.js?v=101','directions.js?v=102').replaceAll('home-feedback.js?v=101','home-feedback.js?v=102').replaceAll('site-header.js?v=8','site-header.js?v=9').replaceAll('fat-burning.js?v=6','fat-burning.js?v=7').replaceAll('page-pine.css?v=18','page-pine.css?v=19');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=101(?![0-9.])/g,'platform-shell.js?v=102').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=101(?![0-9.])/g,'directions.js?v=102').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=101(?![0-9.])/g,'home-feedback.js?v=102').replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=8(?![0-9.])/g,'site-header.js?v=9').replace(/(?<![A-Za-z0-9_-])fat-burning\.js\?v=6(?![0-9.])/g,'fat-burning.js?v=7').replace(/(?<![A-Za-z0-9_-])page-pine\.css\?v=18(?![0-9.])/g,'page-pine.css?v=19');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
@@ -224,14 +228,14 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
  const updates={'platform-shell.js?v=102':'platform-shell.js?v=103','directions.js?v=102':'directions.js?v=103','home-feedback.js?v=102':'home-feedback.js?v=103','site-header.js?v=9':'site-header.js?v=11','cell-lab.js?v=74':'cell-lab.js?v=75','muscle-lab.js?v=71':'muscle-lab.js?v=72','muscle-guide.js?v=3':'muscle-guide.js?v=4','digestion-viewer.js?v=3':'digestion-viewer.js?v=4','nutrition-lab.js?v=64':'nutrition-lab.js?v=65','fat-burning.js?v=7':'fat-burning.js?v=8','appearance.js?v=1':'appearance.js?v=2','compare-page.js?v=2':'compare-page.js?v=3'};
- let next=old;for(const [from,to] of Object.entries(updates))next=next.replaceAll(from,to);
+ let next=old;for(const [from,to] of Object.entries(updates))next=bumpVersion(next,from,to);
  if(next!==old)fs.writeFileSync(file,next);
 }
 
 // Owner-selected Spectrum homepage (2026-10-27): shared header/search behavior is refreshed, other pages keep their design.
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
- const next=old.replaceAll('platform-shell.js?v=103','platform-shell.js?v=104').replaceAll('directions.js?v=103','directions.js?v=104').replaceAll('site-header.js?v=10','site-header.js?v=11').replaceAll('navigation-v17.js?v=76','navigation-v17.js?v=77').replaceAll('fat-burning.js?v=8','fat-burning.js?v=9');
+ const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=103(?![0-9.])/g,'platform-shell.js?v=104').replace(/(?<![A-Za-z0-9_-])directions\.js\?v=103(?![0-9.])/g,'directions.js?v=104').replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=10(?![0-9.])/g,'site-header.js?v=11').replace(/(?<![A-Za-z0-9_-])navigation-v17\.js\?v=76(?![0-9.])/g,'navigation-v17.js?v=77').replace(/(?<![A-Za-z0-9_-])fat-burning\.js\?v=8(?![0-9.])/g,'fat-burning.js?v=9');
  if(next!==old)fs.writeFileSync(file,next);
 }
 
@@ -674,6 +678,17 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+
+// 2026-11-14: invalidate the changed Atlas search metadata through every import parent.
+// Authored consumers are updated in the same commit; repeating the build is idempotent.
+{
+ const updates={"platform-materials.js?v=108":"platform-materials.js?v=109","platform-tools.js?v=108":"platform-tools.js?v=109","home-feedback.js?v=108":"home-feedback.js?v=109","directions.js?v=117":"directions.js?v=118","platform-search.js?v=17":"platform-search.js?v=18","site-header.js?v=19":"site-header.js?v=20","platform-shell.js?v=112":"platform-shell.js?v=113","home-spectrum.js?v=9":"home-spectrum.js?v=10","fat-burning.js?v=17":"fat-burning.js?v=18","fat-burning.js?v=18":"fat-burning.js?v=19","changes-page.js?v=34":"changes-page.js?v=35","changes-data.js?v=34":"changes-data.js?v=35"};
+ for(const name of fs.readdirSync('dist').filter(n=>/\.(html|js)$/.test(n))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');let next=old;
+  for(const [from,to]of Object.entries(updates))next=bumpVersion(next,from,to);
   if(next!==old)fs.writeFileSync(file,next);
  }
 }

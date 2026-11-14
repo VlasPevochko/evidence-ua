@@ -48,6 +48,35 @@ export function storeShape(mode){
   const d=pts=>pts.map(([px,py],i)=>(i?"L":"M")+px+" "+py).join(" ");
   return {fat:d(trend),weight:d(weight)};
 }
+// Розділ «Рух»: умовні криві (форма, не значення). Швидкість окиснення жиру зростає від низького темпу до помірного й падає на високому
+// (Achten & Jeukendrup 2004, за анотацією); загальні витрати енергії ростуть із темпом. Осей і чисел немає навмисно.
+export const paceX=t=>+(10+340*t).toFixed(1);
+export const fatCurveY=t=>+(128-84*(1-((t-0.5)/0.55)**2)).toFixed(1);
+export const energyCurveY=t=>+(128-96*t).toFixed(1);
+export function paceCurvePath(fn,steps=20){
+  return Array.from({length:steps+1},(_,i)=>{const t=i/steps;return (i?"L":"M")+paceX(t)+" "+fn(t);}).join(" ");
+}
+export const paceZones=Object.freeze([
+  {max:0.35,name:"Низький темп",text:"Швидкість окиснення жиру ще зростає разом із темпом, а загальні витрати енергії малі."},
+  {max:0.65,name:"Помірний темп",text:"Тут зазвичай пік швидкості окиснення жиру. Де саме пік, залежить від людини: у тренованих він зсунутий до вищого темпу, ніж у загальній популяції."},
+  {max:1.01,name:"Високий темп",text:"Швидкість окиснення жиру падає, але загальні витрати енергії найбільші. За однакових витрат енергії аеробні та інтервальні тренування в оглядах не відрізнялись за втратою жирової маси."}
+]);
+export const paceZone=t=>paceZones.find(z=>t<z.max)||paceZones.at(-1);
+function mountPace(root){
+  const input=root.getElementById("fb-pace");
+  if(!input)return;
+  const mf=root.getElementById("fb-pace-fat"),me=root.getElementById("fb-pace-energy"),ml=root.getElementById("fb-pace-line");
+  const name=root.getElementById("fb-pace-name"),text=root.getElementById("fb-pace-text");
+  function set(){
+    const t=Number(input.value)/100,x=paceX(t);
+    mf.setAttribute("cx",x);mf.setAttribute("cy",fatCurveY(t));
+    me.setAttribute("cx",x);me.setAttribute("cy",energyCurveY(t));
+    ml.setAttribute("x1",x);ml.setAttribute("x2",x);
+    const z=paceZone(t);name.textContent=z.name;text.textContent=z.text;
+    input.setAttribute("aria-valuetext",z.name);
+  }
+  input.addEventListener("input",set);set();
+}
 export function mountFatBurning(root=document) {
   const buttons=[...root.querySelectorAll("[data-fb-step]")];
   const visuals=[...root.querySelectorAll("[data-visual]")];
@@ -92,6 +121,7 @@ export function mountFatBurning(root=document) {
     open();root.defaultView?.addEventListener("hashchange",open);
     root.addEventListener("click",event=>{const a=event.target.closest?.('a[href="#sources"]');if(a)fold.open=true;});
   }
+  mountPace(root);
   mountSectionBar(root);
 }
 // Смуга розділів прилипає зверху й показує, де читач зараз (aria-current), не покладаючись на колір.

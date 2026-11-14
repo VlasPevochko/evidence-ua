@@ -208,3 +208,44 @@ body[data-platform-area="fat-burning"] a:focus-visible,body[data-platform-area="
 @media(max-width:390px){.fb-step-buttons button{font-size:12px;padding:6px 2px}.fb-art-tag-bottom{max-width:75%}.fb-balance-controls button{font-size:12px;padding:10px 5px}}
 @media print{.fb-jumps{display:none}.fb-flow-svg{width:100%!important;transform:none!important}.fb-co2-chip{display:none}}
 @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}.fb-cell,.fb-co2-chip,.fb-gl,.fb-piece,.is-drawing{animation:none!important}.fb-flow [data-visual],.fb-outer,.fb-bar span,.fb-rail-fill,.fb-packet,.fb-flow-svg,.fb-jumps a::after{transition:none!important}.is-drawing{stroke-dasharray:none}}
+
+/* ===== Розділ «Рух» (2026-11-14, запит власника): повзунок темпу (форма кривих) і інтервали різниці жирової маси між видами навантаження. ===== */
+.fb-exercise{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.fb-ex-panel{padding:24px;border:1px solid var(--c-33544c,#33544c);border-radius:var(--rd-24,24px);background:linear-gradient(145deg,var(--c-162c26,#162c26),var(--c-12231f,#12231f));min-width:0}
+.fb-ex-panel h3{font-size:clamp(21px,2.4vw,28px);line-height:1.2;margin:8px 0 14px}
+.fb-pace-fig{margin:0 0 12px}
+.fb-pace-fat{fill:none;stroke:var(--c-e3bd6b,#e3bd6b);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.fb-pace-energy{fill:none;stroke:var(--c-c4d0d0,#c4d0d0);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1 6}
+.fb-pace-line{stroke:var(--c-8bafaf,#8bafaf);stroke-width:1.5;stroke-dasharray:3 4}
+.fb-pace-dot-f{fill:var(--c-ffe9b0,#ffe9b0);stroke:var(--c-e3bd6b,#e3bd6b);stroke-width:3}
+.fb-pace-dot-e{fill:var(--c-c4d0d0,#c4d0d0);stroke:var(--c-0e1c18,#0e1c18);stroke-width:3}
+.fb-key-e{border-color:var(--c-c4d0d0,#c4d0d0);border-top-style:dotted;border-top-width:3px}
+.fb-slider{display:block;margin:6px 0 10px}
+.fb-slider>span{display:block;font-size:13px;color:var(--c-c1d1ce,#c1d1ce);margin-bottom:2px}
+.fb-slider input{display:block;width:100%;height:44px;margin:0;accent-color:var(--c-e3bd6b,#e3bd6b);cursor:pointer}
+.fb-slider input:focus-visible{outline:3px solid var(--c-e3bd6b,#e3bd6b);outline-offset:2px}
+.fb-pace-name{margin:4px 0 6px;font-weight:760;color:var(--c-f5d59d,#f5d59d)}
+.fb-session>p:not(.fb-step-kicker):not(.fb-small):not(.fb-pace-name){color:var(--c-d0dddd,#d0dddd);line-height:1.7;min-height:96px;margin:0 0 10px}
+.fb-months-lead{font-size:14px;line-height:1.65;color:var(--c-c1d1ce,#c1d1ce);margin:0 0 16px}
+.fb-forest{list-style:none;margin:0 0 18px;padding:0}
+.fb-fr{margin:0 0 14px}
+.fb-fr-l{margin:0 0 6px;font-weight:700;font-size:15px}
+.fb-fr-l small{font-weight:400;font-size:12px;color:var(--c-96afb0,#96afb0);margin-left:6px}
+.fb-fr-bar{position:relative;height:22px;border-radius:var(--rd-6,6px);background:linear-gradient(90deg,transparent calc(83.3% - 1px),var(--c-eff4ef,#eff4ef) calc(83.3% - 1px),var(--c-eff4ef,#eff4ef) calc(83.3% + 1px),transparent calc(83.3% + 1px)),var(--c-0e1c18,#0e1c18)}
+.fb-fr-ci{position:absolute;left:var(--l);right:calc(100% - var(--r));top:50%;height:4px;transform:translateY(-50%);background:var(--c-e3bd6b,#e3bd6b);border-radius:2px}
+.fb-fr-pt{position:absolute;left:var(--p);top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--c-ffe9b0,#ffe9b0);border:3px solid var(--c-e3bd6b,#e3bd6b);box-sizing:border-box}
+.fb-fr-v{margin:6px 0 0;font-size:14px;font-weight:700;color:var(--c-f5d59d,#f5d59d)}
+.fb-fr-v span{font-weight:400;color:var(--c-c1d1ce,#c1d1ce)}
+.fb-fr-axis{position:relative;height:20px;margin-top:2px;font-size:12px;color:var(--c-96afb0,#96afb0)}
+.fb-fr-axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.fb-fr-axis span:nth-child(1){left:0;transform:none}
+.fb-fr-axis span:nth-child(2){left:50%}
+.fb-fr-axis .fb-zero{left:auto;right:0;transform:none;color:var(--c-eff4ef,#eff4ef)}
+.fb-ex-notes{list-style:none;margin:0 0 16px;padding:0}
+.fb-ex-notes li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;margin:0 0 10px;align-items:start}
+.fb-ex-notes b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2px solid #7cdbc4;font-size:15px;line-height:1;color:#a6e6d8}
+.fb-ex-notes p{margin:0;font-size:14px;line-height:1.6;color:var(--c-c7d6d4,#c7d6d4)}
+.fb-ex-notes strong{color:var(--c-eff4ef,#eff4ef)}
+.fb-source-disclaimer-ex{margin-top:6px}
+@media(max-width:900px){.fb-exercise{grid-template-columns:1fr}}
+@media(max-width:760px){.fb-ex-panel{padding:18px}.fb-session>p:not(.fb-step-kicker):not(.fb-small):not(.fb-pace-name){min-height:0}}

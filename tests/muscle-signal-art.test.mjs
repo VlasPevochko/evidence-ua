@@ -34,9 +34,11 @@ assert.ok(html.includes('class="mg-signal"'), 'сторінка містить �
 assert.equal((html.match(/class="mg-mol"/g) || []).length, molecules.length, 'сторінка містить чотири плитки-посилання');
 for (const ch of ['signal', 'why-grow', 'why-shrink']) assert.ok(html.includes(`id="${ch}"`), `розділ ${ch} існує на сторінці`);
 const cssVersion = html.match(/muscle-lab\.css\?v=(\d+)/)?.[1];
-assert.ok(Number(cssVersion) >= 78, 'версію стилів піднято, інакше браузер покаже кеш');
+assert.ok(Number(cssVersion) >= 79, 'версію стилів піднято, інакше браузер покаже кеш');
 
 // Цілі дотику й дрібний текст, які виправлено в аудиті.
 assert.ok(/\.step-dot\{width:44px;height:44px\}/.test(css.replace(/\n/g, '')) && !/\.step-dot\{width:40px/.test(css), 'кружки кроків 44 × 44 і на телефоні');
 assert.ok(/\.eyebrow\{[^}]*font-size:12px/.test(css), 'підписи-«брови» не менші за 12 px');
+// Рішення власника 2026-11-14: у рядку під шапкою немає дублів «Атлас», «Вправи», «Знайти матеріал».
+assert.ok(/data-platform-area="muscle"\] \.eua-platform-nav \.eua-atlas-link,[^{]*\.eua-exercises-link,[^{]*data-eua-tool="search"\]\{display:none\}/.test(css), 'дублі меню в рядку кнопок сховано лише на цій сторінці');
 console.log('muscle-signal-art: ok');

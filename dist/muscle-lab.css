@@ -488,3 +488,5 @@ main .eua-kicker{font-size:12px}
 }
 /* Посилання «DOI ↗» у картках джерел: ціль дотику 44 px (аудит 2026-11-14). */
 .muscle-shared .eua-source-links a{display:inline-flex;align-items:center;min-height:44px;padding:0 8px}
+/* Рішення власника 2026-11-14 («2 прибрати»): у рядку під шапкою на цій сторінці немає дублів меню й пошуку з шапки. Лишились «Скопіювати посилання» і «Поділитися враженням». Спільну розмітку не змінено: інші сторінки як були. */
+body[data-platform-area="muscle"] .eua-platform-nav .eua-atlas-link,body[data-platform-area="muscle"] .eua-platform-nav .eua-exercises-link,body[data-platform-area="muscle"] .eua-platform-nav .eua-tools [data-eua-tool="search"]{display:none}

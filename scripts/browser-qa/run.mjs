@@ -3829,6 +3829,9 @@ async function muscleSignalFlow(browser, origin, viewport) {
   await page.waitForTimeout(300);
   check(where, Number(await page.locator('[data-chain]').getAttribute('data-chain-step')) === 7, 'reduced motion shows the whole chain at once');
   check(where, await page.locator('.mg-signal .sg-p0').first().evaluate(node => getComputedStyle(node).animationName === 'none'), 'reduced motion switches the drawing animations off');
+  // 3б) Рядок кнопок під шапкою: лише «Скопіювати посилання» і «Поділитися враженням» (рішення власника 2026-11-14).
+  const rowLabels = await page.evaluate(() => [...document.querySelectorAll('.eua-platform-nav a, .eua-platform-nav button')].filter(e => e.getBoundingClientRect().width > 0 && getComputedStyle(e).visibility !== 'hidden').map(e => e.textContent.trim()).filter(t => ['Атлас', 'Вправи', 'Знайти матеріал'].includes(t)));
+  check(where, rowLabels.length === 0, `duplicates of the header menu are gone from the button row: ${rowLabels.join(', ')}`);
   // 4) Цілі дотику: кружки кроків, рядок службових кнопок, джерела.
   await page.evaluate(() => document.querySelectorAll('main details').forEach(d => { d.open = true; }));
   const targets = await page.evaluate(() => [...document.querySelectorAll('.step-dot, .eua-platform-nav .eua-tools > *, .mg-source-list a, .mg-ev-label a, .muscle-shared .eua-source-links a')].filter(e => e.getBoundingClientRect().width > 0).map(e => {

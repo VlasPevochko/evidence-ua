@@ -66,7 +66,8 @@ assert(extras.includes('html:not([data-palette="green"]) img[data-art="cosmic"]:
 
 // 4) Плити під схемами: усі темні бірюзові SVG-кольори в скриптах і сторінках мають правило в палітрі, і лише в космосі.
 const rules=plateRules(process.cwd());
-assert(rules.length>=11,`plate rules exist (${rules.length})`);
+// 2026-11-14: схема «Куди зникає жир?» тепер малюється CSS-класами, а не SVG-атрибутами, тож одне плитне правило (stroke #324448) зникло: було 11, стало 10. Інші плити перевіряються нижче поіменно.
+assert(rules.length>=10,`plate rules exist (${rules.length})`);
 for(const rule of rules)assert(rule.startsWith('html:not([data-palette="green"]) ['),`a plate rule never applies to the green palette: ${rule}`);
 for(const rule of rules)assert(palette.includes(rule),`the generated palette file holds ${rule}`);
 const uncovered=new Set();
@@ -82,9 +83,9 @@ assert.equal(plateOf(parseColor('#c75c4a')),null,'red/pink anatomy stays');
 assert.equal(cosmicOf(parseColor('#8fdceb')),null,'the second (cyan) accent stays on pages');
 for(const plate of ['#0d2230','#071723','#21565e','#112832','#091a22','#152b2d','#12323f'])assert(/\[(?:fill|stop-color)="#/.test(palette)&&palette.includes(`="${plate}" i]`),`${plate} has a rule`);
 
-// 5) Бронзові залишки: вибрана позначка Атласу, підпис і плюс на «Куди зникає жир?», вузли жирового маршруту, чип обладнання.
-for(const sel of ['.atlas-zone.is-selected','.fb-art-tag-bottom','.fb-myth-list summary i','.fb-lipid','.nf-node i','.ex-chip--equipment'])assert(extras.includes(sel),`${sel} has a cosmic override`);
-for(const [file,sel] of [['dist/atlas.css','.atlas-zone.is-selected span'],['dist/fat-burning.css','.fb-art-tag-bottom'],['dist/fat-burning.css','.fb-myth-list summary i'],['dist/nutrition-fat-burning.css','.nf-node i'],['dist/exercises.css','.ex-chip--equipment']])assert(read(file).includes(sel),`${sel} still exists in ${file}, so its override still applies`);
+// 5) Бронзові залишки: вибрана позначка Атласу, підпис на «Куди зникає жир?» (плюс акордеона міфів прибрано 2026-11-14), вузли жирового маршруту, чип обладнання.
+for(const sel of ['.atlas-zone.is-selected','.fb-art-tag-bottom','.fb-lipid','.nf-node i','.ex-chip--equipment'])assert(extras.includes(sel),`${sel} has a cosmic override`);
+for(const [file,sel] of [['dist/atlas.css','.atlas-zone.is-selected span'],['dist/fat-burning.css','.fb-art-tag-bottom'],['dist/nutrition-fat-burning.css','.nf-node i'],['dist/exercises.css','.ex-chip--equipment']])assert(read(file).includes(sel),`${sel} still exists in ${file}, so its override still applies`);
 
 // 6) Значок вкладки й іконка: ті самі космічні кольори, що в шапці сайту.
 const favicon=read('dist/favicon.svg'),brand=read('scripts/make-brand-images.mjs');

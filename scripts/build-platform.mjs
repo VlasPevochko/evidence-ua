@@ -685,7 +685,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 // 2026-11-14: invalidate the changed Atlas search metadata through every import parent.
 // Authored consumers are updated in the same commit; repeating the build is idempotent.
 {
- const updates={"platform-materials.js?v=108":"platform-materials.js?v=109","platform-tools.js?v=108":"platform-tools.js?v=109","home-feedback.js?v=108":"home-feedback.js?v=109","directions.js?v=117":"directions.js?v=118","platform-search.js?v=17":"platform-search.js?v=18","site-header.js?v=19":"site-header.js?v=20","platform-shell.js?v=112":"platform-shell.js?v=113","home-spectrum.js?v=9":"home-spectrum.js?v=10","fat-burning.js?v=17":"fat-burning.js?v=18","changes-page.js?v=34":"changes-page.js?v=35","changes-data.js?v=34":"changes-data.js?v=35"};
+ const updates={"platform-materials.js?v=108":"platform-materials.js?v=109","platform-tools.js?v=108":"platform-tools.js?v=109","home-feedback.js?v=108":"home-feedback.js?v=109","directions.js?v=117":"directions.js?v=118","platform-search.js?v=17":"platform-search.js?v=18","site-header.js?v=19":"site-header.js?v=20","platform-shell.js?v=112":"platform-shell.js?v=113","home-spectrum.js?v=9":"home-spectrum.js?v=10","fat-burning.js?v=17":"fat-burning.js?v=18","fat-burning.js?v=18":"fat-burning.js?v=19","changes-page.js?v=34":"changes-page.js?v=35","changes-data.js?v=34":"changes-data.js?v=35"};
  for(const name of fs.readdirSync('dist').filter(n=>/\.(html|js)$/.test(n))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');let next=old;
   for(const [from,to]of Object.entries(updates))next=bumpVersion(next,from,to);

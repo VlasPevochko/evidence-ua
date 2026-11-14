@@ -17,6 +17,7 @@ assert(!fold[1].includes('fb-source-disclaimer')&&html.includes('Формаль�
 assert(js.includes('sources-fold')&&js.includes('a[href="#sources"]'),'links to #sources open the fold');
 // Readable text: nothing under 12px, headings use the site serif, mobile cards scroll sideways instead of stacking.
 assert(!/font-size:(9|10|11)px/.test(css),'no text under 12px');
-assert(pine.includes('--pine-serif')&&pine.includes('scroll-snap-type:x mandatory'),'serif headings and swipeable practice cards');
+// 2026-11-14: картки практики більше не гортаються вбік (текст не ховаємо): це плоскі колонки з верхньою лінією, що на телефоні складаються в стовпчик.
+assert(pine.includes('--pine-serif')&&!pine.includes('scroll-snap-type'),'serif headings; practice columns stack instead of hiding text in a swiper');
 assert(!/https?:\/\//.test(pine),'no third-party requests');
 console.log('Fat Burning Lab: pine system, own uroko motif, folded sources, 12px floor passed.');

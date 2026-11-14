@@ -44,3 +44,18 @@ This **first educational edition** is not a complete systematic review, approved
 ## Visible entry within Nutrition (2026-10-20)
 
 The existing Fat Burning Lab remains at `./fat-burning.html`. A compact featured visual on `nutrition.html` now sits **above the diet catalogue**, with one clear action linking directly to the Lab and a top-of-page local anchor labeled «Жироспалення». Canonical markup is `src/nutrition-fat-burning/entry.mjs`, injected into a bounded marker pair by `scripts/build-nutrition-fat-burning.mjs`; the adjacent educational scientific HTML remains unchanged. Styling is scoped in `dist/nutrition-fat-burning.css`. Test coverage includes builder idempotence, live link, small-screen layout, and browser click-through.
+
+## Upgrade 2026-11-14 (owner decision «все так»: scope = design and mechanisms only)
+
+Changed (UI only, scientific sentences verbatim; `tests/fat-burning-science.test.mjs` hashes them against the pre-upgrade page):
+
+- **Stage diagram is motion.** Four stations on one line, a packet rides a rail to the active stage (`--fb-i`, `--fb-p` set by `dist/fat-burning.js`); only the active station animates (droplet → fatty-acid chains leaving → pieces inside a mitochondrion → CO₂ and water rising). Stage buttons sit directly under the stations (the separate label row is gone). On phones the SVG is 480 px wide and slides to keep the active station centred. No text inside the SVG. Reduced motion, no-JS and print show the static state.
+- **Balance** keeps the two bars (cause) and adds a store chart (effect): thin line = daily weight, wiggles; thick line = fat store trend. Shape only, no numbers (`storeShape()`).
+- **Myths**: no accordion. Answer is always open; a verdict (sign + word: Ні / Не гарантовано / Не доведено / Доказів недостатньо) summarises what the answer already says. Question lines are `<p>`, not headings, so search does not index them as claims.
+- **Section bar** replaces the five pill links and the second hero button: sticky, marks the current section with `aria-current`. The «Продовжити дослідження» block is removed (it duplicated practice links); the supplements link moved into myth 5.
+- Practice cards became flat columns with a top rule (no fills), stacked on phones (no swiper).
+- Hero: CO₂/H₂O chips rise from the cell; the meaningless «ADIPOCYTE 01 / 04» tag is replaced.
+
+Not done and why: the 84 % CO₂ / 16 % water split from Meerman & Brown was **not** added. PubMed gives no numbers in the abstract and the full text is not open there; per the project rule, numbers come from the full text, so it stays out until someone reads the BMJ page (and its figure correction g7782).
+
+Measured on 390 px: 6110 px before → see PR for the current number. All answer text is now visible instead of folded, so the phone page is not much shorter; this is a deliberate trade (no hidden main text).

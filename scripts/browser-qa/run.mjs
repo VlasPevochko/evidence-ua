@@ -4809,10 +4809,19 @@ async function fatBurningFlow(browser, origin, viewport) {
   check(where, (await page.locator("#fb-balance-title").innerText()).includes("більше"), "surplus explanation state");
   await page.locator('[data-fb-balance="equal"]').click();
   check(where, (await page.locator('[data-fb-balance="equal"]').getAttribute("aria-pressed")) === "true", "energy balance button state");
-  await page.locator(".fb-myth-list summary").first().click();
-  check(where, await page.locator(".fb-myth-list details").first().evaluate(el => el.open), "myth explanation disclosure");
+  // 2026-11-14 (апгрейд сторінки): акордеона міфів немає, відповідь і вердикт видно одразу; замість кліку перевіряємо це.
+  check(where, await page.locator(".fb-myth-list details,.fb-myth-list summary").count() === 0, "myths are not behind a disclosure");
+  check(where, await page.locator(".fb-myth .fb-myth-a").evaluateAll(els => els.length === 5 && els.every(e => e.getBoundingClientRect().height > 20)), "all five myth answers are visible");
+  check(where, await page.locator(".fb-verdict").evaluateAll(els => els.length === 5 && els.every(e => e.innerText.trim().length > 2)), "each myth shows a verdict word and sign");
+  check(where, await page.locator(".fb-packet").evaluate(el => getComputedStyle(el).transform !== "none"), "the packet sits on the rail");
+  await page.locator('[data-fb-step="2"]').click();
+  check(where, (await page.locator(".fb-flow").getAttribute("data-step")) === "2", "stage buttons move the packet");
+  await page.locator('[data-fb-balance="surplus"]').click();
+  check(where, (await page.locator("#fb-store-fat").getAttribute("d")).startsWith("M"), "store chart is drawn for each scenario");
+  check(where, await page.locator(".fb-jumps").evaluate(el => getComputedStyle(el).position === "sticky"), "section bar is sticky");
+  check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "the upgraded page does not overflow sideways");
   await page.emulateMedia({reducedMotion:"reduce"});
-  check(where, await page.locator(".fb-trace").evaluate(el => getComputedStyle(el).animationName === "none"), "reduced motion must stop diagram animation");
+  check(where, await page.locator('[data-visual="2"] .fb-piece').first().evaluate(el => getComputedStyle(el).animationName === "none"), "reduced motion must stop diagram animation"); // 2026-11-14: .fb-trace замінено рухом станцій
   check(where, seen.pageErrors.length === 0 && seen.console.length === 0, "interactive console or runtime error");
   check(where, (await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) <= 1, "interaction causes horizontal overflow");
   await context.close();

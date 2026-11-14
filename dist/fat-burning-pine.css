@@ -5,7 +5,7 @@ body[data-platform-area="fat-burning"]{background:var(--pine-bg,var(--c-0d1916,#
 .fb-band .fb-hero{min-height:0;padding:56px 32px 52px}
 .fb-main h1,.fb-main h2,.fb-main h3{font-family:var(--pine-serif,"Source Serif 4",Georgia,serif);font-weight:700;letter-spacing:-.015em}
 .fb-hero h1{font-size:clamp(40px,5.4vw,76px);line-height:1.05;letter-spacing:-.02em}
-.fb-section-head h2,.fb-next h2{font-size:clamp(28px,3.6vw,48px);line-height:1.12;letter-spacing:-.015em}
+.fb-section-head h2{font-size:clamp(28px,3.6vw,48px);line-height:1.12;letter-spacing:-.015em}
 .fb-main em{color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b))}
 .fb-kicker{color:var(--pine-muted,var(--c-9db1a7,#9db1a7))}
 .fb-primary{background:var(--pine-accent,var(--c-e3bd6b,#e3bd6b))!important;border-color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b))}
@@ -24,12 +24,6 @@ body[data-platform-area="fat-burning"]{background:var(--pine-bg,var(--c-0d1916,#
 @media(max-width:760px){
   .fb-band .fb-hero{padding:34px 20px 26px}
   .fb-section{padding:40px 20px 4px}
-  /* Чотири картки практики гортаються вбік (видно край наступної), а не складаються в довгу колону. */
-  .fb-practice-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .fb-practice-grid::-webkit-scrollbar{display:none}
-  .fb-practice-card{flex:0 0 82%;scroll-snap-align:start;padding:16px}
-  .fb-practice-card h3{font-size:20px;margin:10px 0 8px}
-  .fb-practice-card a{padding-top:12px}
   .fb-hero-art{min-height:240px}
   .fb-sources-fold .fb-sources article{padding:16px}
 }

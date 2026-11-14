@@ -19,7 +19,6 @@ html:not([data-palette="green"]) img[data-art="cosmic"]:not([hidden]){display:bl
 html:not([data-palette="green"]) :is(.atlas-zone:hover,.atlas-zone:focus-visible,.atlas-zone.is-selected) span{border-color:#6f52a3;color:#ecdcff;background:#22163acf}
 /* «Куди зникає жир?»: підпис під малюнком, плюс у «Міфах», тінь жирової краплі. */
 html:not([data-palette="green"]) .fb-art-tag-bottom{color:#d1a5ff}
-html:not([data-palette="green"]) .fb-myth-list summary i{color:#d1a5ff}
 html:not([data-palette="green"]) .fb-lipid{background:radial-gradient(circle at 35% 25%,var(--c-ffe9b0,#ffe9b0),var(--c-e3bd6b,#e3bd6b) 45%,#5a3f8f 90%)}
 /* «Харчування зсередини»: вузли маршруту жиру. */
 html:not([data-palette="green"]) .nf-node i{background:radial-gradient(circle at 34% 30%,var(--c-fff0c1,#fff0c1),#b88af0 48%,#6a47a8);box-shadow:0 0 15px #b88af066}

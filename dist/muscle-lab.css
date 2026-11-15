@@ -490,3 +490,89 @@ main .eua-kicker{font-size:12px}
 .muscle-shared .eua-source-links a{display:inline-flex;align-items:center;min-height:44px;padding:0 8px}
 /* Рішення власника 2026-11-14 («2 прибрати»): у рядку під шапкою на цій сторінці немає дублів меню й пошуку з шапки. Лишились «Скопіювати посилання» і «Поділитися враженням». Спільну розмітку не змінено: інші сторінки як були. */
 body[data-platform-area="muscle"] .eua-platform-nav .eua-atlas-link,body[data-platform-area="muscle"] .eua-platform-nav .eua-exercises-link,body[data-platform-area="muscle"] .eua-platform-nav .eua-tools [data-eua-tool="search"]{display:none}
+
+/* Схеми для «силових» розділів (2026-11-15, «1-4 виконуємо»): власні малюнки без тексту, підписи це HTML. Нових тверджень немає. */
+.mg-recruit,.mg-curves,.mg-loadtypes,.mg-growth-fig{margin:6px 0 14px;padding:12px;border:1px solid #ffffff14;border-radius:var(--rd-16,16px);background:var(--panel2)}
+.mg-recruit-art,.mg-curves-art,.mg-loadtypes-art,.mg-growth-art{display:block;width:100%;max-width:520px;height:auto;margin:0 auto 8px;border-radius:var(--rd-12,12px);background:var(--c-0a0f0e,#0a0f0e)}
+.mg-recruit .small,.mg-curves .small,.mg-loadtypes .small,.mg-growth-fig .small{margin:6px 0 0}
+/* 1. Залучення одиниць: світиться від малих до великих, пунктир внизу густішає */
+.mg-recruit-art .rc-cell{fill:#6b6f77;transition:fill .3s}
+.mg-recruit-art .rc-axon{stroke:#6b6f77;stroke-width:2;transition:stroke .3s}
+.mg-recruit-art .rc-fibre{fill:#6b6f7766;transition:fill .3s}
+.mg-recruit-art .rc-train{stroke:#6b6f77;stroke-width:4;stroke-dasharray:1 var(--gap,4.5);transition:stroke .3s}
+.mg-recruit:is([data-recruit-level="1"],[data-recruit-level="2"],[data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u0 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="1"],[data-recruit-level="2"],[data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u0 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="1"],[data-recruit-level="2"],[data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u0 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="2"],[data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u1 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="2"],[data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u1 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="2"],[data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u1 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u2 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u2 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u2 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u3 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u3 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u3 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u4 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u4 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u4 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u5 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u5 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-u5 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="7"],[data-recruit-level="8"]) .rc-u6 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="7"],[data-recruit-level="8"]) .rc-u6 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="7"],[data-recruit-level="8"]) .rc-u6 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="8"]) .rc-u7 .rc-cell{fill:var(--gold)}
+.mg-recruit:is([data-recruit-level="8"]) .rc-u7 .rc-axon{stroke:var(--gold)}
+.mg-recruit:is([data-recruit-level="8"]) .rc-u7 .rc-fibre{fill:#ff8496}
+.mg-recruit:is([data-recruit-level="1"],[data-recruit-level="2"],[data-recruit-level="3"],[data-recruit-level="4"],[data-recruit-level="5"],[data-recruit-level="6"],[data-recruit-level="7"],[data-recruit-level="8"]) .rc-train{stroke:var(--gold)}
+.mg-recruit-ctl{display:grid;gap:2px;margin-top:6px}
+.mg-recruit-ctl label{font-size:14px;color:#c9ccd2}
+.mg-recruit-ctl input[type=range]{width:100%;min-height:44px;accent-color:var(--gold)}
+.mg-recruit-text{margin:4px 0 0;min-height:2.9em;font-size:14px;line-height:1.45;color:var(--c-e8e6e0,#e8e6e0)}
+/* 2. Сила й розмір: лінії домальовуються, коли розгортаєш блок */
+.mg-curves-art .cv-axis{stroke:#6b6f77;stroke-width:1.5}
+.mg-curves-art .cv-force,.mg-curves-art .cv-size{stroke-width:3.5;stroke-linecap:round;stroke-dasharray:1}
+.mg-curves-art .cv-force{stroke:var(--gold)}
+.mg-curves-art .cv-size{stroke:var(--growth)}
+.mg-fold[open] .cv-force{animation:cv-draw 1.3s ease-out both}
+.mg-fold[open] .cv-size{animation:cv-draw 1.3s ease-out .35s both}
+@keyframes cv-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.mg-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0 0;padding:0;list-style:none;font-size:14px}
+.mg-legend li{display:flex;align-items:center;gap:8px}
+.mg-legend li::before{content:'';width:22px;height:4px;border-radius:2px;background:currentColor}
+.mg-lg-force{color:var(--gold)}.mg-lg-size{color:var(--growth)}
+.mg-legend li{color:var(--c-e8e6e0,#e8e6e0)}
+.mg-legend .mg-lg-force::before{background:var(--gold)}.mg-legend .mg-lg-size::before{background:var(--growth)}
+/* 3. Три способи навантажити: диски Z рухаються один раз, коли розгортаєш блок */
+.mg-loadtypes-art .lt-z{stroke:#c3d5e5;stroke-width:3;stroke-linecap:round}
+.mg-loadtypes-art .lt-actin{stroke:#a895ff;stroke-width:3;stroke-linecap:round}
+.mg-loadtypes-art .lt-myosin{stroke:#ff8496;stroke-width:6;stroke-linecap:round}
+.mg-loadtypes-art .lt-dir{fill:none;stroke:var(--growth);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mg-loadtypes-art .lt-load{stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.mg-loadtypes-art .lt-lift .lt-l{transform:translateX(10px)}.mg-loadtypes-art .lt-lift .lt-r{transform:translateX(-10px)}
+.mg-loadtypes-art .lt-lower .lt-l{transform:translateX(-6px)}.mg-loadtypes-art .lt-lower .lt-r{transform:translateX(6px)}
+.mg-fold[open] .lt-lift .lt-l{animation:lt-l-lift 1.4s ease-in-out both}.mg-fold[open] .lt-lift .lt-r{animation:lt-r-lift 1.4s ease-in-out both}
+.mg-fold[open] .lt-lower .lt-l{animation:lt-l-lower 1.4s ease-in-out both}.mg-fold[open] .lt-lower .lt-r{animation:lt-r-lower 1.4s ease-in-out both}
+@keyframes lt-l-lift{from{transform:none}}@keyframes lt-r-lift{from{transform:none}}
+@keyframes lt-l-lower{from{transform:translateX(10px)}}@keyframes lt-r-lower{from{transform:translateX(-10px)}}
+.mg-lt-labels{max-width:520px;margin-left:auto;margin-right:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:6px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.4;color:#c9ccd2}
+.mg-lt-labels li{display:grid;gap:2px;align-content:start}
+.mg-lt-labels strong{color:var(--gold);font-size:14px}
+/* 4. Шлях росту: шість кроків загоряються по черзі, коли розгортаєш розділ; стан за замовчуванням уже «загорілось» */
+.mg-growth-art .gr-fibre{fill:#ff849622;stroke:#ff849666;stroke-width:2}
+.mg-growth-art .gr-p{fill:none;stroke:var(--growth);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transform-box:fill-box;transform-origin:center}
+.mg-growth-art .gr-p0 path{stroke:var(--gold);stroke-width:3}
+.mg-growth-art .gr-p1{fill:var(--growth);stroke:none}
+.mg-growth-art .gr-p2{fill:#83e9b966}
+.mg-growth-art .gr-p4{fill:var(--gold);stroke:none}
+.mg-growth-art .gr-p5{stroke-dasharray:5 5}
+.mg-chapter[open] .gr-p{animation:gr-on .6s ease-out both;animation-delay:calc(var(--i)*.6s)}
+@keyframes gr-on{from{opacity:.12}}
+@media(max-width:560px){
+ .mg-lt-labels{grid-template-columns:minmax(0,1fr);gap:6px}
+ .mg-lt-labels li{grid-template-columns:auto minmax(0,1fr);column-gap:8px;align-items:baseline}
+}
+@media(prefers-reduced-motion:reduce){
+ .mg-recruit-art *{transition:none}
+ .mg-fold[open] .cv-force,.mg-fold[open] .cv-size,.mg-fold[open] .lt-l,.mg-fold[open] .lt-r,.mg-chapter[open] .gr-p{animation:none}
+}

@@ -7,6 +7,7 @@
 
 import {practiceBase} from './practice.mjs';
 import {signalArt} from './signal-art.mjs';
+import {recruitArt,curvesArt,loadTypesArt,growthArt} from './training-art.mjs';
 import {ConfidenceBadge,claimButton,getClaim} from '../evidence/core/components.mjs';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -144,12 +145,25 @@ ${cite('endo','gordon')}`)}`;
 }
 
 // ── Chapter 3: strength is not mass ─────────────────────────────────────────
+
+// Схеми для «силових» розділів (2026-11-15). Нових тверджень немає: підписи повторюють те, що вже сказано в розділах 3 і 4.
+export const recruitTexts=['Невелике зусилля: працюють переважно малі одиниці.','Більше зусилля: до малих додаються середні.','Максимум зусилля: вмикаються й великі одиниці, імпульси частіші.'];
+const recruitFigure=()=>`<div class="mg-recruit" data-recruit data-recruit-level="3">${recruitArt()}
+<div class="mg-recruit-ctl" data-recruit-ctl hidden><label for="mg-recruit-range">Зусилля (умовно)</label><input id="mg-recruit-range" type="range" min="0" max="100" value="38" step="1" data-recruit-range aria-valuetext="${esc(recruitTexts[0])}"></div>
+<p class="mg-recruit-text" data-recruit-text>${esc(recruitTexts[0])}</p>
+<p class="small">Схема умовна: показано лише порядок («легкі» одиниці першими) і те, що імпульси стають частішими. Кількостей і сили немає.</p></div>`;
+const curvesFigure=()=>`<div class="mg-curves">${curvesArt()}<ul class="mg-legend"><li class="mg-lg-force">Сила</li><li class="mg-lg-size">Розмір м’яза</li></ul>
+<p class="small">Схема умовна: в перші тижні сила росте швидше за розмір (нервова адаптація). Масштабу й чисел немає.</p></div>`;
+const loadTypesFigure=()=>`<div class="mg-loadtypes">${loadTypesArt()}<ul class="mg-lt-labels"><li><strong>Піднімання</strong><span>м’яз коротшає</span></li><li><strong>Опускання</strong><span>м’яз подовжується під навантаженням</span></li><li><strong>Утримання</strong><span>довжина та сама</span></li></ul>
+<p class="small">Схема умовна: нитки зберігають довжину, змінюється лише їхнє перекриття.</p></div>`;
 function chapterStrength(){
  const factors=['Нервова активація','Архітектура м’яза','Скоротливий апарат','Сухожилки','Техніка руху'];
  return `<p class="mg-lead">Перші тижні тренувань сила росте швидше, ніж м’язи. Причина — нервова система.</p>
 <div class="mg-formula" role="img" aria-label="Сила — це добуток нервової активації, архітектури м’яза, скоротливого апарату, сухожилків і техніки руху">${factors.map(f=>`<span>${esc(f)}</span>`).join('<b aria-hidden="true">×</b>')}<b aria-hidden="true">=</b><span class="mg-formula-out">Сила</span></div>
 <p><strong>Моторна одиниця</strong> — один мотонейрон і всі волокна, які він керує. Щоб дати більше сили, мозок (1) вмикає більше одиниць — від «легких» до «важких» — і (2) змушує їх стріляти частіше, щоб окремі поштовхи зливалися.</p>
+${recruitFigure()}
 <p>У контрольованому дослідженні (14 людей тренувалися, 14 — ні) вже після <strong>4 тижнів</strong> силових тренувань мотонейрони розряджалися в середньому на <strong>3,3 імпульсу за секунду</strong> частіше, а вмикалися раніше. Тому «+20% сили» не означає «+20% м’язів».</p>
+${fold('Що росте першим: сила чи розмір',`${curvesFigure()}${cite('delvecchio')}`)}
 ${claimsList(claimsByChapter.strength)}
 ${cite('delvecchio')}`;
 }
@@ -165,6 +179,7 @@ const growthFlow=[
 ];
 function chapterGrowth(){
  return `<p class="mg-lead">Не «пошкодження → біль → ріст», а «навантаження → датчики → синтез білка → повтор тижнями».</p>
+<div class="mg-growth-fig">${growthArt()}<p class="small">Схема умовна: порядок подій, а не масштаб і не час.</p></div>
 <ol class="mg-flow" aria-label="Від навантаження до росту">${growthFlow.map((f,i)=>`<li style="--i:${i}"><strong>${esc(f.t)}</strong><span>${esc(f.s)}</span></li>`).join('')}</ol>
 ${fold('Хто «відчуває» навантаження',`<p>Кандидати — інтегрини та FAK, костамери, білки Z-диска, тітин, фосфатидна кислота, білок CSRP3. Але <strong>одного головного датчика гіпертрофії у людини не знайдено</strong>. Огляд 2019 року називає механічні сигнали головними кандидатами, а пошкодження м’яза — ймовірно, не обов’язковим.</p>
 <p>У 2026 році після 8 тижнів силових тренувань у людей змінилися сотні білків волокон; CSRP3 особливо зріс у волокнах типу II, а в мишей його надлишок збільшував м’язову масу. Це не доводить, що CSRP3 — «вимикач росту», але показує: ріст — мережа, а не один шлях.</p>
@@ -172,6 +187,8 @@ ${cite('wackerhage','moesgaard')}`)}
 ${fold('mTORC1 та IGF-1: важливі, але не все',`<p><strong>mTORC1</strong> збирає сигнали від навантаження, амінокислот і факторів росту та посилює синтез білка (через S6K1 і 4E-BP1) і побудову рибосом.</p>
 <p><strong>IGF-1</strong> може запускати шлях PI3K → Akt → mTOR. Але фраза «тренування дає IGF-1, а IGF-1 дає весь ріст» — спрощення: у мишей перевантажений м’яз ріс навіть без робочого рецептора IGF-1.</p>
 ${cite('schiaffino','wackerhage')}`)}
+${fold('Три способи навантажити м’яз',`${loadTypesFigure()}<p>Пошкодження м’яза (особливо від незвичної ексцентричної роботи) може супроводжувати тренування, але його не треба «максимізувати» заради росту.</p>
+${cite('wackerhage')}`)}
 ${fold('Клітини-сателіти й пошкодження',`<p>Клітини-сателіти особливо важливі для відновлення після серйозної травми й можуть додавати ядра при тривалому рості. Але вони беруть участь <strong>у деяких, не в усіх</strong> моделях гіпертрофії.</p>
 <p>Пошкодження м’яза (особливо від незвичної ексцентричної роботи) може супроводжувати тренування, але його не треба «максимізувати» заради росту.</p>
 ${cite('schiaffino','wackerhage')}`)}`;

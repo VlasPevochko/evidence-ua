@@ -55,7 +55,9 @@ export function mountHomeLens(doc = globalThis.document) {
 
   function paint(value) {
     const action = section.querySelector('[data-lens-reveal]');
-    progress = action?.contains(doc.activeElement) ? 1 : value;
+    // 2026-11-15: the six direction frames live in the same core; keyboard focus on any of them keeps it open too.
+    const peek = section.querySelector('[data-lens-peek]');
+    progress = action?.contains(doc.activeElement) || peek?.contains(doc.activeElement) ? 1 : value;
     section.style.setProperty('--lens-progress', String(progress));
     // Match the CSS interior fade: clamp(0, progress * 2 - .25, 1).
     // Any visible action must accept a pointer; zero opacity stays inactive.
@@ -152,7 +154,7 @@ export function mountHomeLens(doc = globalThis.document) {
       }
     });
     listen(section, 'focusin', event => {
-      if (event.target.closest?.('[data-lens-reveal]')) reveal();
+      if (event.target.closest?.('[data-lens-reveal]') || event.target.closest?.('[data-lens-peek]')) reveal();
       const link = event.target.closest?.('a.topic-card[data-area]');
       if (link && section.querySelector('#cards')?.contains(link)) reveal();
     });

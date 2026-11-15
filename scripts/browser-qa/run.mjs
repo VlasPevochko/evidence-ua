@@ -3848,6 +3848,21 @@ async function muscleSignalFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function navRowFlow(browser, origin, viewport) {
+  // 2026-11-14 (рішення власника «так»): рядок під шапкою не дублює «Атлас», «Вправи» й «Знайти матеріал»; усе це лишається в шапці.
+  const where = `button row without header duplicates @${viewport.name}`;
+  for (const file of ['muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'movement.html', 'sleep.html', 'atlas.html', 'exercises.html', 'supplements.html', 'research.html']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
+    await page.waitForSelector('.eua-site-header');
+    await page.waitForTimeout(400);
+    const row = await page.evaluate(() => [...document.querySelectorAll('.eua-platform-nav a, .eua-platform-nav button')].map(e => e.textContent.trim()).filter(t => ['Атлас', 'Вправи', 'Знайти матеріал'].includes(t)));
+    check(where, row.length === 0, `${file}: the row repeats the header: ${row.join(', ')}`);
+    check(where, await page.locator('.eua-header-search').count() === 1, `${file}: the header keeps the search button`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `${file}: console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+    await context.close();
+  }
+}
+
 async function atlasFlow(browser, origin, viewport) {
   const where = `atlas shoulder map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
@@ -5324,6 +5339,7 @@ try {
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(navRowFlow, browser, origin, viewport);
   } else if (sectionsOnly) {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
   } else if (process.env.QA_HOME_WAVE_ONLY === '1') {
@@ -5343,6 +5359,7 @@ try {
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(navRowFlow, browser, origin, viewport);
     for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
     for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
     for (const viewport of viewports) await continueFlow(browser, origin, viewport);

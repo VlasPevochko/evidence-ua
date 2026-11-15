@@ -210,9 +210,13 @@ const shellSource = fs.readFileSync('src/platform/shell.mjs', 'utf8');
 const shellBuilt = fs.readFileSync('dist/platform-shell.js', 'utf8');
 for (const shell of [shellSource, shellBuilt]) {
   assert(shell.includes('./exercises.html'), 'Shared shell links to the Exercise Library');
-  assert(shell.includes('eua-exercises-link') && shell.includes('${exercisesLink(current)}'), 'Library link is part of the shared navigation');
+  // 2026-11-14 (рішення власника «так» на «прибрати дублі»): рядок під шапкою більше не дублює «Вправи» й «Атлас», бо вони є в меню шапки.
+  // Посилання «Вправи» лишається в меню шапки (site-header), а функція exercisesLink у shell.mjs існує, але в рядок не підставляється.
+  assert(shell.includes('eua-exercises-link') && !shell.includes('${exercisesLink(current)}'), 'Library link is not duplicated in the row under the header');
   assert(shell.includes('eua-home-exercises-entry'), 'Home header has a library entry');
 }
+const headerSource = fs.readFileSync('src/platform/site-header.mjs', 'utf8');
+assert(/'Вправи','\.\/exercises\.html'/.test(headerSource) && /'Атлас','\.\/atlas\.html'/.test(headerSource), 'Library and Atlas stay one tap away in the header menu');
 assert.equal(
   shellBuilt,
   // The shared header import is rewritten by the platform builder as well.

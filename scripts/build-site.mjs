@@ -19,7 +19,7 @@ const generated = new Set([
   'platform-catalog.js', 'home-catalog.js', 'home-feedback.js', 'platform-materials.js',
   // Пошук по розділах сторінок (scripts/build-sections.mjs) і спільний модуль переходу до розділу (src/platform/anchor-reveal.mjs).
   'platform-sections.js', 'anchor-reveal.js',
-  'platform-tools.js', 'platform-shell.js', 'platform-next-steps.js', 'platform-terms.js', 'appearance.js', 'platform-learning.js', 'directions.js', 'home-lens.js', 'home-picker.js',
+  'platform-tools.js', 'platform-shell.js', 'platform-next-steps.js', 'platform-terms.js', 'appearance.js', 'platform-learning.js', 'home-row-signs.js', 'directions.js', 'home-lens.js', 'home-picker.js',
   'nutrition-inside.html', 'nutrition-navigation.js', 'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',

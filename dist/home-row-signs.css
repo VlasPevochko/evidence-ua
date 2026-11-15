@@ -1,0 +1,53 @@
+/* Знаки згорнутих рядків головної (рішення власника «давай 1 пункт», 2026-11-15).
+   Замість «+» рядок показує малюнок того, що в ньому лежить (src/platform/home-row-signs.mjs), а стан «відкрито/закрито» показує тонкий кутик.
+   Файл підключено останнім серед стилів головної: правила нижче мають ту саму силу, що й старі правила «+», і перемагають порядком.
+   Кольори беруться з палітри головної (--spectrum-*); світла тема сайту це фільтр на <html>, окремих світлих кольорів тут немає. */
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(.home-examples,.home-path-outline,#home-learning-paths,#home-about,#home-overview,#home-feedback,.home-library-fold,.home-fresh-fold)>summary::after{
+  content:"";flex:none;box-sizing:border-box;width:10px;height:10px;margin:-5px 5px 0 16px;border:solid var(--spectrum-accent,#d1a5ff);border-width:0 1.5px 1.5px 0;font-size:0;transform:rotate(45deg);transition:transform .2s ease,margin-top .2s ease;
+}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(.home-examples,.home-path-outline,#home-learning-paths,#home-about,#home-overview,#home-feedback,.home-library-fold,.home-fresh-fold)[open]>summary::after{
+  content:"";margin-top:5px;transform:rotate(-135deg);
+}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(.home-examples,.home-path-outline,#home-about,#home-overview,#home-feedback)>summary::after{margin-left:auto}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh-fold>summary{list-style:none}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh-fold>summary::-webkit-details-marker{display:none}
+
+body[data-platform-area="home"] .home-row-sign{display:block;flex:none;margin-left:auto;line-height:0;opacity:.82;transition:opacity .2s ease}
+body[data-platform-area="home"] summary:hover>.home-row-sign,
+body[data-platform-area="home"] summary:focus-visible>.home-row-sign,
+body[data-platform-area="home"] details[open]>summary>.home-row-sign{opacity:1}
+body[data-platform-area="home"] .home-row-sign svg{display:block;width:auto;height:52px;max-width:100%;overflow:visible}
+body[data-platform-area="home"] .home-row-sign--routes svg{height:46px}
+body[data-platform-area="home"] .home-row-sign--fresh svg{height:48px}
+
+/* Маршрути: лінія на маршрут, вузол на крок; перший вузол (початок маршруту) більший і заповнений. */
+body[data-platform-area="home"] .hs-line{stroke:#8d7aa6;stroke-width:1}
+body[data-platform-area="home"] .hs-node{fill:var(--spectrum-panel,#100e18);stroke:var(--spectrum-accent,#d1a5ff);stroke-width:1.2}
+body[data-platform-area="home"] .hs-start{fill:var(--spectrum-accent,#d1a5ff);stroke:none}
+/* Бібліотека: стовпчик на добавку, риска на розібране твердження, полиця знизу. */
+body[data-platform-area="home"] .hs-mark{fill:var(--spectrum-accent,#d1a5ff)}
+body[data-platform-area="home"] .hs-floor{stroke:#8d7aa6;stroke-width:1}
+
+/* Телефон: назва й кутик у першому рядку; підказка й знак у другому (знак праворуч). Текстова обгортка стає display:contents,
+   щоб назва й підказка лягли в сітку окремо; порядок читання й табуляції не змінюється. */
+@media(max-width:600px){
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(#home-learning-paths,.home-library-fold,.home-fresh-fold)>summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;column-gap:0;row-gap:4px;align-items:center}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(#home-learning-paths,.home-library-fold,.home-fresh-fold)>summary>span:not(.home-chapter-number):not(.home-row-sign){display:contents}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories #home-learning-paths>summary>.home-chapter-number{grid-column:1;grid-row:1;margin-right:12px}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(#home-learning-paths,.home-library-fold)>summary strong,
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh-fold>summary .home-fresh-fold-title{grid-column:2/4;grid-row:1;min-width:0}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(#home-learning-paths,.home-library-fold)>summary small,
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories .home-fresh-fold>summary .home-fresh-fold-hint{grid-column:2;grid-row:2;align-self:center;min-width:0;margin-top:0}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories :is(#home-learning-paths,.home-library-fold,.home-fresh-fold)>summary::after{grid-column:4;grid-row:1;justify-self:end;margin-left:12px}
+  body[data-platform-area="home"] .home-row-sign{grid-column:3/5;grid-row:2;justify-self:end;align-self:center;margin:0 0 0 12px}
+  body[data-platform-area="home"] .home-row-sign svg,
+  body[data-platform-area="home"] .home-row-sign--routes svg,
+  body[data-platform-area="home"] .home-row-sign--fresh svg{height:34px}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-platform-area="home"] .home-row-sign,
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories details>summary::after{transition:none}
+}
+@media print{
+  body[data-platform-area="home"] .home-row-sign{opacity:1}
+}

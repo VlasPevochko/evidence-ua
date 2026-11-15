@@ -8,6 +8,8 @@ import {homeSpectrumHTML} from '../src/platform/home-spectrum.mjs';
 import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
 import {homeFreshGridHTML} from '../src/platform/home-fresh.mjs';
+import {shelfSignSVG,signHTML,placeSign,libraryClaimCounts} from '../src/platform/home-row-signs.mjs';
+import {comparisonStatus} from '../dist/compare-status.js';
 import {renderNight} from '../src/sleep/night.mjs';
 // Дані, з яких збирається блок «Нове на сайті» (T4): ті самі модулі, що вантажать сторінки розборів, схем і журналу.
 import {STUDIES} from '../dist/research-data.js';
@@ -29,7 +31,8 @@ fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-to
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
 fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=108'").replace("'./site-header.mjs'","'./site-header.js?v=19'"));
-fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'"));
+fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'./home-row-signs.mjs'","'./home-row-signs.js?v=1'"));
+fs.writeFileSync('dist/home-row-signs.js',fs.readFileSync('src/platform/home-row-signs.mjs','utf8'));
 fs.writeFileSync('dist/home-picker.js',fs.readFileSync('src/platform/home-picker.mjs','utf8'));
 fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8').replace("'./home-picker.mjs'","'./home-picker.js?v=2'"));
 fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'./materials.mjs'","'./platform-materials.js?v=108'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=108'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=88'").replace("'./site-header.mjs'","'./site-header.js?v=19'"));
@@ -49,7 +52,10 @@ if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
  if(!featured)throw Error('The «Останні розбори» list on the home has no write-up with a chart');
  const grid=homeFreshGridHTML({studies:STUDIES,latestStudyId:featured,changes:CHANGES,science:SCIENCE,scenes:SCENES,miniInterval});
  const next=html.replace(/<!-- EUA_HOME_FRESH_START -->[\s\S]*?<!-- EUA_HOME_FRESH_END -->/,()=>'<!-- EUA_HOME_FRESH_START -->'+grid+'<!-- EUA_HOME_FRESH_END -->');
- if(next!==html)fs.writeFileSync(homeFile,next);
+ // Знаки рядків (2026-11-15): «Оновлення» показує мініатюру графіка того самого розбору, що й перша картка; «Бібліотека» показує
+ // стовпчик на кожну добавку зі списку бібліотеки, риска = одне розібране твердження (dist/compare-status.js). Обидва знаки з даних, не вручну.
+ const signed=placeSign(placeSign(next,'FRESH',signHTML('fresh',miniInterval(STUDIES.find(study=>study.id===featured).chart))),'LIBRARY',signHTML('library',shelfSignSVG(libraryClaimCounts(next,comparisonStatus))));
+ if(signed!==html)fs.writeFileSync(homeFile,signed);
 }
 {
  const html=fs.readFileSync(homeFile,'utf8');
@@ -676,4 +682,13 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
   if(next!==old)fs.writeFileSync(file,next);
  }
+}
+// Лінза головної, рішення власника «давай всі 4» (2026-11-15): половини не виходять за сцену, у ядрі шість напрямів, підказка зникає раніше,
+// текст не лягає на картину. Змінено стилі лінзи (v=9) і її скрипт (v=8); docs/HOME_LENS_FOUR_FIXES.md.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-lens.css?v=8':'home-lens.css?v=9','home-lens.js?v=7':'home-lens.js?v=8'};
+ const file='dist/index.html',old=fs.readFileSync(file,'utf8');
+ let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+ if(next!==old)fs.writeFileSync(file,next);
 }

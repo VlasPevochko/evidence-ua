@@ -40,7 +40,8 @@ export const guideSources=[
  {id:'brown',short:'Brown 2017',title:'Amyotrophic Lateral Sclerosis',journal:'New England Journal of Medicine',year:2017,pmid:'28700839',doi:'10.1056/NEJMra1603471',type:'Огляд'},
  {id:'mercuri',short:'Mercuri 2019',title:'Muscular dystrophies',journal:'Lancet',year:2019,pmid:'31789220',doi:'10.1016/S0140-6736(19)32910-1',type:'Огляд'},
  {id:'kubota',short:'Kubota 2025',title:'Molecular genetics of skeletal muscle channelopathies',journal:'Journal of Human Genetics',year:2025,pmid:'40770230',doi:'10.1038/s10038-025-01370-w',type:'Огляд'},
- {id:'cruz',short:'Cruz-Jentoft 2019',title:'Sarcopenia',journal:'Lancet',year:2019,pmid:'31171417',doi:'10.1016/S0140-6736(19)31138-9',type:'Огляд'}
+ {id:'cruz',short:'Cruz-Jentoft 2019',title:'Sarcopenia',journal:'Lancet',year:2019,pmid:'31171417',doi:'10.1016/S0140-6736(19)31138-9',type:'Огляд'},
+ {id:'hody',short:'Hody 2019',title:'Eccentric Muscle Contractions: Risks and Benefits',journal:'Frontiers in Physiology',year:2019,pmid:'31130877',doi:'10.3389/fphys.2019.00536',type:'Огляд'},
 ];
 
 const src=id=>{const s=guideSources.find(s=>s.id===id);if(!s)throw Error('Unknown guide source '+id);return s;};
@@ -188,7 +189,8 @@ ${fold('mTORC1 та IGF-1: важливі, але не все',`<p><strong>mTORC
 <p><strong>IGF-1</strong> може запускати шлях PI3K → Akt → mTOR. Але фраза «тренування дає IGF-1, а IGF-1 дає весь ріст» — спрощення: у мишей перевантажений м’яз ріс навіть без робочого рецептора IGF-1.</p>
 ${cite('schiaffino','wackerhage')}`)}
 ${fold('Три способи навантажити м’яз',`${loadTypesFigure()}<p>Пошкодження м’яза (особливо від незвичної ексцентричної роботи) може супроводжувати тренування, але його не треба «максимізувати» заради росту.</p>
-${cite('wackerhage')}`)}
+<p class="small">Ексцентричне скорочення — це подовження м’яза під навантаженням (опускання); саме незвична ексцентрична робота відома тим, що дає пошкодження й відстрочений біль. Означення «піднімання» й «утримання» загальні, окремого джерела вони не потребують.</p>
+${cite('wackerhage','hody')}`)}
 ${fold('Клітини-сателіти й пошкодження',`<p>Клітини-сателіти особливо важливі для відновлення після серйозної травми й можуть додавати ядра при тривалому рості. Але вони беруть участь <strong>у деяких, не в усіх</strong> моделях гіпертрофії.</p>
 <p>Пошкодження м’яза (особливо від незвичної ексцентричної роботи) може супроводжувати тренування, але його не треба «максимізувати» заради росту.</p>
 ${cite('schiaffino','wackerhage')}`)}`;

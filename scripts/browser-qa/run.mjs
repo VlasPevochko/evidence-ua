@@ -4933,6 +4933,80 @@ async function baselineScreenshots(browser, origin, viewport) {
   await context.close();
 }
 
+async function homeRowSignsFlow(browser, origin, viewport) {
+  // Рішення власника «давай 1 пункт» (2026-11-15): замість «+» рядки «Навчальні маршрути», «Оновлення» й «Бібліотека доказів» показують малюнок
+  // свого вмісту (src/platform/home-row-signs.mjs). У справжньому браузері перевіряємо те, чого не видно з розмітки: знак видимий, не дрібний,
+  // не виходить за ширину й за рядок, не налазить на назву й підказку; кількість вузлів і рисок дорівнює тому, що лежить у відкритому рядку;
+  // стан показує кутик (без «+»), він повертається при відкритті; рядок відкривається Enter, Пробілом і дотиком до самого знака.
+  const where = `home row signs @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('#home-learning-paths').waitFor({state: 'attached'});
+    await page.locator('.home-library-fold > summary').scrollIntoViewIfNeeded();
+    const measure = () => page.evaluate(() => ['#home-learning-paths', '.home-fresh-fold', '.home-library-fold'].map(selector => {
+      const fold = document.querySelector(selector), summary = fold.querySelector(':scope > summary'), sign = summary.querySelector(':scope > .home-row-sign'), svg = sign && sign.querySelector('svg');
+      const box = node => { const r = node.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height}; };
+      const texts = [...summary.querySelectorAll('strong, small, .home-fresh-fold-title, .home-fresh-fold-hint')].map(node => { const range = document.createRange(); range.selectNodeContents(node); return box(range); });
+      const after = getComputedStyle(summary, '::after'), signStyle = sign && getComputedStyle(sign), mark = svg && svg.querySelector('.hs-node, .hs-mark, .eua-mi-dot');
+      return {selector, open: fold.open, summary: box(summary), sign: sign && box(sign), svg: svg && box(svg), texts,
+        hidden: sign && sign.getAttribute('aria-hidden'), svgText: svg ? svg.querySelectorAll('text, title').length : -1,
+        afterContent: after.content, afterTransform: after.transform, afterBorder: parseFloat(after.borderRightWidth), afterWidth: parseFloat(after.width),
+        opacity: signStyle && Number(signStyle.opacity), paint: mark && (getComputedStyle(mark).fill !== 'none' ? getComputedStyle(mark).fill : getComputedStyle(mark).stroke),
+        rails: [...summary.querySelectorAll('.hs-rail')].map(rail => rail.querySelectorAll('circle').length),
+        spines: [...summary.querySelectorAll('.hs-spine')].map(spine => spine.querySelectorAll('rect').length),
+        miniRows: summary.querySelectorAll('.eua-mi-row').length,
+        routeSteps: [...fold.querySelectorAll('.path-card')].map(card => card.querySelectorAll('.home-path-outline ol > li').length),
+        supplements: fold.querySelectorAll('.se-list > li').length,
+        cardMiniRows: fold.querySelectorAll('.home-fresh-card--study .eua-mi-row').length,
+        viewport: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth};
+    }));
+    const closed = await measure();
+    const overlap = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    for (const row of closed) {
+      const name = row.selector;
+      check(where, !row.open, `${name} starts closed`);
+      check(where, row.sign && row.svg && row.svg.width >= 40 && row.svg.height >= 30, `${name}: the sign is visible and not tiny (${row.svg && Math.round(row.svg.width)}×${row.svg && Math.round(row.svg.height)})`);
+      check(where, row.hidden === 'true' && row.svgText === 0, `${name}: the sign is decorative and has no text inside the drawing`);
+      check(where, row.svg.left >= row.summary.left - 0.5 && row.svg.right <= row.summary.right + 0.5 && row.svg.top >= row.summary.top - 0.5 && row.svg.bottom <= row.summary.bottom + 0.5, `${name}: the sign stays inside its row`);
+      check(where, row.texts.every(text => !overlap(text, row.svg)), `${name}: the sign does not cover the title or the hint`);
+      check(where, row.scroll <= row.viewport, `${name}: nothing overflows the page width`);
+      check(where, row.summary.height >= 44 && row.summary.height <= (viewport.width <= 600 ? 130 : 96), `${name}: the row stays a compact touch target (${Math.round(row.summary.height)} px)`);
+      check(where, (row.afterContent === '""' || row.afterContent === 'none' || row.afterContent === "''") && row.afterBorder >= 1 && row.afterWidth >= 8, `${name}: the state mark is a drawn corner, not a «+» glyph (${row.afterContent})`);
+      check(where, /^rgb/.test(row.paint || '') && row.opacity >= 0.8, `${name}: the sign is painted (${row.paint}, opacity ${row.opacity})`);
+    }
+    const [routes, fresh, library] = closed;
+    check(where, routes.rails.length > 0 && JSON.stringify(routes.rails) === JSON.stringify(routes.routeSteps), `routes sign matches the routes inside (${routes.rails} vs ${routes.routeSteps})`);
+    check(where, library.spines.length === library.supplements && library.supplements > 0 && library.spines.every(count => count >= 1), `library sign has one spine per supplement (${library.spines.length} vs ${library.supplements})`);
+    check(where, fresh.miniRows > 0 && fresh.miniRows === fresh.cardMiniRows, `updates sign shows the same mini chart as the first card (${fresh.miniRows} vs ${fresh.cardMiniRows})`);
+    await artifact(page, viewport, 'home-row-signs-closed', page.locator('#home-learning-paths > summary'));
+    await artifact(page, viewport, 'home-row-signs-library', page.locator('.home-library-fold > summary'));
+    await artifact(page, viewport, 'home-row-signs-updates', page.locator('.home-fresh-fold > summary'));
+    // Клавіатура: Enter відкриває, Пробіл закриває; кутик повертається.
+    for (const selector of ['#home-learning-paths', '.home-fresh-fold', '.home-library-fold']) {
+      const fold = page.locator(selector), summary = fold.locator(':scope > summary');
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      check(where, await fold.evaluate(node => node.open), `${selector}: Enter opens the row`);
+      await page.waitForTimeout(350);
+      const turned = (await measure()).find(row => row.selector === selector);
+      check(where, turned.afterTransform !== closed.find(row => row.selector === selector).afterTransform, `${selector}: the corner turns when the row opens`);
+      check(where, turned.opacity === 1, `${selector}: the sign is fully lit while the row is open`);
+      await summary.focus();
+      await page.keyboard.press('Space');
+      check(where, !(await fold.evaluate(node => node.open)), `${selector}: Space closes the row`);
+      // Дотик чи клік по самому малюнку теж відкриває рядок: знак є частиною того самого керування.
+      await fold.locator(':scope > summary > .home-row-sign').click();
+      check(where, await fold.evaluate(node => node.open), `${selector}: a click on the sign itself opens the row`);
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      check(where, !(await fold.evaluate(node => node.open)), `${selector}: the row closes again`);
+    }
+    checkBrowserHealth(where, seen);
+  } finally {
+    await context.close();
+  }
+}
+
 async function homeRowsFlow(browser, origin, viewport) {
   // Рішення власника 2026-11-02 (бриф T6): згорнуті рядки головної показують під назвою, що всередині (.home-row-hint).
   // У справжньому браузері перевіряємо: підказка видима, не менша за 12 px і контрастна; рядок не стає абзацом (до 3 рядків підказки),
@@ -5290,6 +5364,8 @@ async function homeFlows(browser, origin) {
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
   // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
+  // 2026-11-15: знаки рядків замість «+»; 360 включено, бо там назва маршрутів переноситься й знак стоїть найтісніше.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowSignsFlow, browser, origin, viewport);
   // T5 (2026-11-02): підписи кнопок-посилань; 360 включено, бо довгі підписи там переносяться.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLinkTextFlow, browser, origin, viewport);
   // T7 (2026-11-02): поле пошуку в героєві; 360 і 320 px (підказка у два рядки, найвужчі телефони) і 600 px (підказка в один рядок, найвужчий «широкий» вигляд).

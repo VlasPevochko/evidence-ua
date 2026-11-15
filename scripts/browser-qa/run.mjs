@@ -2210,7 +2210,11 @@ async function lensPixelPair(page, clip, referenceCss) {
     await node.decode();
   })));
   await page.evaluate(() => document.fonts.ready);
-  await page.waitForTimeout(120);
+  // 2026-11-15: у просвіті тепер стоять кадри напрямів, які реагують на наведення (назва в рядку підпису, легке збільшення). Після прокрутки
+  // браузер оновлює наведення нерухомого курсора із запізненням, тож між двома знімками кадр під курсором міг змінитись (14/255 у середній
+  // колонці на 360 px). Курсор відводимо в кут і чекаємо завершення переходу; прокрутка сторінки колесом від цього не залежить.
+  await page.mouse.move(1, 1);
+  await page.waitForTimeout(260);
   // A page that is still scrolling between the two screenshots would read as a difference: retry once.
   for (let attempt = 0; ; attempt++) {
     const scrolled = await page.evaluate(() => scrollY);

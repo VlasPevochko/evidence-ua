@@ -3,31 +3,18 @@
 const {painMaps,shoulderTopics,kneeTopics}=await import('./atlas-points.js?v=2').catch(()=>({painMaps:{},shoulderTopics:[],kneeTopics:[]}));
 
 const zoneMeta={
- brain:{title:'Мозок',summary:'Сон, стрес, когнітивні функції, фізична активність і фактори, що впливають на роботу нервової системи.',state:'Готується',stateKey:'planned'},
+ brain:{title:'Мозок',summary:'Сон, стрес, когнітивні функції, фізична активність і фактори, що впливають на роботу нервової системи.',state:'Бета',stateKey:'beta'},
  shoulder:{title:'Плечовий комплекс',summary:'Анатомія, найпоширеніші стани, навантаження, реабілітація та спосіб читати наукові дані без спрощення до «працює / не працює».',state:'Повний модуль',stateKey:'full'},
  spine:{title:'Хребет',summary:'Будова хребта за відділами, довідка про те, коли звернутися по медичну допомогу, та пов’язана практика. Без діагнозів і без висновків за точкою болю.',state:'Бета',stateKey:'beta'},
  muscles:{title:'М’язова система',summary:'Сила, гіпертрофія, відновлення, адаптація до навантаження та тренувальні змінні.',state:'Бета',stateKey:'beta'},
- gut:{title:'ШКТ',summary:'Травлення, мікробіом, харчування та взаємодія способу життя з шлунково-кишковою системою.',state:'Готується',stateKey:'planned'},
+ gut:{title:'ШКТ',summary:'Травлення, мікробіом, харчування та взаємодія способу життя з шлунково-кишковою системою.',state:'Бета',stateKey:'beta'},
  knee:{title:'Колінний комплекс',summary:'Навантаження, біль, травми, повернення до активності та силове тренування — з розділенням різних клінічних сценаріїв.',state:'Бета',stateKey:'beta'}
 };
 
 const tabLabels={overview:'Огляд',anatomy:'Анатомія',symptoms:'Симптоми',training:'Тренування',rehab:'Реабілітація',research:'Дослідження'};
 
-// Теми, що ще готуються (показуються згорнутою приміткою «Що ще готується» у «Мозку» й «ШКТ»).
-const previewTopics={
- brain:[
-  {title:'Сон і циркадні ритми',copy:'Як сон пов’язаний із когнітивними функціями, відновленням і поведінкою.',tag:'Сон · Мозок'},
-  {title:'Стрес і когнітивне навантаження',copy:'Майбутній модуль про стресову відповідь, увагу та прийняття рішень.',tag:'Стрес · Когніція'},
-  {title:'Фізична активність і мозок',copy:'Окремий напрям про рух, тренування та нервову систему.',tag:'Рух · Нервова система'},
-  {title:'Кофеїн і увага',copy:'Механізми, продуктивність, сон і межі практичної інтерпретації.',tag:'Кофеїн · Увага'}
- ],
- gut:[
-  {title:'Травлення',copy:'Від прийому їжі до засвоєння: базова фізіологія та практичні питання.',tag:'Фізіологія · Харчування'},
-  {title:'Мікробіом',copy:'Що реально відомо про мікробіоту, асоціації та межі причинних висновків.',tag:'Мікробіом · Докази'},
-  {title:'Клітковина',copy:'Типи харчових волокон, переносимість та контекст раціону.',tag:'Раціон · ШКТ'},
-  {title:'Харчові тригери',copy:'Як відрізняти індивідуальну переносимість від універсальних заборон.',tag:'Симптоми · Раціон'}
- ]
-};
+// 2026-11-14: у нових освітніх модулях вкладка містить джерела, без оцінки ефективності.
+const tabLabel=(zone,tab)=>(zone==='brain'||zone==='gut')&&tab==='research'?'Джерела':tabLabels[tab];
 
 const esc=text=>String(text).replace(/[&<>"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
 const arrow='<svg class="atlas-topic-arrow" aria-hidden="true"><use href="#ai-next"/></svg>';
@@ -98,22 +85,11 @@ const spineContent={
 
 // Для зон без власного модуля («Готується») заглушок на кожну вкладку більше немає (рішення власника 2026-11-10, п. 3): одна вкладка «Огляд» з посиланнями
 // на наші справжні матеріали на близькі теми. Описи взято з метаопису самих сторінок, нових тверджень тут немає.
-const relatedMaterials={
- brain:[
-  {title:'Сон і відновлення',copy:'Як влаштований сон, що відомо про недосипання й фізичну працездатність та які звички допомагають створити умови для сну.',href:'./sleep.html',tag:'Сон'},
-  {title:'Кофеїн: як це працює',copy:'Коротка анімована схема «Чому кава бадьорить: кофеїн і аденозин». Це схема, а не вимірювання.',href:'./mechanisms.html#caffeine',tag:'Схема'},
-  {title:'Кофеїн: розбір',copy:'Наукові пояснення, джерела, практичні орієнтири та обмеження.',href:'./index.html#supplement-caffeine',tag:'Добавки'}
- ],
- gut:[
-  {title:'Шлях їжі: травлення у 3D',copy:'3D-модель травного тракту: як їжа проходить від стравоходу до товстої кишки, з джерелами для кожного твердження.',href:'./nutrition-digestion.html',tag:'3D-модель'},
-  {title:'Харчування зсередини',copy:'Від їжі до клітини: інтерактивний шлях нутрієнтів — перетравлення, всмоктування та подальший транспорт.',href:'./nutrition-inside.html',tag:'Фізіологія'}
- ]
-};
-
-function plannedOverview(zone){
- const meta=zoneMeta[zone],planned=previewTopics[zone]||[];
- return `<div class="atlas-copy-card"><h3>${meta.title}: власного модуля ще немає</h3><p>Ми не підміняємо відсутній розбір короткими універсальними порадами. Поки що тут лише посилання на наші матеріали на близькі теми: вони не є частиною Атласу й мають власні статуси перегляду.</p></div><h3 class="atlas-group-title">Уже є на сайті</h3>${topicLinks(relatedMaterials[zone]||[])}<details class="atlas-copy-card atlas-reading-note"><summary>Що ще готується</summary><ul class="atlas-planned-list">${planned.map(topic=>`<li><strong>${topic.title}</strong>: ${topic.copy}</li>`).join('')}</ul></details>`;
+function foundationContent(zone,tab){
+ const template=document.getElementById('atlas-foundation-'+zone+'-'+tab);
+ return template?.innerHTML||'<p>Не вдалося відкрити навчальний матеріал. Спробуйте оновити сторінку.</p>';
 }
+const foundationViews=zone=>Object.fromEntries(['overview','anatomy','research'].map(tab=>[tab,()=>foundationContent(zone,tab)]));
 
 // Які вкладки має кожна зона. Вкладки без змісту не показуємо (раніше було 14 однакових заглушок із 36 екранів).
 const zoneContent={
@@ -121,8 +97,8 @@ const zoneContent={
  knee:kneeContent,
  spine:spineContent,
  muscles:musclesContent,
- brain:{overview:()=>plannedOverview('brain')},
- gut:{overview:()=>plannedOverview('gut')}
+ brain:foundationViews('brain'),
+ gut:foundationViews('gut')
 };
 const TAB_ORDER=['overview','anatomy','symptoms','training','rehab','research'];
 const MAP_ZONES=new Set(['shoulder','knee']);
@@ -203,6 +179,24 @@ async function hydrateSpineHub(){
  }
 }
 
+let foundationLoad=null;
+async function hydrateFoundation(){
+ const root=content.querySelector('[data-foundation-root]');
+ if(!root)return;
+ const zone=selectedZone;
+ try{
+  foundationLoad??=import('./atlas-foundations.js?v=1');
+  const module=await foundationLoad;
+  if(!root.isConnected||selectedZone!==zone||!content.contains(root))return;
+  module.mountFoundation(root);
+ }catch{
+  foundationLoad=null;
+  if(root.isConnected){
+   const label=root.querySelector('[data-foundation-selection]');
+   if(label)label.textContent='Усі пояснення доступні нижче. Інтерактивний вибір не завантажився.';
+  }
+ }
+}
 async function hydrateRelatedPractice(){
  const box=content.querySelector('[data-related-practice]');
  if(!box)return;
@@ -251,16 +245,17 @@ function render({user=false}={}){
  if(!available.includes(selectedTab))selectedTab='overview';
  detail.dataset.zoneArt=selectedZone;
  title.textContent=meta.title;summary.textContent=meta.summary;status.textContent=meta.state;status.dataset.state=meta.stateKey;
- breadcrumbZone.textContent=meta.title;breadcrumbTab.textContent=tabLabels[selectedTab];
+ breadcrumbZone.textContent=meta.title;breadcrumbTab.textContent=tabLabel(selectedZone,selectedTab);
  document.body.dataset.atlasZone=selectedZone;
  // Назва вкладки браузера (і запису в історії): «Атлас · Хребет · Симптоми — Evidence UA»; вкладку називаємо лише там, де їх кілька. Типовий стан (плече, «Огляд») лишає назву сторінки:
  // кнопка «Зберегти в мій список» запам'ятовує назву на момент завантаження, а посилання веде на atlas.html без зони.
- document.title=selectedZone===DEFAULT_ZONE&&selectedTab==='overview'?baseTitle:`Атлас · ${meta.title}${available.length>1&&selectedTab!=='overview'?` · ${tabLabels[selectedTab]}`:''} — Evidence UA`;
+ document.title=selectedZone===DEFAULT_ZONE&&selectedTab==='overview'?baseTitle:`Атлас · ${meta.title}${available.length>1&&selectedTab!=='overview'?` · ${tabLabel(selectedZone,selectedTab)}`:''} — Evidence UA`;
  zoneButtons.forEach(button=>{const active=button.dataset.zone===selectedZone;button.classList.toggle('is-selected',active);button.setAttribute('aria-pressed',String(active));});
  // Вкладка з'являється лише там, де в неї є зміст; одну вкладку «Огляд» окремо не показуємо.
  tabs.forEach(button=>{
   const has=available.includes(button.dataset.atlasTab),on=has&&button.dataset.atlasTab===selectedTab;
   button.hidden=!has;button.disabled=false;
+  button.querySelector('[data-atlas-tab-label]').textContent=tabLabel(selectedZone,button.dataset.atlasTab);
   button.setAttribute('aria-selected',String(on));button.tabIndex=on?0:-1;
  });
  tablist.hidden=available.length<2;tablist.dataset.count=String(available.length);
@@ -272,7 +267,8 @@ function render({user=false}={}){
  requestAnimationFrame(()=>content.classList.remove('is-changing'));
  hydrateRelatedPractice();
  hydrateSpineHub();
- if(user)say(`Обрано: ${meta.title}${available.length>1?` · ${tabLabels[selectedTab]}`:''}`);
+ hydrateFoundation();
+ if(user)say(`Обрано: ${meta.title}${available.length>1?` · ${tabLabel(selectedZone,selectedTab)}`:''}`);
 }
 
 content.addEventListener('click',event=>{

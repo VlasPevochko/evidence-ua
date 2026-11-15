@@ -25,6 +25,8 @@ const generated = new Set([
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',
   'muscle-scale-art.js', 'muscle-sarcomere.js', 'muscle-guide.js', 'muscle-practice-data.js',
   'movement.js', 'movement-model.js', 'movement-learning.js', 'sleep.js', 'sleep-night.js', 'atlas-points.js', 'atlas-diagrams.js',
+  // Atlas keeps authored bytes outside its bounded foundations fragment (tested separately).
+  'atlas.html', 'atlas-foundations-data.js', 'atlas-foundations.js', 'atlas-foundations.css',
   'sleep.html', 'platform-glossary.js', 'platform-glossary-data.js',
   'digestion-data.js', 'digestion-steps.js', 'digestion-viewer.js', 'nutrition-diets-carousel.js', 'nutrition-diets-share.js',
   'evidence/protein-data.js', 'evidence/protein-ui.js',

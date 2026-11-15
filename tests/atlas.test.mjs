@@ -45,12 +45,10 @@ for(const title of ['Ротаторна манжета','Субакроміал�
 for(const title of ['Пателофеморальний біль','Меніски','Передня хрестоподібна зв’язка','Сухожилок надколінка','Остеоартроз коліна']){
   assert(points.includes(title),`Missing knee topic: ${title}`);
 }
-// Оновлення Атласу 2026-11-10 (п. 3): запланованих тем для «Хребта» й «М’язів» у atlas.js більше немає (вони мають власний зміст), лишились «Мозок» і «ШКТ»;
-// тому перевіряємо їхні теми, а «Неспецифічний біль у попереку» й «Гіпертрофія» зі списку прибрано (вони більше ніде не показувались).
-for(const title of ['Сон і циркадні ритми','Мікробіом']){
-  assert(js.includes(title),`Missing preview topic: ${title}`);
-}
-for(const state of ['Повний модуль','Бета','Готується'])assert(js.includes(state),`Missing Atlas module state: ${state}`);
+// 2026-11-14: owner approved real Brain/GI content, replacing planned-topic lists.
+for(const zone of ['brain','gut'])for(const tab of ['overview','anatomy','research'])
+ assert(html.includes('id="atlas-foundation-'+zone+'-'+tab+'"'),'Missing foundation: '+zone+'/'+tab);
+for(const state of ['Повний модуль','Бета'])assert(js.includes(state),'Missing Atlas module state: '+state);
 assert(!js.includes('button.hidden=!shoulder'),'Tabs should remain visible for every Atlas zone');
 assert(js.includes('atlas-breadcrumb'),'Breadcrumb updates must be wired in JavaScript');
 assert.match(css,/atlas-breadcrumb/);

@@ -13,7 +13,7 @@ for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,are
 // Owner decision 2026-10-27: the question-led cosmic hero replaces the old picker CTA.
 // Keep the legacy card/footer behavior below as a preservation check; its DOM rewrites are guarded on the new home.
 assert(index.includes('class="spectrum-home"')&&index.includes('id="spectrum-search"'),'The selected question-led hero is present');
-assert(index.includes('./home-spectrum.js?v=9')&&index.includes('./home-spectrum.css?v=8'),'The home controller and updated stylesheet are wired');
+assert(index.includes('./home-spectrum.js?v=10')&&index.includes('./home-spectrum.css?v=8'),'The home controller and updated stylesheet are wired');
 assert(nav.includes("if (!document.querySelector('.spectrum-home'))"),'Legacy DOM replacement is disabled on the selected home');
 const catalogScript=index.indexOf('home-catalog.js?v=83'),navigationScript=index.indexOf('navigation-v17.js?v=77');
 assert(catalogScript>=0&&navigationScript>catalogScript,'Canonical catalog loads before the retained evidence-guide bootstrap');
@@ -82,3 +82,4 @@ start=root.xpath('//*[@id="start-here"]')[0]
 assert list(start).index(directory[0]) < list(start).index(start.xpath('./div[@class="start-choices"]')[0]), 'Directions must precede example questions'
 `]);
 console.log('Home entry: six actual catalog pages, CTA flow, real cards, feedback handlers, no sending/storage/tracking, copy success/fallback, sanitized URLs and eleven article subtrees (berberine added) passed.');
+// 2026-11-14: Atlas anatomy search metadata requires a new shared-cache cascade; science fixtures stay unchanged.

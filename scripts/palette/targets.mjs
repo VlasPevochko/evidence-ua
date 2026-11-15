@@ -38,6 +38,7 @@ export const OUTPUT='dist/palette-cosmic.css';
 export const isHomeOnlyCss=file=>/^dist\/(home-[^/]*|desktop|evidence-trainer)\.css$/.test(file);
 // Інші стилі, які навмисно не переводяться в токени, і чому. tests/palette.test.mjs вимагає, щоб кожен стиль у dist був ціллю, стилем головної або тут.
 export const EXCLUDED_CSS={
+  'dist/atlas-foundations.css':'навчальні схеми успадковують currentColor і чинні змінні палітри Атласу; власних кольорів немає, контраст перевіряє atlasFoundationsFlow у двох палітрах і темах',
   'dist/atlas-redesign.css':'окрема палітра атласу за референсом: темно-синя й зелена теми задані локальними змінними; світла тема власних кольорів не має (загальна інверсія, appearance.css)',
   'dist/atlas-diagrams.css':'кольори анатомічних схем карт болю (кістка, м’яз, сухожилок) і оформлення карт у палітрі Атласу: анатомія не змінює кольорів за палітрою сайту',
   'dist/navigation-v17.css':'вантажиться лише з navigation-v17.js, який підключає тільки головна',

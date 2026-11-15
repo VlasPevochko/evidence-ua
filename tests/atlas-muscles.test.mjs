@@ -11,7 +11,8 @@ const css = fs.readFileSync('dist/atlas.css', 'utf8');
 const html = fs.readFileSync('dist/atlas.html', 'utf8');
 
 assert(/muscles:\{title:'М’язова система'[^}]*state:'Бета',stateKey:'beta'\}/.test(js), 'The muscles zone is a Beta module');
-for (const zone of ['brain', 'gut']) assert(new RegExp(`${zone}:\\{[^}]*state:'Готується',stateKey:'planned'`).test(js), `${zone} stays planned`);
+// 2026-11-14: owner-approved foundations turn Brain/GI into educational beta.
+for (const zone of ['brain', 'gut']) assert(new RegExp(zone+":\\{[^}]*state:'Бета',stateKey:'beta'").test(js), `${zone} has beta foundations`);
 
 // The block under test: musclesContent.
 const start = js.indexOf('const musclesContent={');

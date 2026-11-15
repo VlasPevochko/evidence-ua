@@ -2126,7 +2126,8 @@ function checkLensLinks(where, snapshot, viewport) {
 
 function checkLensAction(where, snapshot, {onScreen = false} = {}) {
   const {action, interior, stage} = snapshot;
-  check(where, action.count === 1 && action.controls === 1 && action.tag === 'A' && action.href === './directions.html' && action.inside && action.visible,
+  // 2026-11-15: у сцені, крім кнопки вибору, стоять шість кадрів-посилань напрямів (рішення власника «давай всі 4»): 1 + 6 керувань.
+  check(where, action.count === 1 && action.controls === 7 && action.tag === 'A' && action.href === './directions.html' && action.inside && action.visible,
     'the single native directory fallback must be rendered inside the accessible stage, without hidden/inert ancestors');
   check(where, interior.opacity === 1 && interior.text.includes('6 напрямів') && interior.text.includes('Знайди свою тему') && interior.textFits && action.width >= 44 && action.height >= 44 && action.left >= stage.left && action.right <= stage.right && action.top >= stage.top && action.bottom <= stage.bottom,
     'readable HTML and an opaque 44px action must fit physically inside the lens');
@@ -2199,7 +2200,8 @@ const LENS_SINGLE_IMAGE_CSS = '.home-lens-half--right{display:none!important}.ho
 const LENS_NO_ARTWORK_CSS = '.home-lens-core{display:none!important}';
 async function lensPixelPair(page, clip, referenceCss) {
   // Lazy artwork and web fonts that finish between the two screenshots would read as a difference.
-  await page.locator('[data-home-lens] .home-lens-art, [data-home-lens] .home-lens-nebula').evaluateAll(nodes => Promise.all(nodes.map(async node => {
+  // 2026-11-15: шість кадрів напрямів у ядрі теж ледачі картинки; якщо кадр довантажиться між двома знімками, це прочитається як різниця в просвіті.
+  await page.locator('[data-home-lens] .home-lens-art, [data-home-lens] .home-lens-nebula, [data-home-lens] .home-lens-cell img').evaluateAll(nodes => Promise.all(nodes.map(async node => {
     node.loading = 'eager';
     if (!node.complete) await new Promise((resolve, reject) => {
       node.addEventListener('load', resolve, {once: true});
@@ -4771,7 +4773,8 @@ async function homeLowerFlow(browser, origin, viewport) {
   // The selected lens is intentionally borderless: its loaded graphic supplies
   // the visual chapter. Native route/library entrances retain bounded surfaces.
   await page.locator('[data-lens-stage]').scrollIntoViewIfNeeded();
-  await page.waitForFunction(()=>[...document.querySelectorAll('[data-lens-stage] img')].length===3&&[...document.querySelectorAll('[data-lens-stage] img')].every(img=>img.complete&&img.naturalWidth>0));
+  // 2026-11-15: у ядрі додались шість кадрів напрямів (ледачі картинки); сам графічний розділ це, як і раніше, три картинки оздоби.
+  await page.waitForFunction(()=>[...document.querySelectorAll('[data-lens-stage] .home-lens-decoration img')].length===3&&[...document.querySelectorAll('[data-lens-stage] .home-lens-decoration img')].every(img=>img.complete&&img.naturalWidth>0));
   check(where,await page.locator('[data-lens-stage]').evaluate(node=>{const box=node.getBoundingClientRect();return box.width>0&&box.height>=200&&getComputedStyle(node).visibility==='visible';}),'the direction chapter must contain its loaded, visible lens graphic');
   check(where,chapters.length===3&&chapters.slice(1).every(chapter=>chapter.padding>=24&&chapter.border>=1&&(chapter.image!=='none'||(chapter.background!==background&&chapter.background!=='rgba(0, 0, 0, 0)'))),'route and library entrances need readable, visibly bounded surfaces');
   check(where,chapters.length===3&&chapters[0].top<chapters[1].top&&chapters[1].top<chapters[2].top,'the page must progress from choosing a direction to routes and the library');
@@ -5001,6 +5004,94 @@ async function homeRowSignsFlow(browser, origin, viewport) {
       await page.keyboard.press('Enter');
       check(where, !(await fold.evaluate(node => node.open)), `${selector}: the row closes again`);
     }
+    checkBrowserHealth(where, seen);
+  } finally {
+    await context.close();
+  }
+}
+
+async function homeLensFitFlow(browser, origin, viewport) {
+  // Рішення власника «давай всі 4» (2026-11-15), лінза «Обери напрям». У справжньому браузері перевіряємо чотири речі:
+  // 1) відкриті половини цілком у сцені (раніше краї зрізались на 34–150 px майже на кожній ширині);
+  // 2) у ядрі шість круглих кадрів напрямів: не менші за 44 px, у просвіті між половинами, ведуть туди ж, куди картки вікна вибору;
+  // 3) підказка «Прокрути — відкрий ядро» видима лише поки ядро закрите;
+  // 4) на півдорозі видима частина тексту ядра не виходить за просвіт між половинами (текст не лежить на картині).
+  const where = `home lens fit @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    const stageTop = await page.evaluate(() => document.querySelector('[data-lens-stage]').getBoundingClientRect().top + scrollY);
+    const state = () => page.evaluate(() => {
+      const q = s => document.querySelector(s), box = node => { const r = node.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height}; };
+      const section = q('[data-home-lens]'), stage = box(q('[data-lens-stage]')), L = box(q('.home-lens-half--left')), R = box(q('.home-lens-half--right')), interior = q('.home-lens-interior'), I = box(interior);
+      // Видима ширина тексту ядра: проходимо по горизонталі крок за кроком і дивимось, де елемент справді під пальцем (clip-path прибирає і вигляд, і дотик).
+      const shown = [];
+      for (const node of interior.querySelectorAll('.home-lens-count, .home-lens-peek, .home-lens-invitation')) { const r = node.getBoundingClientRect(), y = r.top + r.height / 2; for (let x = Math.ceil(r.left) + 1; x < r.right - 1; x += 2) { const hit = document.elementFromPoint(x, y); if (hit && (hit === node || node.contains(hit))) shown.push(x); } }
+      const clip = getComputedStyle(q('.home-lens-count')).clipPath;
+      return {progress: Number(section.style.getPropertyValue('--lens-progress')), open: section.hasAttribute('data-lens-open'), complete: section.hasAttribute('data-lens-complete'),
+        stage, halves: {left: L.left, right: R.right}, gap: {left: L.left + L.width / 2, right: R.left + R.width / 2}, interior: I, shown: shown.length ? {left: Math.min(...shown), right: Math.max(...shown)} : null, clip,
+        opacity: Number(getComputedStyle(interior).opacity), hint: getComputedStyle(q('.home-lens-hint')).visibility,
+        cells: [...document.querySelectorAll('.home-lens-cell')].map(cell => ({...box(cell), href: cell.getAttribute('href'), name: cell.querySelector('.home-lens-cell-name').textContent, picture: cell.querySelector('img')?.naturalWidth > 0 || !cell.querySelector('img')?.complete})),
+        count: box(q('.home-lens-count')), jump: box(q('.home-lens-jump')),
+        cards: [...document.querySelectorAll('#cards a.topic-card')].map(card => ({href: card.getAttribute('href'), name: card.querySelector('strong').textContent})),
+        viewport: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth};
+    });
+    const scrollTo = async top => { await page.evaluate(y => window.scrollTo(0, y), Math.max(0, top)); await page.waitForTimeout(350); };
+    // Закрита: сцена щойно з’явилась знизу екрана.
+    await scrollTo(stageTop - viewport.height + 40);
+    const closed = await state();
+    check(where, closed.progress === 0 && !closed.open, `the lens is closed while it enters the screen (progress ${closed.progress})`);
+    check(where, closed.hint === 'visible', 'the hint is shown while the core is closed');
+    // На півдорозі: шукаємо прокруткою стан, коли текст уже видно, а половини ще не розійшлись повністю.
+    let mid = null;
+    for (let offset = viewport.height - 40; offset > 0 && !mid; offset -= 16) {
+      await page.evaluate(y => window.scrollTo(0, y), Math.max(0, stageTop - offset));
+      await page.waitForTimeout(60);
+      const now = await state();
+      if (now.opacity > 0.2 && now.progress < 0.6) mid = now;
+      if (now.progress >= 0.6) break;
+    }
+    check(where, Boolean(mid), 'a half-open state with visible text can be reached by scrolling');
+    if (mid) {
+      const visible = mid.shown || {left: (mid.gap.left + mid.gap.right) / 2, right: (mid.gap.left + mid.gap.right) / 2};
+      check(where, /^inset\(/.test(mid.clip), `the core text is clipped while the lens opens (${mid.clip})`);
+      check(where, visible.left >= mid.gap.left - 4 && visible.right <= mid.gap.right + 4, `half-open: the visible text stays in the opening (${Math.round(visible.left)}…${Math.round(visible.right)} inside ${Math.round(mid.gap.left)}…${Math.round(mid.gap.right)})`);
+      check(where, mid.open && mid.hint === 'hidden', 'the hint leaves once the core is usable');
+    }
+    // Відкрита.
+    await scrollTo(stageTop - 10);
+    const opened = await state();
+    check(where, opened.progress === 1 && opened.complete, `the lens is fully open near the top of the screen (progress ${opened.progress})`);
+    check(where, opened.halves.left >= opened.stage.left - 0.5 && opened.halves.right <= opened.stage.right + 0.5, `open halves stay inside the stage (${Math.round(opened.halves.left)}…${Math.round(opened.halves.right)} in ${Math.round(opened.stage.left)}…${Math.round(opened.stage.right)})`);
+    check(where, opened.scroll <= opened.viewport, 'nothing overflows the page width');
+    check(where, opened.hint === 'hidden' && opened.opacity === 1, 'open: text fully visible, hint gone');
+    check(where, opened.cells.length === 6 && opened.cells.length === opened.cards.length, `six direction frames (${opened.cells.length})`);
+    check(where, JSON.stringify(opened.cells.map(cell => [cell.href, cell.name])) === JSON.stringify(opened.cards.map(card => [card.href, card.name])), 'frames lead where the chooser cards lead, in the same order and with the same names');
+    for (const cell of opened.cells) {
+      check(where, cell.width >= 43.5 && cell.height >= 43.5, `«${cell.name}»: the frame is a 44 px touch target (${Math.round(cell.width)}×${Math.round(cell.height)})`);
+      check(where, cell.left >= opened.gap.left - 1 && cell.right <= opened.gap.right + 1, `«${cell.name}»: the frame sits in the opening, not on the picture`);
+      check(where, cell.top >= opened.stage.top && cell.bottom <= opened.stage.bottom, `«${cell.name}»: the frame is inside the stage`);
+      check(where, cell.picture, `«${cell.name}»: the picture loaded`);
+    }
+    const overlap = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    check(where, opened.cells.every((cell, index) => opened.cells.every((other, at) => at === index || !overlap(cell, other))), 'frames do not overlap each other');
+    check(where, opened.cells.every(cell => !overlap(cell, opened.jump) && !overlap(cell, opened.count)), 'frames do not cover the count or the button');
+    check(where, opened.jump.top >= opened.stage.top && opened.jump.bottom <= opened.stage.bottom && opened.jump.height >= 44, 'the chooser button stays whole inside the stage');
+    await artifact(page, viewport, 'home-lens-fit-open', page.locator('[data-lens-stage]'), {scroll: false});
+    // Клавіатура: фокус на кадрі показує його назву в рядку підпису й тримає ядро відкритим навіть із закритого стану.
+    await scrollTo(stageTop - viewport.height + 40);
+    const second = page.locator('.home-lens-cell').nth(1);
+    await second.focus();
+    await page.waitForTimeout(350);
+    const focused = await page.evaluate(() => {
+      const cell = document.querySelectorAll('.home-lens-cell')[1], name = cell.querySelector('.home-lens-cell-name'), section = document.querySelector('[data-home-lens]');
+      return {progress: Number(section.style.getPropertyValue('--lens-progress')), name: Number(getComputedStyle(name).opacity), invitation: getComputedStyle(document.querySelector('.home-lens-invitation')).visibility, size: parseFloat(getComputedStyle(name).fontSize), active: document.activeElement === cell};
+    });
+    check(where, focused.active && focused.progress === 1, `keyboard focus on a frame opens the core (progress ${focused.progress})`);
+    check(where, focused.name === 1 && focused.invitation === 'hidden' && focused.size >= 12, 'the focused frame shows its name in the caption line');
+    const href = await second.getAttribute('href');
+    await Promise.all([page.waitForURL(url => url.pathname.endsWith(href.replace(/^\.\//, '/').split('#')[0])), page.keyboard.press('Enter')]);
+    check(where, true, 'Enter on a frame opens its direction');
     checkBrowserHealth(where, seen);
   } finally {
     await context.close();
@@ -5364,6 +5455,8 @@ async function homeFlows(browser, origin) {
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
   // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
+  // 2026-11-15: лінза вміщається в сцену на всіх ширинах; 320, 768 і 1024 включено, бо там половини зрізались найбільше.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}, {name: 'mobile-tiny', width: 320, height: 640}, {name: 'tablet', width: 768, height: 1024}, {name: 'laptop', width: 1024, height: 768}]) await isolatedFlow(homeLensFitFlow, browser, origin, viewport);
   // 2026-11-15: знаки рядків замість «+»; 360 включено, бо там назва маршрутів переноситься й знак стоїть найтісніше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowSignsFlow, browser, origin, viewport);
   // T5 (2026-11-02): підписи кнопок-посилань; 360 включено, бо довгі підписи там переносяться.

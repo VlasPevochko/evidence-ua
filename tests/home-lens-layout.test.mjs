@@ -14,9 +14,12 @@ assert.equal(parsed.halves.length,2,'Both halves must carry the actual lens imag
 assert(parsed.halves[0].class.includes('home-lens-half--left'));
 assert(parsed.halves[1].class.includes('home-lens-half--right'));
 assert(parsed.halves.every(n=>n.decorative&&n.art.length===1&&n.art[0]==='./home-lens-core.webp'));
-assert.deepEqual(parsed.images.map(n=>n.src),['./home-lens-nebula.webp','./home-lens-core.webp','./home-lens-core.webp']);
+// 2026-11-15 (рішення власника «давай всі 4»): у ядрі стоять шість кадрів напрямів, тож після трьох картинок оздоби йдуть шість картинок кадрів
+// (ті самі файли, що у вікні вибору), так само ледачі й без alt (назва напряму це текст посилання).
+assert.deepEqual(parsed.images.map(n=>n.src),['./home-lens-nebula.webp','./home-lens-core.webp','./home-lens-core.webp','./card-art-muscle-v1-cosmic.webp','./card-art-cell-v1-cosmic.webp','./card-art-nutrition-v1-cosmic.webp','./card-art-supplements-v1-cosmic.webp','./card-art-movement-v2-cosmic.webp','./card-art-sleep-v2-cosmic.webp']);
 assert(parsed.images.every(n=>n.lazy==='lazy'&&Number(n.width)>0&&Number(n.height)>0&&n.alt===''),'Below-hero decorative art must have stable dimensions and lazy loading');
-assert.equal(parsed.controls,1,'The central jump is the only internal action');
+// 2026-11-15: було 1 (лише кнопка вибору); тепер кнопка й шість кадрів-посилань напрямів.
+assert.equal(parsed.controls,1+topics.length,'The central jump and the six direction frames are the internal actions');
 const lensCSS=fs.readFileSync('dist/home-lens.css','utf8');
 assert(!/\.home-lens-core::before/.test(lensCSS),'the opening must show the nebula behind the halves, never another closed copy of the lens');
 // 2026-11-12 («немає корекції»): two abutting clipped copies leave a dark one-pixel line down the closed lens wherever the join
@@ -30,7 +33,9 @@ const whole=lensCSS.slice(supports);
 assert(/\.home-lens-half--left\{clip-path:inset\(0 calc\(50% \* var\(--lens-split\)\) 0 0\)\}/.test(whole),'the left copy is unclipped at progress 0');
 assert(/\.home-lens-half--right\{opacity:var\(--lens-split\)\}/.test(whole),'the right copy is not painted at progress 0');
 assert(whole.includes('mask-image:linear-gradient(90deg,#000 calc(100% - 50% * var(--lens-split) - var(--lens-progress)*12px),transparent calc(100% - 50% * var(--lens-split)))'),'the left copy keeps its soft inner edge and loses its mask at progress 0');
-assert(lensCSS.includes('clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)*-1))')&&lensCSS.includes('clip-path:inset(0 0 0 50%);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)))'),'without @supports the original two clipped halves still apply');
+// 2026-11-15: половини їдуть за --lens-open (= прогрес × 1,45, не більше 1), а не за самим прогресом: просвіт стає повним, коли текст ядра вже непрозорий.
+assert(/--lens-open:clamp\(0,calc\(var\(--lens-progress\)\*1\.45\),1\)/.test(lensCSS),'the opening factor is derived from the scroll progress');
+assert(lensCSS.includes('clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--lens-open)*var(--lens-travel)*-1))')&&lensCSS.includes('clip-path:inset(0 0 0 50%);transform:translateX(calc(var(--lens-open)*var(--lens-travel)))'),'without @supports the original two clipped halves still apply');
 assert(supports>lensCSS.lastIndexOf('.home-lens-half--right .home-lens-art{'),'the whole-image rules must come after the base mask rules; at equal specificity the later rule wins');
 assert(/mask-image:linear-gradient\(90deg,#000 calc\(50% - var\(--lens-progress\)\*12px\),transparent 50%\)/.test(lensCSS.slice(0,supports)),'the base rule keeps the half mask for browsers without @supports');
 // Owner 2026-10-31: choices are a closed dialog; without JS the real link opens the directory.
@@ -54,7 +59,27 @@ assert.equal(structure.library,1);assert(structure.libraryClosed);assert.equal(s
 assert.equal(structure.choicesDirect,1,'Continue/saved insertion anchor must stay outside closed details');
 // Owner-approved stage timing and visual polish need fresh assets for returning visitors.
 // 2026-11-12: home-lens.css v=7 -> v=8: the closed lens is one whole image (no dark join line); returning visitors must receive it.
-assert.deepEqual(structure.styles,['./home-lens.css?v=8']);
+// 2026-11-15: home-lens.css v=8 -> v=9 (половини в межах сцени, кадри напрямів, підказка, обрізання тексту).
+assert.deepEqual(structure.styles,['./home-lens.css?v=9']);
 // 2026-11-11: home-lens.js v=6 -> v=7: the earlier mobile lens action (src/platform/home-lens.mjs) must reach returning visitors. This assertion stays on its own line: it used to sit inside the previous comment, so it never ran.
-assert.deepEqual(structure.scripts,['./home-lens.js?v=7']);
+// 2026-11-15: home-lens.js v=7 -> v=8 (фокус на кадрі напряму тримає ядро відкритим).
+assert.deepEqual(structure.scripts,['./home-lens.js?v=8']);
+// 2026-11-15, чотири правки лінзи (docs/HOME_LENS_FOUR_FIXES.md).
+const peek=inspect(homeDirectionsHTML(topics),`[{'href':n.get('href'),'area':n.get('data-peek-area'),'name':n.xpath('./span[@class="home-lens-cell-name"]')[0].text_content(),'imgs':len(n.xpath('./img[@alt=""][@loading="lazy"]')),'inList':len(n.xpath('parent::li/parent::ul[@data-lens-peek][@aria-label]')),'hidden':len(n.xpath('ancestor::*[@aria-hidden="true" or @hidden or @inert]'))} for n in root.xpath('.//*[@class="home-lens-interior"]//a[@class="home-lens-cell"]')]`);
+assert.deepEqual(peek.map(n=>[n.area,n.href,n.name]),topics.map(t=>[t.id,t.href,t.title]),'the core frames are the six canonical directions: same order, same addresses, the title is the link text');
+assert(peek.every(n=>n.imgs===1&&n.inList===1&&n.hidden===0),'each frame is a real link in a labelled list with one decorative lazy picture');
+const order=homeDirectionsHTML(topics);
+assert(order.indexOf('home-lens-count')<order.indexOf('data-lens-peek')&&order.indexOf('data-lens-peek')<order.indexOf('home-lens-invitation')&&order.indexOf('home-lens-invitation')<order.indexOf('data-lens-reveal'),'reading order in the core: count, frames, invitation, chooser button');
+// 1. Половини не виходять за сцену: розмір кулі й розліт рахуються від ширини сцени, і куля + 2 × розліт не перевищує 100% сцени на кожній ширині.
+const sizes=[...lensCSS.matchAll(/--lens-size:min\((\d+)px,(\d+)cqw\);--lens-travel:min\((\d+)px,(\d+)cqw\)/g)].map(m=>m.slice(1).map(Number));
+assert.equal(sizes.length,3,'three size steps (phone, tablet, desktop)');
+for(const [,core,,travel] of sizes)assert(core+2*travel<=100,`sphere ${core}% + 2 × travel ${travel}% fits the stage`);
+assert(/@supports \(width:1cqw\) and \(container-type:inline-size\)\{[\s\S]*container-type:inline-size/.test(lensCSS),'container sizing sits behind @supports; older browsers keep the pixel sizes');
+// 3. Підказка «Прокрути — відкрий ядро» видима лише поки ядро закрите.
+assert(lensCSS.includes('[data-home-lens][data-lens-ready]:not([data-lens-complete]):not([data-lens-open])>.home-lens-hint{visibility:visible}'),'the hint leaves once the core is usable');
+// 4. Текст і кадри ядра обрізані до просвіту між половинами, поки ті не розійшлись; кнопка вибору не обрізана (вона має бути доступна одразу).
+assert(/\[data-lens-ready\] \.home-lens-interior>:not\(\.home-lens-jump\)\{clip-path:inset\(-60px calc\(50% - var\(--lens-open\)\*var\(--lens-travel\)/.test(lensCSS),'core text is clipped to the opening');
+assert(!/\.home-lens-jump\{[^}]*clip-path/.test(lensCSS),'the chooser button is never clipped');
+// Кадр не менший за 44 px на кожній ширині.
+for(const size of [...lensCSS.matchAll(/\.home-lens-cell\{[^}]*width:(\d+)px;height:(\d+)px/g)].flatMap(m=>[Number(m[1]),Number(m[2])]))assert(size>=44,`a frame is a 44 px touch target (${size})`);
 console.log('Home lens layout: split lazy art and accessible interior, six canonical native links, accessible jump, compact retained routes/library and cache wiring passed.');

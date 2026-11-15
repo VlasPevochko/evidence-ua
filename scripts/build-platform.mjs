@@ -683,3 +683,12 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
   if(next!==old)fs.writeFileSync(file,next);
  }
 }
+// Лінза головної, рішення власника «давай всі 4» (2026-11-15): половини не виходять за сцену, у ядрі шість напрямів, підказка зникає раніше,
+// текст не лягає на картину. Змінено стилі лінзи (v=9) і її скрипт (v=8); docs/HOME_LENS_FOUR_FIXES.md.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-lens.css?v=8':'home-lens.css?v=9','home-lens.js?v=7':'home-lens.js?v=8'};
+ const file='dist/index.html',old=fs.readFileSync(file,'utf8');
+ let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+ if(next!==old)fs.writeFileSync(file,next);
+}

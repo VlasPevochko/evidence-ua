@@ -23,6 +23,9 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens]>.home-lens-stage{
   position:relative;grid-column:1/-1;width:100%;height:232px;min-width:0;margin:4px 0 0;
   overflow:hidden;overflow:clip;isolation:isolate;--lens-travel:96px;
+  /* 2026-11-15: the halves finish parting at about 69% of the scroll progress, when the interior text is already opaque,
+     so the opening is wide enough for the text by the time the text can be read. */
+  --lens-open:clamp(0,calc(var(--lens-progress)*1.45),1);
   background:radial-gradient(ellipse at 54% 48%,#49325838,transparent 68%);
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-decoration{
@@ -45,10 +48,10 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
   position:absolute;z-index:0;inset:0;will-change:auto;
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--left{
-  clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)*-1));
+  clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--lens-open)*var(--lens-travel)*-1));
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-half--right{
-  clip-path:inset(0 0 0 50%);transform:translateX(calc(var(--lens-progress)*var(--lens-travel)));
+  clip-path:inset(0 0 0 50%);transform:translateX(calc(var(--lens-open)*var(--lens-travel)));
 }
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-art{
   display:block;width:100%;height:100%;max-width:none;object-fit:contain;
@@ -102,7 +105,7 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
   grid-column:1/-1;align-self:center;max-width:21ch;margin:0 12px 0 0;color:#b6a9c3;
   font:400 12px/1.45 Inter,system-ui,sans-serif;visibility:hidden;
 }
-body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens][data-lens-ready]:not([data-lens-complete])>.home-lens-hint{visibility:visible}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens][data-lens-ready]:not([data-lens-complete]):not([data-lens-open])>.home-lens-hint{visibility:visible}
 body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-jump{
   display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;
   max-width:100%;margin:0;padding:10px 14px;box-sizing:border-box;color:#27162e;
@@ -320,4 +323,62 @@ body[data-platform-area="home"]:not([data-route-view="article"]) #categories [da
   body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-picker #cards{grid-template-columns:minmax(0,1fr);gap:10px}
   body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-picker #cards>.topic-card{min-height:122px;grid-template-columns:82px minmax(0,1fr) auto;gap:5px 12px;padding:12px}
   body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-picker #cards .home-picker-image{width:82px;min-height:96px}
+}
+
+/* Owner 2026-11-15 («давай всі 4»): four fixes of the opened lens.
+   1. The halves no longer run off the stage: the sphere and its travel are sized from the stage width
+      (container units), so sphere + 2 × travel never exceeds the stage. Phones give the stage the full screen width.
+   2. The core shows the six directions as round frames (direct links); the chooser button stays as the named list.
+   3. The «scroll to open» hint leaves as soon as the core is usable (data-lens-open), see the rule above.
+   4. The interior is clipped to the opening between the halves, so text never lies on the picture mid-way.
+   Browsers without container units keep the earlier pixel sizes. */
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-peek{display:grid;grid-template-columns:repeat(3,44px);justify-content:space-between;gap:6px 0;position:relative;width:min(100%,156px);margin:8px auto 0;padding:0;list-style:none}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-peek>li{margin:0;padding:0}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell{display:block;width:44px;height:44px;border-radius:50%;text-decoration:none;color:#f5e9fb}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell>img{display:block;width:100%;height:100%;max-width:none;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px #e3c4f58c,0 0 14px #c99be640;transition:transform .16s ease,box-shadow .16s ease}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell:is(:hover,:focus-visible)>img{transform:scale(1.08);box-shadow:0 0 0 2px #f4dbff,0 0 18px #e0b5ffa6}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell:focus-visible{outline:2px solid #f4dbff;outline-offset:3px;border-radius:50%}
+/* The name is the link text. It is drawn in the caption line under the frames (where the invitation stands) while its frame is hovered or focused. */
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell-name{position:absolute;left:50%;top:calc(100% + 6px);width:max-content;max-width:none;color:#f5e9fb;font:500 13px/1.4 Inter,system-ui,sans-serif;white-space:nowrap;opacity:0;pointer-events:none;transform:translateX(-50%)}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell:is(:hover,:focus-visible)>.home-lens-cell-name{opacity:1}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-peek:is(:hover,:focus-within)+.home-lens-invitation{visibility:hidden}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-peek+.home-lens-invitation{margin:6px 0 8px}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-interior{padding:8px 0}
+/* The opening is narrower than before (the halves stay inside the stage), so the count is a step smaller below 1100px and the button
+   keeps one line: it is centred on the core and may be slightly wider than the opening (it is opaque and was never clipped). */
+@media(max-width:1099px){
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-count{font-size:24px}
+}
+body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-jump{display:flex;position:relative;left:50%;width:max-content;max-width:none;white-space:nowrap;transform:translateX(-50%)}
+@media(min-width:700px){
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-peek{margin-top:12px}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-peek+.home-lens-invitation{margin:8px 0 12px}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-interior{padding:18px 0}
+}
+@media(min-width:1100px){
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-peek{grid-template-columns:repeat(3,52px);gap:8px 0;width:min(100%,184px)}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell{width:52px;height:52px}
+}
+@supports (width:1cqw) and (container-type:inline-size){
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens]>.home-lens-stage{container-type:inline-size;--lens-size:min(270px,56cqw);--lens-travel:min(96px,21cqw)}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-core{width:var(--lens-size);height:var(--lens-size)}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-interior{width:calc(var(--lens-travel)*2)}
+  @media(max-width:699px){
+    body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens]>.home-lens-stage{width:auto;height:244px;margin-inline:-18px}
+  }
+  @media(min-width:700px){
+    body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens]>.home-lens-stage{--lens-size:min(430px,60cqw);--lens-travel:min(125px,19cqw)}
+  }
+  @media(min-width:1100px){
+    body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens]>.home-lens-stage{--lens-size:min(510px,62cqw);--lens-travel:min(145px,18cqw)}
+  }
+}
+@media(prefers-reduced-motion:no-preference){
+  /* The count, the frames and the invitation are clipped to the opening between the halves; the 200px term lifts the clip once the halves have parted.
+     The chooser button is deliberately not clipped: an earlier owner requirement keeps it visible and tappable as soon as the lens reaches the screen. */
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens][data-lens-ready] .home-lens-interior>:not(.home-lens-jump){clip-path:inset(-60px calc(50% - var(--lens-open)*var(--lens-travel) + 2px - clamp(0,calc((var(--lens-open) - .98)*1000),1)*200px))}
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens][data-lens-ready] .home-lens-interior:focus-within>:not(.home-lens-jump){clip-path:none}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-platform-area="home"]:not([data-route-view="article"]) #categories [data-home-lens] .home-lens-cell>img{transition:none}
 }

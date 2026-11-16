@@ -11,6 +11,8 @@ const runtimeAnchors = new Map([
 const runtimeAccessibilityIds = new Map([
   ['cell-lab.html', new Set(['eua-drawer-title'])],
   ['index.html', new Set(['eua-drawer-title'])],
+  // Сторінку розбору «Креатин» вирізано з index.html разом із тим самим діалогом доказів: заголовок діалогу ставить скрипт під час відкриття.
+  ['creatine.html', new Set(['eua-drawer-title'])],
   ['muscle-lab.html', new Set(['eua-drawer-title'])],
   ['nutrition.html', new Set(['eua-drawer-title'])],
   ['nutrition-digestion.html', new Set(['eua-drawer-title'])],

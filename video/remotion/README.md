@@ -56,3 +56,7 @@ New videos live in `src/compositions/<slug>/` and should keep:
 Every numerical health/science claim must resolve to a source ID and comply with `.agents/skills/evidence-ua-video/`.
 
 See `docs/video/openmontage-adaptation.md` for the production pipeline and quality gates.
+
+## Production toolkit
+
+Run `npm run toolkit:check`, `npm run typecheck`, and `npm test` before a new edit. Shared wrappers are in `src/toolkit/components.tsx`; edit-plan validation is in `src/toolkit/contract.ts`. This provides a checked dependency baseline, not an automatic rendering service. See `docs/video/toolkit-readiness.md` at the repository root for configured capabilities and outstanding browser/runtime checks.

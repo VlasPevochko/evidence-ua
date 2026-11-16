@@ -9,6 +9,9 @@ import {fileURLToPath} from 'node:url';
 const generated = new Set([
   // Fat Burning Lab is an authored page; build-platform only injects shared appearance assets.
   'sitemap.xml', 'robots.txt', 'palette-cosmic.css', 'home-article-cosmic.css',
+  // Сторінки розборів добавок: вирізаються зі спільного dist/index.html (scripts/build-article-pages.mjs), вручну не правити.
+  'creatine.html', 'supplement-protein.html', 'supplement-caffeine.html', 'supplement-omega.html', 'supplement-vitd.html', 'supplement-magnesium.html',
+  'supplement-collagen.html', 'supplement-beta-alanine.html', 'supplement-citrulline.html', 'supplement-electrolytes.html', 'supplement-berberine.html',
   // Космічні копії малюнків-SVG (scripts/build-svg-art.mjs): сторінка показує оригінал або копію за палітрою.
   'diet-art-cosmic.svg', 'home-sleep-cosmic.svg', 'home-movement-cosmic.svg', 'home-anatomy-cosmic.svg', 'card-nutrition-cosmic.svg', 'card-evidence-cosmic.svg', 'card-organism-cosmic.svg',
   'compare-status.js', 'site-header.js', 'site-header.css', 'platform-search.js', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',
@@ -55,7 +58,7 @@ export function buildSite(root, commit) {
   const dist = path.join(root, 'dist');
   const before = inventory(dist);
   if (!before['index.html']) throw Error('The complete authored dist snapshot, including index.html, is required');
-  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-seo.mjs', 'scripts/build-sections.mjs']) {
+  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-article-pages.mjs', 'scripts/build-seo.mjs', 'scripts/build-sections.mjs']) {
     execFileSync(process.execPath, [script], {cwd:root, stdio:'inherit'});
   }
   const after = inventory(dist);

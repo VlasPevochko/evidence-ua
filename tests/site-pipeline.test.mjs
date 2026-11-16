@@ -22,6 +22,8 @@ try {
   fs.writeFileSync(path.join(temp, 'scripts/build-svg-art.mjs'), '');
   // Індекс розділів для пошуку (dist/platform-sections.js, 2026-11-02) теж створює окремий крок build-site; фікстурі контракту потрібна порожня заміна.
   fs.writeFileSync(path.join(temp, 'scripts/build-sections.mjs'), '');
+  // Сторінки розборів добавок (2026-11-16) вирізає з dist/index.html ще один крок build-site; фікстурі контракту потрібна порожня заміна.
+  fs.writeFileSync(path.join(temp, 'scripts/build-article-pages.mjs'), '');
   // Follow-up comparison metadata is generated too; retain the full authored snapshot alongside it.
   fs.writeFileSync(path.join(temp, 'scripts/build-comparison-status.mjs'), `import fs from 'node:fs';fs.writeFileSync('dist/compare-status.js','export const comparisonStatus={};');`);
   const result = buildSite(temp, 'a'.repeat(40));

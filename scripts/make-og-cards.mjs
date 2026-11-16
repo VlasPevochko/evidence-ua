@@ -8,10 +8,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
 const dist=path.resolve('dist'),out=path.join(dist,'og');fs.mkdirSync(out,{recursive:true});
 const motifFor={'mechanisms':'kanoko','research':'hanabishi','index':'shippo','directions':'kumiko','fat-burning':'uroko','nutrition':'nami','nutrition-inside':'nami','nutrition-digestion':'enso','atlas':'asanoha','exercises':'yagasuri','muscle-lab':'take','cell-lab':'kikko','movement':'seigaiha','sleep':'kasumi','supplements':'shippo','protein-meta':'shippo','glossary':'ichimatsu','compare':'kagome','map':'tatewaku','changes':'hishi','videos':'ajiro','about':'kasumi'};
 const eyebrow={'mechanisms':'Схеми з анімацією','research':'Розбір дослідження','index':'Наука · Здоров’я · Рух','directions':'Каталог','fat-burning':'Харчування','nutrition':'Харчування','nutrition-inside':'Фізіологія та біохімія','nutrition-digestion':'Харчування','atlas':'Атлас','exercises':'Практика','muscle-lab':'Muscle Lab','cell-lab':'Cell Lab','movement':'Movement Lab','sleep':'Відновлення','supplements':'Докази','protein-meta':'Докази','glossary':'Довідка','compare':'Докази','map':'Навігація','changes':'Журнал','videos':'Бібліотека','about':'Довіра'};
+// Сторінки розборів добавок (src/platform/article-pages.mjs): той самий мотив і рубрика, що й у каталогу добавок.
+for(const file of ARTICLE_FILES){const name=file.replace('.html','');motifFor[name]=motifFor.supplements;eyebrow[name]='Добавки';}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 const text=(html,re)=>{const m=html.match(re);return m?m[1].replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim():'';};
 const decode=s=>s.replaceAll('&amp;','&').replaceAll('&quot;','"').replaceAll('&#39;',"'");

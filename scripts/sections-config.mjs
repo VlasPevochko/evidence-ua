@@ -2,7 +2,11 @@
 // слова для пошуку лише допомагають знайти розділ, який уже є на сторінці (докладніше: docs/SEARCH.md).
 
 // Сторінки, розділи яких не індексуємо: каталоги й службові сторінки (їхній зміст малюють скрипти або це інтерфейс, а не текст).
-export const SKIP_PAGES=new Set(['changes.html','directions.html','supplements.html','videos.html','atlas.html','map.html','glossary.html','exercises.html','research.html','compare.html']);
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
+export const SKIP_PAGES=new Set(['changes.html','directions.html','supplements.html','videos.html','atlas.html','map.html','glossary.html','exercises.html','research.html','compare.html',
+  // Етап 1 переносу розборів (docs/HOME_SPLIT_PLAN.md): сторінки розборів уже є, але посилання й пошук ще ведуть на index.html#…,
+  // тому їхні розділи поки не індексуємо окремо (інакше кожен розділ розбору знаходився б двічі).
+  ...ARTICLE_FILES]);
 
 // Якорі, які не ведуть до розділу: пункти словника (вони вже є в групі «Терміни»), записи й списки джерел, діалоги,
 // вкладки (видно лише вибрану, решту показує скрипт): role-* на сторінці «Рух», stage-* на сторінці «Сон».

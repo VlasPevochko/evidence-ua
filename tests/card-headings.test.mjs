@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // Заголовки карток як на головній (рішення власника 2026-11-01: «тонкі заголовки карток із засічками, як на головній»).
 // (Того ж дня друге рішення власника додало й назви сторінок: окреме правило, див. tests/page-titles.test.mjs; це правило h1 не чіпає.)
@@ -44,7 +45,9 @@ assert(palette.includes(small[0]),'the generated palette file holds the correcti
 assert(!/font-size-adjust/.test(pine)&&!extras.slice(0,extras.indexOf(whole)).includes('font-size-adjust'),'no other rule uses font-size-adjust');
 
 // 5) Версії в query-рядках: нова версія файла палітри на всіх 20 внутрішніх сторінках, головна без змін; журнал бере нову версію даних.
-const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
+// 2026-11-16 (docs/HOME_SPLIT_PLAN.md): 11 сторінок розборів добавок вирізано з головної; це та сама «головна в режимі розбору»
+// (власні стилі головної, без файла палітри), тому до внутрішніх сторінок вони не належать. Їх перевіряє tests/article-pages.test.mjs.
+const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html'&&!ARTICLE_FILES.includes(f));
 assert.equal(inner.length,21,'twenty-one inner pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (внутрішніх було 20).
 // Версія файла палітри росте з кожною зміною файла (правило заголовків з'явилось на v=4; назви сторінок на v=5 того ж дня), тож тут перевіряємо
 // не конкретне число, а що всі сторінки вантажать одну й ту саму версію, не старішу за ту, де є правило заголовків.

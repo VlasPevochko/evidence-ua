@@ -13,7 +13,7 @@ export function mountSiteHeader(doc=document){
   if(!doc.querySelector('link[data-site-header-style]')){
     const css=doc.createElement('link');css.rel='stylesheet';css.href='./site-header.css?v=8';css.dataset.siteHeaderStyle='';doc.head.append(css);
   }
-  const holder=doc.createElement('div');holder.innerHTML=headerHTML({home:doc.body.dataset.platformArea==='home'&&!!doc.querySelector('.spectrum-home')});
+  const holder=doc.createElement('div');holder.innerHTML=headerHTML({home:doc.body.dataset.platformArea==='home'&&(!!doc.querySelector('.spectrum-home')||!!doc.body.dataset.article)});
   const header=holder.firstElementChild;
   // Home keeps its header over the geometric background; other pages get a
   // full-width header outside any constrained article/main container.

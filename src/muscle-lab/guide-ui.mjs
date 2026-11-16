@@ -49,15 +49,29 @@ export function mountGuide(root=document){
   if(e.target.closest?.('[data-chain-play]')){if(timer!==null)stop();else start();return;}
   const b=e.target.closest?.('[data-condition]');if(b)pick(b.dataset.condition);
  };
+ // Схема залучення м'язових одиниць (розділ «Сила ≠ маса»): повзунок «Зусилля (умовно)» лише перемикає, скільки груп світиться.
+ // Без скрипта повзунка немає (він схований), а малюнок показує початковий стан. Кількостей і сили схема не показує.
+ const recruit=$('[data-recruit]');
+ const recruitRange=recruit?.querySelector?.('[data-recruit-range]'),recruitText=recruit?.querySelector?.('[data-recruit-text]');
+ const recruitLines=['Невелике зусилля: працюють переважно малі одиниці.','Більше зусилля: до малих додаються середні.','Максимум зусилля: вмикаються й великі одиниці, імпульси частіші.'];
+ const setEffort=v=>{
+  const e=Math.max(0,Math.min(100,Number(v)||0)),level=e===0?0:Math.ceil(e/12.5),line=recruitLines[level<=3?0:level<=6?1:2];
+  recruit.setAttribute('data-recruit-level',String(level));recruit.style?.setProperty?.('--gap',(7-5.5*e/100).toFixed(2));
+  recruitRange?.setAttribute('aria-valuetext',line);if(recruitText)recruitText.textContent=line;
+  return {level,line};
+ };
+ if(recruit&&recruitRange){const ctl=recruit.querySelector('[data-recruit-ctl]');if(ctl)ctl.hidden=false;setEffort(recruitRange.value);}
+ const onInput=e=>{const r=e.target?.closest?.('[data-recruit-range]');if(r&&recruit)setEffort(r.value);};
  const halt=()=>stop();
  root.addEventListener('click',onClick);
+ root.addEventListener('input',onInput);
  view?.addEventListener?.('pagehide',halt);view?.addEventListener?.('hashchange',openFromHash);
  root.addEventListener('visibilitychange',()=>{if(root.hidden)halt();});
  motion?.addEventListener?.('change',()=>{if(motion.matches)halt();});
  // Outcome Claims open in their own drawer; the model's drawer ignores Claims it does not know.
  const unmountDrawer=$('[data-muscle-practice-dialog]')?mountEvidenceDrawer(root,practiceBase,{dialogSelector:'[data-muscle-practice-dialog]'}):null;
  openFromHash();
- return {state:()=>({step,playing:timer!==null,condition}),pick,destroy(){halt();root.removeEventListener('click',onClick);unmountDrawer?.();}};
+ return {state:()=>({step,playing:timer!==null,condition}),pick,effort:v=>recruit?setEffort(v):null,destroy(){halt();root.removeEventListener('click',onClick);root.removeEventListener('input',onInput);unmountDrawer?.();}};
 }
 function CSS_escape(s){return String(s).replace(/[^\w-]/g,c=>'\\'+c);}
 

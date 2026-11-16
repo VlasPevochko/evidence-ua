@@ -3869,6 +3869,70 @@ async function navRowFlow(browser, origin, viewport) {
   }
 }
 
+async function muscleTrainingFlow(browser, origin, viewport) {
+  // 2026-11-15, «1-4 виконуємо»: схеми для силових розділів. Міряємо стан у браузері, а не лише розмітку.
+  const where = `muscle training drawings @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
+  await page.waitForSelector('#guide');
+  const fill = sel => page.locator(sel).first().evaluate(node => getComputedStyle(node).fill);
+  // 1) Залучення одиниць: повзунок, світло від малих до великих.
+  await page.locator('#strength > summary').click();
+  const range = page.locator('[data-recruit-range]');
+  check(where, await range.isVisible(), 'the effort slider is shown once the script runs');
+  const rbox = await range.boundingBox();
+  check(where, rbox.height >= 44, `slider is at least 44 px tall (${Math.round(rbox.height)})`);
+  await range.fill('0');
+  await page.waitForTimeout(450); // колір змінюється плавно (0,3 с): читаємо після переходу
+  const dark7 = await fill('.rc-u7 .rc-cell'), dark0 = await fill('.rc-u0 .rc-cell');
+  await range.fill('10');
+  await page.waitForTimeout(450); // колір змінюється плавно (0,3 с): читаємо після переходу
+  const low0 = await fill('.rc-u0 .rc-cell'), low7 = await fill('.rc-u7 .rc-cell');
+  await range.fill('100');
+  await page.waitForTimeout(450); // колір змінюється плавно (0,3 с): читаємо після переходу
+  const high7 = await fill('.rc-u7 .rc-cell');
+  check(where, low0 !== dark0 && low7 === dark7, 'little effort lights only the small unit');
+  check(where, high7 !== dark7, 'full effort lights the large unit too');
+  const gap = await page.locator('[data-recruit]').evaluate(node => parseFloat(node.style.getPropertyValue('--gap')));
+  check(where, gap < 2, `at full effort the pulse train is densest (gap ${gap})`);
+  check(where, (await page.locator('[data-recruit-text]').innerText()).includes('великі'), 'the text names the large units at full effort');
+  // 2) Сила й розмір: лінії домальовані, коли блок розгорнуто.
+  await page.locator('#strength .mg-fold > summary').first().click();
+  await page.waitForTimeout(2100);
+  const dashes = await page.evaluate(() => [...document.querySelectorAll('.cv-force,.cv-size')].map(p => getComputedStyle(p).strokeDashoffset));
+  check(where, dashes.length === 2 && dashes.every(d => parseFloat(d) === 0), `both lines are fully drawn: ${dashes.join(' ')}`);
+  // 3) Три способи: підйом і опускання закінчують у різних положеннях, стрілки є.
+  await page.locator('#why-grow > summary').click();
+  await page.locator('#why-grow .mg-fold > summary', {hasText: 'Три способи'}).click();
+  await page.waitForTimeout(1800);
+  const zs = await page.evaluate(() => ['lift', 'lower', 'hold'].map(k => {
+    const l = document.querySelector(`.lt-${k} .lt-l .lt-z`).getBoundingClientRect(), r = document.querySelector(`.lt-${k} .lt-r .lt-z`).getBoundingClientRect();
+    return r.left - l.left;
+  }));
+  check(where, zs[0] < zs[2] && zs[2] < zs[1], `lifting ends shorter than holding, lowering longer: ${zs.map(z => Math.round(z)).join(' / ')}`);
+  check(where, (await page.locator('.mg-loadtypes .lt-dir').count()) === 3, 'each panel has its direction cue');
+  // 4) Шлях росту: усі кроки загорілись.
+  await page.waitForTimeout(3600);
+  const ops = await page.evaluate(() => [...document.querySelectorAll('.gr-p')].map(n => Number(getComputedStyle(n).opacity)));
+  check(where, ops.length >= 6 && ops.every(o => o === 1), 'every growth step has lit up once the chapter has been open for a while');
+  // Без руху: усе одразу в кінцевому стані.
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.reload();
+  await page.waitForSelector('#why-grow');
+  await page.locator('#why-grow > summary').click();
+  await page.waitForTimeout(150);
+  const opsR = await page.evaluate(() => [...document.querySelectorAll('.gr-p')].map(n => Number(getComputedStyle(n).opacity)));
+  check(where, opsR.every(o => o === 1), 'reduced motion shows the final state at once');
+  // Не виходить за ширину, текст у підписах ≥ 12 px.
+  await page.evaluate(() => document.querySelectorAll('#guide details').forEach(d => { d.open = true; }));
+  check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'the page does not scroll sideways');
+  const small = await page.evaluate(() => [...document.querySelectorAll('.mg-recruit *, .mg-curves *, .mg-loadtypes *, .mg-growth-fig *')].filter(e => e.children.length === 0 && e.textContent.trim() && parseFloat(getComputedStyle(e).fontSize) < 12).length);
+  check(where, small === 0, `text in the new figures under 12 px: ${small}`);
+  await artifact(page, viewport, 'muscle-training', page.locator('#why-grow'));
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party request: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
 async function atlasFlow(browser, origin, viewport) {
   const where = `atlas shoulder map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
@@ -5512,6 +5576,7 @@ try {
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleTrainingFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(navRowFlow, browser, origin, viewport);
   } else if (sectionsOnly) {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
@@ -5532,6 +5597,7 @@ try {
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleTrainingFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(navRowFlow, browser, origin, viewport);
     for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
     for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);

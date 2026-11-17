@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
-const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
+const html=fs.readFileSync(new URL('../src/site/index.combined.html',import.meta.url),'utf8'); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
 const blocks=[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 const script=blocks.find(b=>b.includes('esearch.fcgi'));
 class Node {constructor(){this.textContent='';this.innerHTML='';this.disabled=false;this.children=[];this.handlers={};this.value='performance';}append(...x){this.children.push(...x);}replaceChildren(...x){this.children=x;}addEventListener(k,f){this.handlers[k]=f;}focus(){this.focused=true;}}

@@ -6,10 +6,17 @@
 //      старі адреси index.html#… головна переводить на них (таблиця якорів збирається з самих розборів).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {ARTICLES,ARTICLE_FILES,HOME_ONLY_SCRIPTS,ROUTER_MARK,layout,sectionSpan,anchorOwners,rewriteHashLinks,articlePageHTML,articleTitle,articleDescription,redirectTable,withRedirectTable,movedAddress,homeOnlyHTML} from '../src/platform/article-pages.mjs';
+import {ARTICLES,ARTICLE_FILES,HOME_ONLY_SCRIPTS,ROUTER_MARK,homePageHTML,REVIEW_ONLY_STYLESHEETS,REVIEW_ONLY_SCRIPTS,REVIEW_ONLY_STYLE_BLOCKS,layout,sectionSpan,anchorOwners,rewriteHashLinks,articlePageHTML,articleTitle,articleDescription,redirectTable,withRedirectTable,movedAddress,homeOnlyHTML} from '../src/platform/article-pages.mjs';
 import {readBase} from '../scripts/site-url.mjs';
 
-const base=readBase(),combined=fs.readFileSync('dist/index.html','utf8');
+// 2026-11-17 (етап 3): спільний документ лежить у src/site/index.combined.html, а dist/index.html це лише головна, вирізана з нього.
+const base=readBase(),combined=fs.readFileSync('src/site/index.combined.html','utf8'),publishedHome=fs.readFileSync('dist/index.html','utf8');
+assert.equal(publishedHome,homePageHTML(combined),'dist/index.html is the home cut from the combined document (run node scripts/build-site.mjs)');
+assert(!/<section\b[^>]*\bid="(?:creatine|supplement-(?!library)[a-z-]+)"/.test(publishedHome),'the published home carries no review');
+for(const asset of [...REVIEW_ONLY_STYLESHEETS,...REVIEW_ONLY_SCRIPTS])assert(!publishedHome.includes('./'+asset),`the published home does not load ${asset}`);
+for(const mark of REVIEW_ONLY_STYLE_BLOCKS)assert(!publishedHome.includes(mark),`the published home has no ${mark} block`);
+for(const article of ARTICLES)for(const asset of ['home-article.css','home-article-cosmic.css','evidence/evidence.css'])assert(fs.readFileSync('dist/'+article.file,'utf8').includes('./'+asset),`${article.file} still loads ${asset}`);
+assert(publishedHome.includes('EUA_ARTICLE_REDIRECTS_START')&&publishedHome.includes("if(to){location.replace(to);return;}"),'the published home still moves old review addresses to their pages');
 const read=file=>fs.readFileSync('dist/'+file,'utf8');
 const text=html=>html.replace(/<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>/g,'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
 const withoutHrefs=html=>html.replace(/\bhref="[^"]*"/g,'href');
@@ -86,9 +93,9 @@ assert.equal(new Set(ARTICLES.map(a=>articleDescription(a).replace(a.name,'…')
 // 3) Посилання сайту ведуть на сторінки розборів; старих адрес у посиланнях не лишилось.
 for(const article of ARTICLES)assert(sectionSpan(combined,article.id).end>0,`the combined document still carries «${article.id}» (it is the source the pages are cut from)`);
 const oldLink=/(?:index\.html(?:\?[^"'#\s]*)?|["'`])#(?:creatine(?:-[a-z-]+)?|supplement-(?:protein|caffeine|omega|vitd|magnesium|collagen|beta-alanine|citrulline|electrolytes|berberine)|evidence-card|pubmed-live)["'`]/;
-const homePart=combined.slice(combined.indexOf('<body'),combined.indexOf('</main>'));
+const homePart=publishedHome.slice(publishedHome.indexOf('<body'),publishedHome.indexOf('</main>'));
 assert(!/href="#(?:creatine|supplement-(?!library)[a-z-]+|evidence-card|pubmed-live)/.test(homePart),'the home part links to review pages, not to anchors of the reviews');
-for(const file of ['platform-catalog.js','platform-materials.js','site-header.js','changes-data.js','atlas.js','sleep.html','protein-meta.html','muscle-lab.html','directions.html','supplements.html','platform-sections.js','sitemap.xml']){
+for(const file of ['index.html','platform-catalog.js','platform-materials.js','site-header.js','changes-data.js','atlas.js','sleep.html','protein-meta.html','muscle-lab.html','directions.html','supplements.html','platform-sections.js','sitemap.xml']){
   const source=read(file).replace(/\/\/[^\n]*/g,'');
   assert(!/index\.html(?:\?[^"'#\s]*)?#(?:creatine|supplement-(?:protein|caffeine|omega|vitd|magnesium|collagen|beta-alanine|citrulline|electrolytes|berberine)|evidence-card|pubmed-live)/.test(source),`${file} has no old review address left`);
 }

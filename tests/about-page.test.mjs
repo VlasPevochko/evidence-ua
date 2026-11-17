@@ -87,7 +87,7 @@ approvals.push(...creatine.creatineClaims.map(claim=>claim.scientificApproval),.
 assert.deepEqual(approvals.filter(value=>value!==null&&value!==undefined),[],'no module, claim or review records a scientific approval, so the page may say that none took place (when one is recorded, update the «Стан наукового перегляду» section first)');
 const dossiers=JSON.parse(read('src/evidence/supplements/dossiers.json'));
 assert(dossiers.every(dossier=>dossier.lastScientificReview===null),'the old dossiers record no finished scientific review either');
-assert(index.includes('Науковий перегляд: не завершено'),'the home page cards say the same');
+assert(read('src/site/index.combined.html').includes('Науковий перегляд: не завершено'),'the supplement review cards say the same'); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
 
 // 6. Шапка, пошук, мета-теги, карта сайту, картка для соцмереж.
 assert(read('src/platform/site-header.mjs').includes('href="./about.html">Про проєкт'),'the header link leads to the page');

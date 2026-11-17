@@ -147,7 +147,7 @@ export function buildSections(root=process.cwd(),materials){
     if(SKIP_PAGES.has(file))continue;
     // Розбори добавок мають власні сторінки; у спільному index.html їхні розділи пропускаємо, щоб не знаходити кожен двічі.
     const html=fs.readFileSync(path.join(dist,file),'utf8');
-    rows.push(...extractSections(file==='index.html'?homeOnlyHTML(html):html,{page:file,materials}));
+    rows.push(...extractSections(file==='index.html'&&/<section\b[^>]*\bid="creatine"/.test(html)?homeOnlyHTML(html):html,{page:file,materials})); // етап 3: на сайті dist/index.html це вже лише головна
   }
   // Один і той самий розділ двічі не показуємо.
   const seen=new Set();

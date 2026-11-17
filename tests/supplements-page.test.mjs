@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {supplements,groups,filterSupplements,renderRow} from '../dist/supplements.js';
 
-const html=fs.readFileSync('dist/supplements.html','utf8'),css=fs.readFileSync('dist/supplements.css','utf8'),home=fs.readFileSync('dist/index.html','utf8');
+const html=fs.readFileSync('dist/supplements.html','utf8'),css=fs.readFileSync('dist/supplements.css','utf8'),home=fs.readFileSync('src/site/index.combined.html','utf8'); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
 
 // 2026-10-22 (owner decision «1» — align the catalogue with the new cards): tags, summaries and limits were rewritten from
 // the approved Claims of each card; no new scientific conclusions. The rows below freeze that wording; order and ids unchanged.

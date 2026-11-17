@@ -3,6 +3,7 @@ import path from 'node:path';
 import {stripTypeScriptTypes} from 'node:module';
 import {pathToFileURL} from 'node:url';
 import {publicText} from '../src/evidence/core/public-text.mjs';
+import {restoreCombined} from './combined-source.mjs';
 const root=process.cwd(), out=path.join(root,'dist/evidence');
 fs.mkdirSync(out,{recursive:true});
 fs.copyFileSync(path.join(root,'src/evidence/core/registry.mjs'),path.join(out,'registry.js'));
@@ -18,6 +19,9 @@ data.push(fs.readFileSync(path.join(seed,'presentation.mjs'),'utf8'));
 data.push('creatineSources.push(guidanceSource, physiologyModelSource);');
 data.push(fs.readFileSync(path.join(seed,'reviews.mjs'),'utf8'));
 data.push('const reviewSeed=seedReviewRecords(creatineClaims,creatineEvidenceRecords); export const evidenceBase=createEvidenceBase({claims:creatineClaims,sources:creatineSources,records:creatineEvidenceRecords,...reviewSeed,presentation:{labels:presentation.labels,confidenceNote:presentation.notes.confidence}});');
+// Етап 3 (docs/HOME_SPLIT_PLAN.md): dist/index.html на сайті це лише головна; скрипт пише в спільний документ «головна + розбори»,
+// тому спершу повертаємо його в dist/index.html (src/site/index.combined.html). Наприкінці збірки build-article-pages знову лишить головну.
+restoreCombined(root);
 const indexPath=path.join(root,'dist/index.html');
 let html=fs.readFileSync(indexPath,'utf8');
 function balancedElement(input,start,tag){const re=new RegExp('<\\/?'+tag+'\\b[^>]*>','g');re.lastIndex=start;let depth=0,m;while((m=re.exec(input))){depth+=m[0].startsWith('</')?-1:1;if(!depth)return {start,end:re.lastIndex,html:input.slice(start,re.lastIndex)};}throw Error('Unclosed '+tag);}

@@ -39,7 +39,7 @@ for (const page of pages) {
   };
 
   // The shared block must sit before the builder-injected block at the end of <head> (index.html), so the committed file equals the build output.
-  if (page === 'index.html') assert(head.indexOf('rel="canonical"') < head.indexOf('data-evidence-style'), 'index.html: share metadata must precede the generated evidence styles');
+  if (page === 'index.html' && head.includes('data-evidence-style')) assert(head.indexOf('rel="canonical"') < head.indexOf('data-evidence-style'), /* етап 3: на головній без розборів цих стилів немає */ 'index.html: share metadata must precede the generated evidence styles');
 
   // Icons: every referenced file exists.
   for (const [rel, target] of [['icon', './favicon.svg'], ['icon', './favicon.ico'], ['apple-touch-icon', './apple-touch-icon.png']]) {

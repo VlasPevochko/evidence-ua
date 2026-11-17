@@ -7,7 +7,7 @@ import hashlib,json,sys
 sys.path.insert(0, 'tests/helpers')
 from science_html_baseline import restore_historical_rendering, INTERVAL_TYPE_LABELS
 
-root=html.fromstring(Path('dist/index.html').read_bytes())
+root=html.fromstring(Path('src/site/index.combined.html').read_bytes())  # етап 3 (2026-11-17): розбори в спільному документі; відбитки не змінено
 baseline=json.loads(Path('tests/fixtures/home-v56-science-digests.json').read_text())
 normalized=deepcopy(root)
 restore_historical_rendering(normalized)

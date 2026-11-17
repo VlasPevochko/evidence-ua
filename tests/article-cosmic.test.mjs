@@ -12,9 +12,12 @@ const read=f=>fs.readFileSync(f,'utf8');
 const html=read('dist/index.html'),css=read(ARTICLE_OUTPUT);
 
 // 1) Підключено один раз, головна палітру як і раніше не вантажить, інші сторінки новий файл не вантажать.
-assert.equal(html.split('home-article-cosmic.css').length-1,1,'the home loads the article palette exactly once');
+// 2026-11-17 (етап 3): палітра розборів потрібна лише сторінкам розборів; головна, на якій розборів більше немає, її не вантажить.
+assert.equal(html.split('home-article-cosmic.css').length-1,0,'the home has no reviews and does not load the article palette');
 assert(!html.includes('palette-cosmic.css'),'the home still does not load the palette file');
-assert(html.indexOf('home-article.css')<html.indexOf('home-article-cosmic.css'),'the article palette comes after the article stylesheet');
+const combined=read('src/site/index.combined.html');
+assert.equal(combined.split('home-article-cosmic.css').length-1,1,'the combined document loads the article palette exactly once');
+assert(combined.indexOf('home-article.css')<combined.indexOf('home-article-cosmic.css'),'the article palette comes after the article stylesheet');
 // 2026-11-16 (docs/HOME_SPLIT_PLAN.md): сторінки розборів добавок вирізано з головної; їм ця палітра потрібна так само, як режиму «стаття» на головній.
 for(const f of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='index.html'&&!ARTICLE_FILES.includes(n)))assert(!read('dist/'+f).includes('home-article-cosmic.css'),`${f} does not load the article palette`);
 for(const f of ARTICLE_FILES){const page=read('dist/'+f);assert.equal(page.split('home-article-cosmic.css').length-1,1,`${f} loads the article palette exactly once`);assert(!page.includes('palette-cosmic.css?'),`${f} does not load the site palette file`);assert(/<body[^>]*data-route-view="article"/.test(page),`${f} is in article mode without any script`);}
@@ -63,7 +66,7 @@ assert(!/font-size\s*:|line-height\s*:|margin|padding/.test(body),'headings keep
 assert(read('src/palette/cosmic-extras.css').includes('font-weight:400!important;letter-spacing:-.015em!important'),'the shared heading rule this one repeats still exists');
 
 // 7) Версія і запис у журналі.
-assert(/home-article-cosmic\.css\?v=\d+/.test(html),'the stylesheet link is versioned');
+assert(/home-article-cosmic\.css\?v=\d+/.test(combined),'the stylesheet link is versioned'); // етап 3: посилання є в спільному документі й на сторінках розборів
 assert(read('dist/changes-data.js').includes('Розбори добавок у кольорах і формах решти сайту'),'the change log mentions it');
 assert(read('dist/changes-data.js').includes('Заголовки розборів добавок тонкі, із засічками'),'the change log mentions the headings');
 // 8) Сила копій (2026-11-04, рішення власника 30: гілку доведено до PR): копія старого правила має ту саму силу селектора, що оригінал, плюс один елемент (ARTICLE_PARITY).
@@ -80,7 +83,7 @@ assert(!/@p /.test(css)&&!/@s /.test(css),'no unresolved marks are left in the f
 const short=':is(#creatine,[id^="supplement-"])';
 const withIds=ids=>`:is(${ids.map(id=>'#'+id).join(',')}) button`;
 assert.equal(ARTICLE_IDS.length,11,'eleven articles: creatine and ten supplements');
-for(const id of ARTICLE_IDS)assert(html.includes(`id="${id}"`),`${id} is a real section of the home page`);
+for(const id of ARTICLE_IDS)assert(combined.includes(`id="${id}"`),`${id} is a real review section`); // етап 3: розбори в спільному документі
 assert.equal(shortenIds(withIds(ARTICLE_IDS)),`${short} button`,'the full list of eleven is shortened');
 assert.equal(shortenIds(withIds([...ARTICLE_IDS].reverse())),`${short} button`,'the order of the ids does not matter');
 const noCreatine=ARTICLE_IDS.filter(id=>id!=='creatine');

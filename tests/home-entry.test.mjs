@@ -60,7 +60,7 @@ sys.path.insert(0, 'tests/helpers')
 from science_html_baseline import restore_historical_rendering
 expected=json.loads(Path('tests/fixtures/home-v56-science-digests.json').read_text())
 assert len(expected)==11  # berberine dossier added 2026-10-21 (owner decision)
-root=html.fromstring(Path('dist/index.html').read_text())
+root=html.fromstring(Path('src/site/index.combined.html').read_text())  # етап 3: розбори в спільному документі
 for heading in root.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
     heading.tag='h4'
 # Technical renderer corrections: retain original digests, normalize only seven exact formatting tails.

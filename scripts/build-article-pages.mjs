@@ -6,10 +6,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {readBase} from './site-url.mjs';
+import {restoreCombined,stripToHome} from './combined-source.mjs';
 import {ARTICLES,articlePageHTML,withRedirectTable} from '../src/platform/article-pages.mjs';
 
 export function buildArticlePages(root=process.cwd()){
-  const base=readBase(root),homeFile=path.join(root,'dist/index.html'),before=fs.readFileSync(homeFile,'utf8');
+  const base=readBase(root),homeFile=path.join(root,'dist/index.html'),before=restoreCombined(root);
   // Таблиця старих якорів для перенаправлення з головної збирається з самих розборів.
   const combined=withRedirectTable(before);
   if(combined!==before)fs.writeFileSync(homeFile,combined);
@@ -21,6 +22,8 @@ export function buildArticlePages(root=process.cwd()){
     const file=path.join(root,'dist',article.file),next=articlePageHTML(combined,article.id,{base,indexable:true,styles:[navigation[1]]});
     if(!fs.existsSync(file)||fs.readFileSync(file,'utf8')!==next)fs.writeFileSync(file,next);
   }
+  // Етап 3: спільний документ зберігається в src/site/index.combined.html, а на сайт іде головна без розборів.
+  stripToHome(root);
   return ARTICLES.length;
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))console.log(`Review pages written: ${buildArticlePages()}.`);

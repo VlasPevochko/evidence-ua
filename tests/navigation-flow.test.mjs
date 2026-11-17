@@ -70,7 +70,7 @@ for(const id of ['top','start-here','categories','cards','supplement-library','h
 const doc={body:{dataset:{}},title:'',querySelector(){return page;},getElementById:id=>nodes.get(id)||null,querySelectorAll(){return [];}};
 const location={hash:'#top',replaced:[],replace(to){this.replaced.push(to);}},win={addEventListener(k,fn){callbacks.set(k,fn);}},sandbox={document:doc,location,window:win,requestAnimationFrame(fn){fn();}};
 vm.runInNewContext(home.slice(start,end),sandbox);
-const table=redirectTable(home);
+const table=redirectTable(fs.readFileSync('src/site/index.combined.html','utf8')); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
 assert.equal(Object.keys(table).length,11);assert(table['creatine.html'].includes('evidence-card')&&table['creatine.html'].includes('pubmed-live')&&table['creatine.html'].includes('creatine-dosing'));
 // Старі адреси: розбір цілком, якір усередині розбору, картка твердження.
 for(const [old,to] of [['creatine','./creatine.html'],['evidence-card','./creatine.html#evidence-card'],['creatine-dosing','./creatine.html#creatine-dosing'],['pubmed-live','./creatine.html#pubmed-live'],['supplement-protein','./supplement-protein.html'],['supplement-magnesium','./supplement-magnesium.html'],['CLM-000053','./supplement-protein.html#CLM-000053']]){

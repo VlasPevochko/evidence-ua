@@ -84,7 +84,7 @@ baseline=json.loads(Path('tests/fixtures/first-visit-v59-science-digests.json').
 assert baseline['sourceCommit']=='9d174ef146c09936be2c615e1a663b7e4f7dbd29'
 expected=baseline['sections']
 assert len(expected)==11  # berberine dossier added 2026-10-21 (owner decision)
-after=html.fromstring(Path('dist/index.html').read_text())
+after=html.fromstring(Path('src/site/index.combined.html').read_text())  # етап 3: розбори в спільному документі
 # PR #26 fixes source-card heading hierarchy; compare the unchanged content at its historical heading level.
 for heading in after.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
     heading.tag='h4'

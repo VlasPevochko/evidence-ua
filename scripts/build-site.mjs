@@ -3,6 +3,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {restoreCombined} from './combined-source.mjs';
 
 // These are the outputs of the two existing builders, including HTML fragments.
 // Everything else in dist is authored source and must retain its exact bytes.
@@ -58,6 +59,9 @@ export function buildSite(root, commit) {
   const dist = path.join(root, 'dist');
   const before = inventory(dist);
   if (!before['index.html']) throw Error('The complete authored dist snapshot, including index.html, is required');
+  // Етап 3 (docs/HOME_SPLIT_PLAN.md): скрипти збірки пишуть у dist/index.html як у спільний документ «головна + розбори»;
+  // повертаємо його з src/site/index.combined.html, а scripts/build-article-pages.mjs наприкінці лишить у dist/index.html тільки головну.
+  restoreCombined(root);
   for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-article-pages.mjs', 'scripts/build-seo.mjs', 'scripts/build-sections.mjs']) {
     execFileSync(process.execPath, [script], {cwd:root, stdio:'inherit'});
   }

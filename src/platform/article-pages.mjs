@@ -80,6 +80,25 @@ export function homeOnlyHTML(html){
   return html.slice(0,first)+parts.tail;
 }
 
+// Головна, яка йде на сайт (етап 3): спільний документ без розборів і без того, що потрібне лише розборам.
+// Стилі розборів (вбудовані блоки з позначками data-…-style, home-article.css, home-article-cosmic.css, evidence/evidence.css)
+// і скрипти карток доказів (data-…-script) головній не потрібні: на ній немає жодного розбору.
+export const REVIEW_ONLY_STYLE_BLOCKS=['data-dossier-style','data-protein-style','data-berberine-style','data-supplement-cards-style','data-creatine-more-style'];
+export const REVIEW_ONLY_STYLESHEETS=['home-article.css','home-article-cosmic.css','evidence/evidence.css'];
+export const REVIEW_ONLY_SCRIPTS=['evidence/ui.js','evidence/protein-ui.js','evidence/berberine-ui.js','evidence/supplement-cards-ui.js','evidence/creatine-more-ui.js'];
+export function homePageHTML(html){
+  let home=homeOnlyHTML(html);
+  const dropOnce=(pattern,what)=>{
+    const found=home.match(new RegExp(pattern.source,'g'))||[];
+    if(found.length!==1)throw new Error(`The combined document must have exactly one ${what} (found ${found.length})`);
+    home=home.replace(pattern,'');
+  };
+  for(const mark of REVIEW_ONLY_STYLE_BLOCKS)dropOnce(new RegExp(`<style ${escapeRegExp(mark)}>[\\s\\S]*?</style>`),`<style ${mark}>`);
+  for(const name of REVIEW_ONLY_STYLESHEETS)dropOnce(new RegExp(`<link rel="stylesheet" href="\\./${escapeRegExp(name)}(?:\\?[^"]*)?"[^>]*>`),`stylesheet ${name}`);
+  for(const name of REVIEW_ONLY_SCRIPTS)dropOnce(new RegExp(`<script type="module" src="\\./${escapeRegExp(name)}(?:\\?[^"]*)?"[^>]*></script>`),`script ${name}`);
+  return home;
+}
+
 // Куди веде якір: у свій розбір (лишається), в інший розбір (нова сторінка) або на головну.
 export function anchorOwners(html){
   const parts=layout(html),owners=new Map();

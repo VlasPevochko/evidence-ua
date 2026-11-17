@@ -5293,6 +5293,43 @@ async function articlePagesFlow(browser, origin, viewport) {
   }
 }
 
+async function homeNoJumpFlow(browser, origin, viewport) {
+  // Рішення власника «2 і 3» (2026-11-17): перший екран головної не стрибає. Раніше спільна шапка ставала на місце статичної (322 px на телефоні)
+  // після завантаження, і заголовок «Почни з питання.» з'їжджав угору (зсув 0,45–0,6). Міряємо справжній зсув (layout-shift) на сповільненому
+  // з'єднанні й без нього, а також що заголовок малюється своїм шрифтом і що без JavaScript статична шапка лишається повною.
+  const where = `home no jump @${viewport.name}`;
+  for (const slow of [false, true]) {
+    const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
+    const page = await context.newPage();
+    const seen = await observePage(page, origin);
+    try {
+      await page.addInitScript(() => { window.__euaShift = 0; window.__euaShifts = []; new PerformanceObserver(list => { for (const entry of list.getEntries()) if (!entry.hadRecentInput) { window.__euaShift += entry.value; window.__euaShifts.push(Math.round(entry.startTime) + ':' + entry.value.toFixed(3)); } }).observe({type: 'layout-shift', buffered: true}); });
+      if (slow) {
+        const cdp = await context.newCDPSession(page);
+        await cdp.send('Network.enable');
+        await cdp.send('Network.emulateNetworkConditions', {offline: false, latency: 150, downloadThroughput: 1.6 * 1024 * 1024 / 8, uploadThroughput: 750 * 1024 / 8});
+        await cdp.send('Emulation.setCPUThrottlingRate', {rate: 4});
+      }
+      await page.goto(origin + '/index.html', {waitUntil: 'load'});
+      await page.locator('.eua-site-header').waitFor({state: 'attached'});
+      await page.waitForTimeout(slow ? 2500 : 1200);
+      const result = await page.evaluate(() => ({shift: window.__euaShift, shifts: window.__euaShifts, header: Math.round(document.querySelector('.eua-site-header').getBoundingClientRect().height),
+        font: document.fonts.check('400 48px "Spectrum Serif"', 'Почни'), preloaded: performance.getEntriesByType('resource').some(entry => entry.name.includes('source-serif-4-cyrillic') && entry.initiatorType === 'link')}));
+      check(where, result.shift < 0.05, `${slow ? 'slow' : 'normal'} load: the first screen does not jump (layout shift ${result.shift.toFixed(3)}; ${result.shifts.join(', ')})`);
+      check(where, result.header === (viewport.width > 1024 ? 78 : 80), `the shared header has its usual height (${result.header} px)`);
+      check(where, result.font, 'the heading font is ready');
+      check(where, result.preloaded, 'the heading font is fetched by the preload, not later by the stylesheet');
+      checkBrowserHealth(`${where} ${slow ? 'slow' : 'normal'}`, seen);
+    } finally { await context.close(); }
+  }
+  // Без JavaScript статична шапка повна: меню видно й ним можна скористатися.
+  const {context, page} = await open(browser, origin, viewport, '/index.html', {contextOptions: {javaScriptEnabled: false}});
+  try {
+    const visible = await page.locator('.page>header.home-header nav a:visible').count();
+    check(where, visible >= 3, `without JavaScript the static header keeps its menu (${visible} visible links)`);
+  } finally { await context.close(); }
+}
+
 async function homeRowsFlow(browser, origin, viewport) {
   // Рішення власника 2026-11-02 (бриф T6): згорнуті рядки головної показують під назвою, що всередині (.home-row-hint).
   // У справжньому браузері перевіряємо: підказка видима, не менша за 12 px і контрастна; рядок не стає абзацом (до 3 рядків підказки),
@@ -5650,6 +5687,8 @@ async function homeFlows(browser, origin) {
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
   // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
+  // 2026-11-17: перший екран не стрибає (шапка, шрифт заголовка); 1024 і 1025 включено, бо там міняється висота шапки.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}, {name: 'tablet-wide', width: 1024, height: 768}, {name: 'laptop-narrow', width: 1025, height: 768}]) await isolatedFlow(homeNoJumpFlow, browser, origin, viewport);
   // 2026-11-15: лінза вміщається в сцену на всіх ширинах; 320, 768 і 1024 включено, бо там половини зрізались найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}, {name: 'mobile-tiny', width: 320, height: 640}, {name: 'tablet', width: 768, height: 1024}, {name: 'laptop', width: 1024, height: 768}]) await isolatedFlow(homeLensFitFlow, browser, origin, viewport);
   // 2026-11-15: знаки рядків замість «+»; 360 включено, бо там назва маршрутів переноситься й знак стоїть найтісніше.

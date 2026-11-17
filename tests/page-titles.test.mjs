@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // Назви сторінок (h1) тонкі, як на головній (друге рішення власника 2026-11-01, після заголовків карток: «2 так»).
 // У космосі (за замовчуванням) h1 має звичайну вагу й літери -0,03 em, як на головній заголовки такого розміру. Шрифт (Source Serif 4), розмір і колір
@@ -23,7 +24,9 @@ const supplements=read('dist/supplements.css');
 assert(/\.sp-head h1\{[^}]*var\(--sp-serif\)/.test(supplements)&&/--sp-serif:\s*"Source Serif 4"/.test(supplements),'the supplements page title is Source Serif 4 too (its own --sp-serif variable)');
 
 // 3) Кожна внутрішня сторінка має рівно одну назву (h1), а головна палітру не вантажить: її h1 це окремий стиль головної.
-const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
+// 2026-11-16 (docs/HOME_SPLIT_PLAN.md): 11 сторінок розборів добавок вирізано з головної; це та сама «головна в режимі розбору»
+// (власні стилі головної, без файла палітри), тому до внутрішніх сторінок вони не належать. Їх перевіряє tests/article-pages.test.mjs.
+const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html'&&!ARTICLE_FILES.includes(f));
 assert.equal(inner.length,21,'twenty-one inner pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (внутрішніх було 20).
 for(const f of inner){const html=read('dist/'+f);assert.equal((html.match(/<h1[\s>]/g)||[]).length,1,`${f} has exactly one <h1>`);}
 assert(!read('dist/index.html').includes('palette-cosmic.css'),'the home does not load the palette file, so its title is not affected');

@@ -14,6 +14,7 @@ import {areas,catalog} from '../../src/platform/catalog.mjs';
 import {shoulderRouteFlow} from './shoulder-route.mjs';
 import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
 import {decodePng, seamDepth, gapResidue} from './lens-pixels.mjs';
+import {ARTICLES, ARTICLE_FILES} from '../../src/platform/article-pages.mjs';
 import {glyphContrast} from './glyph-contrast.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
@@ -191,7 +192,8 @@ async function generic(browser, origin, viewport, file) {
   check(where, (await page.locator('.eua-header-wordmark small').innerText()).includes('ЗДОРОВ’Я'), 'the common brand tagline is missing');
   // Owner decision 2026-10-27: retain all canonical anchors in the DOM so the
   // home article router can reveal them; CSS compacts only the active home.
-  const home = file === 'index.html';
+  // 2026-11-16: сторінки розборів добавок вирізано з головної, шапка в них така сама, як на головній (власна композиція й висота).
+  const home = file === 'index.html' || ARTICLE_FILES.includes(file);
   const canonicalNavigation = [
     ['Напрями', './directions.html'], ['Харчування', './nutrition.html'],
     ['Дослідження', './index.html#pubmed-live'], ['Атлас', './atlas.html'],
@@ -200,7 +202,8 @@ async function generic(browser, origin, viewport, file) {
   const navigation = await page.locator('.eua-site-header nav a').evaluateAll(nodes => nodes.map(node => [node.textContent.trim(), node.getAttribute('href')]));
   check(where, JSON.stringify(navigation) === JSON.stringify(canonicalNavigation), `the DOM must retain all six canonical navigation labels and targets; found ${JSON.stringify(navigation)}`);
   const checkVisibleNavigation = async () => {
-    const expected = home ? ['Напрями', 'Дослідження'] : canonicalNavigation.map(([label]) => label);
+    // 2026-11-16: у режимі розбору (і на сторінках розборів) шапка головної показує всі шість пунктів; лише сама головна ховає чотири.
+    const expected = home && !ARTICLE_FILES.includes(file) ? ['Напрями', 'Дослідження'] : canonicalNavigation.map(([label]) => label);
     const visible = (await page.locator('.eua-site-header nav a:visible').allTextContents()).map(text => text.trim());
     check(where, JSON.stringify(visible) === JSON.stringify(expected), `rendered navigation must contain ${expected.join(', ')}; found ${visible.join(', ')}`);
   };
@@ -1032,7 +1035,8 @@ async function articleCosmicFlow(browser, origin, viewport) {
 async function headingsFlow(browser, origin, viewport) {
   const where = `card headings @${viewport.name}`;
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
-  const inner = files.filter(f => f !== 'index.html');
+  // 2026-11-16: сторінки розборів добавок вирізано з головної (ті самі стилі головної, без файла палітри), до внутрішніх вони не належать.
+  const inner = files.filter(f => f !== 'index.html' && !ARTICLE_FILES.includes(f));
   const probe = () => {
     const sel = 'main :is(h2,h3,h4), [role="main"] :is(h2,h3,h4), .eua-next strong, .nd-card-title, .ch-title';
     const first = cs => cs.fontFamily.split(',')[0].replace(/["']/g, '').trim();
@@ -1103,7 +1107,8 @@ async function headerFlow(browser, origin, viewport) {
   const where = `header @${viewport.name}`;
   const mobile = viewport.name === 'mobile';
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
-  const inner = files.filter(f => f !== 'index.html');
+  // 2026-11-16: сторінки розборів добавок вирізано з головної (ті самі стилі головної, без файла палітри), до внутрішніх вони не належать.
+  const inner = files.filter(f => f !== 'index.html' && !ARTICLE_FILES.includes(f));
   const probe = () => {
     const h = document.querySelector('.eua-site-header');
     const shown = el => { if (!el) return false; const b = el.getBoundingClientRect(), c = getComputedStyle(el); return b.width > 0 && b.height > 0 && c.display !== 'none' && c.visibility !== 'hidden'; };
@@ -2198,6 +2203,19 @@ async function lensTileColours(page) {
 // scripts/browser-qa/lens-pixels.mjs (its own unit test proves the measuring code).
 const LENS_SINGLE_IMAGE_CSS = '.home-lens-half--right{display:none!important}.home-lens-half--left{clip-path:none!important}.home-lens-half--left .home-lens-art{mask-image:none!important;-webkit-mask-image:none!important}';
 const LENS_NO_ARTWORK_CSS = '.home-lens-core{display:none!important}';
+// 2026-11-16: знімок вважаємо готовим, коли два знімки поспіль однакові. Картинка кадру напряму в ядрі лінзи ледача: вона вже
+// «завантажена й розкодована» (complete, decode()), але браузер може намалювати її на кадр-два пізніше. Тоді перший знімок був без неї,
+// другий (еталонний) з нею, і перевірка просвіту падала приблизно в двох запусках із трьох (14/255 у середній колонці на 360 px).
+async function settledShot(page, clip) {
+  let previous = await page.screenshot({clip});
+  for (let attempt = 0; attempt < 8; attempt++) {
+    await page.waitForTimeout(120);
+    const next = await page.screenshot({clip});
+    if (next.equals(previous)) return next;
+    previous = next;
+  }
+  return previous;
+}
 async function lensPixelPair(page, clip, referenceCss) {
   // Lazy artwork and web fonts that finish between the two screenshots would read as a difference.
   // 2026-11-15: шість кадрів напрямів у ядрі теж ледачі картинки; якщо кадр довантажиться між двома знімками, це прочитається як різниця в просвіті.
@@ -2218,10 +2236,10 @@ async function lensPixelPair(page, clip, referenceCss) {
   // A page that is still scrolling between the two screenshots would read as a difference: retry once.
   for (let attempt = 0; ; attempt++) {
     const scrolled = await page.evaluate(() => scrollY);
-    const actual = decodePng(await page.screenshot({clip}));
+    const actual = decodePng(await settledShot(page, clip));
     const style = await page.addStyleTag({content: referenceCss});
     await page.waitForTimeout(160);
-    const reference = decodePng(await page.screenshot({clip}));
+    const reference = decodePng(await settledShot(page, clip));
     await style.evaluate(node => node.remove());
     if (await page.evaluate(() => scrollY) === scrolled || attempt > 0) return {actual, reference};
     await page.waitForTimeout(300);
@@ -5166,6 +5184,85 @@ async function homeLensFitFlow(browser, origin, viewport) {
   }
 }
 
+async function articlePagesFlow(browser, origin, viewport) {
+  // Розбори добавок окремими сторінками, етап 1 (docs/HOME_SPLIT_PLAN.md). Нова сторінка має показувати розбір так само, як стара адреса
+  // index.html#…: той самий текст, ті самі розміри, та сама шапка, знімок піксель у піксель; без помилок і сторонніх запитів.
+  // Окремо: без JavaScript розбір видно; посилання «Інші добавки» веде на сторінку іншого розбору, а не на якір, якого тут немає.
+  const where = `review pages @${viewport.name}`;
+  const snapshot = page => page.evaluate(() => {
+    const id = document.body.dataset.article || location.hash.slice(1), section = document.getElementById(id), header = document.querySelector('.eua-site-header');
+    const box = section.getBoundingClientRect();
+    return {text: section.innerText.replace(/\s+/g, ' ').trim(), height: document.documentElement.scrollHeight, width: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth,
+      top: Math.round(box.top + scrollY), sectionHeight: Math.round(box.height), header: header ? Math.round(header.getBoundingClientRect().height) : null,
+      background: getComputedStyle(document.body).backgroundColor, links: section.querySelectorAll('a').length, routeActive: section.classList.contains('route-active'),
+      visibleHome: [...document.querySelectorAll('.page > *')].filter(node => node.offsetParent).map(node => node.className).join('|')};
+  });
+  for (const article of ARTICLES) {
+    const shots = {}, states = {};
+    for (const [kind, route] of [['old', `/index.html#${article.id}`], ['new', `/${article.file}`]]) {
+      const {context, page, seen} = await open(browser, origin, viewport, route);
+      try {
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(900);
+        states[kind] = await snapshot(page);
+        await page.mouse.move(1, 1);
+        shots[kind] = decodePng(await page.screenshot({fullPage: true}));
+        if (kind === 'new') {
+          checkBrowserHealth(`${where} ${article.file}`, seen);
+          check(where, (await page.title()) === `${article.name} — Evidence UA`, `${article.file}: the tab is named after the supplement`);
+          if (article.id === 'creatine') await artifact(page, viewport, 'review-page-creatine', page.locator('#creatine'), {scroll: false});
+        }
+      } finally { await context.close(); }
+    }
+    const before = states.old, after = states.new;
+    check(where, after.text === before.text && after.text.length > 1500, `${article.file}: the same visible text as index.html#${article.id}`);
+    for (const key of ['height', 'width', 'top', 'sectionHeight', 'header', 'background', 'links', 'routeActive', 'visibleHome'])
+      check(where, after[key] === before[key], `${article.file}: ${key} equals the old route (${before[key]} → ${after[key]})`);
+    check(where, after.width <= after.viewport, `${article.file}: nothing overflows the page width`);
+    const a = shots.old, b = shots.new;
+    let differing = -1;
+    if (a.width === b.width && a.height === b.height) {
+      differing = 0;
+      for (let index = 0; index < a.data.length; index += a.channels) {
+        if (Math.abs(a.data[index] - b.data[index]) > 8 || Math.abs(a.data[index + 1] - b.data[index + 1]) > 8 || Math.abs(a.data[index + 2] - b.data[index + 2]) > 8) differing++;
+      }
+    }
+    check(where, differing === 0, `${article.file}: the screenshot equals index.html#${article.id} pixel for pixel (${differing < 0 ? `sizes ${a.width}×${a.height} and ${b.width}×${b.height}` : differing + ' pixels differ'})`);
+  }
+  // Без JavaScript: розбір і його назва на екрані.
+  {
+    const {context, page} = await open(browser, origin, viewport, '/supplement-omega.html', {contextOptions: {javaScriptEnabled: false}});
+    try {
+      check(where, await page.locator('#supplement-omega h1').isVisible(), 'without JavaScript the review and its heading are visible');
+      check(where, await page.evaluate(() => document.getElementById('supplement-omega').getBoundingClientRect().height > 1000), 'without JavaScript the review has its full height');
+    } finally { await context.close(); }
+  }
+  // Посилання між розборами й назад на головну ведуть на сторінки.
+  {
+    const {context, page, seen} = await open(browser, origin, viewport, '/supplement-omega.html');
+    try {
+      const other = page.locator('#supplement-omega .d-nav a[href="./supplement-magnesium.html"]');
+      check(where, await other.count() === 1, 'the «other supplements» row links to the page of another review');
+      await other.scrollIntoViewIfNeeded();
+      await Promise.all([page.waitForURL(url => url.pathname.endsWith('/supplement-magnesium.html')), other.click()]);
+      await page.locator('#supplement-magnesium h1').waitFor({state: 'visible'});
+      check(where, await page.evaluate(() => document.body.dataset.article === 'supplement-magnesium' && scrollY < 5), 'the other review opens as its own page, at the top');
+      const homeLinks = await page.locator('#supplement-magnesium a[href="./index.html"]').count();
+      check(where, homeLinks >= 1, 'the review links back to the home page');
+      checkBrowserHealth(`${where} navigation`, seen);
+    } finally { await context.close(); }
+  }
+  // Внутрішній якір розбору працює як звичайний якір сторінки.
+  {
+    const {context, page} = await open(browser, origin, viewport, '/creatine.html#creatine-dosing');
+    try {
+      await page.waitForTimeout(700);
+      const top = await page.evaluate(() => document.getElementById('creatine-dosing').getBoundingClientRect().top);
+      check(where, top >= -2 && top < viewport.height * 0.6, `creatine.html#creatine-dosing scrolls to its section (top ${Math.round(top)})`);
+    } finally { await context.close(); }
+  }
+}
+
 async function homeRowsFlow(browser, origin, viewport) {
   // Рішення власника 2026-11-02 (бриф T6): згорнуті рядки головної показують під назвою, що всередині (.home-row-hint).
   // У справжньому браузері перевіряємо: підказка видима, не менша за 12 px і контрастна; рядок не стає абзацом (до 3 рядків підказки),
@@ -5571,6 +5668,9 @@ try {
     for (const viewport of shoulderViewports) await shoulderRouteFlow(browser, origin, viewport, {open, artifact, baseline:process.env.QA_SHOULDER_BASELINE === '1'});
   } else if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
+  } else if (process.env.QA_ARTICLES_ONLY === '1') {
+    // Швидка перевірка лише сторінок розборів добавок; повний прогін і CI виконують усе.
+    for (const viewport of viewports) await isolatedFlow(articlePagesFlow, browser, origin, viewport);
   } else if (process.env.QA_MUSCLE_ONLY === '1') {
     // Швидка перевірка лише сторінки «Від м’яза до молекул» (2026-11-14); повний прогін і CI виконують усе, як і раніше.
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
@@ -5593,6 +5693,8 @@ try {
   } else {
     for (const viewport of shoulderViewports) await isolatedFlow((browser,origin,viewport) => shoulderRouteFlow(browser,origin,viewport,{open,artifact}), browser, origin, viewport);
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
+    // 2026-11-16: сторінки розборів добавок проти старих адрес index.html#… (текст, розміри, знімок піксель у піксель).
+    for (const viewport of viewports) await isolatedFlow(articlePagesFlow, browser, origin, viewport);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);

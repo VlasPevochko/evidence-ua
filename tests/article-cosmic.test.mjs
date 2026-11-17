@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import {articlePaletteCss} from '../scripts/build-palette.mjs';
 import {ARTICLE_OUTPUT,ARTICLE_SCOPE,ARTICLE_PARITY,ARTICLE_CSS,isHomeOnlyCss} from '../scripts/palette/targets.mjs';
 import {articleOverrides,shortenIds,ARTICLE_IDS} from '../scripts/palette/article-overrides.mjs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // Розбори добавок (index.html#creatine, #supplement-…) у космічних кольорах і формах решти сайту (2026-11-03, варіант «A: кольори й форми»).
 // Головна файл palette-cosmic.css не вантажить (рішення власника, перевіряють card-headings і home-header), тож розбори, які живуть усередині неї, мали старий вигляд:
@@ -14,7 +15,9 @@ const html=read('dist/index.html'),css=read(ARTICLE_OUTPUT);
 assert.equal(html.split('home-article-cosmic.css').length-1,1,'the home loads the article palette exactly once');
 assert(!html.includes('palette-cosmic.css'),'the home still does not load the palette file');
 assert(html.indexOf('home-article.css')<html.indexOf('home-article-cosmic.css'),'the article palette comes after the article stylesheet');
-for(const f of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='index.html'))assert(!read('dist/'+f).includes('home-article-cosmic.css'),`${f} does not load the article palette`);
+// 2026-11-16 (docs/HOME_SPLIT_PLAN.md): сторінки розборів добавок вирізано з головної; їм ця палітра потрібна так само, як режиму «стаття» на головній.
+for(const f of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='index.html'&&!ARTICLE_FILES.includes(n)))assert(!read('dist/'+f).includes('home-article-cosmic.css'),`${f} does not load the article palette`);
+for(const f of ARTICLE_FILES){const page=read('dist/'+f);assert.equal(page.split('home-article-cosmic.css').length-1,1,`${f} loads the article palette exactly once`);assert(!page.includes('palette-cosmic.css?'),`${f} does not load the site palette file`);assert(/<body[^>]*data-route-view="article"/.test(page),`${f} is in article mode without any script`);}
 assert(isHomeOnlyCss(ARTICLE_OUTPUT),'the file is classified as a home stylesheet, so it is not tokenised itself');
 
 // 2) Згенерований файл свіжий: його можна відтворити з стилів розборів; нове правило з золотом чи радіусом 16/30px без переписування падає тут.

@@ -26,7 +26,7 @@ export function continueFromStorage(raw,now){
 const continueHTML=entry=>`<a class="eua-continue" href="./${esc(entry.href)}"><span>Продовжити з місця</span><strong>${esc(entry.title)}</strong><b aria-hidden="true">→</b></a>`;
 function rememberVisit(root,selected){
   const view=root.defaultView;if(!view||selected==='home')return;
-  try{const location=view.location,entry=continueEntry(location.pathname,location.search,root.title,Date.now());if(entry)view.localStorage.setItem(CONTINUE_KEY,JSON.stringify(entry));}catch{}
+  try{const location=view.location,entry=root.body?.dataset.article?null:continueEntry(location.pathname,location.search,root.title,Date.now());if(entry)view.localStorage.setItem(CONTINUE_KEY,JSON.stringify(entry));}catch{}
 }
 function mountContinue(root,start){
   if(!start||start.querySelector('.eua-continue'))return;

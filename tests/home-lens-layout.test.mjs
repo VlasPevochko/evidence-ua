@@ -68,6 +68,9 @@ assert.deepEqual(structure.scripts,['./home-lens.js?v=8']);
 const peek=inspect(homeDirectionsHTML(topics),`[{'href':n.get('href'),'area':n.get('data-peek-area'),'name':n.xpath('./span[@class="home-lens-cell-name"]')[0].text_content(),'imgs':len(n.xpath('./img[@alt=""][@loading="lazy"]')),'inList':len(n.xpath('parent::li/parent::ul[@data-lens-peek][@aria-label]')),'hidden':len(n.xpath('ancestor::*[@aria-hidden="true" or @hidden or @inert]'))} for n in root.xpath('.//*[@class="home-lens-interior"]//a[@class="home-lens-cell"]')]`);
 assert.deepEqual(peek.map(n=>[n.area,n.href,n.name]),topics.map(t=>[t.id,t.href,t.title]),'the core frames are the six canonical directions: same order, same addresses, the title is the link text');
 assert(peek.every(n=>n.imgs===1&&n.inList===1&&n.hidden===0),'each frame is a real link in a labelled list with one decorative lazy picture');
+// 2026-11-16: картинки кадрів розкодовуються разом із кадром сторінки (decoding="sync"): з async одна з них іноді лишалась ненамальованою
+// до наступного перемальовування (docs/HOME_LENS_FOUR_FIXES.md, доповнення). Ледаче завантаження лишається.
+assert.equal((homeDirectionsHTML(topics).match(/<a class="home-lens-cell"[^>]*><img [^>]*loading="lazy" decoding="sync" alt="">/g)||[]).length,topics.length,'every core frame picture is lazy and decoded with the frame');
 const order=homeDirectionsHTML(topics);
 assert(order.indexOf('home-lens-count')<order.indexOf('data-lens-peek')&&order.indexOf('data-lens-peek')<order.indexOf('home-lens-invitation')&&order.indexOf('home-lens-invitation')<order.indexOf('data-lens-reveal'),'reading order in the core: count, frames, invitation, chooser button');
 // 1. Половини не виходять за сцену: розмір кулі й розліт рахуються від ширини сцени, і куля + 2 × розліт не перевищує 100% сцени на кожній ширині.

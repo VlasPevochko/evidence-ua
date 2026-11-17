@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {normalizeTitle,pickByTitle,openAround,findTarget,landingBand,mountAnchorReveal} from '../src/platform/anchor-reveal.mjs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // Перехід до розділу (рішення власника 2026-11-02, пошук по розділах): спільний модуль на кожній сторінці відкриває згорнутий блок, доводить ціль до верху вікна
 // після того, як сторінка змінила висоту, і за ?section= знаходить заголовок без власного id. Тут перевіряються чисті частини й підключення;
@@ -61,7 +62,8 @@ assert.equal(typeof mountAnchorReveal,'function','the mount function is exported
 // 7) Підключення: копія в dist, один тег на кожній сторінці, у <head>.
 assert.equal(read('dist/anchor-reveal.js'),src,'the built copy equals the source (run node scripts/build-site.mjs)');
 const pages=fs.readdirSync('dist').filter(f=>f.endsWith('.html'));
-assert.equal(pages.length,22,'twenty-two pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (було 21).
+// 2026-11-16 (docs/HOME_SPLIT_PLAN.md): додано 11 сторінок розборів добавок, вирізаних із головної (було 22); тег вони успадковують від неї.
+assert.equal(pages.length,22+ARTICLE_FILES.length,'twenty-two pages and the review pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (було 21).
 for(const f of pages){
   const html=read('dist/'+f);
   assert.equal((html.match(/<script type="module" src="\.\/anchor-reveal\.js\?v=1"><\/script>/g)||[]).length,1,`${f} loads anchor-reveal.js once`);

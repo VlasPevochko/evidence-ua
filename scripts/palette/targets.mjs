@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {ARTICLE_FILES} from '../../src/platform/article-pages.mjs';
 
 // Схеми, намальовані SVG-атрибутами fill/stroke/stop-color у скриптах і сторінках: токенів у них немає, тому темні плити під схемами перефарбовують
 // правила за атрибутом (scripts/build-palette.mjs). Головна сюди не входить: вона файл палітри не підключає.
 export const SVG_ATTR=/\b(fill|stroke|stop-color)="(#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?)"/g;
-const isHomeOnlyScript=name=>name==='index.html'||/^home-/.test(name)||name==='navigation-v17.js';
+// Сторінки розборів добавок вирізаються з index.html і, як і головна, файл палітри не підключають (їхні кольори дає home-article-cosmic.css).
+const isHomeOnlyScript=name=>name==='index.html'||/^home-/.test(name)||name==='navigation-v17.js'||ARTICLE_FILES.includes(name);
 export const plateSources=root=>fs.readdirSync(path.join(root,'dist')).filter(f=>/\.(js|html)$/.test(f)&&!isHomeOnlyScript(f)).sort().map(f=>'dist/'+f);
 
 // Стилі, що слідують за палітрою (космічна за замовчуванням, зелена як варіант). Головна сторінка має власні стилі (home-*.css) і сюди не входить.

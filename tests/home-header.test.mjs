@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // Шапка й меню як на головній (рішення власника 2026-11-01: «шапка й меню як на головній»).
 // У космічному вигляді (за замовчуванням) шапка внутрішніх сторінок легка: 78 px (76 на телефоні), прозора, назва Source Serif 4, текстові пункти без піктограм, тонка лінія знизу.
@@ -42,7 +43,9 @@ assert(!read('dist/index.html').includes('palette-cosmic.css'),'the home does no
 assert(read('dist/home-spectrum.css').includes('.eua-site-header .eua-header-wordmark strong{font:400 30px/1.2 var(--spectrum-serif);letter-spacing:-1px}'),'the home header skin that this block copies is still there');
 
 // 3) Версії, журнал, документи.
-const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
+// 2026-11-16 (docs/HOME_SPLIT_PLAN.md): 11 сторінок розборів добавок вирізано з головної; це та сама «головна в режимі розбору»
+// (власні стилі головної, без файла палітри), тому до внутрішніх сторінок вони не належать. Їх перевіряє tests/article-pages.test.mjs.
+const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html'&&!ARTICLE_FILES.includes(f));
 assert.equal(inner.length,21,'twenty-one inner pages'); // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): додано about.html (внутрішніх було 20).
 // Версія файла палітри росте з кожною зміною файла (правила шапки з'явились на v=6; далі того ж дня росла), тож перевіряємо не конкретне число,
 // а що всі сторінки вантажать одну версію, не старішу за ту, де є правила шапки.

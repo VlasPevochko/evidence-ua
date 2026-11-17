@@ -3,10 +3,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {readBase, pageFiles} from './site-url.mjs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 export function buildSeo(root = process.cwd()) {
   const base = readBase(root);
-  const urls = pageFiles(root).map(file => file === 'index.html' ? base : base + file);
+  // Етап 1 переносу розборів (docs/HOME_SPLIT_PLAN.md): сторінки розборів уже збираються, але ще закриті від пошукових систем
+  // (noindex) і на них ніхто не посилається, тому в карту сайту вони поки не входять.
+  const hidden = new Set(ARTICLE_FILES);
+  const urls = pageFiles(root).filter(file => !hidden.has(file)).map(file => file === 'index.html' ? base : base + file);
   const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + urls.map(u => `  <url><loc>${u}</loc></url>`).join('\n') + '\n</urlset>\n';
   const robots = `User-agent: *\nAllow: /\n\nSitemap: ${base}sitemap.xml\n`;

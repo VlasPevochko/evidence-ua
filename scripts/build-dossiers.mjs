@@ -13,8 +13,11 @@ import {collagenModule} from '../src/evidence/supplements/collagen/module.mjs';
 import {betaAlanineModule} from '../src/evidence/supplements/beta-alanine/module.mjs';
 import {citrullineModule} from '../src/evidence/supplements/citrulline/module.mjs';
 import {electrolytesModule} from '../src/evidence/supplements/electrolytes/module.mjs';
+import {restoreCombined} from './combined-source.mjs';
 // Dossiers whose route now shows an approved evidence module are not rendered as preliminary panels.
 export const replacedDossiers=new Set([proteinModule.replacesDossier,omegaModule.replacesDossier,vitdModule.replacesDossier,caffeineModule.replacesDossier,magnesiumModule.replacesDossier,collagenModule.replacesDossier,betaAlanineModule.replacesDossier,citrullineModule.replacesDossier,electrolytesModule.replacesDossier]);
+// Етап 3 (docs/HOME_SPLIT_PLAN.md): спершу повертаємо в dist/index.html спільний документ «головна + розбори».
+restoreCombined(process.cwd());
 const file='dist/index.html';
 const dossiers=validateDossiers(JSON.parse(fs.readFileSync('src/evidence/supplements/dossiers.json','utf8')));
 let html=fs.readFileSync(file,'utf8').replace(/<!-- DOSSIER:[^>]+ -->[\s\S]*?<!-- \/DOSSIER -->/g,'').replace(/<style data-dossier-style>[\s\S]*?<\/style>/g,'');

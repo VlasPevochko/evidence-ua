@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import {articleBarHTML} from '../src/platform/shell.mjs';
 
 // Owner request 2026-10-21: dossiers on the home page show the shared site header, not the old tools block.
-const html = fs.readFileSync('dist/index.html', 'utf8'), css = fs.readFileSync('dist/home-article.css', 'utf8'), shell = fs.readFileSync('src/platform/shell.mjs', 'utf8');
+const html = fs.readFileSync('src/site/index.combined.html', 'utf8'), /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
+  css = fs.readFileSync('dist/home-article.css', 'utf8'), shell = fs.readFileSync('src/platform/shell.mjs', 'utf8');
 assert(html.includes('<link rel="stylesheet" href="./home-article.css?v=1">'));
 // The router keeps .page (and its site header) visible in article mode instead of hiding the whole page.
 // 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 2): розбори добавок мають власні сторінки; головна більше не показує розбір у себе, а переводить стару адресу на сторінку розбору.

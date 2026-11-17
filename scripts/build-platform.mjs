@@ -16,6 +16,9 @@ import {STUDIES} from '../dist/research-data.js';
 import {miniInterval} from '../dist/research-chart.js';
 import {CHANGES,SCIENCE} from '../dist/changes-data.js';
 import {SCENES} from '../dist/mechanisms-page.js';
+import {restoreCombined} from './combined-source.mjs';
+// Етап 3 (docs/HOME_SPLIT_PLAN.md): спершу повертаємо в dist/index.html спільний документ «головна + розбори».
+restoreCombined(process.cwd());
 for(const area of catalog.areas.filter(a=>a.available))for(const href of [area.href,...area.units.map(u=>u.href)]){
   const file='dist/'+href.replace(/^\.\//,'').split(/[?#]/)[0];
   if(!fs.existsSync(file))throw Error('Catalog page missing: '+file);

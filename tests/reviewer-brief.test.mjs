@@ -38,7 +38,7 @@ assert(csv.startsWith('﻿'), 'UTF-8 з позначкою порядку бай
 const table = parseCSV(csv.slice(1)), [header, ...rows] = table;
 assert.deepEqual(header, COLUMNS);
 const claims = bases.flatMap(base => base.claims.map(claim => ({base, claim})));
-const index = read('dist/index.html');
+const index = read('src/site/index.combined.html'); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
 const modules = bases.map(base => base.module).filter(Boolean);
 const moduleTexts = modules.filter(module => module.guidance).length + modules.filter(module => module.notClaimed?.length).length + modules.filter(module => module.commonLimits?.length).length;
 const safetyBlocks = (index.match(/<section class="bc-safety"/g) || []).length;

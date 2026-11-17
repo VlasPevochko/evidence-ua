@@ -13,6 +13,7 @@ import {muscleKnowledge,sources} from '../src/muscle-lab/module.mjs';
 import {ClaimCard,SourceCard} from '../src/evidence/core/components.mjs';
 import {materials} from '../src/platform/materials.mjs';
 import {materialCard} from '../src/platform/quick-tools.mjs';
+import {redirectTable,movedAddress} from '../src/platform/article-pages.mjs';
 const generated={
  'muscle-lab.html':renderTopics('university')+muscleKnowledge.claims.map(c=>ClaimCard(c.id,muscleKnowledge)).join('')+sources.map(s=>SourceCard(s,[])).join(''),
  'directions.html':catalog.areas.filter(a=>a.available).map(areaCard).join('')+catalog.paths.map(pathCard).join('')+materials.map(materialCard).join(''),
@@ -53,23 +54,38 @@ for(const route of catalog.paths)for(let i=0;i<route.steps.length;i++){
  const url=new URL(learningHref(route.id,i),'https://evidence.invalid/');const location=learningLocation(url.href);assert.equal(location.index,i);assert.equal(location.path.id,route.id);
 }
 const muscle=fs.readFileSync('dist/muscle-lab.html','utf8'),home=fs.readFileSync('dist/index.html','utf8'),protein=fs.readFileSync('dist/protein-meta.html','utf8');
-assert(muscle.includes('href="./index.html#top"'));assert(muscle.includes('href="./directions.html"'));assert(home.includes('id="start-here"')&&home.includes('id="spectrum-directions-trigger"')&&home.includes('href="./directions.html"'));assert(protein.includes('#supplement-protein'));assert(protein.includes('#top'));
-// Execute the production hash router, not a reimplementation of it.
-// The VM records declarations; v76 resolves the home layout through CSS so
-// desktop grid and mobile flex survive a round trip through an article.
+assert(muscle.includes('href="./index.html#top"'));assert(muscle.includes('href="./directions.html"'));assert(home.includes('id="start-here"')&&home.includes('id="spectrum-directions-trigger"')&&home.includes('href="./directions.html"'));assert(protein.includes('href="./supplement-protein.html"'));assert(protein.includes('#top'));
+// Execute the production home script, not a reimplementation of it.
+// 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 2): розбори добавок мають власні сторінки. Скрипт головної більше не показує розбір у себе:
+// стару адресу (index.html#creatine, index.html#creatine-dosing, index.html#supplement-…) він переводить на сторінку розбору з тим самим якорем,
+// а для якорів самої головної лишає головну видимою (макет головної, як і раніше, дає CSS: grid на комп’ютері, flex на телефоні).
 const layoutCSS=fs.readFileSync('dist/home-vcard.css','utf8');
 assert(home.includes('./home-vcard.css?v=78'));
 assert(layoutCSS.includes('--home-layout:grid'));assert(layoutCSS.includes('--home-layout:flex'));
-const start=home.indexOf('(()=>{\n const page='),end=home.indexOf('</script>',start);assert(start>=0&&end>start);
-const nodes=new Map(),callbacks=new Map(),articles=[];
-const make=(id,tagName='DIV')=>{const n={id,tagName,attrs:{},toggleAttribute(name,on){this.attrs[name]=!!on;},style:{setProperty(k,v){this[k]=v;}},classList:{toggle(){}},contains(child){return child?.article===this;},querySelector(){return {textContent:id};},scrollIntoView(){this.scrolled=true;}};nodes.set(id,n);return n;};
-const page=make('page');for(const id of ['creatine','supplement-protein','supplement-magnesium'])articles.push(make(id,'SECTION'));
+const start=home.indexOf('(()=>{\n // Розбори добавок живуть на власних сторінках'),end=home.indexOf('</script>',start);assert(start>=0&&end>start);
+const nodes=new Map(),callbacks=new Map();
+const make=(id,tagName='DIV')=>{const n={id,tagName,attrs:{},removeAttribute(name){this.attrs[name]=false;},style:{setProperty(k,v){this[k]=v;}},scrollIntoView(){this.scrolled=true;}};nodes.set(id,n);return n;};
+const page=make('page');
 for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback'])make(id);
-make('evidence-card').article=articles[0];
-const doc={body:{dataset:{}},querySelector(){return page;},getElementById:id=>nodes.get(id)||null,querySelectorAll(selector){return selector.startsWith('body>section')?articles.slice(1):[];}};
-const location={hash:'#top'},win={scrolledTop:0,addEventListener(k,fn){callbacks.set(k,fn);},scrollTo(){this.scrolledTop++;}},sandbox={document:doc,location,window:win,requestAnimationFrame(fn){fn();}};vm.runInNewContext(home.slice(start,end),sandbox);
-// 2026-10-21 (owner request): in article view the page stays visible in article mode so the shared site header
-// remains on top (CSS hides the rest of the home page). A whole dossier opens at the top; inner anchors still scroll to themselves.
-for(const id of ['creatine','evidence-card','supplement-protein','supplement-magnesium']){const before=win.scrolledTop;location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'block');assert.equal(page.attrs['data-article-mode'],true);assert.equal(doc.body.dataset.routeView,'article');if(id==='evidence-card')assert(nodes.get(id).scrolled);else assert.equal(win.scrolledTop,before+1);}
-for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback','missing-target']){location.hash='#'+id;callbacks.get('hashchange')();assert.equal(page.style.display,'var(--home-layout, block)');assert.equal(page.attrs['data-article-mode'],false);assert.equal(doc.body.dataset.routeView,'home');assert(articles.every(a=>a.style.display==='none'));}
+const doc={body:{dataset:{}},title:'',querySelector(){return page;},getElementById:id=>nodes.get(id)||null,querySelectorAll(){return [];}};
+const location={hash:'#top',replaced:[],replace(to){this.replaced.push(to);}},win={addEventListener(k,fn){callbacks.set(k,fn);}},sandbox={document:doc,location,window:win,requestAnimationFrame(fn){fn();}};
+vm.runInNewContext(home.slice(start,end),sandbox);
+const table=redirectTable(home);
+assert.equal(Object.keys(table).length,11);assert(table['creatine.html'].includes('evidence-card')&&table['creatine.html'].includes('pubmed-live')&&table['creatine.html'].includes('creatine-dosing'));
+// Старі адреси: розбір цілком, якір усередині розбору, картка твердження.
+for(const [old,to] of [['creatine','./creatine.html'],['evidence-card','./creatine.html#evidence-card'],['creatine-dosing','./creatine.html#creatine-dosing'],['pubmed-live','./creatine.html#pubmed-live'],['supplement-protein','./supplement-protein.html'],['supplement-magnesium','./supplement-magnesium.html'],['CLM-000053','./supplement-protein.html#CLM-000053']]){
+  assert.equal(movedAddress(old,table),to);
+  location.hash='#'+old;location.replaced.length=0;callbacks.get('hashchange')();
+  assert.deepEqual(location.replaced,[to],`index.html#${old} moves to ${to}`);
+}
+// Якорі головної: без переходу, головна видима.
+for(const id of ['top','start-here','categories','cards','supplement-library','home-feedback','missing-target']){
+  location.hash='#'+id;location.replaced.length=0;callbacks.get('hashchange')();
+  assert.deepEqual(location.replaced,[],`#${id} stays on the home`);
+  assert.equal(page.style.display,'var(--home-layout, block)');assert.equal(page.attrs['data-article-mode'],false);assert.equal(doc.body.dataset.routeView,'home');
+  if(nodes.has(id))assert.equal(nodes.get(id).scrolled,true,`#${id} is scrolled into view`);
+}
+assert.equal(movedAddress('top',table),null);assert.equal(movedAddress('supplement-library',table),null);
+// Кожен якір таблиці справді є на сторінці, куди він веде.
+for(const [file,anchors] of Object.entries(table)){const target=fs.readFileSync('dist/'+file,'utf8');for(const anchor of anchors)assert(target.includes(`id="${anchor}"`),`${file}#${anchor} exists`);}
 console.log('Navigation target audit:',result,'All available catalog, Atlas and teaching routes resolve. This validates code/targets, not live clicks or layout.');

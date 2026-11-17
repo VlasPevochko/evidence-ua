@@ -80,7 +80,7 @@ assert(/brain:\{overview:\(\)=>plannedOverview\('brain'\)\},\n gut:\{overview:\(
 assert(js.includes('tablist.hidden=available.length<2'), 'a zone with a single view shows no tab row');
 const related = js.slice(js.indexOf('const relatedMaterials={'), js.indexOf('function plannedOverview'));
 const hrefs = [...related.matchAll(/href:'([^']+)'/g)].map(m => m[1]);
-assert.deepEqual(hrefs, ['./sleep.html', './mechanisms.html#caffeine', './index.html#supplement-caffeine', './nutrition-digestion.html', './nutrition-inside.html'], 'brain → sleep and caffeine, gut → 3D digestion and «Харчування зсередини»');
+assert.deepEqual(hrefs, ['./sleep.html', './mechanisms.html#caffeine', './supplement-caffeine.html', /* 2026-11-17: сторінка розбору замість index.html#supplement-caffeine */ './nutrition-digestion.html', './nutrition-inside.html'], 'brain → sleep and caffeine, gut → 3D digestion and «Харчування зсередини»');
 for (const href of hrefs) {
   const [file, hash] = href.replace('./', '').split('#');
   assert(fs.existsSync('dist/' + file), `${href}: the page exists`);

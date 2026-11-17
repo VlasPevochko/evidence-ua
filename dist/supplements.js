@@ -24,7 +24,7 @@ export function filterSupplements(items,{group='all',query=''}={}){
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 
 export function renderRow(i){
-  return `<li class="sp-row" data-sp-id="${esc(i.id)}"><div class="sp-photo" role="img" aria-label="Ілюстрація: ${esc(i.name)}" style="${i.photo?`background-image:url(${esc(i.photo)});background-size:cover;background-position:center`:`background-position:${i.x}% ${i.y}%`}"></div><div class="sp-body"><p class="sp-tags"><b>Наукове досьє</b> · ${esc(i.tag)}</p><h2>${esc(i.name)}</h2><p class="sp-sum">${esc(i.summary)}</p><details class="sp-limit"><summary>Межі висновку</summary><p>${esc(i.limit)}</p></details><a class="sp-go" href="./index.html#${esc(i.id)}">Читати розбір →</a></div></li>`;
+  return `<li class="sp-row" data-sp-id="${esc(i.id)}"><div class="sp-photo" role="img" aria-label="Ілюстрація: ${esc(i.name)}" style="${i.photo?`background-image:url(${esc(i.photo)});background-size:cover;background-position:center`:`background-position:${i.x}% ${i.y}%`}"></div><div class="sp-body"><p class="sp-tags"><b>Наукове досьє</b> · ${esc(i.tag)}</p><h2>${esc(i.name)}</h2><p class="sp-sum">${esc(i.summary)}</p><details class="sp-limit"><summary>Межі висновку</summary><p>${esc(i.limit)}</p></details><a class="sp-go" href="./${esc(i.id)}.html">Читати розбір →</a></div></li>`;
 }
 
 export function mountSupplements(root=document){

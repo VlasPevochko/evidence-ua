@@ -196,7 +196,7 @@ async function generic(browser, origin, viewport, file) {
   const home = file === 'index.html' || ARTICLE_FILES.includes(file);
   const canonicalNavigation = [
     ['Напрями', './directions.html'], ['Харчування', './nutrition.html'],
-    ['Дослідження', './index.html#pubmed-live'], ['Атлас', './atlas.html'],
+    ['Дослідження', './creatine.html#pubmed-live'], ['Атлас', './atlas.html'],
     ['Вправи', './exercises.html'], ['Добавки', './supplements.html']
   ];
   const navigation = await page.locator('.eua-site-header nav a').evaluateAll(nodes => nodes.map(node => [node.textContent.trim(), node.getAttribute('href')]));
@@ -961,7 +961,8 @@ async function articleCosmicFlow(browser, origin, viewport) {
   const lavender = hue => hue >= 255 && hue <= 290, cyan = hue => hue >= 165 && hue <= 215;
   let withGold = 0;
   for (const id of ids) {
-    const {context, page, seen} = await open(browser, origin, viewport, `/index.html#${id}`);
+    // 2026-11-17: розбір має власну сторінку (режим «стаття» записаний у розмітці), стара адреса index.html#… лише переводить на неї.
+    const {context, page, seen} = await open(browser, origin, viewport, `/${id}.html`);
     await page.waitForFunction(() => document.body.dataset.routeView === 'article');
     await page.waitForTimeout(400);
     const m = await page.evaluate(articleProbe, id);
@@ -1001,7 +1002,7 @@ async function articleCosmicFlow(browser, origin, viewport) {
   // «Зелений» варіант лишається як був: старе золото, радіуси 16 і 30 px, бірюзова смуга шапки, жодних космічних токенів (контроль: той самий замір бачить золото, коли воно є).
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
   for (const id of ['creatine', 'supplement-protein']) {
-    const {context, page} = await open(browser, origin, viewport, `/index.html#${id}`, {initScript: green});
+    const {context, page} = await open(browser, origin, viewport, `/${id}.html`, {initScript: green});
     await page.waitForFunction(() => document.body.dataset.routeView === 'article');
     await page.waitForTimeout(400);
     const g = await page.evaluate(articleProbe, id);
@@ -1017,14 +1018,17 @@ async function articleCosmicFlow(browser, origin, viewport) {
   const h = await home.page.evaluate(() => { const t = document.querySelector('.home-menu-toggle'), r = t && t.getBoundingClientRect(); return {route: document.body.dataset.routeView || '', rd16: getComputedStyle(document.body).getPropertyValue('--rd-16').trim(), menuRadius: t && r.width > 0 ? getComputedStyle(t).borderTopLeftRadius : null}; });
   check(where, h.route !== 'article' && h.rd16 === '', `the home does not get the article palette (route «${h.route}», --rd-16 «${h.rd16}»)`);
   if (phone) check(where, h.menuRadius === '2px', `the home keeps its own menu button, 2 px (${h.menuRadius})`);
-  // Перемикання без перезавантаження: головна → розбір → назад. Палітра розбору вмикається й вимикається разом з режимом.
+  // Головна → розбір → назад. 2026-11-17: розбір це окрема сторінка; стара адреса index.html#creatine переводить на неї,
+  // а «Назад» повертає на головну (перехід зроблено через location.replace, тож стара адреса в історії не лишається).
   await home.page.evaluate(() => { location.hash = '#creatine'; });
+  await home.page.waitForURL(url => url.pathname === '/creatine.html');
   await home.page.waitForFunction(() => document.body.dataset.routeView === 'article');
   const inArticle = await home.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--rd-16').trim());
-  await home.page.evaluate(() => history.back());
+  await home.page.goBack();
+  await home.page.waitForURL(url => url.pathname === '/index.html');
   await home.page.waitForFunction(() => document.body.dataset.routeView !== 'article');
   const backHome = await home.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--rd-16').trim());
-  check(where, inArticle === '3px' && backHome === '', `the palette follows the mode without a reload (article «${inArticle}», back home «${backHome}»)`);
+  check(where, inArticle === '3px' && backHome === '', `the palette belongs to the review page and the home stays clean (article «${inArticle}», back home «${backHome}»)`);
   await home.context.close();
 }
 
@@ -1499,7 +1503,7 @@ async function shareFlow(browser, origin, viewport) {
 
 async function outcomeEvidenceFlow(browser, origin, viewport) {
   const where = `outcome evidence @${viewport.name}`;
-  const {context, page, seen} = await open(browser, origin, viewport, '/index.html#supplement-beta-alanine');
+  const {context, page, seen} = await open(browser, origin, viewport, '/supplement-beta-alanine.html');
   await page.locator('#supplement-beta-alanine [data-claim-open="CLM-000096"]').click();
   let dialog = page.locator('dialog[open]');
   await dialog.waitFor({state: 'visible'});
@@ -1508,7 +1512,7 @@ async function outcomeEvidenceFlow(browser, origin, viewport) {
   check(where, /95% Байєсівський інтервал вірогідності 2,2–32,6/.test(result) && !/95% ДІ/.test(result), 'the real SourceCard must preserve the Bayesian interval label and bounds');
   await artifact(page, viewport, 'source-bayesian-interval', source);
   await page.keyboard.press('Escape');
-  await page.goto(origin + '/index.html#supplement-protein', {waitUntil: 'load'});
+  await page.goto(origin + '/supplement-protein.html', {waitUntil: 'load'});
   await page.locator('#supplement-protein [data-claim-open="CLM-000053"]').click();
   dialog = page.locator('dialog[open]');
   const methods = dialog.locator('details').filter({has: page.locator('summary', {hasText: 'Рівень 3 · Записи доказів та методологія'})});
@@ -1746,14 +1750,14 @@ async function sectionsFlow(browser, origin, viewport) {
   await openSearch(page, 'дозування');
   const group = page.locator('.eua-search-results h2', {hasText: 'Розділи на сторінках'});
   check(where, await group.count() === 1, 'the dialog has a group «Розділи на сторінках»');
-  const dosing = page.locator('.eua-search-results a[href="./index.html#creatine-dosing"]');
+  const dosing = page.locator('.eua-search-results a[href="./creatine.html#creatine-dosing"]');
   check(where, await dosing.count() === 1, '«дозування» finds the creatine dosing section');
   const dosingText = await dosing.innerText();
   check(where, /Як приймати/.test(dosingText) && /Розділ · Креатин/.test(dosingText), 'the result names the section, says it is a section and names the material');
   check(where, await page.evaluate(() => { const h = [...document.querySelectorAll('.eua-search-results h2')].find(x => /Розділи/.test(x.textContent)); const l = h?.nextElementSibling?.querySelector('a'); return !!l && /creatine-dosing/.test(l.getAttribute('href')); }), 'the dosing section is the first in its group');
   await artifact(page, viewport, 'sections-dosing', page.locator('dialog.eua-search'));
   await dosing.click();
-  await page.waitForURL('**/index.html#creatine-dosing');
+  await page.waitForURL('**/creatine.html#creatine-dosing');
   await settle(page);
   let at = await measure(page);
   check(where, at.status === 'OK', `the dosing section is visible near the top after the jump (${JSON.stringify(at)})`);
@@ -1769,7 +1773,7 @@ async function sectionsFlow(browser, origin, viewport) {
   check(where, await claim.count() === 1, '«вагітність» finds the caffeine claim');
   check(where, /Твердження · Кофеїн/.test(await claim.innerText()), 'a claim card is labelled «Твердження»');
   await claim.click();
-  await page.waitForURL('**/index.html?section=*');
+  await page.waitForURL('**/supplement-caffeine.html?section=*'); // 2026-11-17: розбір кофеїну це окрема сторінка
   await page.locator('.eua-landed').waitFor({state: 'attached', timeout: 5000});
   check(where, (await page.locator('.eua-landed').first().innerText()).trim() === 'Вагітність', 'the found heading is highlighted');
   // Підсвічування саме зникає (воно живе трохи менше трьох секунд від першого входу); після цього міряємо остаточне положення.
@@ -1783,11 +1787,11 @@ async function sectionsFlow(browser, origin, viewport) {
   // 3) Згорнутий блок відкривається сам: міфи про креатин.
   ({context, page, seen} = await open(browser, origin, viewport, '/sleep.html'));
   await openSearch(page, 'кава і креатин');
-  const myth = page.locator('.eua-search-results a[href="./index.html#creatine-myths"]');
+  const myth = page.locator('.eua-search-results a[href="./creatine.html#creatine-myths"]');
   check(where, await myth.count() === 1, 'the myth about coffee and creatine is a section');
   check(where, await page.evaluate(() => { const d = document.querySelector('.eua-search-results'); return d.querySelectorAll('a').length >= 1; }), 'the results are not empty');
   await myth.click();
-  await page.waitForURL('**/index.html#creatine-myths');
+  await page.waitForURL('**/creatine.html#creatine-myths');
   await settle(page);
   check(where, await page.evaluate(() => document.getElementById('creatine-myths').open === true), 'the folded block of myths opened by itself');
   at = await measure(page);
@@ -2587,7 +2591,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     // section anchor; the hub's bare page URL is not an indexed material.
     const sleepStagesHref = areas.find(area => area.id === 'sleep').units.find(unit => unit.id === 'stages').href;
     const sleepStagesURL = new URL(sleepStagesHref, origin + '/index.html');
-    for (const [query, href] of [['креатин', './index.html#creatine'], ['як пити креатин', './index.html#creatine'], ['сон', sleepStagesHref]]) {
+    for (const [query, href] of [['креатин', './creatine.html'], ['як пити креатин', './creatine.html'], ['сон', sleepStagesHref]]) {
       await page.locator('#spectrum-query').fill(query);
       await page.locator('#spectrum-query').press('Enter');
       await search.waitFor({state: 'visible'});
@@ -2662,7 +2666,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     for (const [question, pathname, hash, target] of [
       ['muscle', '/muscle-lab.html', '#explorer', '#explorer'],
       ['fat', '/fat-burning.html', '', '#fb-step-title'],
-      ['creatine', '/index.html', '#creatine', 'body > #creatine']
+      ['creatine', '/creatine.html', '', 'body > #creatine'] // 2026-11-17: розбір креатину це окрема сторінка
     ]) {
       await page.goto(origin + '/index.html#top', {waitUntil: 'load'});
       await page.locator(`[data-spectrum-question="${question}"]`).click();
@@ -2671,7 +2675,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
       check(where, new URL(page.url()).pathname === pathname && new URL(page.url()).hash === hash, `${question} must reach its real existing material and section`);
       if (question === 'creatine') {
         await page.waitForFunction(() => document.body.dataset.routeView === 'article');
-        check(where, !(await page.locator('#top').isVisible()), 'the question must activate the preserved creatine article router');
+        check(where, !(await page.locator('#top').isVisible()), 'the question must open the creatine review page, without the home behind it');
         // The same home header stays mounted on a dossier. Its configured
         // hero query is hidden here, so Escape must focus the visible button.
         const headerSearch = page.locator('.eua-site-header .eua-header-search');
@@ -2743,10 +2747,11 @@ async function homeNoScriptFlow(browser, origin, viewport) {
     await page.locator('.home-path-outline>summary').first().click();
     check(where,await page.locator('.home-path-outline').first().locator('ol a:visible').count()>=3,'the complete route outline must open natively without JavaScript');
     await page.locator('[data-spectrum-question="creatine"]').click();
-    await page.waitForURL(url => url.pathname === '/index.html' && url.hash === '#creatine');
+    // 2026-11-17: розбір креатину це окрема сторінка; без JavaScript звичайне посилання відкриває її, і розбір видно з розмітки.
+    await page.waitForURL(url => url.pathname === '/creatine.html');
     await page.locator('body > #creatine').waitFor({state: 'visible'});
-    check(where, await page.locator('body > #creatine').evaluate(node => node.matches(':target') && getComputedStyle(node).display === 'block') && await page.locator('body > #creatine h1').isVisible(), 'the native #creatine target must reveal the existing dossier without JavaScript');
-    check(where, await page.locator('body > .page').evaluate(node => getComputedStyle(node).display === 'none') && !(await page.locator('.spectrum-home').isVisible()), 'native article targeting must hide the static home without JavaScript');
+    check(where, await page.locator('body > #creatine').evaluate(node => getComputedStyle(node).display === 'block' && node.getBoundingClientRect().height > 1000) && await page.locator('body > #creatine h1').isVisible(), 'the creatine review page must show the review without JavaScript');
+    check(where, await page.locator('.spectrum-home').count() === 0, 'the review page carries no home behind it');
     // Start from a fresh home document so the native :target test cannot
     // accidentally substitute for the independent GET form fallback.
     await page.goto(origin + '/index.html', {waitUntil: 'load'});
@@ -2802,7 +2807,7 @@ async function provenanceStampFlow(browser, origin, viewport) {
     return {text: node.textContent.replace(/\s+/g, ' ').trim(), right: Math.round(box.right), width: Math.round(box.width), height: Math.round(box.height), rule: style.borderLeftWidth, ruleStyle: style.borderLeftStyle, contrast: (hi + 0.05) / (lo + 0.05), fontSize: parseFloat(style.fontSize)};
   };
   for (const id of ['supplement-caffeine', 'supplement-protein']) {
-    const {context, page, seen} = await open(browser, origin, viewport, '/index.html#' + id);
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + id + '.html'); // 2026-11-17: сторінка розбору
     try {
       const line = page.locator(`#${id} .pc-status`);
       await line.waitFor({state: 'attached'});
@@ -3597,7 +3602,7 @@ async function compareFlow(browser, origin, viewport) {
   await page.click('#cp-swap');
   const names = await cards.locator('h2').allInnerTexts();
   check(where, names.length === 2 && names[0] !== names[1], 'swap keeps two different supplements');
-  check(where, (await page.locator('.cp-open').first().getAttribute('href')).startsWith('./index.html#'), 'each card opens its dossier');
+  check(where, /^\.\/(creatine|supplement-[a-z-]+)\.html$/.test(await page.locator('.cp-open').first().getAttribute('href')), 'each card opens its dossier page');
   const box = await cards.nth(1).boundingBox();
   check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'cards stay inside the viewport');
   if (viewport.width > 900) { const b0 = await cards.nth(0).boundingBox(); check(where, box && b0 && Math.abs(box.y - b0.y) < 4, 'on a wide screen the cards are side by side'); }
@@ -3649,7 +3654,7 @@ async function supplementsFlow(browser, origin, viewport) {
   check(where, (await page.locator('.sp-row').count()) === 11, 'expected eleven supplements');
   // Every entry has a photo, a folded limit and a link to its existing dossier.
   const links = await page.locator('.sp-go').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
-  check(where, links.length === 11 && links.every(h => h.startsWith('./index.html#')), 'every row must link to its dossier');
+  check(where, links.length === 11 && links.every(h => /^\.\/(creatine|supplement-[a-z-]+)\.html$/.test(h)), 'every row must link to its dossier page');
   check(where, (await page.locator('.sp-limit[open]').count()) === 0, 'limits must start folded');
   await page.locator('.sp-limit summary').first().click();
   check(where, (await page.locator('.sp-limit[open] p').first().isVisible()), 'opening the limit must show its text');
@@ -4107,7 +4112,7 @@ async function atlasUpdateFlow(browser, origin, viewport) {
     }
     if (zone === 'brain' || zone === 'gut') {
       const links = await page.locator('#atlas-content a[href]').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
-      check(where, links.join() === (zone === 'brain' ? './sleep.html,./mechanisms.html#caffeine,./index.html#supplement-caffeine' : './nutrition-digestion.html,./nutrition-inside.html'), `${zone}: real links to our own materials (${links.join()})`);
+      check(where, links.join() === (zone === 'brain' ? './sleep.html,./mechanisms.html#caffeine,./supplement-caffeine.html' : './nutrition-digestion.html,./nutrition-inside.html'), `${zone}: real links to our own materials (${links.join()})`);
       check(where, (await page.locator('#atlas-content').innerText()).includes('Що ще готується'), `${zone}: what is still being prepared is kept in one folded note`);
     }
     check(where, (await atlasSmallText(page)).length === 0, `${zone}: no text under 12 px (${(await atlasSmallText(page)).slice(0, 3).join(' | ')})`);
@@ -4913,7 +4918,7 @@ async function homeLowerFlow(browser, origin, viewport) {
   check(where,await page.locator('#supplement-carousel, .supplement-rail, #supplement-search').count()===0,'the retired supplement carousel is back on the home page');
   check(where,(await page.locator('.supplement-entry .se-cta').getAttribute('href'))==='./supplements.html','the entry must lead to the catalogue');
   const entryLinks=await page.locator('.supplement-entry .se-list a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
-  check(where,entryLinks.length===11&&entryLinks.every(h=>h.startsWith('#')),'eleven entry chips must link to the existing dossiers');
+  check(where,entryLinks.length===11&&entryLinks.every(h=>/^\.\/(creatine|supplement-[a-z-]+)\.html$/.test(h)),'eleven entry chips must link to the dossier pages'); // 2026-11-17: сторінки розборів
   check(where,(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth))<=1,'horizontal overflow in the supplement entry');
   // The three explainer blocks now live inside the folded «Про сайт» group (owner decision 2026-10-19).
   check(where,!(await page.locator('#home-overview').isVisible()),'the group must start folded');
@@ -5185,49 +5190,71 @@ async function homeLensFitFlow(browser, origin, viewport) {
 }
 
 async function articlePagesFlow(browser, origin, viewport) {
-  // Розбори добавок окремими сторінками, етап 1 (docs/HOME_SPLIT_PLAN.md). Нова сторінка має показувати розбір так само, як стара адреса
-  // index.html#…: той самий текст, ті самі розміри, та сама шапка, знімок піксель у піксель; без помилок і сторонніх запитів.
-  // Окремо: без JavaScript розбір видно; посилання «Інші добавки» веде на сторінку іншого розбору, а не на якір, якого тут немає.
+  // Розбори добавок окремими сторінками (docs/HOME_SPLIT_PLAN.md). На етапі 1 кожну сторінку порівняно зі старою адресою index.html#…
+  // піксель у піксель; з етапу 2 стара адреса вже не показує розбір, а переводить на сторінку. Тут перевіряємо в справжньому браузері:
+  // сторінка відкривається з розбором, шапкою сайту й без помилок; стара адреса (розбір цілком, якір усередині, картка твердження)
+  // переводить на нову з тим самим якорем; без JavaScript розбір видно; переходи між розборами й назад на головну працюють.
   const where = `review pages @${viewport.name}`;
-  const snapshot = page => page.evaluate(() => {
-    const id = document.body.dataset.article || location.hash.slice(1), section = document.getElementById(id), header = document.querySelector('.eua-site-header');
-    const box = section.getBoundingClientRect();
-    return {text: section.innerText.replace(/\s+/g, ' ').trim(), height: document.documentElement.scrollHeight, width: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth,
-      top: Math.round(box.top + scrollY), sectionHeight: Math.round(box.height), header: header ? Math.round(header.getBoundingClientRect().height) : null,
-      background: getComputedStyle(document.body).backgroundColor, links: section.querySelectorAll('a').length, routeActive: section.classList.contains('route-active'),
-      visibleHome: [...document.querySelectorAll('.page > *')].filter(node => node.offsetParent).map(node => node.className).join('|')};
-  });
   for (const article of ARTICLES) {
-    const shots = {}, states = {};
-    for (const [kind, route] of [['old', `/index.html#${article.id}`], ['new', `/${article.file}`]]) {
-      const {context, page, seen} = await open(browser, origin, viewport, route);
-      try {
-        await page.evaluate(() => document.fonts.ready);
-        await page.waitForTimeout(900);
-        states[kind] = await snapshot(page);
-        await page.mouse.move(1, 1);
-        shots[kind] = decodePng(await page.screenshot({fullPage: true}));
-        if (kind === 'new') {
-          checkBrowserHealth(`${where} ${article.file}`, seen);
-          check(where, (await page.title()) === `${article.name} — Evidence UA`, `${article.file}: the tab is named after the supplement`);
-          if (article.id === 'creatine') await artifact(page, viewport, 'review-page-creatine', page.locator('#creatine'), {scroll: false});
-        }
-      } finally { await context.close(); }
-    }
-    const before = states.old, after = states.new;
-    check(where, after.text === before.text && after.text.length > 1500, `${article.file}: the same visible text as index.html#${article.id}`);
-    for (const key of ['height', 'width', 'top', 'sectionHeight', 'header', 'background', 'links', 'routeActive', 'visibleHome'])
-      check(where, after[key] === before[key], `${article.file}: ${key} equals the old route (${before[key]} → ${after[key]})`);
-    check(where, after.width <= after.viewport, `${article.file}: nothing overflows the page width`);
-    const a = shots.old, b = shots.new;
-    let differing = -1;
-    if (a.width === b.width && a.height === b.height) {
-      differing = 0;
-      for (let index = 0; index < a.data.length; index += a.channels) {
-        if (Math.abs(a.data[index] - b.data[index]) > 8 || Math.abs(a.data[index + 1] - b.data[index + 1]) > 8 || Math.abs(a.data[index + 2] - b.data[index + 2]) > 8) differing++;
-      }
-    }
-    check(where, differing === 0, `${article.file}: the screenshot equals index.html#${article.id} pixel for pixel (${differing < 0 ? `sizes ${a.width}×${a.height} and ${b.width}×${b.height}` : differing + ' pixels differ'})`);
+    const {context, page, seen} = await open(browser, origin, viewport, `/${article.file}`);
+    try {
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(700);
+      const state = await page.evaluate(id => {
+        const section = document.getElementById(id), header = document.querySelector('.eua-site-header'), box = section.getBoundingClientRect();
+        return {text: section.innerText.replace(/\s+/g, ' ').trim().length, width: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth,
+          top: Math.round(box.top + scrollY), sectionHeight: Math.round(box.height), header: header ? Math.round(header.getBoundingClientRect().height) : 0,
+          routeActive: section.classList.contains('route-active'), routeView: document.body.dataset.routeView, home: document.querySelectorAll('.spectrum-home, [data-home-lens]').length,
+          h1: section.querySelector('h1') ? Math.round(section.querySelector('h1').getBoundingClientRect().height) : 0, robots: document.querySelectorAll('meta[name="robots"]').length,
+          visibleHome: [...document.querySelectorAll('.page > *')].filter(node => node.offsetParent).map(node => node.className).join('|')};
+      }, article.id);
+      check(where, state.text > 1500 && state.sectionHeight > 1000 && state.h1 > 0, `${article.file}: the review is on the page with its heading (${state.text} characters, ${state.sectionHeight} px)`);
+      check(where, state.header >= 60 && state.top === state.header && state.visibleHome === 'eua-site-header home-header eua-header-home-spectrum', `${article.file}: the site header stands above the review (${state.header} px, review at ${state.top}, «${state.visibleHome}»)`);
+      check(where, state.routeView === 'article' && state.routeActive && state.home === 0, `${article.file}: article mode, no piece of the home`);
+      check(where, state.width <= state.viewport, `${article.file}: nothing overflows the page width`);
+      check(where, state.robots === 0, `${article.file}: open to search engines`);
+      check(where, (await page.title()) === `${article.name} — Evidence UA`, `${article.file}: the tab is named after the supplement`);
+      checkBrowserHealth(`${where} ${article.file}`, seen);
+      if (article.id === 'creatine') await artifact(page, viewport, 'review-page-creatine', page.locator('#creatine'), {scroll: false});
+    } finally { await context.close(); }
+    // Стара адреса розбору переводить на його сторінку.
+    const old = await open(browser, origin, viewport, `/index.html#${article.id}`);
+    try {
+      await old.page.waitForURL(url => url.pathname === `/${article.file}` && url.hash === '');
+      await old.page.locator(`body > #${article.id} h1`).waitFor({state: 'visible'});
+      check(where, true, `index.html#${article.id} moves to ${article.file}`);
+      checkBrowserHealth(`${where} old ${article.id}`, old.seen);
+    } finally { await old.context.close(); }
+  }
+  // Старі адреси з якорем усередині розбору: розділи й пошук публікацій. (Картки тверджень скрипт перемальовує, їхні id у готовій сторінці інші.)
+  for (const [anchor, file] of [['creatine-dosing', 'creatine.html'], ['pubmed-live', 'creatine.html'], ['evidence-card', 'creatine.html'], ['creatine-kidney', 'creatine.html']]) {
+    const {context, page} = await open(browser, origin, viewport, `/index.html#${anchor}`);
+    try {
+      await page.waitForURL(url => url.pathname === `/${file}` && url.hash === `#${anchor}`);
+      await page.waitForTimeout(700);
+      const top = await page.evaluate(id => { const node = document.getElementById(id); return node ? node.getBoundingClientRect().top : null; }, anchor);
+      check(where, top !== null && top >= -2 && top < viewport.height * 0.7, `index.html#${anchor} moves to ${file}#${anchor} and the target is on screen (top ${top === null ? 'missing' : Math.round(top)})`);
+    } finally { await context.close(); }
+  }
+  // Перехід зі старої адреси не лишає її в історії: «Назад» з розбору веде туди, звідки людина прийшла.
+  {
+    const {context, page} = await open(browser, origin, viewport, '/supplements.html');
+    try {
+      await page.goto(origin + '/index.html#supplement-omega', {waitUntil: 'load'});
+      await page.waitForURL(url => url.pathname === '/supplement-omega.html');
+      await page.goBack();
+      await page.waitForURL(url => url.pathname === '/supplements.html');
+      check(where, true, 'Back from a redirected review returns to the previous page, not into a redirect loop');
+    } finally { await context.close(); }
+  }
+  // Якорі самої головної лишаються на головній.
+  {
+    const {context, page, seen} = await open(browser, origin, viewport, '/index.html#supplement-library');
+    try {
+      await page.waitForTimeout(600);
+      check(where, new URL(page.url()).pathname === '/index.html' && await page.evaluate(() => document.body.dataset.routeView === 'home'), 'index.html#supplement-library stays on the home');
+      checkBrowserHealth(`${where} home anchor`, seen);
+    } finally { await context.close(); }
   }
   // Без JavaScript: розбір і його назва на екрані.
   {
@@ -5252,13 +5279,16 @@ async function articlePagesFlow(browser, origin, viewport) {
       checkBrowserHealth(`${where} navigation`, seen);
     } finally { await context.close(); }
   }
-  // Внутрішній якір розбору працює як звичайний якір сторінки.
+  // Бібліотека на головній веде на сторінку розбору.
   {
-    const {context, page} = await open(browser, origin, viewport, '/creatine.html#creatine-dosing');
+    const {context, page} = await open(browser, origin, viewport, '/index.html#supplement-library');
     try {
-      await page.waitForTimeout(700);
-      const top = await page.evaluate(() => document.getElementById('creatine-dosing').getBoundingClientRect().top);
-      check(where, top >= -2 && top < viewport.height * 0.6, `creatine.html#creatine-dosing scrolls to its section (top ${Math.round(top)})`);
+      await toggleHomeFold(page, '.home-library-fold', true);
+      const chip = page.locator('.se-list a[href="./supplement-vitd.html"]');
+      await chip.scrollIntoViewIfNeeded();
+      await Promise.all([page.waitForURL(url => url.pathname === '/supplement-vitd.html'), chip.click()]);
+      await page.locator('#supplement-vitd h1').waitFor({state: 'visible'});
+      check(where, true, 'a library chip on the home opens the review page');
     } finally { await context.close(); }
   }
 }
@@ -5693,7 +5723,7 @@ try {
   } else {
     for (const viewport of shoulderViewports) await isolatedFlow((browser,origin,viewport) => shoulderRouteFlow(browser,origin,viewport,{open,artifact}), browser, origin, viewport);
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
-    // 2026-11-16: сторінки розборів добавок проти старих адрес index.html#… (текст, розміри, знімок піксель у піксель).
+    // Сторінки розборів добавок: самі сторінки й перенаправлення зі старих адрес index.html#….
     for (const viewport of viewports) await isolatedFlow(articlePagesFlow, browser, origin, viewport);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);

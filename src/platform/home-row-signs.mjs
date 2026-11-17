@@ -44,10 +44,11 @@ export function placeSign(html,name,content){
   return html.replace(pattern,()=>`<!-- EUA_HOME_SIGN_${name}_START -->${content}<!-- EUA_HOME_SIGN_${name}_END -->`);
 }
 
-// Порядок добавок у списку бібліотеки головної: '#creatine' -> 'creatine', '#supplement-omega' -> 'supplement-omega'.
+// Порядок добавок у списку бібліотеки головної: './creatine.html' -> 'creatine', './supplement-omega.html' -> 'supplement-omega'.
 export function libraryRoutes(html){
   const list=(html.match(/<ul class="se-list"[\s\S]*?<\/ul>/)||[''])[0];
-  const routes=[...list.matchAll(/<li><a href="#([a-z0-9-]+)"/g)].map(match=>match[1]);
+  // Посилання списку ведуть на сторінки розборів (./creatine.html, ./supplement-omega.html); ключ у compare-status.js це назва без «.html».
+  const routes=[...list.matchAll(/<li><a href="\.\/([a-z0-9-]+)\.html"/g)].map(match=>match[1]);
   if(!routes.length)throw new Error('The library list (.se-list) on the home is missing or empty');
   return routes;
 }

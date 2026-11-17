@@ -5,7 +5,6 @@ import path from 'node:path';
 import {readBase,checkBase,pageFiles} from '../scripts/site-url.mjs';
 import {buildSeo} from '../scripts/build-seo.mjs';
 import {setSiteUrl} from '../scripts/set-site-url.mjs';
-import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // Адреса сайту в одному місці (рішення власника 2026-10-24: готуємо перехід на власний домен).
 const base=readBase();
@@ -24,12 +23,10 @@ assert.equal(checkBase('https://evidenceua.com/'),'https://evidenceua.com/');
 const sitemap=fs.readFileSync('dist/sitemap.xml','utf8'),robots=fs.readFileSync('dist/robots.txt','utf8');
 const locs=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
 assert.equal(new Set(locs).size,locs.length,'no duplicate addresses');
-// 2026-11-16 (docs/HOME_SPLIT_PLAN.md, етап 1): сторінки розборів добавок уже збираються, але ще закриті від пошукових систем (noindex)
-// і на них ніхто не посилається, тому в карті сайту їх поки немає. На етапі 2 вони мають з’явитись тут, а цей виняток зникнути.
-assert.equal(locs.length,pageFiles().filter(file=>!ARTICLE_FILES.includes(file)).length,'every page that is open to search engines is listed');
-for(const file of ARTICLE_FILES){assert(!locs.some(loc=>loc.endsWith('/'+file)),`${file} is not in the sitemap yet`);assert(fs.readFileSync('dist/'+file,'utf8').includes('<meta name="robots" content="noindex">'),`${file} is closed to search engines while nothing links to it`);}
+// 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 2): сторінки розборів добавок відкрито для пошукових систем, тимчасовий виняток етапу 1 прибрано.
+assert.equal(locs.length,pageFiles().length,'every page is listed');
 assert(locs.includes(base),'the home page is listed as the site root');
-for(const file of pageFiles().filter(f=>f!=='index.html'&&!ARTICLE_FILES.includes(f)))assert(locs.includes(base+file),`${file} is listed`);
+for(const file of pageFiles().filter(f=>f!=='index.html'))assert(locs.includes(base+file),`${file} is listed`);
 assert(robots.includes(`Sitemap: ${base}sitemap.xml`)&&robots.includes('Allow: /')&&!/Disallow: \//.test(robots),'robots.txt allows crawling and names the sitemap');
 // Moving to a new domain: all pages, docs, site.json and the sitemap change together, and a second run changes nothing.
 const root=fs.mkdtempSync(path.join(os.tmpdir(),'eua-url-'));

@@ -2,11 +2,7 @@
 // слова для пошуку лише допомагають знайти розділ, який уже є на сторінці (докладніше: docs/SEARCH.md).
 
 // Сторінки, розділи яких не індексуємо: каталоги й службові сторінки (їхній зміст малюють скрипти або це інтерфейс, а не текст).
-import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
-export const SKIP_PAGES=new Set(['changes.html','directions.html','supplements.html','videos.html','atlas.html','map.html','glossary.html','exercises.html','research.html','compare.html',
-  // Етап 1 переносу розборів (docs/HOME_SPLIT_PLAN.md): сторінки розборів уже є, але посилання й пошук ще ведуть на index.html#…,
-  // тому їхні розділи поки не індексуємо окремо (інакше кожен розділ розбору знаходився б двічі).
-  ...ARTICLE_FILES]);
+export const SKIP_PAGES=new Set(['changes.html','directions.html','supplements.html','videos.html','atlas.html','map.html','glossary.html','exercises.html','research.html','compare.html']);
 
 // Якорі, які не ведуть до розділу: пункти словника (вони вже є в групі «Терміни»), записи й списки джерел, діалоги,
 // вкладки (видно лише вибрану, решту показує скрипт): role-* на сторінці «Рух», stage-* на сторінці «Сон».
@@ -52,9 +48,9 @@ export const TITLE_WORDS={
 
 // Слова для окремого розділу: ключ «сторінка#якір». Додавати лише те, що справді сказано в розділі. Діють на перший заголовок блоку.
 export const ANCHOR_WORDS={
-  'index.html#creatine-dosing':'дозування доза скільки пити приймати прийом завантаження щодня',
-  'index.html#creatine-kidney':'нирки креатинін аналіз фільтрація шкода',
-  'index.html#creatine-myths':'міфи нирки завантаження тренування кава дорожчі форми',
+  'creatine.html#creatine-dosing':'дозування доза скільки пити приймати прийом завантаження щодня',
+  'creatine.html#creatine-kidney':'нирки креатинін аналіз фільтрація шкода',
+  'creatine.html#creatine-myths':'міфи нирки завантаження тренування кава дорожчі форми',
   // «Куди зникає жир?», розділ «Рух» (2026-11-14): слова лише про те, що сказано в розділі.
   'fat-burning.html#exercise-title':'аеробні кардіо інтервальні hiit хііт силові тренування вправи біг ходьба велосипед жир жирова маса схуднення',
   'fat-burning.html#exercise-session':'темп інтенсивність окиснення жиру під час тренування жироспалювальна зона',

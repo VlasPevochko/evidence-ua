@@ -63,7 +63,7 @@ assert.equal(page.submit[0]['aria-label']||page.submit[0].text,'Знайти');
 
 const questions=page.links.filter(link=>link['data-spectrum-question']);
 assert.deepEqual(questions.map(link=>link['data-spectrum-question']),['muscle','fat','creatine']);
-const destinations={muscle:['muscle','structure','./muscle-lab.html#explorer','Як працюють м’язи?'],fat:['nutrition','fat-loss','./fat-burning.html','Куди зникає жир?'],creatine:['supplements','creatine','./index.html#creatine','Що відомо про креатин?']};
+const destinations={muscle:['muscle','structure','./muscle-lab.html#explorer','Як працюють м’язи?'],fat:['nutrition','fat-loss','./fat-burning.html','Куди зникає жир?'],creatine:['supplements','creatine','./creatine.html','Що відомо про креатин?']};
 for(const link of questions){
   const [areaId,unitId,href,title]=destinations[link['data-spectrum-question']];
   assert.equal(link.href,href);

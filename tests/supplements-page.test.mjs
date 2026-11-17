@@ -45,7 +45,7 @@ assert.equal(filterSupplements(supplements,{query:'немає такої'}).leng
 
 // Row markup: a link to the existing dossier, limits folded, no <header> (the shell injects navigation after every one).
 const row=renderRow(supplements[0]);
-assert(row.includes('href="./index.html#creatine"')&&row.includes('<details class="sp-limit">')&&!row.includes('<details class="sp-limit" open'));
+assert(row.includes('href="./creatine.html"') /* 2026-11-17: сторінка розбору замість index.html#creatine */&&row.includes('<details class="sp-limit">')&&!row.includes('<details class="sp-limit" open'));
 assert(!/<header\b/.test(row)&&!/<h1\b/.test(row)&&/<h2>Креатин<\/h2>/.test(row));
 assert(renderRow({...supplements[0],name:'<b>x</b>'}).includes('&lt;b&gt;'),'Names are escaped');
 

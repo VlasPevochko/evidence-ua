@@ -1,11 +1,12 @@
-// Розбори добавок окремими сторінками, етап 1 (рішення власника «3 та 7», «2-4 так»; docs/HOME_SPLIT_PLAN.md).
+// Розбори добавок окремими сторінками, етапи 1–2 (рішення власника «3 та 7», «2-4 так»; docs/HOME_SPLIT_PLAN.md).
 // Сторінки вирізаються зі спільного документа dist/index.html (src/platform/article-pages.mjs). Тест стежить за головним:
 //   1) наукові тексти переїхали без жодної зміни: розділ у сторінці відрізняється від розділу в спільному документі лише адресами посилань-якорів;
 //   2) сторінка самодостатня: один розбір, жодного шматка головної, кожне посилання-якір кудись веде;
-//   3) етап 1 невидимий для відвідувача: на нові сторінки ще ніхто не посилається, вони закриті від пошукових систем, головна не змінилась.
+//   3) етап 2: на сторінки ведуть усі посилання сайту, вони відкриті для пошукових систем, є в карті сайту й пошуку;
+//      старі адреси index.html#… головна переводить на них (таблиця якорів збирається з самих розборів).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {ARTICLES,ARTICLE_FILES,HOME_ONLY_SCRIPTS,ROUTER_MARK,layout,sectionSpan,anchorOwners,rewriteHashLinks,articlePageHTML,articleTitle,articleDescription} from '../src/platform/article-pages.mjs';
+import {ARTICLES,ARTICLE_FILES,HOME_ONLY_SCRIPTS,ROUTER_MARK,layout,sectionSpan,anchorOwners,rewriteHashLinks,articlePageHTML,articleTitle,articleDescription,redirectTable,withRedirectTable,movedAddress,homeOnlyHTML} from '../src/platform/article-pages.mjs';
 import {readBase} from '../scripts/site-url.mjs';
 
 const base=readBase(),combined=fs.readFileSync('dist/index.html','utf8');
@@ -19,7 +20,7 @@ const navigationStyle=fs.readFileSync('dist/navigation-v17.js','utf8').match(/st
 assert.equal(ARTICLES.length,11);
 assert.deepEqual(parts.articles.map(a=>a.id),ARTICLES.map(a=>a.id));
 const library=(combined.match(/<ul class="se-list"[\s\S]*?<\/ul>/)||[''])[0];
-const listed=[...library.matchAll(/<li><a href="#([a-z0-9-]+)">(?:<i\b[^>]*><\/i>)?([^<]+)<\/a><\/li>/g)].map(m=>[m[1],m[2]]);
+const listed=[...library.matchAll(/<li><a href="\.\/([a-z0-9-]+)\.html">(?:<i\b[^>]*><\/i>)?([^<]+)<\/a><\/li>/g)].map(m=>[m[1],m[2]]);
 assert.deepEqual(listed,ARTICLES.map(a=>[a.id,a.name]),'review names and order equal the library list on the home');
 assert.deepEqual(ARTICLE_FILES,ARTICLES.map(a=>a.id+'.html'),'a page is named after the anchor of its review');
 assert.equal(new Set(ARTICLE_FILES).size,11);
@@ -28,7 +29,7 @@ let totalBytes=0;
 for(const article of ARTICLES){
   const page=read(article.file),name=article.file;
   // Сторінка свіжа: рівно те, що видає модуль зі спільного документа.
-  assert.equal(page,articlePageHTML(combined,article.id,{base,indexable:false,styles:[navigationStyle]}),`${name} is fresh (run node scripts/build-site.mjs)`);
+  assert.equal(page,articlePageHTML(combined,article.id,{base,indexable:true,styles:[navigationStyle]}),`${name} is fresh (run node scripts/build-site.mjs)`);
 
   // 1) Наукові тексти без змін.
   const original=parts.articles.find(a=>a.id===article.id).section;
@@ -73,20 +74,39 @@ for(const article of ARTICLES){
   assert(page.includes(`<link rel="canonical" href="${base}${name}">`)&&page.includes(`<meta property="og:url" content="${base}${name}">`),`${name}: canonical address`);
   assert(page.includes(`<meta property="og:image" content="${base}og/${article.id}.jpg">`)&&fs.statSync(`dist/og/${article.id}.jpg`).size>20000,`${name}: its own share card`);
 
-  // 3) Етап 1: сторінка закрита від пошукових систем.
-  assert.equal(page.split('<meta name="robots" content="noindex">').length-1,1,`${name}: closed to search engines while nothing links to it`);
+  // 3) Етап 2: сторінка відкрита для пошукових систем і є в карті сайту.
+  assert(!/<meta name="robots"/.test(page),`${name}: open to search engines`);
+  assert(fs.readFileSync('dist/sitemap.xml','utf8').includes(`<loc>${base}${name}</loc>`),`${name}: listed in the sitemap`);
   totalBytes+=Buffer.byteLength(page);
   assert(Buffer.byteLength(page)<Buffer.byteLength(combined)*0.45,`${name}: lighter than half of the combined document (${Math.round(Buffer.byteLength(page)/1024)} KB)`);
 }
 // Опис це шаблон: жодного твердження про добавку, лише її назва.
 assert.equal(new Set(ARTICLES.map(a=>articleDescription(a).replace(a.name,'…'))).size,1,'one description template for every review');
 
-// 3) Головна не змінилась і на нові сторінки ще ніхто не посилається.
-for(const article of ARTICLES)assert(sectionSpan(combined,article.id).end>0,`the home still carries «${article.id}» (stage 1 moves nothing away)`);
-const mentions=new RegExp(`(?:${ARTICLE_FILES.map(f=>f.replace('.','\\.')).join('|')})`);
-const others=fs.readdirSync('dist',{recursive:true}).map(String).filter(f=>/\.(html|js|xml|txt|json)$/.test(f)&&!ARTICLE_FILES.includes(f));
-for(const file of others)assert(!mentions.test(read(file)),`${file} does not link to a review page yet (stage 2 switches the links)`);
-assert(!mentions.test(fs.readFileSync('dist/sitemap.xml','utf8'))&&!mentions.test(read('platform-sections.js')),'review pages are not in the sitemap or the section index yet');
+// 3) Посилання сайту ведуть на сторінки розборів; старих адрес у посиланнях не лишилось.
+for(const article of ARTICLES)assert(sectionSpan(combined,article.id).end>0,`the combined document still carries «${article.id}» (it is the source the pages are cut from)`);
+const oldLink=/(?:index\.html(?:\?[^"'#\s]*)?|["'`])#(?:creatine(?:-[a-z-]+)?|supplement-(?:protein|caffeine|omega|vitd|magnesium|collagen|beta-alanine|citrulline|electrolytes|berberine)|evidence-card|pubmed-live)["'`]/;
+const homePart=combined.slice(combined.indexOf('<body'),combined.indexOf('</main>'));
+assert(!/href="#(?:creatine|supplement-(?!library)[a-z-]+|evidence-card|pubmed-live)/.test(homePart),'the home part links to review pages, not to anchors of the reviews');
+for(const file of ['platform-catalog.js','platform-materials.js','site-header.js','changes-data.js','atlas.js','sleep.html','protein-meta.html','muscle-lab.html','directions.html','supplements.html','platform-sections.js','sitemap.xml']){
+  const source=read(file).replace(/\/\/[^\n]*/g,'');
+  assert(!/index\.html(?:\?[^"'#\s]*)?#(?:creatine|supplement-(?:protein|caffeine|omega|vitd|magnesium|collagen|beta-alanine|citrulline|electrolytes|berberine)|evidence-card|pubmed-live)/.test(source),`${file} has no old review address left`);
+}
+for(const file of ['platform-catalog.js','site-header.js','changes-data.js','platform-sections.js','sitemap.xml'])assert(/creatine\.html/.test(read(file)),`${file} links to review pages`);
+// Старі адреси: таблиця в скрипті головної свіжа, повна й веде до наявних якорів.
+const table=redirectTable(combined);
+assert.equal(withRedirectTable(combined),combined,'the redirect table in the home script is fresh (run node scripts/build-site.mjs)');
+assert.deepEqual(Object.keys(table),ARTICLE_FILES);
+assert.equal(Object.values(table).flat().length+ARTICLES.length,owners.size,'every anchor of every review is in the table');
+assert.equal(new Set(Object.values(table).flat()).size,Object.values(table).flat().length,'no anchor belongs to two reviews');
+for(const [file,anchors] of Object.entries(table))for(const anchor of anchors)assert(new RegExp(`\\bid="${anchor}"`).test(read(file)),`${file}#${anchor} exists`);
+assert.equal(movedAddress('creatine',table),'./creatine.html');assert.equal(movedAddress('creatine-dosing',table),'./creatine.html#creatine-dosing');
+assert.equal(movedAddress('supplement-vitd',table),'./supplement-vitd.html');assert.equal(movedAddress('top',table),null);assert.equal(movedAddress('supplement-library',table),null);
+assert(combined.includes('if(to){location.replace(to);return;}'),'the home script moves an old address to the review page');
+// Індекс розділів: розділи розборів знаходяться на сторінках розборів, а не двічі.
+const sections=read('platform-sections.js');
+assert(sections.includes('"creatine.html#creatine-dosing"')&&!/"index\.html#(?:creatine|supplement-(?!library))/.test(sections),'review sections are indexed on their own pages only');
+assert(!homeOnlyHTML(combined).includes('id="creatine"')&&homeOnlyHTML(combined).includes('id="categories"')&&homeOnlyHTML(combined).includes('platform-shell.js'),'the home-only view drops the reviews and keeps the home and its scripts');
 
 // Модуль зупиняє збірку на несподіваному документі замість тихо різати не те.
 assert.throws(()=>sectionSpan('<p></p>','creatine'),/no <section id="creatine">/);
@@ -96,9 +116,10 @@ assert.throws(()=>articlePageHTML(combined,'creatine',{base:'http://example.com/
 assert.throws(()=>articlePageHTML(combined,'creatine',{base,styles:['https://example.com/x.css']}),/Unexpected stylesheet/);
 assert.throws(()=>layout(combined.replace('id="supplement-berberine"','id="supplement-new"')),/missing from ARTICLES|no <section id="supplement-berberine">/);
 assert.throws(()=>articlePageHTML(combined.replace('<title>','<title>x</title><title>'),'creatine',{base}),/exactly one <title>/);
-assert.throws(()=>articlePageHTML(combined.replace(ROUTER_MARK,'const views=[];'),'creatine',{base}),/router script was not found/);
+assert.throws(()=>articlePageHTML(combined.replace(ROUTER_MARK,'const MOVED='),'creatine',{base}),/router script was not found|EUA_ARTICLE_REDIRECTS/);
+assert.throws(()=>withRedirectTable('<p></p>'),/exactly one EUA_ARTICLE_REDIRECTS/);
 // Посилання: свої лишаються, чужі ведуть на сторінку розбору, решта на головну.
 assert.equal(rewriteHashLinks('<a href="#evidence-card">a</a><a href="#supplement-omega">b</a><a href="#top">c</a><a href="#categories">d</a><a href="./x.html#y">e</a>','creatine',owners),
   '<a href="#evidence-card">a</a><a href="./supplement-omega.html">b</a><a href="./index.html">c</a><a href="./index.html#categories">d</a><a href="./x.html#y">e</a>');
 assert.equal(rewriteHashLinks('<a href="#evidence-card">a</a>','supplement-omega',owners),'<a href="./creatine.html#evidence-card">a</a>','an anchor inside another review keeps its place on that page');
-console.log(`Review pages: 11 pages cut from the combined document, texts unchanged, self-contained, not linked yet; ${Math.round(totalBytes/1024/11)} KB on average against ${Math.round(Buffer.byteLength(combined)/1024)} KB.`);
+console.log(`Review pages: 11 pages cut from the combined document, texts unchanged, self-contained, linked and open to search engines, old addresses redirect; ${Math.round(totalBytes/1024/11)} KB on average against ${Math.round(Buffer.byteLength(combined)/1024)} KB.`);

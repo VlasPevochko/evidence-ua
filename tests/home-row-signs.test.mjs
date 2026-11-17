@@ -90,5 +90,5 @@ assert(/@media\(prefers-reduced-motion:reduce\)\{[^@]*transition:none/.test(css)
 assert(!/url\(|@import|https?:/.test(css),'no external requests and no images in the sheet');
 // Модуль знаків іде на сайт як копія джерела (його імпортує platform-learning.js).
 assert.equal(fs.readFileSync('dist/home-row-signs.js','utf8'),fs.readFileSync('src/platform/home-row-signs.mjs','utf8'),'dist/home-row-signs.js is a copy of the source');
-assert(fs.readFileSync('dist/platform-learning.js','utf8').includes("from './home-row-signs.js?v=1'"),'the shipped learning module imports the shipped sign module');
+assert(fs.readFileSync('dist/platform-learning.js','utf8').includes("from './home-row-signs.js?v=2'"),'the shipped learning module imports the shipped sign module');
 console.log('Home row signs: routes, library and updates signs match their data.');

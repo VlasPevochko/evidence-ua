@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {homeOnlyHTML} from '../src/platform/article-pages.mjs';
 import {SKIP_PAGES,SKIP_ANCHOR,WRAPPER_ANCHOR,SKIP_KEYS,SKIP_TITLES,SKIP_INSIDE_CLASS,TITLE_WORDS,ANCHOR_WORDS} from './sections-config.mjs';
 import {normalizeTitle} from '../src/platform/anchor-reveal.mjs';
 // Дані сторінки «Дослідження простими словами» (рішення D3, бриф T7): розбори малює скрипт сторінки, у готовому HTML їх немає, тому беремо з тих самих даних.
@@ -144,7 +145,9 @@ export function buildSections(root=process.cwd(),materials){
   const rows=[];
   for(const file of fs.readdirSync(dist).filter(f=>f.endsWith('.html')).sort()){
     if(SKIP_PAGES.has(file))continue;
-    rows.push(...extractSections(fs.readFileSync(path.join(dist,file),'utf8'),{page:file,materials}));
+    // Розбори добавок мають власні сторінки; у спільному index.html їхні розділи пропускаємо, щоб не знаходити кожен двічі.
+    const html=fs.readFileSync(path.join(dist,file),'utf8');
+    rows.push(...extractSections(file==='index.html'?homeOnlyHTML(html):html,{page:file,materials}));
   }
   // Один і той самий розділ двічі не показуємо.
   const seen=new Set();

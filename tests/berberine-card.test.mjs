@@ -44,7 +44,8 @@ assert.equal(berberineBase.claims.find(c => c.id === 'CLM-000061').evidenceLayer
 assert.equal(berberineBase.sources.find(s => s.id === 'SRC-000058').shortCitation, 'Liu D et al. · 2025');
 
 // Entry points: home chip, catalogue row with its own photo, search terms, catalog unit.
-assert(html.includes('<a href="#supplement-berberine"><i class="se-thumb se-thumb-berberine"'));
+// 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 2): розбори добавок мають власні сторінки; пункт списку веде на сторінку розбору.
+assert(html.includes('<a href="./supplement-berberine.html"><i class="se-thumb se-thumb-berberine"'));
 assert(fs.readFileSync('dist/platform-catalog.js', 'utf8').includes("['berberine','Берберин']"));
 assert(fs.readFileSync('dist/platform-materials.js', 'utf8').includes("'supplements-berberine':"));
 assert(fs.readFileSync('dist/evidence/berberine-ui.js', 'utf8').includes("dialogSelector: '[data-berberine-dialog]'"));

@@ -6,7 +6,8 @@ assert.ok(fs.existsSync('dist/home-mobile-header.js'), 'Mobile navigation must h
 const markup = fs.readFileSync('dist/index.html', 'utf8');
 const nativeMenu = markup.match(/<nav id="home-primary-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
 assert.ok(nativeMenu, 'Essential destinations must remain available before JavaScript loads');
-for (const destination of ['./directions.html', './nutrition.html', '#pubmed-live']) {
+// 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 2): розбори добавок мають власні сторінки; пошук публікацій живе на сторінці «Креатин».
+for (const destination of ['./directions.html', './nutrition.html', './creatine.html#pubmed-live']) {
   assert.ok(nativeMenu.includes(`href="${destination}"`), `Native navigation must retain ${destination}`);
 }
 // Owner decision 2026-10-27: the spectrum hero has a catalog fallback; shared header/menu behavior is tested separately.

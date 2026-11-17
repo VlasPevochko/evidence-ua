@@ -1,5 +1,5 @@
-import {catalog,learningHref} from './platform-catalog.js?v=101';
-import {routesSignSVG,signHTML} from './home-row-signs.js?v=1';
+import {catalog,learningHref} from './platform-catalog.js?v=102';
+import {routesSignSVG,signHTML} from './home-row-signs.js?v=2';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // Curriculum navigation only: reuse existing materials, not scientific conclusions.

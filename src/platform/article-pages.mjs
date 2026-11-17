@@ -4,7 +4,7 @@
 // Змінюється лише те, що мусить змінитись, і більше нічого:
 //   назва вкладки й канонічна адреса; позначки на <body>, які раніше ставив скрипт-перемикач головної;
 //   посилання-якорі, що вели в інший розбір чи на головну (на окремій сторінці такого якоря немає);
-//   скрипт-перемикач головної замінено коротким скриптом сторінки розбору.
+//   скрипт головної, що переводить старі адреси, замінено коротким скриптом сторінки розбору.
 // Наукові тексти не змінюються: tests/article-pages.test.mjs порівнює розділ у сторінці з розділом у спільному документі.
 // Модуль чистий (без DOM і файлів).
 export const ARTICLES=[
@@ -73,6 +73,13 @@ export function layout(html){
   };
 }
 
+// Спільний документ без розборів: лише головна. Так його бачить індекс розділів для пошуку (розділи розборів індексуються
+// зі сторінок розборів, а не двічі); на етапі 3 саме це стане dist/index.html.
+export function homeOnlyHTML(html){
+  const parts=layout(html),first=sectionSpan(html,ARTICLES[0].id).start;
+  return html.slice(0,first)+parts.tail;
+}
+
 // Куди веде якір: у свій розбір (лишається), в інший розбір (нова сторінка) або на головну.
 export function anchorOwners(html){
   const parts=layout(html),owners=new Map();
@@ -96,7 +103,28 @@ export function rewriteHashLinks(fragment,id,owners){
 export const HOME_ONLY_SCRIPTS=['home-catalog.js','navigation-v17.js','home-feedback.js','feedback-send.js','evidence-trainer.js','home-about.js','home-spectrum.js','home-lens.js'];
 
 // Скрипт-перемикач головної (показував розбір замість головної за адресою index.html#…). На сторінці розбору його роль виконує розмітка.
-export const ROUTER_MARK="const views=[document.getElementById('creatine'),...document.querySelectorAll('body>section[id^=\"supplement-\"]')];";
+export const ROUTER_MARK='const MOVED=/*EUA_ARTICLE_REDIRECTS_START*/';
+
+// Таблиця для старих адрес: сторінка розбору → якорі всередині нього. Скрипт головної за нею переводить
+// index.html#creatine-dosing на creatine.html#creatine-dosing (сам розбір, index.html#creatine, знаходить за назвою файла).
+export function redirectTable(html){
+  const table=Object.fromEntries(ARTICLES.map(article=>[article.file,[]])),files=new Map(ARTICLES.map(article=>[article.id,article.file]));
+  for(const [anchor,owner] of anchorOwners(html))if(anchor!==owner)table[files.get(owner)].push(anchor);
+  return table;
+}
+export function withRedirectTable(html){
+  const pattern=/\/\*EUA_ARTICLE_REDIRECTS_START\*\/[\s\S]*?\/\*EUA_ARTICLE_REDIRECTS_END\*\//g,found=html.match(pattern)||[];
+  if(found.length!==1)throw new Error(`The home router must carry exactly one EUA_ARTICLE_REDIRECTS block (found ${found.length})`);
+  return html.replace(pattern,()=>'/*EUA_ARTICLE_REDIRECTS_START*/'+JSON.stringify(redirectTable(html))+'/*EUA_ARTICLE_REDIRECTS_END*/');
+}
+// Нова адреса для старого якоря ('creatine', 'creatine-dosing', 'supplement-omega'…) або null, якщо це не розбір.
+export function movedAddress(anchor,table){
+  for(const [file,anchors] of Object.entries(table)){
+    if(file.replace(/\.html$/,'')===anchor)return './'+file;
+    if(anchors.includes(anchor))return './'+file+'#'+anchor;
+  }
+  return null;
+}
 export function pageScript(){
   // Клас route-active раніше ставив перемикач; його читає evidence/ui.js. Закриття діалогу кліком по тлу перенесено без змін.
   return `<script>

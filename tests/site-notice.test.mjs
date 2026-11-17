@@ -4,8 +4,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {SITE_NOTICE_TEXT,SITE_NOTICE_LINK,siteNoticeHTML,withSiteNotice} from '../src/platform/site-notice.mjs';
 import {EXCLUDED_CSS} from '../scripts/palette/targets.mjs';
+import {unstampHome} from '../scripts/combined-source.mjs';
 
-const read=file=>fs.readFileSync(file,'utf8');
+// dist/index.html закінчується коментарем-відбитком EUA_HOME_DIGEST (scripts/combined-source.mjs: так збірка помічає ручну правку
+// згенерованої головної). Це коментар після </html>, браузер його не показує; тут читаємо сторінку без нього.
+const read=file=>file==='dist/index.html'?unstampHome(fs.readFileSync(file,'utf8')):fs.readFileSync(file,'utf8');
 const pages=fs.readdirSync('dist').filter(file=>file.endsWith('.html')).sort();
 assert(pages.length>=22&&pages.includes('about.html'),`all pages are covered (${pages.length})`);
 

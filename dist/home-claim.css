@@ -1,0 +1,83 @@
+/* «Одне твердження наживо» під героєм головної (рішення власника «2 і 3», 2026-11-17; src/platform/home-claim.mjs, docs/HOME_FIRST_SCREEN.md).
+   Мова сторінки: тонкі лінії, засічки, точки (той самий знак інтервалу, що й між блоками головної). Кольори з палітри головної (--spectrum-*);
+   світла тема сайту це фільтр на <html>, окремих світлих кольорів тут немає. Без JavaScript і в друку все видно: розмітка статична. */
+body[data-platform-area="home"] .home-claim{
+  --hc-line:var(--spectrum-line,#cec2e23d);--hc-text:var(--spectrum-text,#f7f3ef);--hc-muted:var(--spectrum-muted,#c3b9d1);--hc-accent:var(--spectrum-accent,#d1a5ff);
+  box-sizing:border-box;width:min(100% - 32px,760px);margin:8px auto 40px;padding:22px 0 0;border-top:1px solid var(--hc-line);color:var(--hc-text);
+  font:400 15px/1.55 Inter,system-ui,sans-serif;
+}
+body[data-platform-area="home"] .home-claim *{box-sizing:border-box}
+body[data-platform-area="home"] .home-claim-eyebrow{margin:0 0 10px;color:var(--hc-muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+body[data-platform-area="home"] .home-claim h2{margin:0 0 18px;color:var(--hc-text);font:400 clamp(24px,5.4vw,34px)/1.18 var(--spectrum-serif,Georgia,serif);letter-spacing:-.02em;text-wrap:balance}
+
+/* Рівень впевненості: чотири відрізки на одній лінії, досягнуті світліші, поточний із точкою. */
+body[data-platform-area="home"] .home-claim-label{margin:0 0 8px;color:var(--hc-muted);font-size:14px}
+body[data-platform-area="home"] .home-claim-label strong{color:var(--hc-text);font-weight:600}
+body[data-platform-area="home"] .home-claim-provisional{color:var(--hc-muted)}
+body[data-platform-area="home"] .home-claim-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:0 0 18px;padding:0;list-style:none}
+body[data-platform-area="home"] .home-claim-step{position:relative;padding-top:12px;color:var(--hc-muted);font-size:12px;line-height:1.35}
+body[data-platform-area="home"] .home-claim-step::before{content:"";position:absolute;left:0;right:0;top:3px;height:2px;border-radius:1px;background:var(--hc-line)}
+body[data-platform-area="home"] .home-claim-step.is-reached::before{background:color-mix(in srgb,var(--hc-accent) 55%,transparent)}
+body[data-platform-area="home"] .home-claim-step.is-current{color:var(--hc-text);font-weight:600}
+body[data-platform-area="home"] .home-claim-step.is-current::after{content:"";position:absolute;right:0;top:0;width:8px;height:8px;border-radius:50%;background:var(--hc-accent)}
+
+/* Кого стосується / з чим порівнювали. */
+body[data-platform-area="home"] .home-claim-scope{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px;margin:0 0 22px}
+body[data-platform-area="home"] .home-claim-scope dt{margin:0 0 2px;color:var(--hc-muted);font-size:12px}
+body[data-platform-area="home"] .home-claim-scope dd{margin:0;font-size:14px}
+
+/* Лінійка ефекту: шкала 0…1, засічки 0,2 / 0,5 / 0,8 під нею, точка на кожен результат. Підписи це HTML, не текст у малюнку.
+   Увесь список це один grid із трьома колонками (назва, лінія, число); li стають display:contents, тож лінія й засічки в одній колонці. */
+body[data-platform-area="home"] .home-claim-ruler{margin:0 0 16px;padding:0}
+body[data-platform-area="home"] .home-claim-ruler figcaption{margin:0 0 6px;color:var(--hc-muted);font-size:12px;letter-spacing:.04em}
+body[data-platform-area="home"] .home-claim-effects{display:grid;grid-template-columns:minmax(0,14em) minmax(0,1fr) auto;align-items:center;gap:4px 12px;margin:0;padding:0;list-style:none;font-size:13px}
+body[data-platform-area="home"] .home-claim-effect,body[data-platform-area="home"] .home-claim-scale{display:contents}
+body[data-platform-area="home"] .home-claim-effect>*{min-height:28px;display:flex;align-items:center}
+body[data-platform-area="home"] .home-claim-track{position:relative;height:28px;background:linear-gradient(var(--hc-line),var(--hc-line)) 0 50%/100% 1px no-repeat}
+body[data-platform-area="home"] .home-claim-dot{position:absolute;top:50%;left:var(--at);width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--hc-accent)}
+body[data-platform-area="home"] .home-claim-effect-value{color:var(--hc-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+body[data-platform-area="home"] .home-claim-marks{grid-column:2;position:relative;height:34px;margin:0;padding:0;list-style:none}
+body[data-platform-area="home"] .home-claim-mark{position:absolute;top:0;left:var(--at);display:grid;justify-items:center;transform:translateX(-50%);padding-top:8px;color:var(--hc-muted);font-size:12px;line-height:1.25;white-space:nowrap}
+body[data-platform-area="home"] .home-claim-mark::before{content:"";position:absolute;top:0;left:50%;width:1px;height:6px;background:var(--hc-muted)}
+body[data-platform-area="home"] .home-claim-mark-value{font-variant-numeric:tabular-nums;opacity:.85}
+body[data-platform-area="home"] .home-claim-note{margin:6px 0 0;color:var(--hc-muted);font-size:12px}
+
+/* Межа й джерело згорнуті; знак стану той самий кутик, що в згорнутих рядках головної (home-row-signs.css), а не «+». */
+body[data-platform-area="home"] .home-claim-more{margin:0 0 4px;border-top:1px solid var(--hc-line)}
+body[data-platform-area="home"] .home-claim-more>summary{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;list-style:none;color:var(--hc-muted);font-size:14px}
+body[data-platform-area="home"] .home-claim-more>summary::-webkit-details-marker{display:none}
+body[data-platform-area="home"] .home-claim-more>summary::after{content:"";width:7px;height:7px;margin:-3px 2px 0 auto;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .2s}
+body[data-platform-area="home"] .home-claim-more[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+body[data-platform-area="home"] .home-claim-more>summary:focus-visible{outline:2px solid var(--hc-accent);outline-offset:3px;border-radius:2px}
+body[data-platform-area="home"] .home-claim-more>summary:hover{color:var(--hc-text)}
+body[data-platform-area="home"] .home-claim-limit,
+body[data-platform-area="home"] .home-claim-source{margin:0 0 8px;font-size:14px}
+body[data-platform-area="home"] .home-claim-limit strong{font-weight:600}
+body[data-platform-area="home"] .home-claim-source{color:var(--hc-muted)}
+body[data-platform-area="home"] .home-claim a{color:var(--hc-accent);text-underline-offset:3px}
+body[data-platform-area="home"] .home-claim-links{display:flex;flex-wrap:wrap;gap:0 24px;margin:0}
+body[data-platform-area="home"] .home-claim-links a{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:15px}
+body[data-platform-area="home"] .home-claim-open{font-weight:500}
+body[data-platform-area="home"] .home-claim a:focus-visible{outline:2px solid var(--hc-accent);outline-offset:3px;border-radius:2px}
+
+@media(max-width:560px){
+  body[data-platform-area="home"] .home-claim{margin-bottom:28px}
+  body[data-platform-area="home"] .home-claim-scope{grid-template-columns:minmax(0,1fr);gap:6px;margin-bottom:16px}
+  body[data-platform-area="home"] .home-claim-scope>div{display:block}
+  body[data-platform-area="home"] .home-claim-scope dt{display:inline;margin:0}
+  body[data-platform-area="home"] .home-claim-scope dt::after{content:": "}
+  body[data-platform-area="home"] .home-claim-scope dd{display:inline}
+  body[data-platform-area="home"] .home-claim h2{margin-bottom:14px}
+  body[data-platform-area="home"] .home-claim-links{flex-direction:column}
+  body[data-platform-area="home"] .home-claim-effects{grid-template-columns:minmax(0,1fr) auto;row-gap:0}
+  body[data-platform-area="home"] .home-claim-effect-name{grid-column:1/-1;min-height:0!important;padding-top:6px}
+  body[data-platform-area="home"] .home-claim-marks{grid-column:1}
+}
+@media(prefers-reduced-motion:reduce){body[data-platform-area="home"] .home-claim-more>summary::after{transition:none}}
+@media print{
+  body[data-platform-area="home"] .home-claim{color:#111;border-color:#999}
+  body[data-platform-area="home"] .home-claim-more>summary{display:none}
+  body[data-platform-area="home"] .home-claim-more::details-content{content-visibility:visible;display:block}
+  body[data-platform-area="home"] .home-claim-more>:not(summary){display:block!important}
+  body[data-platform-area="home"] .home-claim-dot{background:#111}
+}

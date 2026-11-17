@@ -58,7 +58,9 @@ const built=inspect(index,`[n.xpath('./summary//*[@class="home-row-hint"]')[0].t
 assert.deepEqual(built,outlines.map(o=>o.hint),'dist/index.html carries the same route previews as the generator');
 
 // 5. Кожен згорнутий рядок на головній має другий рядок тексту (не лише назву): жоден не лишився «голим».
-const all=inspect(index,`[{'id':n.get('id'),'cls':n.get('class'),'secondLine':len(n.xpath('./summary//small'))+len(n.xpath('./summary/span[not(@aria-hidden)]/text()[normalize-space()]'))+len(n.xpath('./summary//span[@class="home-fresh-fold-hint"]')),'open':n.get('open') is not None} for n in root.xpath('//body/*[contains(@class,"page")]//details')]`);
+const all=inspect(index,`[{'id':n.get('id'),'cls':n.get('class'),'secondLine':len(n.xpath('./summary//small'))+len(n.xpath('./summary/span[not(@aria-hidden)]/text()[normalize-space()]'))+len(n.xpath('./summary//span[@class="home-fresh-fold-hint"]')),'open':n.get('open') is not None} for n in root.xpath('//body/*[contains(@class,"page")]//details[not(@class="home-claim-more")]')]`);
+// «Межа висновку й джерело» у картці твердження під героєм (2026-11-17, src/platform/home-claim.mjs) не рядок головної, а згорток усередині картки:
+// його назва сама каже, що всередині, тому другого рядка він не має; перевіряє його tests/home-claim.test.mjs.
 assert.equal(all.length,catalog.paths.length+7,'Every route plus the seven existing disclosures has a preview line');
 for(const row of all){
   assert(row.secondLine>=1,`Folded row ${row.id||row.cls} has a second line under its title`);

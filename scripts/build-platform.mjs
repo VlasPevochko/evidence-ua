@@ -8,6 +8,9 @@ import {homeSpectrumHTML} from '../src/platform/home-spectrum.mjs';
 import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
 import {homeFreshGridHTML} from '../src/platform/home-fresh.mjs';
+import {homeClaimHTML,HOME_CLAIM_ID} from '../src/platform/home-claim.mjs';
+import {confidenceLabels} from '../src/evidence/core/components.mjs';
+import {creatineClaims,creatineSources,evidenceRecordsByClaimId} from '../dist/evidence/data.js';
 import {shelfSignSVG,signHTML,placeSign,libraryClaimCounts} from '../src/platform/home-row-signs.mjs';
 import {comparisonStatus} from '../dist/compare-status.js';
 import {renderNight} from '../src/sleep/night.mjs';
@@ -54,7 +57,15 @@ if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
  const featured=[...latest.matchAll(/research\.html#([a-z0-9-]+)/g)].map(match=>match[1]).find(id=>STUDIES.some(study=>study.id===id&&study.chart));
  if(!featured)throw Error('The «Останні розбори» list on the home has no write-up with a chart');
  const grid=homeFreshGridHTML({studies:STUDIES,latestStudyId:featured,changes:CHANGES,science:SCIENCE,scenes:SCENES,miniInterval});
- const next=html.replace(/<!-- EUA_HOME_FRESH_START -->[\s\S]*?<!-- EUA_HOME_FRESH_END -->/,()=>'<!-- EUA_HOME_FRESH_START -->'+grid+'<!-- EUA_HOME_FRESH_END -->');
+ let next=html.replace(/<!-- EUA_HOME_FRESH_START -->[\s\S]*?<!-- EUA_HOME_FRESH_END -->/,()=>'<!-- EUA_HOME_FRESH_START -->'+grid+'<!-- EUA_HOME_FRESH_END -->');
+ // «Одне твердження наживо» під героєм (2026-11-17): збирається з тих самих записів, що й розбір креатину (dist/evidence/data.js).
+ {
+  const claim=creatineClaims.find(item=>item.id===HOME_CLAIM_ID),records=evidenceRecordsByClaimId[HOME_CLAIM_ID]||[];
+  const source=creatineSources.find(item=>item.id===records[0]?.sourceId);
+  const markers=/<!-- EUA_HOME_CLAIM_START -->[\s\S]*?<!-- EUA_HOME_CLAIM_END -->/;
+  if(!markers.test(next))throw Error('EUA_HOME_CLAIM markers are missing in the home');
+  next=next.replace(markers,()=>'<!-- EUA_HOME_CLAIM_START -->'+homeClaimHTML({claim,records,source},confidenceLabels)+'<!-- EUA_HOME_CLAIM_END -->');
+ }
  // Знаки рядків (2026-11-15): «Оновлення» показує мініатюру графіка того самого розбору, що й перша картка; «Бібліотека» показує
  // стовпчик на кожну добавку зі списку бібліотеки, риска = одне розібране твердження (dist/compare-status.js). Обидва знаки з даних, не вручну.
  const signed=placeSign(placeSign(next,'FRESH',signHTML('fresh',miniInterval(STUDIES.find(study=>study.id===featured).chart))),'LIBRARY',signHTML('library',shelfSignSVG(libraryClaimCounts(next,comparisonStatus))));

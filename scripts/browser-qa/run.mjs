@@ -3538,7 +3538,11 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
       check(where, new Set(info.cards.map(card => card.x)).size === 1 && info.cards[0].y < info.cards[1].y && info.cards[1].y < info.cards[2].y, 'on the phone the cards are stacked');
       if (viewport.width === 390) {
         check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
-        check(where,closedHeight<=viewport.height*3.5,`the folded home is no taller than 3.5 phone screens (${closedHeight}px)`);
+        // 2026-11-17 («2 і 3»): під героєм стоїть картка «Одне твердження наживо», на телефоні ~700 px; разом із нею головна ~4,1 екрана.
+        // Стара межа 3,5 екрана лишається для решти сторінки, а картка має власну межу; чи залишати картку такої висоти, вирішує власник.
+        const claimHeight=await page.evaluate(()=>Math.ceil(document.querySelector('.home-claim')?.getBoundingClientRect().height||0)+40);
+        check(where,claimHeight>40&&claimHeight<=760,`the claim card under the hero stays within its own phone budget (${claimHeight}px with margins, limit 760px)`);
+        check(where,closedHeight-claimHeight<=viewport.height*3.5,`the folded home without the claim card is no taller than 3.5 phone screens (${closedHeight-claimHeight}px; with the card ${closedHeight}px)`);
       }
     }
     await artifact(page, viewport, 'home-fresh-cards', page.locator('.home-fresh'));
@@ -5293,6 +5297,83 @@ async function articlePagesFlow(browser, origin, viewport) {
   }
 }
 
+async function homeNoJumpFlow(browser, origin, viewport) {
+  // Рішення власника «2 і 3» (2026-11-17): перший екран головної не стрибає. Раніше спільна шапка ставала на місце статичної (322 px на телефоні)
+  // після завантаження, і заголовок «Почни з питання.» з'їжджав угору (зсув 0,45–0,6). Міряємо справжній зсув (layout-shift) на сповільненому
+  // з'єднанні й без нього, а також що заголовок малюється своїм шрифтом і що без JavaScript статична шапка лишається повною.
+  const where = `home no jump @${viewport.name}`;
+  for (const slow of [false, true]) {
+    const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
+    const page = await context.newPage();
+    const seen = await observePage(page, origin);
+    try {
+      await page.addInitScript(() => { window.__euaShift = 0; window.__euaShifts = []; new PerformanceObserver(list => { for (const entry of list.getEntries()) if (!entry.hadRecentInput) { window.__euaShift += entry.value; window.__euaShifts.push(Math.round(entry.startTime) + ':' + entry.value.toFixed(3)); } }).observe({type: 'layout-shift', buffered: true}); });
+      if (slow) {
+        const cdp = await context.newCDPSession(page);
+        await cdp.send('Network.enable');
+        await cdp.send('Network.emulateNetworkConditions', {offline: false, latency: 150, downloadThroughput: 1.6 * 1024 * 1024 / 8, uploadThroughput: 750 * 1024 / 8});
+        await cdp.send('Emulation.setCPUThrottlingRate', {rate: 4});
+      }
+      await page.goto(origin + '/index.html', {waitUntil: 'load'});
+      await page.locator('.eua-site-header').waitFor({state: 'attached'});
+      await page.waitForTimeout(slow ? 2500 : 1200);
+      const result = await page.evaluate(() => ({shift: window.__euaShift, shifts: window.__euaShifts, header: Math.round(document.querySelector('.eua-site-header').getBoundingClientRect().height),
+        font: document.fonts.check('400 48px "Spectrum Serif"', 'Почни'), preloaded: performance.getEntriesByType('resource').some(entry => entry.name.includes('source-serif-4-cyrillic') && entry.initiatorType === 'link')}));
+      check(where, result.shift < 0.05, `${slow ? 'slow' : 'normal'} load: the first screen does not jump (layout shift ${result.shift.toFixed(3)}; ${result.shifts.join(', ')})`);
+      check(where, result.header === (viewport.width > 1024 ? 78 : 80), `the shared header has its usual height (${result.header} px)`);
+      check(where, result.font, 'the heading font is ready');
+      check(where, result.preloaded, 'the heading font is fetched by the preload, not later by the stylesheet');
+      checkBrowserHealth(`${where} ${slow ? 'slow' : 'normal'}`, seen);
+    } finally { await context.close(); }
+  }
+  // Без JavaScript статична шапка повна: меню видно й ним можна скористатися.
+  const {context, page} = await open(browser, origin, viewport, '/index.html', {contextOptions: {javaScriptEnabled: false}});
+  try {
+    const visible = await page.locator('.page>header.home-header nav a:visible').count();
+    check(where, visible >= 3, `without JavaScript the static header keeps its menu (${visible} visible links)`);
+  } finally { await context.close(); }
+}
+
+async function homeClaimFlow(browser, origin, viewport) {
+  // «Одне твердження наживо» під героєм (рішення власника «2 і 3», 2026-11-17; src/platform/home-claim.mjs).
+  // У справжньому браузері: картка не виходить за ширину, текст не менший за 12 px, точка 0,5 і засічка «середній» стоять на одній вертикалі
+  // (точки й засічки рахуються від тієї самої лінії), посилання не нижчі за 44 px, у зеленому вигляді й без JavaScript картка та сама.
+  const where = `home claim @${viewport.name}`;
+  for (const variant of ['cosmic', 'green', 'nojs']) {
+    const options = variant === 'nojs' ? {contextOptions: {javaScriptEnabled: false}} : variant === 'green' ? {initScript: () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}))} : {};
+    const {context, page, seen} = await open(browser, origin, viewport, '/index.html', options);
+    try {
+      const card = page.locator('.home-claim');
+      await card.scrollIntoViewIfNeeded();
+      const r = await page.evaluate(() => {
+        const card = document.querySelector('.home-claim'), box = card.getBoundingClientRect();
+        const texts = [...card.querySelectorAll('*')].filter(el => [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && el.getClientRects().length);
+        const track = document.querySelector('.home-claim-track').getBoundingClientRect();
+        const marks = [...document.querySelectorAll('.home-claim-mark')].map(el => { const b = el.getBoundingClientRect(); return (b.left + b.right) / 2; });
+        const dots = [...document.querySelectorAll('.home-claim-dot')].map(el => { const b = el.getBoundingClientRect(); return {x: (b.left + b.right) / 2, at: parseFloat(el.style.getPropertyValue('--at'))}; });
+        const links = [...card.querySelectorAll('.home-claim-links a')].map(a => Math.round(a.getBoundingClientRect().height));
+        const prev = card.previousElementSibling?.getBoundingClientRect();
+        return {width: box.width, left: box.left, right: box.right, vw: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth,
+          smallest: Math.min(...texts.map(el => parseFloat(getComputedStyle(el).fontSize))), track: {left: track.left, width: track.width}, marks, dots, links,
+          visible: getComputedStyle(card).display !== 'none' && box.height > 200, color: getComputedStyle(card.querySelector('h2')).color, bg: getComputedStyle(document.body).backgroundColor};
+      });
+      const tag = `${variant}:`;
+      check(where, r.visible, `${tag} the card is shown`);
+      check(where, r.left >= 0 && r.right <= r.vw + 0.5 && r.scroll <= r.vw, `${tag} nothing runs past the screen (card ${Math.round(r.left)}–${Math.round(r.right)}, page ${r.scroll}/${r.vw})`);
+      check(where, r.smallest >= 12, `${tag} no text under 12 px (${r.smallest})`);
+      check(where, r.links.length === 2 && r.links.every(h => h >= 44), `${tag} both links are at least 44 px tall (${r.links.join(', ')})`);
+      const expectedMid = r.track.left + r.track.width * 0.5;
+      check(where, Math.abs(r.marks[1] - expectedMid) <= 1.5, `${tag} the «середній» mark sits at 0.5 of the line (${r.marks[1].toFixed(1)} vs ${expectedMid.toFixed(1)})`);
+      for (const dot of r.dots) check(where, Math.abs(dot.x - (r.track.left + r.track.width * dot.at / 100)) <= 1.5, `${tag} the point g=${dot.at / 100} sits at its value on the line`);
+      const fold = page.locator('.home-claim-more');
+      check(where, !(await page.locator('.home-claim-limit').isVisible()), `${tag} the limit and source start folded`);
+      await fold.locator('summary').click();
+      check(where, await page.locator('.home-claim-limit').isVisible() && await page.locator('.home-claim-source').isVisible(), `${tag} one tap opens the limit and the source`);
+      checkBrowserHealth(`${where} ${variant}`, seen);
+    } finally { await context.close(); }
+  }
+}
+
 async function homeRowsFlow(browser, origin, viewport) {
   // Рішення власника 2026-11-02 (бриф T6): згорнуті рядки головної показують під назвою, що всередині (.home-row-hint).
   // У справжньому браузері перевіряємо: підказка видима, не менша за 12 px і контрастна; рядок не стає абзацом (до 3 рядків підказки),
@@ -5650,6 +5731,9 @@ async function homeFlows(browser, origin) {
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
   // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
+  // 2026-11-17: перший екран не стрибає (шапка, шрифт заголовка); 1024 і 1025 включено, бо там міняється висота шапки.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}, {name: 'tablet-wide', width: 1024, height: 768}, {name: 'laptop-narrow', width: 1025, height: 768}]) await isolatedFlow(homeNoJumpFlow, browser, origin, viewport);
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeClaimFlow, browser, origin, viewport);
   // 2026-11-15: лінза вміщається в сцену на всіх ширинах; 320, 768 і 1024 включено, бо там половини зрізались найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}, {name: 'mobile-tiny', width: 320, height: 640}, {name: 'tablet', width: 768, height: 1024}, {name: 'laptop', width: 1024, height: 768}]) await isolatedFlow(homeLensFitFlow, browser, origin, viewport);
   // 2026-11-15: знаки рядків замість «+»; 360 включено, бо там назва маршрутів переноситься й знак стоїть найтісніше.

@@ -8,9 +8,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {ARTICLES,ARTICLE_FILES,HOME_ONLY_SCRIPTS,ROUTER_MARK,homePageHTML,REVIEW_ONLY_STYLESHEETS,REVIEW_ONLY_SCRIPTS,REVIEW_ONLY_STYLE_BLOCKS,layout,sectionSpan,anchorOwners,rewriteHashLinks,articlePageHTML,articleTitle,articleDescription,redirectTable,withRedirectTable,movedAddress,homeOnlyHTML} from '../src/platform/article-pages.mjs';
 import {readBase} from '../scripts/site-url.mjs';
+import {unstampHome} from '../scripts/combined-source.mjs';
 
 // 2026-11-17 (етап 3): спільний документ лежить у src/site/index.combined.html, а dist/index.html це лише головна, вирізана з нього.
-const base=readBase(),combined=fs.readFileSync('src/site/index.combined.html','utf8'),publishedHome=fs.readFileSync('dist/index.html','utf8');
+const base=readBase(),combined=fs.readFileSync('src/site/index.combined.html','utf8'),publishedHome=unstampHome(fs.readFileSync('dist/index.html','utf8')); // 2026-11-17: останній рядок це відбиток збірки (захист від ручних правок)
+assert(/\n<!-- EUA_HOME_DIGEST sha256:[0-9a-f]{64} -->\n$/.test(fs.readFileSync('dist/index.html','utf8')),'the published home ends with its build digest');
 assert.equal(publishedHome,homePageHTML(combined),'dist/index.html is the home cut from the combined document (run node scripts/build-site.mjs)');
 assert(!/<section\b[^>]*\bid="(?:creatine|supplement-(?!library)[a-z-]+)"/.test(publishedHome),'the published home carries no review');
 for(const asset of [...REVIEW_ONLY_STYLESHEETS,...REVIEW_ONLY_SCRIPTS])assert(!publishedHome.includes('./'+asset),`the published home does not load ${asset}`);

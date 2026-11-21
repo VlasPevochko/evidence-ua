@@ -13,7 +13,7 @@ for(const t of topics){const area=catalog.getArea(t.id);assert.equal(t.state,are
 // Owner decision 2026-10-27: the question-led cosmic hero replaces the old picker CTA.
 // Keep the legacy card/footer behavior below as a preservation check; its DOM rewrites are guarded on the new home.
 assert(index.includes('class="spectrum-home"')&&index.includes('id="spectrum-search"'),'The selected question-led hero is present');
-assert(index.includes('./home-spectrum.js?v=10')&&index.includes('./home-spectrum.css?v=8'),'The home controller and updated stylesheet are wired');
+assert(index.includes('./home-spectrum.js?v=11')&&index.includes('./home-spectrum.css?v=8'),'The home controller and updated stylesheet are wired');
 assert(nav.includes("if (!document.querySelector('.spectrum-home'))"),'Legacy DOM replacement is disabled on the selected home');
 const catalogScript=index.indexOf('home-catalog.js?v=83'),navigationScript=index.indexOf('navigation-v17.js?v=77');
 assert(catalogScript>=0&&navigationScript>catalogScript,'Canonical catalog loads before the retained evidence-guide bootstrap');
@@ -60,7 +60,7 @@ sys.path.insert(0, 'tests/helpers')
 from science_html_baseline import restore_historical_rendering
 expected=json.loads(Path('tests/fixtures/home-v56-science-digests.json').read_text())
 assert len(expected)==11  # berberine dossier added 2026-10-21 (owner decision)
-root=html.fromstring(Path('dist/index.html').read_text())
+root=html.fromstring(Path('src/site/index.combined.html').read_text())  # етап 3: розбори в спільному документі
 for heading in root.xpath('//section[@id="creatine"]//article[contains(concat(" ",normalize-space(@class)," ")," eua-source ")]/h3'):
     heading.tag='h4'
 # Technical renderer corrections: retain original digests, normalize only seven exact formatting tails.

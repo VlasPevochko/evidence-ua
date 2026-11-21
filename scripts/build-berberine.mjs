@@ -6,11 +6,15 @@ import path from 'node:path';
 import {berberineBase, berberineModule} from '../src/evidence/supplements/berberine/module.mjs';
 import {ConfidenceBadge, SourceCard, claimButton, escapeHTML as e} from '../src/evidence/core/components.mjs';
 import {provenanceStatus} from '../src/evidence/core/provenance.mjs';
+import {restoreCombined} from './combined-source.mjs';
 
 // Дата погодження формулювань картки (раніше була вписана в сам рядок). Науковий перегляд досі не завершено: це лише дата редакторського погодження.
 export const approvedOn = '2026-10-21';
 
 const root = process.cwd();
+// Етап 3 (docs/HOME_SPLIT_PLAN.md): dist/index.html на сайті це лише головна; скрипт пише в спільний документ «головна + розбори»,
+// тому спершу повертаємо його в dist/index.html (src/site/index.combined.html). Наприкінці збірки build-article-pages знову лишить головну.
+restoreCombined(root);
 const indexPath = path.join(root, 'dist/index.html');
 const out = path.join(root, 'dist/evidence');
 

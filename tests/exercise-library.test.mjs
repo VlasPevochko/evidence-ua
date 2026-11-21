@@ -210,16 +210,20 @@ const shellSource = fs.readFileSync('src/platform/shell.mjs', 'utf8');
 const shellBuilt = fs.readFileSync('dist/platform-shell.js', 'utf8');
 for (const shell of [shellSource, shellBuilt]) {
   assert(shell.includes('./exercises.html'), 'Shared shell links to the Exercise Library');
-  assert(shell.includes('eua-exercises-link') && shell.includes('${exercisesLink(current)}'), 'Library link is part of the shared navigation');
+  // 2026-11-14 (рішення власника «так» на «прибрати дублі»): рядок під шапкою більше не дублює «Вправи» й «Атлас», бо вони є в меню шапки.
+  // Посилання «Вправи» лишається в меню шапки (site-header), а функція exercisesLink у shell.mjs існує, але в рядок не підставляється.
+  assert(shell.includes('eua-exercises-link') && !shell.includes('${exercisesLink(current)}'), 'Library link is not duplicated in the row under the header');
   assert(shell.includes('eua-home-exercises-entry'), 'Home header has a library entry');
 }
+const headerSource = fs.readFileSync('src/platform/site-header.mjs', 'utf8');
+assert(/'Вправи','\.\/exercises\.html'/.test(headerSource) && /'Атлас','\.\/atlas\.html'/.test(headerSource), 'Library and Atlas stay one tap away in the header menu');
 assert.equal(
   shellBuilt,
   // The shared header import is rewritten by the platform builder as well.
   // 2026-11-03 («Довіра»: сторінка «Про проєкт», спільне застереження): tools 106, header 17, shell 110 (лише версії в query-рядках).
   // 2026-11-02 (пошук у шапці головної, T7): materials 105 (слова «сном»), tools 105, header 16, search 14 (група «Розбори»). Змінились лише версії в query-рядках.
   // 2026-11-01 (пошук за ключовими словами): каскад версій через materials.mjs (materials 104, tools 104, directions 110, home-feedback 104, shell 107, search 12, header 14). Змінились лише версії в query-рядках.
-  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=6'").replace("'./terms.mjs'", "'./platform-terms.js?v=4'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=101'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=109'").replace("'./site-header.mjs'", "'./site-header.js?v=20'"),
+  shellSource.replace("'./next-steps.mjs'", "'./platform-next-steps.js?v=6'").replace("'./terms.mjs'", "'./platform-terms.js?v=5'").replace("'./catalog.mjs'", "'./platform-catalog.js?v=102'").replace("'./quick-tools.mjs'", "'./platform-tools.js?v=110'").replace("'./site-header.mjs'", "'./site-header.js?v=21'"),
   'dist/platform-shell.js must match src/platform/shell.mjs as the platform build generates it'
 );
 assert(fs.readFileSync('dist/platform.css', 'utf8').includes('.eua-exercises-link'), 'Styles for the shared library link exist');
@@ -264,4 +268,3 @@ const pageHtml = fs.readFileSync('dist/exercises.html', 'utf8');
 assert(!/чернетк/i.test(pageHtml) && !/чернетк/i.test(fs.readFileSync('dist/exercises.js', 'utf8')), 'No stale draft wording once entries are video-checked');
 
 console.log('Exercise library: 12 video-checked entries, data model, safe wording, filters, detail layers, click-to-load video and Atlas link passed.');
-// 2026-11-14: Atlas anatomy search metadata requires a new shared-cache cascade; science fixtures stay unchanged.

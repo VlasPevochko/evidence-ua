@@ -6,6 +6,8 @@
 // external links only (no request before a click), one control per action.
 
 import {practiceBase} from './practice.mjs';
+import {signalArt} from './signal-art.mjs';
+import {recruitArt,curvesArt,loadTypesArt,growthArt} from './training-art.mjs';
 import {ConfidenceBadge,claimButton,getClaim} from '../evidence/core/components.mjs';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -38,7 +40,8 @@ export const guideSources=[
  {id:'brown',short:'Brown 2017',title:'Amyotrophic Lateral Sclerosis',journal:'New England Journal of Medicine',year:2017,pmid:'28700839',doi:'10.1056/NEJMra1603471',type:'Огляд'},
  {id:'mercuri',short:'Mercuri 2019',title:'Muscular dystrophies',journal:'Lancet',year:2019,pmid:'31789220',doi:'10.1016/S0140-6736(19)32910-1',type:'Огляд'},
  {id:'kubota',short:'Kubota 2025',title:'Molecular genetics of skeletal muscle channelopathies',journal:'Journal of Human Genetics',year:2025,pmid:'40770230',doi:'10.1038/s10038-025-01370-w',type:'Огляд'},
- {id:'cruz',short:'Cruz-Jentoft 2019',title:'Sarcopenia',journal:'Lancet',year:2019,pmid:'31171417',doi:'10.1016/S0140-6736(19)31138-9',type:'Огляд'}
+ {id:'cruz',short:'Cruz-Jentoft 2019',title:'Sarcopenia',journal:'Lancet',year:2019,pmid:'31171417',doi:'10.1016/S0140-6736(19)31138-9',type:'Огляд'},
+ {id:'hody',short:'Hody 2019',title:'Eccentric Muscle Contractions: Risks and Benefits',journal:'Frontiers in Physiology',year:2019,pmid:'31130877',doi:'10.3389/fphys.2019.00536',type:'Огляд'},
 ];
 
 const src=id=>{const s=guideSources.find(s=>s.id===id);if(!s)throw Error('Unknown guide source '+id);return s;};
@@ -53,16 +56,16 @@ const claimsList=(ids,title='Твердження й докази')=>`<section c
 
 // ── «М’яз за 30 секунд» (visible) ───────────────────────────────────────────
 export const molecules=[
- {name:'Ca²⁺',text:'«Дозвіл» на скорочення: зв’язується з тропоніном C і відкриває актин для міозину.'},
- {name:'АТФ',text:'Енергія для кожного кроку головки міозину і для повернення кальцію назад, тобто для розслаблення.'},
- {name:'mTORC1',text:'Один із центральних регуляторів синтезу білка й росту клітини.'},
- {name:'Міостатин',text:'Одне з природних «гальм» м’язової маси.'}
+ {name:'Ca²⁺',chapter:'signal',text:'«Дозвіл» на скорочення: зв’язується з тропоніном C і відкриває актин для міозину.'},
+ {name:'АТФ',chapter:'signal',text:'Енергія для кожного кроку головки міозину і для повернення кальцію назад, тобто для розслаблення.'},
+ {name:'mTORC1',chapter:'why-grow',text:'Один із центральних регуляторів синтезу білка й росту клітини.'},
+ {name:'Міостатин',chapter:'why-shrink',text:'Одне з природних «гальм» м’язової маси.'}
 ];
 export function renderQuick(){
  return `<section id="quick" class="mg-quick" aria-labelledby="quick-title">
 <h2 id="quick-title">М’яз за 30 секунд</h2>
 <p>М’яз складається з пучків, пучки — з волокон, волокна — з міофібрил, а міофібрили — з тисяч саркомерів. Усередині саркомера актин і міозин ковзають один уздовж одного. Нерв дає електричну команду, кальцій «відмикає» актин, а АТФ живить і скорочення, і розслаблення.</p>
-<ul class="mg-molecules" aria-label="Чотири молекули, які варто запам’ятати">${molecules.map(m=>`<li><strong>${esc(m.name)}</strong><span>${esc(m.text)}</span></li>`).join('')}</ul>
+<ul class="mg-molecules" aria-label="Чотири молекули, які варто запам’ятати">${molecules.map(m=>{const ch=chapters.find(c=>c.id===m.chapter);return `<li><a class="mg-mol" href="#${esc(m.chapter)}"><strong>${esc(m.name)}</strong><span>${esc(m.text)}</span><small>Докладніше: ${esc(ch.title)}</small></a></li>`;}).join('')}</ul>
 </section>`;
 }
 
@@ -128,6 +131,7 @@ function chapterSignal(){
  return `<p class="mg-lead">Скорочення починається не в м’язі, а в нервовій системі. Натисніть кнопку — сигнал пройде всім ланцюгом.</p>
 <div class="mg-chain" data-chain data-chain-step="-1">
 <button type="button" class="play-btn mg-chain-play" data-chain-play aria-pressed="false">▶ Пустити сигнал</button>
+${signalArt()}
 <ol class="mg-chain-list">${signalChain.map((s,i)=>`<li data-chain-index="${i}"><span class="mg-chain-dot" aria-hidden="true"></span><strong>${esc(s.title)}</strong><span>${esc(s.text)}</span></li>`).join('')}</ol>
 <p class="small" data-chain-status aria-live="polite">Схема умовна: швидкість анімації не відповідає реальному часу (у тілі це мілісекунди).</p>
 </div>
@@ -142,12 +146,25 @@ ${cite('endo','gordon')}`)}`;
 }
 
 // ── Chapter 3: strength is not mass ─────────────────────────────────────────
+
+// Схеми для «силових» розділів (2026-11-15). Нових тверджень немає: підписи повторюють те, що вже сказано в розділах 3 і 4.
+export const recruitTexts=['Невелике зусилля: працюють переважно малі одиниці.','Більше зусилля: до малих додаються середні.','Максимум зусилля: вмикаються й великі одиниці, імпульси частіші.'];
+const recruitFigure=()=>`<div class="mg-recruit" data-recruit data-recruit-level="3">${recruitArt()}
+<div class="mg-recruit-ctl" data-recruit-ctl hidden><label for="mg-recruit-range">Зусилля (умовно)</label><input id="mg-recruit-range" type="range" min="0" max="100" value="38" step="1" data-recruit-range aria-valuetext="${esc(recruitTexts[0])}"></div>
+<p class="mg-recruit-text" data-recruit-text>${esc(recruitTexts[0])}</p>
+<p class="small">Схема умовна: показано лише порядок («легкі» одиниці першими) і те, що імпульси стають частішими. Кількостей і сили немає.</p></div>`;
+const curvesFigure=()=>`<div class="mg-curves">${curvesArt()}<ul class="mg-legend"><li class="mg-lg-force">Сила</li><li class="mg-lg-size">Розмір м’яза</li></ul>
+<p class="small">Схема умовна: в перші тижні сила росте швидше за розмір (нервова адаптація). Масштабу й чисел немає.</p></div>`;
+const loadTypesFigure=()=>`<div class="mg-loadtypes">${loadTypesArt()}<ul class="mg-lt-labels"><li><strong>Піднімання</strong><span>м’яз коротшає</span></li><li><strong>Опускання</strong><span>м’яз подовжується під навантаженням</span></li><li><strong>Утримання</strong><span>довжина та сама</span></li></ul>
+<p class="small">Схема умовна: нитки зберігають довжину, змінюється лише їхнє перекриття.</p></div>`;
 function chapterStrength(){
  const factors=['Нервова активація','Архітектура м’яза','Скоротливий апарат','Сухожилки','Техніка руху'];
  return `<p class="mg-lead">Перші тижні тренувань сила росте швидше, ніж м’язи. Причина — нервова система.</p>
 <div class="mg-formula" role="img" aria-label="Сила — це добуток нервової активації, архітектури м’яза, скоротливого апарату, сухожилків і техніки руху">${factors.map(f=>`<span>${esc(f)}</span>`).join('<b aria-hidden="true">×</b>')}<b aria-hidden="true">=</b><span class="mg-formula-out">Сила</span></div>
 <p><strong>Моторна одиниця</strong> — один мотонейрон і всі волокна, які він керує. Щоб дати більше сили, мозок (1) вмикає більше одиниць — від «легких» до «важких» — і (2) змушує їх стріляти частіше, щоб окремі поштовхи зливалися.</p>
+${recruitFigure()}
 <p>У контрольованому дослідженні (14 людей тренувалися, 14 — ні) вже після <strong>4 тижнів</strong> силових тренувань мотонейрони розряджалися в середньому на <strong>3,3 імпульсу за секунду</strong> частіше, а вмикалися раніше. Тому «+20% сили» не означає «+20% м’язів».</p>
+${fold('Що росте першим: сила чи розмір',`${curvesFigure()}${cite('delvecchio')}`)}
 ${claimsList(claimsByChapter.strength)}
 ${cite('delvecchio')}`;
 }
@@ -163,6 +180,7 @@ const growthFlow=[
 ];
 function chapterGrowth(){
  return `<p class="mg-lead">Не «пошкодження → біль → ріст», а «навантаження → датчики → синтез білка → повтор тижнями».</p>
+<div class="mg-growth-fig">${growthArt()}<p class="small">Схема умовна: порядок подій, а не масштаб і не час.</p></div>
 <ol class="mg-flow" aria-label="Від навантаження до росту">${growthFlow.map((f,i)=>`<li style="--i:${i}"><strong>${esc(f.t)}</strong><span>${esc(f.s)}</span></li>`).join('')}</ol>
 ${fold('Хто «відчуває» навантаження',`<p>Кандидати — інтегрини та FAK, костамери, білки Z-диска, тітин, фосфатидна кислота, білок CSRP3. Але <strong>одного головного датчика гіпертрофії у людини не знайдено</strong>. Огляд 2019 року називає механічні сигнали головними кандидатами, а пошкодження м’яза — ймовірно, не обов’язковим.</p>
 <p>У 2026 році після 8 тижнів силових тренувань у людей змінилися сотні білків волокон; CSRP3 особливо зріс у волокнах типу II, а в мишей його надлишок збільшував м’язову масу. Це не доводить, що CSRP3 — «вимикач росту», але показує: ріст — мережа, а не один шлях.</p>
@@ -170,6 +188,9 @@ ${cite('wackerhage','moesgaard')}`)}
 ${fold('mTORC1 та IGF-1: важливі, але не все',`<p><strong>mTORC1</strong> збирає сигнали від навантаження, амінокислот і факторів росту та посилює синтез білка (через S6K1 і 4E-BP1) і побудову рибосом.</p>
 <p><strong>IGF-1</strong> може запускати шлях PI3K → Akt → mTOR. Але фраза «тренування дає IGF-1, а IGF-1 дає весь ріст» — спрощення: у мишей перевантажений м’яз ріс навіть без робочого рецептора IGF-1.</p>
 ${cite('schiaffino','wackerhage')}`)}
+${fold('Три способи навантажити м’яз',`${loadTypesFigure()}<p>Пошкодження м’яза (особливо від незвичної ексцентричної роботи) може супроводжувати тренування, але його не треба «максимізувати» заради росту.</p>
+<p class="small">Ексцентричне скорочення — це подовження м’яза під навантаженням (опускання); саме незвична ексцентрична робота відома тим, що дає пошкодження й відстрочений біль. Означення «піднімання» й «утримання» загальні, окремого джерела вони не потребують.</p>
+${cite('wackerhage','hody')}`)}
 ${fold('Клітини-сателіти й пошкодження',`<p>Клітини-сателіти особливо важливі для відновлення після серйозної травми й можуть додавати ядра при тривалому рості. Але вони беруть участь <strong>у деяких, не в усіх</strong> моделях гіпертрофії.</p>
 <p>Пошкодження м’яза (особливо від незвичної ексцентричної роботи) може супроводжувати тренування, але його не треба «максимізувати» заради росту.</p>
 ${cite('schiaffino','wackerhage')}`)}`;
@@ -261,7 +282,7 @@ ${fold('Силові й витривалісні: різні акценти',`<d
 ${adaptBars.map(([t,s,e])=>`<div class="mg-adapt-row"><span>${esc(t)}</span><i class="mg-k-s" style="width:${s*20}%"></i><i class="mg-k-e" style="width:${e*20}%"></i></div>`).join('')}</div>
 <p class="small">Концептуальна шкала, не розмір ефекту з дослідження. Адаптації перекриваються, а реальна відповідь залежить від режиму, обсягу, стажу й харчування.</p>
 ${cite('egan','granata')}`)}
-${fold('Білок, вуглеводи, рослинне харчування',`<p><strong>Білок.</strong> Метааналіз 49 рандомізованих досліджень (1863 людини): додатковий білок під час тривалих силових тренувань трохи збільшував приріст безжирової маси — у середньому на 0,30 кг (95% ДІ 0,09…0,52). Понад ≈1,62 г/кг на добу додаткового приросту безжирової маси в середньому не було. Це орієнтир для групи, а не «стеля» для кожного. За хвороб нирок кількість білка треба узгоджувати з лікарем. Детальніше — у розділі <a href="./index.html#supplement-protein">Протеїн</a>.</p>
+${fold('Білок, вуглеводи, рослинне харчування',`<p><strong>Білок.</strong> Метааналіз 49 рандомізованих досліджень (1863 людини): додатковий білок під час тривалих силових тренувань трохи збільшував приріст безжирової маси — у середньому на 0,30 кг (95% ДІ 0,09…0,52). Понад ≈1,62 г/кг на добу додаткового приросту безжирової маси в середньому не було. Це орієнтир для групи, а не «стеля» для кожного. За хвороб нирок кількість білка треба узгоджувати з лікарем. Детальніше — у розділі <a href="./supplement-protein.html">Протеїн</a>.</p>
 ${claimsList(claimsByChapter.nutrition,'Твердження про білок (з картки протеїну)')}
 <p><strong>Рослинне харчування.</strong> У 10-тижневому дослідженні (22 молоді дорослі, ≈2 г білка/кг) веганська й змішана високобілкові дієти дали однаковий приріст: безжирова маса +2,6 і +3,1 кг, об’єм стегна +8,3% в обох групах.</p>
 <p><strong>Вуглеводи</strong> потрібні для глікогену й працездатності, але метааналіз 11 досліджень не виявив, що самі по собі більше вуглеводів (за однакового білка) додають росту: SMD 0,15, p = 0,23, впевненість низька.</p>

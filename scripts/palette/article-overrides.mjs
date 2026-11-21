@@ -8,6 +8,7 @@ import path from 'node:path';
 import {parseColor,toHex,mapValue} from './css-colors.mjs';
 import {cosmicOf} from './cosmic-map.mjs';
 import {shapeOf} from '../shapes/shape-map.mjs';
+import {combinedHTML} from '../combined-source.mjs';
 
 export const ARTICLE_SOURCES=['dist/home-article.css'];   // поряд із вбудованими <style> з dist/index.html
 const PAINT=/^(color|background(-color|-image)?|border(-[a-z]+)*|outline(-color)?|box-shadow|fill|stroke|--pc-[a-z-]+)$/;
@@ -68,7 +69,7 @@ function collect(css,media,rules){
 }
 // Текст переписувань; «@p » на початку селектора підставляє build-palette.mjs (ARTICLE_PARITY: те саме місце дії, що в ARTICLE_SCOPE, але без додаткової сили селектора).
 export function articleOverrides(root=process.cwd()){
-  const html=fs.readFileSync(path.join(root,'dist/index.html'),'utf8');
+  const html=combinedHTML(root); // етап 3: стилі розборів лежать у спільному документі
   const blocks=[...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]);
   for(const f of ARTICLE_SOURCES)blocks.push(fs.readFileSync(path.join(root,f),'utf8'));
   const rules=[];

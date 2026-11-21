@@ -10,6 +10,11 @@ import {homeSpectrumHTML} from '../src/platform/home-spectrum.mjs';
 import {homeDirectionsHTML} from '../src/platform/home-directions.mjs';
 import {materials} from '../src/platform/materials.mjs';
 import {homeFreshGridHTML} from '../src/platform/home-fresh.mjs';
+import {homeClaimHTML,HOME_CLAIM_ID} from '../src/platform/home-claim.mjs';
+import {confidenceLabels} from '../src/evidence/core/components.mjs';
+import {creatineClaims,creatineSources,evidenceRecordsByClaimId} from '../dist/evidence/data.js';
+import {shelfSignSVG,signHTML,placeSign,libraryClaimCounts} from '../src/platform/home-row-signs.mjs';
+import {comparisonStatus} from '../dist/compare-status.js';
 import {renderNight} from '../src/sleep/night.mjs';
 import {buildAtlasFoundations} from './build-atlas-foundations.mjs';
 // Дані, з яких збирається блок «Нове на сайті» (T4): ті самі модулі, що вантажать сторінки розборів, схем і журналу.
@@ -17,6 +22,9 @@ import {STUDIES} from '../dist/research-data.js';
 import {miniInterval} from '../dist/research-chart.js';
 import {CHANGES,SCIENCE} from '../dist/changes-data.js';
 import {SCENES} from '../dist/mechanisms-page.js';
+import {restoreCombined} from './combined-source.mjs';
+// Етап 3 (docs/HOME_SPLIT_PLAN.md): спершу повертаємо в dist/index.html спільний документ «головна + розбори».
+restoreCombined(process.cwd());
 for(const area of catalog.areas.filter(a=>a.available))for(const href of [area.href,...area.units.map(u=>u.href)]){
   const file='dist/'+href.replace(/^\.\//,'').split(/[?#]/)[0];
   if(!fs.existsSync(file))throw Error('Catalog page missing: '+file);
@@ -26,16 +34,17 @@ const positions={muscle:'18.5%',nutrition:'34%',supplements:'50%',cell:'3%',move
 const homeTopics=catalog.areas.filter(a=>a.available).map(a=>({id:a.id,title:a.title,subtitle:a.lab,href:a.id==='supplements'?'#supplement-library':a.href,state:a.state,position:positions[a.id]||'50%'}));
 const homeDirections=homeDirectionsHTML(homeTopics);
 fs.writeFileSync('dist/home-catalog.js','// Generated from the shared catalog. Available pages only.\nwindow.EvidenceUAHomeTopics='+JSON.stringify(homeTopics)+';\n');
-fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=108'"));
-fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'").replace("'../atlas/points.mjs'","'./atlas-points.js?v=2'"));
-fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=108'"));
+fs.writeFileSync('dist/home-feedback.js',fs.readFileSync('src/platform/home-feedback.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=109'"));
+fs.writeFileSync('dist/platform-materials.js',fs.readFileSync('src/platform/materials.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=102'").replace("'../evidence/core/entities.mjs'","'./evidence/entities.js?v=59'").replace("'../atlas/points.mjs'","'./atlas-points.js?v=2'"));
+fs.writeFileSync('dist/platform-tools.js',fs.readFileSync('src/platform/quick-tools.mjs','utf8').replace("'./materials.mjs'","'./platform-materials.js?v=109'"));
 fs.writeFileSync('dist/platform-next-steps.js',fs.readFileSync('src/platform/next-steps.mjs','utf8'));
 fs.writeFileSync('dist/platform-terms.js',fs.readFileSync('src/platform/terms.mjs','utf8'));
-fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=4'").replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=108'").replace("'./site-header.mjs'","'./site-header.js?v=19'"));
-fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'"));
+fs.writeFileSync('dist/platform-shell.js',fs.readFileSync('src/platform/shell.mjs','utf8').replace("'./next-steps.mjs'","'./platform-next-steps.js?v=6'").replace("'./terms.mjs'","'./platform-terms.js?v=5'").replace("'./catalog.mjs'","'./platform-catalog.js?v=102'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=109'").replace("'./site-header.mjs'","'./site-header.js?v=20'"));
+fs.writeFileSync('dist/platform-learning.js',fs.readFileSync('src/platform/learning-ui.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=102'").replace("'./home-row-signs.mjs'","'./home-row-signs.js?v=2'"));
+fs.writeFileSync('dist/home-row-signs.js',fs.readFileSync('src/platform/home-row-signs.mjs','utf8'));
 fs.writeFileSync('dist/home-picker.js',fs.readFileSync('src/platform/home-picker.mjs','utf8'));
 fs.writeFileSync('dist/home-lens.js',fs.readFileSync('src/platform/home-lens.mjs','utf8').replace("'./home-picker.mjs'","'./home-picker.js?v=2'"));
-fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=101'").replace("'./materials.mjs'","'./platform-materials.js?v=108'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=108'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=88'").replace("'./site-header.mjs'","'./site-header.js?v=19'"));
+fs.writeFileSync('dist/directions.js',fs.readFileSync('src/platform/directory.mjs','utf8').replace("'./catalog.mjs'","'./platform-catalog.js?v=102'").replace("'./materials.mjs'","'./platform-materials.js?v=109'").replace("'./quick-tools.mjs'","'./platform-tools.js?v=109'").replace("'./learning-ui.mjs'","'./platform-learning.js?v=89'").replace("'./site-header.mjs'","'./site-header.js?v=20'"));
 for(const file of fs.readdirSync('dist').filter(f=>f.endsWith('.html'))){const path='dist/'+file;const old=fs.readFileSync(path,'utf8'),next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=54(?![0-9.])/g,'platform-shell.js?v=59').replace(/(?<![A-Za-z0-9_-])nutrition-lab\.js\?v=55(?![0-9.])/g,'nutrition-lab.js?v=59').replace(/(?<![A-Za-z0-9_-])cell-lab\.js\?v=56(?![0-9.])/g,'cell-lab.js?v=59').replace(/(?<![A-Za-z0-9_-])muscle-lab\.js\?v=58(?![0-9.])/g,'muscle-lab.js?v=59').replace(/(?<![A-Za-z0-9_-])home-feedback\.js\?v=57(?![0-9.])/g,'home-feedback.js?v=59');if(next!==old)fs.writeFileSync(path,next);}
 console.log('Shared catalog validated and copied. No scientific conclusions changed.');
 const homeFile='dist/index.html';
@@ -51,8 +60,19 @@ if(withRoutes!==home)fs.writeFileSync(homeFile,withRoutes);
  const featured=[...latest.matchAll(/research\.html#([a-z0-9-]+)/g)].map(match=>match[1]).find(id=>STUDIES.some(study=>study.id===id&&study.chart));
  if(!featured)throw Error('The «Останні розбори» list on the home has no write-up with a chart');
  const grid=homeFreshGridHTML({studies:STUDIES,latestStudyId:featured,changes:CHANGES,science:SCIENCE,scenes:SCENES,miniInterval});
- const next=html.replace(/<!-- EUA_HOME_FRESH_START -->[\s\S]*?<!-- EUA_HOME_FRESH_END -->/,()=>'<!-- EUA_HOME_FRESH_START -->'+grid+'<!-- EUA_HOME_FRESH_END -->');
- if(next!==html)fs.writeFileSync(homeFile,next);
+ let next=html.replace(/<!-- EUA_HOME_FRESH_START -->[\s\S]*?<!-- EUA_HOME_FRESH_END -->/,()=>'<!-- EUA_HOME_FRESH_START -->'+grid+'<!-- EUA_HOME_FRESH_END -->');
+ // «Одне твердження наживо» під героєм (2026-11-17): збирається з тих самих записів, що й розбір креатину (dist/evidence/data.js).
+ {
+  const claim=creatineClaims.find(item=>item.id===HOME_CLAIM_ID),records=evidenceRecordsByClaimId[HOME_CLAIM_ID]||[];
+  const source=creatineSources.find(item=>item.id===records[0]?.sourceId);
+  const markers=/<!-- EUA_HOME_CLAIM_START -->[\s\S]*?<!-- EUA_HOME_CLAIM_END -->/;
+  if(!markers.test(next))throw Error('EUA_HOME_CLAIM markers are missing in the home');
+  next=next.replace(markers,()=>'<!-- EUA_HOME_CLAIM_START -->'+homeClaimHTML({claim,records,source},confidenceLabels)+'<!-- EUA_HOME_CLAIM_END -->');
+ }
+ // Знаки рядків (2026-11-15): «Оновлення» показує мініатюру графіка того самого розбору, що й перша картка; «Бібліотека» показує
+ // стовпчик на кожну добавку зі списку бібліотеки, риска = одне розібране твердження (dist/compare-status.js). Обидва знаки з даних, не вручну.
+ const signed=placeSign(placeSign(next,'FRESH',signHTML('fresh',miniInterval(STUDIES.find(study=>study.id===featured).chart))),'LIBRARY',signHTML('library',shelfSignSVG(libraryClaimCounts(next,comparisonStatus))));
+ if(signed!==html)fs.writeFileSync(homeFile,signed);
 }
 {
  const html=fs.readFileSync(homeFile,'utf8');
@@ -181,7 +201,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-next-steps\.js\?v=2(?![0-9.])/g,'platform-next-steps.js?v=4').replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=94(?![0-9.])/g,'platform-shell.js?v=95');if(next!==old)fs.writeFileSync(file,next);}
 
 // Шапка отримала кнопку пошуку: нова версія модуля шапки.
-for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])site-header\.js\?v=2(?![0-9.])/g,'site-header.js?v=3');if(next!==old)fs.writeFileSync(file,next);}
+for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');/* 2026-11-17: з межею після цифри, інакше «v=20» читалось як «v=2» + «0» і ставало «v=30» */const next=old.replace(/site-header\.js\?v=2(?![0-9])/g,'site-header.js?v=3');if(next!==old)fs.writeFileSync(file,next);}
 
 // Досьє на головній: тонка смуга «← Усі добавки» замість старого блоку інструментів (рішення власника 21.10.2026).
 for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){const file='dist/'+name;const old=fs.readFileSync(file,'utf8');const next=old.replace(/(?<![A-Za-z0-9_-])platform-shell\.js\?v=95(?![0-9.])/g,'platform-shell.js?v=96');if(next!==old)fs.writeFileSync(file,next);}
@@ -294,7 +314,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 // Нова версія в query-рядку для кожного зміненого стилю й модуля, що його підключає (інакше кеш змішав би старі стилі з новими). Заміна з межею слова.
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
- const updates={'platform-shell.js?v=105':'platform-shell.js?v=106','site-header.js?v=12':'site-header.js?v=13','directions.js?v=107':'directions.js?v=108','appearance.js?v=3':'appearance.js?v=4','platform-terms.js?v=3':'platform-terms.js?v=4','platform-next-steps.js?v=5':'platform-next-steps.js?v=6','fat-burning.js?v=10':'fat-burning.js?v=11','glossary-page.js?v=2':'glossary-page.js?v=3','map-page.js?v=3':'map-page.js?v=4','home-spectrum.js?v=2':'home-spectrum.js?v=3','changes-page.js?v=5':'changes-page.js?v=6','home-spectrum.css?v=3':'home-spectrum.css?v=4','appearance.css?v=5':'appearance.css?v=6','atlas.css?v=9':'atlas.css?v=10','cell-lab.css?v=77':'cell-lab.css?v=78','cell-vcard.css?v=81':'cell-vcard.css?v=82','changes-page.css?v=3':'changes-page.css?v=4','compare-page.js?v=2':'compare-page.js?v=3','digestion.css?v=4':'digestion.css?v=5','directions-pine.css?v=3':'directions-pine.css?v=4','evidence/evidence.css?v=58':'evidence/evidence.css?v=59','exercises.css?v=9':'exercises.css?v=10','experience.css?v=63':'experience.css?v=64','fat-burning-pine.css?v=4':'fat-burning-pine.css?v=5','fat-burning.css?v=3':'fat-burning.css?v=4','glossary-page.css?v=3':'glossary-page.css?v=4','knee-pain-map.css?v=3':'knee-pain-map.css?v=4','learning-notes.css?v=87':'learning-notes.css?v=88','map-page.css?v=2':'map-page.css?v=3','mechanisms-page.css?v=5':'mechanisms-page.css?v=6','movement.css?v=86':'movement.css?v=87','muscle-lab.css?v=75':'muscle-lab.css?v=76','nutrition-diets.css?v=93':'nutrition-diets.css?v=94','nutrition-fat-burning.css?v=2':'nutrition-fat-burning.css?v=3','nutrition-lab.css?v=80':'nutrition-lab.css?v=81','nutrition-navigation.css?v=3':'nutrition-navigation.css?v=4','nutrition-timeline.css?v=30':'nutrition-timeline.css?v=31','page-pine.css?v=20':'page-pine.css?v=21','palette-cosmic.css?v=1':'palette-cosmic.css?v=2','platform.css?v=85':'platform.css?v=86','research-page.css?v=4':'research-page.css?v=5','shoulder-pain-map.css?v=2':'shoulder-pain-map.css?v=3','sleep.css?v=84':'sleep.css?v=85','study-ui.css?v=72':'study-ui.css?v=73','supplements.css?v=4':'supplements.css?v=5','videos-page.css?v=4':'videos-page.css?v=5'};
+ const updates={'platform-shell.js?v=105':'platform-shell.js?v=106','site-header.js?v=12':'site-header.js?v=13','directions.js?v=107':'directions.js?v=108','appearance.js?v=3':'appearance.js?v=4','platform-terms.js?v=3':'platform-terms.js?v=5','platform-next-steps.js?v=5':'platform-next-steps.js?v=6','fat-burning.js?v=10':'fat-burning.js?v=11','glossary-page.js?v=2':'glossary-page.js?v=4','map-page.js?v=3':'map-page.js?v=4','home-spectrum.js?v=2':'home-spectrum.js?v=3','changes-page.js?v=5':'changes-page.js?v=6','home-spectrum.css?v=3':'home-spectrum.css?v=4','appearance.css?v=5':'appearance.css?v=6','atlas.css?v=9':'atlas.css?v=10','cell-lab.css?v=77':'cell-lab.css?v=78','cell-vcard.css?v=81':'cell-vcard.css?v=82','changes-page.css?v=3':'changes-page.css?v=4','compare-page.js?v=2':'compare-page.js?v=3','digestion.css?v=4':'digestion.css?v=5','directions-pine.css?v=3':'directions-pine.css?v=4','evidence/evidence.css?v=58':'evidence/evidence.css?v=59','exercises.css?v=9':'exercises.css?v=10','experience.css?v=63':'experience.css?v=64','fat-burning-pine.css?v=4':'fat-burning-pine.css?v=5','fat-burning.css?v=3':'fat-burning.css?v=4','glossary-page.css?v=3':'glossary-page.css?v=4','knee-pain-map.css?v=3':'knee-pain-map.css?v=4','learning-notes.css?v=87':'learning-notes.css?v=88','map-page.css?v=2':'map-page.css?v=3','mechanisms-page.css?v=5':'mechanisms-page.css?v=6','movement.css?v=86':'movement.css?v=87','muscle-lab.css?v=75':'muscle-lab.css?v=76','nutrition-diets.css?v=93':'nutrition-diets.css?v=94','nutrition-fat-burning.css?v=2':'nutrition-fat-burning.css?v=3','nutrition-lab.css?v=80':'nutrition-lab.css?v=81','nutrition-navigation.css?v=3':'nutrition-navigation.css?v=4','nutrition-timeline.css?v=30':'nutrition-timeline.css?v=31','page-pine.css?v=20':'page-pine.css?v=21','palette-cosmic.css?v=1':'palette-cosmic.css?v=2','platform.css?v=85':'platform.css?v=86','research-page.css?v=4':'research-page.css?v=5','shoulder-pain-map.css?v=2':'shoulder-pain-map.css?v=3','sleep.css?v=84':'sleep.css?v=85','study-ui.css?v=72':'study-ui.css?v=73','supplements.css?v=4':'supplements.css?v=5','videos-page.css?v=4':'videos-page.css?v=5'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
@@ -660,7 +680,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 // EU-01: keep current-main home styles and invalidate the changed shared route modules.
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
- const updates={"platform-catalog.js?v=100":"platform-catalog.js?v=101","platform-materials.js?v=107":"platform-materials.js?v=108","platform-tools.js?v=107":"platform-tools.js?v=108","platform-learning.js?v=87":"platform-learning.js?v=88","platform-search.js?v=16":"platform-search.js?v=17","site-header.js?v=18":"site-header.js?v=19","platform-shell.js?v=111":"platform-shell.js?v=112","home-feedback.js?v=107":"home-feedback.js?v=108","directions.js?v=116":"directions.js?v=117","home-spectrum.js?v=8":"home-spectrum.js?v=9","fat-burning.js?v=16":"fat-burning.js?v=17","platform.css?v=86":"platform.css?v=87","atlas.js?v=9":"atlas.js?v=10","home-spectrum.css?v=7":"home-spectrum.css?v=8","home-lens.css?v=5":"home-lens.css?v=6","home-lens.css?v=6":"home-lens.css?v=7","home-lens.css?v=7":"home-lens.css?v=8","home-fresh.css?v=3":"home-fresh.css?v=4"};
+ const updates={"platform-catalog.js?v=100":"platform-catalog.js?v=102","platform-materials.js?v=107":"platform-materials.js?v=109","platform-tools.js?v=107":"platform-tools.js?v=109","platform-learning.js?v=87":"platform-learning.js?v=89","platform-search.js?v=16":"platform-search.js?v=18","site-header.js?v=18":"site-header.js?v=20","platform-shell.js?v=111":"platform-shell.js?v=113","home-feedback.js?v=107":"home-feedback.js?v=109","directions.js?v=116":"directions.js?v=118","home-spectrum.js?v=8":"home-spectrum.js?v=10","fat-burning.js?v=16":"fat-burning.js?v=17","platform.css?v=86":"platform.css?v=87","atlas.js?v=9":"atlas.js?v=10","home-spectrum.css?v=7":"home-spectrum.css?v=8","home-lens.css?v=5":"home-lens.css?v=6","home-lens.css?v=6":"home-lens.css?v=7","home-lens.css?v=7":"home-lens.css?v=8","home-fresh.css?v=3":"home-fresh.css?v=4"};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
@@ -674,7 +694,28 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 {
  const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
  // EU-01 also adds route-location notifications to the audited Atlas controller.
- const updates={'changes-page.js?v=33':'changes-page.js?v=34','atlas.js?v=10':'atlas.js?v=11'};
+ const updates={'changes-page.js?v=33':'changes-page.js?v=35','atlas.js?v=10':'atlas.js?v=12'};
+ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
+  const file='dist/'+name,old=fs.readFileSync(file,'utf8');
+  let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+  if(next!==old)fs.writeFileSync(file,next);
+ }
+}
+// Лінза головної, рішення власника «давай всі 4» (2026-11-15): половини не виходять за сцену, у ядрі шість напрямів, підказка зникає раніше,
+// текст не лягає на картину. Змінено стилі лінзи (v=9) і її скрипт (v=8); docs/HOME_LENS_FOUR_FIXES.md.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'home-lens.css?v=8':'home-lens.css?v=9','home-lens.js?v=7':'home-lens.js?v=8'};
+ const file='dist/index.html',old=fs.readFileSync(file,'utf8');
+ let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
+ if(next!==old)fs.writeFileSync(file,next);
+}
+// Розбори добавок окремими сторінками, етап 2 (2026-11-17, docs/HOME_SPLIT_PLAN.md): посилання каталогу, шапки, журналу й Атласу ведуть
+// на сторінки розборів, тож змінились спільні модулі й усе, що їх імпортує. Нові версії записано прямо в рядках вище й у сторінках;
+// ця «станція» переводить сторінки зі старих версій, якщо хтось збирає сайт зі старого знімка dist.
+{
+ const bump=(text,from,to)=>text.replace(new RegExp('(?<![A-Za-z0-9_-])'+from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![0-9.])','g'),to);
+ const updates={'atlas.js?v=11':'atlas.js?v=12','changes-page.js?v=34':'changes-page.js?v=35','directions.js?v=117':'directions.js?v=118','fat-burning.js?v=19':'fat-burning.js?v=20','glossary-page.js?v=3':'glossary-page.js?v=4','home-feedback.js?v=108':'home-feedback.js?v=109','home-spectrum.js?v=9':'home-spectrum.js?v=10','platform-shell.js?v=112':'platform-shell.js?v=113','platform-terms.js?v=4':'platform-terms.js?v=5','site-header.js?v=19':'site-header.js?v=20'};
  for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html'))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');
   let next=old;for(const [from,to] of Object.entries(updates))next=bump(next,from,to);
@@ -685,7 +726,7 @@ for(const name of fs.readdirSync('dist').filter(n=>n.endsWith('.html')&&n!=='ind
 // 2026-11-14: invalidate the changed Atlas search metadata through every import parent.
 // Authored consumers are updated in the same commit; repeating the build is idempotent.
 {
- const updates={"platform-materials.js?v=108":"platform-materials.js?v=109","platform-tools.js?v=108":"platform-tools.js?v=109","home-feedback.js?v=108":"home-feedback.js?v=109","directions.js?v=117":"directions.js?v=118","platform-search.js?v=17":"platform-search.js?v=18","site-header.js?v=19":"site-header.js?v=20","platform-shell.js?v=112":"platform-shell.js?v=113","home-spectrum.js?v=9":"home-spectrum.js?v=10","fat-burning.js?v=17":"fat-burning.js?v=18","fat-burning.js?v=18":"fat-burning.js?v=19","fat-burning.js?v=19":"fat-burning.js?v=20","changes-page.js?v=34":"changes-page.js?v=35","changes-data.js?v=34":"changes-data.js?v=35"};
+ const updates={'atlas.js?v=12':'atlas.js?v=13','changes-data.js?v=35':'changes-data.js?v=36','changes-page.js?v=35':'changes-page.js?v=36','directions.js?v=118':'directions.js?v=119','fat-burning.js?v=20':'fat-burning.js?v=21','home-feedback.js?v=109':'home-feedback.js?v=110','home-spectrum.js?v=10':'home-spectrum.js?v=11','platform-materials.js?v=109':'platform-materials.js?v=110','platform-search.js?v=18':'platform-search.js?v=19','platform-shell.js?v=113':'platform-shell.js?v=114','platform-tools.js?v=109':'platform-tools.js?v=110','site-header.js?v=20':'site-header.js?v=21'};
  for(const name of fs.readdirSync('dist').filter(n=>/\.(html|js)$/.test(n))){
   const file='dist/'+name,old=fs.readFileSync(file,'utf8');let next=old;
   for(const [from,to]of Object.entries(updates))next=bumpVersion(next,from,to);

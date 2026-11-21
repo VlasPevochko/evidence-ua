@@ -1,8 +1,8 @@
-import './site-header.js?v=20';
-import {toolsHTML,mountQuickTools} from './platform-tools.js?v=109';
+import './site-header.js?v=21';
+import {toolsHTML,mountQuickTools} from './platform-tools.js?v=110';
 import {mountNextSteps,mountSavedHome} from './platform-next-steps.js?v=6';
-import {mountTerms} from './platform-terms.js?v=4';
-import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=101';
+import {mountTerms} from './platform-terms.js?v=5';
+import {catalog,learningHref,learningLocation} from './platform-catalog.js?v=102';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const learningListeners=new WeakMap();
 const atlasLink=current=>`<a class="eua-atlas-link" href="./atlas.html"${current==='atlas'?' aria-current="page"':''}>Атлас</a>`;
@@ -26,7 +26,7 @@ export function continueFromStorage(raw,now){
 const continueHTML=entry=>`<a class="eua-continue" href="./${esc(entry.href)}"><span>Продовжити з місця</span><strong>${esc(entry.title)}</strong><b aria-hidden="true">→</b></a>`;
 function rememberVisit(root,selected){
   const view=root.defaultView;if(!view||selected==='home')return;
-  try{const location=view.location,entry=continueEntry(location.pathname,location.search,root.title,Date.now());if(entry)view.localStorage.setItem(CONTINUE_KEY,JSON.stringify(entry));}catch{}
+  try{const location=view.location,entry=root.body?.dataset.article?null:continueEntry(location.pathname,location.search,root.title,Date.now());if(entry)view.localStorage.setItem(CONTINUE_KEY,JSON.stringify(entry));}catch{}
 }
 function mountContinue(root,start){
   if(!start||start.querySelector('.eua-continue'))return;
@@ -36,7 +36,8 @@ function mountContinue(root,start){
   const choices=start.querySelector('.start-choices'),node=box.firstElementChild;
   if(node&&choices)choices.before(node);
 }
-export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a>${atlasLink(current)}${exercisesLink(current)}<details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}
+// Рішення власника 2026-11-14 («так»): «Атлас» і «Вправи» вже є в меню шапки, тож рядок під шапкою їх не дублює. Функції лишено для сторінок, що можуть показати посилання окремо.
+export function navigationHTML(current){return `<a class="eua-catalog-link" href="./directions.html">Напрями Evidence UA →</a><details><summary>Перейти до іншого напряму</summary><div class="eua-area-links">${catalog.areas.filter(a=>a.available).map(a=>`<a href="${esc(a.href)}"${current===a.id?' aria-current="page"':''}>${esc(a.title)}</a>`).join('')}</div></details>`;}
 export function learningNavigationHTML(location){const {path,index}=location;return `<p><strong>${esc(path.title)}</strong><span>Крок ${index+1} із ${path.steps.length}</span></p><div>${index>0?`<a href="${esc(learningHref(path.id,index-1))}">← Попередній матеріал</a>`:''}${index<path.steps.length-1?`<a href="${esc(learningHref(path.id,index+1))}">Наступний матеріал →</a>`:'<a href="./directions.html#learning-paths">До маршрутів →</a>'}<a href="./index.html#home-learning-paths">Обрати інший маршрут</a></div>`;}
 export function articleBarHTML(){return '<a class="eua-article-back" href="./supplements.html">← Усі добавки</a><div class="eua-tools"><button type="button" data-eua-tool="share">Скопіювати посилання</button><a href="./index.html#home-feedback">Поділитися враженням</a></div><p class="eua-tool-status" role="status" aria-live="polite"></p>';}
 export function mountPlatformNavigation(root=document){

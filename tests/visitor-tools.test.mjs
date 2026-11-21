@@ -6,7 +6,7 @@ import {materialCard,toolsHTML,mountQuickTools} from '../src/platform/quick-tool
 import {feedbackReport} from '../src/platform/home-feedback.mjs';
 import {catalog} from '../src/platform/catalog.mjs';
 assert.equal(new Set(materials.map(m=>m.id)).size,materials.length);
-assert.equal(findMaterials('ПРОТЕЇН')[0].href,'./index.html#supplement-protein');
+assert.equal(findMaterials('ПРОТЕЇН')[0].href,'./supplement-protein.html');
 assert.equal(findMaterials('саркомер')[0].href,'./muscle-lab.html?structure=STRUCT-SARCOMERE#explorer');
 assert.equal(findMaterials('ядро')[0].href,'./cell-lab.html?organelle=ORG-NUCLEUS#cell-canvas');
 assert(findMaterials("м'яз").some(m=>m.areaId==='muscle'));
@@ -19,7 +19,9 @@ assert(!contextLink('https://evidence.invalid/cell-lab.html?organelle=ORG-UNKNOW
 assert(contextLink('https://evidence.invalid/cell-lab.html?organelle=ORG-RIBOSOME&level=school&tab=sources#cell-canvas').includes('tab=sources'));
 assert(contextLink('https://evidence.invalid/muscle-lab.html?structure=CELL-MUSCLE&level=advanced&tab=function&path=energy&lesson=1#explorer').includes('path=energy'));
 assert(!contextLink('https://evidence.invalid/?path=unknown&lesson=9#top').includes('?'));
-assert.equal(materialContext('https://evidence.invalid/index.html#supplement-protein').id,'supplements-protein');
+// 2026-11-17 (етап 2): розбір має власну сторінку; будь-який якір на ній належить тому самому матеріалу.
+assert.equal(materialContext('https://evidence.invalid/supplement-protein.html').id,'supplements-protein');
+assert.equal(materialContext('https://evidence.invalid/creatine.html#creatine-dosing').id,'supplements-creatine');
 assert.equal(materialContext('https://evidence.invalid/#top'),null);
 assert.equal(materialContext('https://evidence.invalid/#home-feedback'),null);
 assert.equal(materialContext('https://evidence.invalid/#evidence-card').id,'supplements-creatine');
@@ -47,7 +49,7 @@ function fixture(clipboard){
 }
 let copied=null;const f=fixture({writeText:async value=>{copied=value;}});
 const opener=await f.click('search');assert(f.node('eua-search-dialog').open);assert(f.node('eua-material-query').focused);
-f.node('eua-material-query').value='Протеїн';f.node('eua-material-query').events.get('input')();assert(f.node('eua-material-results').innerHTML.includes('#supplement-protein'));assert(!f.node('eua-material-results').innerHTML.includes('href="./index.html#creatine"'));
+f.node('eua-material-query').value='Протеїн';f.node('eua-material-query').events.get('input')();assert(f.node('eua-material-results').innerHTML.includes('./supplement-protein.html'));assert(!f.node('eua-material-results').innerHTML.includes('href="./index.html#creatine"'));
 f.node('eua-material-query').value='xxxyyy';f.ui.render();assert(f.node('eua-material-count').textContent.includes('Нічого'));
 f.node('eua-search-dialog').close();assert(opener.focused);
 await f.click('focus');assert.equal(f.root.body.dataset.euaFocus,'true');assert(f.node('nutrition-lab').scrolled);f.key('Escape');assert(!f.root.body.dataset.euaFocus);assert(f.node('focus-button').focused);

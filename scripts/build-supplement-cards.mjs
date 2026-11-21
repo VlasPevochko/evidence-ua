@@ -14,8 +14,12 @@ import {citrullineBase, citrullineModule} from '../src/evidence/supplements/citr
 import {electrolytesBase, electrolytesModule} from '../src/evidence/supplements/electrolytes/module.mjs';
 import {ConfidenceBadge, SourceCard, claimButton, escapeHTML as e} from '../src/evidence/core/components.mjs';
 import {provenanceStatus} from '../src/evidence/core/provenance.mjs';
+import {restoreCombined} from './combined-source.mjs';
 
 const root = process.cwd();
+// Етап 3 (docs/HOME_SPLIT_PLAN.md): dist/index.html на сайті це лише головна; скрипт пише в спільний документ «головна + розбори»,
+// тому спершу повертаємо його в dist/index.html (src/site/index.combined.html). Наприкінці збірки build-article-pages знову лишить головну.
+restoreCombined(root);
 const indexPath = path.join(root, 'dist/index.html');
 const out = path.join(root, 'dist/evidence');
 const num = x => new Intl.NumberFormat('uk-UA', {maximumFractionDigits: 2, minimumFractionDigits: 2}).format(x);

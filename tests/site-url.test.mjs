@@ -23,6 +23,7 @@ assert.equal(checkBase('https://evidenceua.com/'),'https://evidenceua.com/');
 const sitemap=fs.readFileSync('dist/sitemap.xml','utf8'),robots=fs.readFileSync('dist/robots.txt','utf8');
 const locs=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
 assert.equal(new Set(locs).size,locs.length,'no duplicate addresses');
+// 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 2): сторінки розборів добавок відкрито для пошукових систем, тимчасовий виняток етапу 1 прибрано.
 assert.equal(locs.length,pageFiles().length,'every page is listed');
 assert(locs.includes(base),'the home page is listed as the site root');
 for(const file of pageFiles().filter(f=>f!=='index.html'))assert(locs.includes(base+file),`${file} is listed`);

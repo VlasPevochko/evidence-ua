@@ -1,4 +1,4 @@
-import {catalog,learningLocation} from './platform-catalog.js?v=101';
+import {catalog,learningLocation} from './platform-catalog.js?v=102';
 import {entityRegistry} from './evidence/entities.js?v=59';
 import {painMaps, shoulderTopics, kneeTopics} from './atlas-points.js?v=2';
 

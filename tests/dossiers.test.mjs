@@ -17,7 +17,7 @@ import {electrolytesModule} from '../src/evidence/supplements/electrolytes/modul
 const replaced=new Set([proteinModule.replacesDossier,omegaModule.replacesDossier,vitdModule.replacesDossier,caffeineModule.replacesDossier,magnesiumModule.replacesDossier,collagenModule.replacesDossier,betaAlanineModule.replacesDossier,citrullineModule.replacesDossier,electrolytesModule.replacesDossier]);
 const ds=validateDossiers(JSON.parse(fs.readFileSync('src/evidence/supplements/dossiers.json','utf8')));
 assert.equal(ds.length,9);
-const before=fs.readFileSync('dist/index.html','utf8');
+const before=fs.readFileSync('src/site/index.combined.html','utf8'); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */ // після запуску скрипта спільний документ лежить у dist/index.html
 execFileSync('node',['scripts/build-dossiers.mjs']);
 assert.equal(fs.readFileSync('dist/index.html','utf8'),before,'Build must be idempotent');
 const ids=[...before.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);

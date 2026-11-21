@@ -87,7 +87,7 @@ assert(js.includes("tabLabel(selectedZone,button.dataset.atlasTab)") && js.inclu
 const {foundationModules}=await import('../src/evidence/atlas/foundations.mjs');
 const related=Object.values(foundationModules).flatMap(m=>m.related);
 const hrefs=related.map(m=>m.href);
-for (const href of ['./sleep.html','./mechanisms.html#caffeine','./index.html#supplement-caffeine','./nutrition-digestion.html','./nutrition-inside.html'])
+for (const href of ['./sleep.html','./mechanisms.html#caffeine','./supplement-caffeine.html','./nutrition-digestion.html','./nutrition-inside.html'])
  assert(hrefs.includes(href),'existing useful destination retained: '+href);
 for (const href of hrefs) {
  const [file,hash]=href.replace('./','').split('#');

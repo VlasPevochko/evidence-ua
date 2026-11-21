@@ -28,7 +28,7 @@ assert.equal(resolve('').length,2);
 const words=html.replace(/<aside class="cp-note">[\s\S]*?<\/aside>/,'')+js;
 assert(!/(краща|кращий|найкращ|сильніша|переможець)/i.test(words),'no ranking wording outside the explanatory note');
 assert(html.includes('Це не рейтинг і не порада'),'the page says it is not a ranking');
-const home=fs.readFileSync('dist/index.html','utf8');
+const home=fs.readFileSync('src/site/index.combined.html','utf8'); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
 for(const s of supplements)assert(home.includes(`id="${s.id}"`),`${s.id}: dossier exists on the home page`);
 assert(findMaterials('порівняння добавок').some(m=>m.href==='./compare.html'),'the page is searchable');
 assert(fs.readFileSync('dist/supplements.html','utf8').includes('./compare.html'),'the catalogue links to the comparison');

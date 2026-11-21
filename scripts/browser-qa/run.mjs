@@ -15,6 +15,7 @@ import {shoulderRouteFlow} from './shoulder-route.mjs';
 import {atlasFoundationsFlow} from './atlas-foundations.mjs';
 import {painMaps, shoulderTopics, kneeTopics, findPoint} from '../../src/atlas/points.mjs';
 import {decodePng, seamDepth, gapResidue} from './lens-pixels.mjs';
+import {ARTICLES, ARTICLE_FILES} from '../../src/platform/article-pages.mjs';
 import {glyphContrast} from './glyph-contrast.mjs';
 
 // Keep actionable failures available through GitHub's check annotations as well
@@ -192,16 +193,18 @@ async function generic(browser, origin, viewport, file) {
   check(where, (await page.locator('.eua-header-wordmark small').innerText()).includes('ЗДОРОВ’Я'), 'the common brand tagline is missing');
   // Owner decision 2026-10-27: retain all canonical anchors in the DOM so the
   // home article router can reveal them; CSS compacts only the active home.
-  const home = file === 'index.html';
+  // 2026-11-16: сторінки розборів добавок вирізано з головної, шапка в них така сама, як на головній (власна композиція й висота).
+  const home = file === 'index.html' || ARTICLE_FILES.includes(file);
   const canonicalNavigation = [
     ['Напрями', './directions.html'], ['Харчування', './nutrition.html'],
-    ['Дослідження', './index.html#pubmed-live'], ['Атлас', './atlas.html'],
+    ['Дослідження', './creatine.html#pubmed-live'], ['Атлас', './atlas.html'],
     ['Вправи', './exercises.html'], ['Добавки', './supplements.html']
   ];
   const navigation = await page.locator('.eua-site-header nav a').evaluateAll(nodes => nodes.map(node => [node.textContent.trim(), node.getAttribute('href')]));
   check(where, JSON.stringify(navigation) === JSON.stringify(canonicalNavigation), `the DOM must retain all six canonical navigation labels and targets; found ${JSON.stringify(navigation)}`);
   const checkVisibleNavigation = async () => {
-    const expected = home ? ['Напрями', 'Дослідження'] : canonicalNavigation.map(([label]) => label);
+    // 2026-11-16: у режимі розбору (і на сторінках розборів) шапка головної показує всі шість пунктів; лише сама головна ховає чотири.
+    const expected = home && !ARTICLE_FILES.includes(file) ? ['Напрями', 'Дослідження'] : canonicalNavigation.map(([label]) => label);
     const visible = (await page.locator('.eua-site-header nav a:visible').allTextContents()).map(text => text.trim());
     check(where, JSON.stringify(visible) === JSON.stringify(expected), `rendered navigation must contain ${expected.join(', ')}; found ${visible.join(', ')}`);
   };
@@ -959,7 +962,8 @@ async function articleCosmicFlow(browser, origin, viewport) {
   const lavender = hue => hue >= 255 && hue <= 290, cyan = hue => hue >= 165 && hue <= 215;
   let withGold = 0;
   for (const id of ids) {
-    const {context, page, seen} = await open(browser, origin, viewport, `/index.html#${id}`);
+    // 2026-11-17: розбір має власну сторінку (режим «стаття» записаний у розмітці), стара адреса index.html#… лише переводить на неї.
+    const {context, page, seen} = await open(browser, origin, viewport, `/${id}.html`);
     await page.waitForFunction(() => document.body.dataset.routeView === 'article');
     await page.waitForTimeout(400);
     const m = await page.evaluate(articleProbe, id);
@@ -999,7 +1003,7 @@ async function articleCosmicFlow(browser, origin, viewport) {
   // «Зелений» варіант лишається як був: старе золото, радіуси 16 і 30 px, бірюзова смуга шапки, жодних космічних токенів (контроль: той самий замір бачить золото, коли воно є).
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
   for (const id of ['creatine', 'supplement-protein']) {
-    const {context, page} = await open(browser, origin, viewport, `/index.html#${id}`, {initScript: green});
+    const {context, page} = await open(browser, origin, viewport, `/${id}.html`, {initScript: green});
     await page.waitForFunction(() => document.body.dataset.routeView === 'article');
     await page.waitForTimeout(400);
     const g = await page.evaluate(articleProbe, id);
@@ -1015,14 +1019,17 @@ async function articleCosmicFlow(browser, origin, viewport) {
   const h = await home.page.evaluate(() => { const t = document.querySelector('.home-menu-toggle'), r = t && t.getBoundingClientRect(); return {route: document.body.dataset.routeView || '', rd16: getComputedStyle(document.body).getPropertyValue('--rd-16').trim(), menuRadius: t && r.width > 0 ? getComputedStyle(t).borderTopLeftRadius : null}; });
   check(where, h.route !== 'article' && h.rd16 === '', `the home does not get the article palette (route «${h.route}», --rd-16 «${h.rd16}»)`);
   if (phone) check(where, h.menuRadius === '2px', `the home keeps its own menu button, 2 px (${h.menuRadius})`);
-  // Перемикання без перезавантаження: головна → розбір → назад. Палітра розбору вмикається й вимикається разом з режимом.
+  // Головна → розбір → назад. 2026-11-17: розбір це окрема сторінка; стара адреса index.html#creatine переводить на неї,
+  // а «Назад» повертає на головну (перехід зроблено через location.replace, тож стара адреса в історії не лишається).
   await home.page.evaluate(() => { location.hash = '#creatine'; });
+  await home.page.waitForURL(url => url.pathname === '/creatine.html');
   await home.page.waitForFunction(() => document.body.dataset.routeView === 'article');
   const inArticle = await home.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--rd-16').trim());
-  await home.page.evaluate(() => history.back());
+  await home.page.goBack();
+  await home.page.waitForURL(url => url.pathname === '/index.html');
   await home.page.waitForFunction(() => document.body.dataset.routeView !== 'article');
   const backHome = await home.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--rd-16').trim());
-  check(where, inArticle === '3px' && backHome === '', `the palette follows the mode without a reload (article «${inArticle}», back home «${backHome}»)`);
+  check(where, inArticle === '3px' && backHome === '', `the palette belongs to the review page and the home stays clean (article «${inArticle}», back home «${backHome}»)`);
   await home.context.close();
 }
 
@@ -1033,7 +1040,8 @@ async function articleCosmicFlow(browser, origin, viewport) {
 async function headingsFlow(browser, origin, viewport) {
   const where = `card headings @${viewport.name}`;
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
-  const inner = files.filter(f => f !== 'index.html');
+  // 2026-11-16: сторінки розборів добавок вирізано з головної (ті самі стилі головної, без файла палітри), до внутрішніх вони не належать.
+  const inner = files.filter(f => f !== 'index.html' && !ARTICLE_FILES.includes(f));
   const probe = () => {
     const sel = 'main :is(h2,h3,h4), [role="main"] :is(h2,h3,h4), .eua-next strong, .nd-card-title, .ch-title';
     const first = cs => cs.fontFamily.split(',')[0].replace(/["']/g, '').trim();
@@ -1104,7 +1112,8 @@ async function headerFlow(browser, origin, viewport) {
   const where = `header @${viewport.name}`;
   const mobile = viewport.name === 'mobile';
   const green = () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}));
-  const inner = files.filter(f => f !== 'index.html');
+  // 2026-11-16: сторінки розборів добавок вирізано з головної (ті самі стилі головної, без файла палітри), до внутрішніх вони не належать.
+  const inner = files.filter(f => f !== 'index.html' && !ARTICLE_FILES.includes(f));
   const probe = () => {
     const h = document.querySelector('.eua-site-header');
     const shown = el => { if (!el) return false; const b = el.getBoundingClientRect(), c = getComputedStyle(el); return b.width > 0 && b.height > 0 && c.display !== 'none' && c.visibility !== 'hidden'; };
@@ -1495,7 +1504,7 @@ async function shareFlow(browser, origin, viewport) {
 
 async function outcomeEvidenceFlow(browser, origin, viewport) {
   const where = `outcome evidence @${viewport.name}`;
-  const {context, page, seen} = await open(browser, origin, viewport, '/index.html#supplement-beta-alanine');
+  const {context, page, seen} = await open(browser, origin, viewport, '/supplement-beta-alanine.html');
   await page.locator('#supplement-beta-alanine [data-claim-open="CLM-000096"]').click();
   let dialog = page.locator('dialog[open]');
   await dialog.waitFor({state: 'visible'});
@@ -1504,7 +1513,7 @@ async function outcomeEvidenceFlow(browser, origin, viewport) {
   check(where, /95% Байєсівський інтервал вірогідності 2,2–32,6/.test(result) && !/95% ДІ/.test(result), 'the real SourceCard must preserve the Bayesian interval label and bounds');
   await artifact(page, viewport, 'source-bayesian-interval', source);
   await page.keyboard.press('Escape');
-  await page.goto(origin + '/index.html#supplement-protein', {waitUntil: 'load'});
+  await page.goto(origin + '/supplement-protein.html', {waitUntil: 'load'});
   await page.locator('#supplement-protein [data-claim-open="CLM-000053"]').click();
   dialog = page.locator('dialog[open]');
   const methods = dialog.locator('details').filter({has: page.locator('summary', {hasText: 'Рівень 3 · Записи доказів та методологія'})});
@@ -1742,14 +1751,14 @@ async function sectionsFlow(browser, origin, viewport) {
   await openSearch(page, 'дозування');
   const group = page.locator('.eua-search-results h2', {hasText: 'Розділи на сторінках'});
   check(where, await group.count() === 1, 'the dialog has a group «Розділи на сторінках»');
-  const dosing = page.locator('.eua-search-results a[href="./index.html#creatine-dosing"]');
+  const dosing = page.locator('.eua-search-results a[href="./creatine.html#creatine-dosing"]');
   check(where, await dosing.count() === 1, '«дозування» finds the creatine dosing section');
   const dosingText = await dosing.innerText();
   check(where, /Як приймати/.test(dosingText) && /Розділ · Креатин/.test(dosingText), 'the result names the section, says it is a section and names the material');
   check(where, await page.evaluate(() => { const h = [...document.querySelectorAll('.eua-search-results h2')].find(x => /Розділи/.test(x.textContent)); const l = h?.nextElementSibling?.querySelector('a'); return !!l && /creatine-dosing/.test(l.getAttribute('href')); }), 'the dosing section is the first in its group');
   await artifact(page, viewport, 'sections-dosing', page.locator('dialog.eua-search'));
   await dosing.click();
-  await page.waitForURL('**/index.html#creatine-dosing');
+  await page.waitForURL('**/creatine.html#creatine-dosing');
   await settle(page);
   let at = await measure(page);
   check(where, at.status === 'OK', `the dosing section is visible near the top after the jump (${JSON.stringify(at)})`);
@@ -1765,7 +1774,7 @@ async function sectionsFlow(browser, origin, viewport) {
   check(where, await claim.count() === 1, '«вагітність» finds the caffeine claim');
   check(where, /Твердження · Кофеїн/.test(await claim.innerText()), 'a claim card is labelled «Твердження»');
   await claim.click();
-  await page.waitForURL('**/index.html?section=*');
+  await page.waitForURL('**/supplement-caffeine.html?section=*'); // 2026-11-17: розбір кофеїну це окрема сторінка
   await page.locator('.eua-landed').waitFor({state: 'attached', timeout: 5000});
   check(where, (await page.locator('.eua-landed').first().innerText()).trim() === 'Вагітність', 'the found heading is highlighted');
   // Підсвічування саме зникає (воно живе трохи менше трьох секунд від першого входу); після цього міряємо остаточне положення.
@@ -1779,11 +1788,11 @@ async function sectionsFlow(browser, origin, viewport) {
   // 3) Згорнутий блок відкривається сам: міфи про креатин.
   ({context, page, seen} = await open(browser, origin, viewport, '/sleep.html'));
   await openSearch(page, 'кава і креатин');
-  const myth = page.locator('.eua-search-results a[href="./index.html#creatine-myths"]');
+  const myth = page.locator('.eua-search-results a[href="./creatine.html#creatine-myths"]');
   check(where, await myth.count() === 1, 'the myth about coffee and creatine is a section');
   check(where, await page.evaluate(() => { const d = document.querySelector('.eua-search-results'); return d.querySelectorAll('a').length >= 1; }), 'the results are not empty');
   await myth.click();
-  await page.waitForURL('**/index.html#creatine-myths');
+  await page.waitForURL('**/creatine.html#creatine-myths');
   await settle(page);
   check(where, await page.evaluate(() => document.getElementById('creatine-myths').open === true), 'the folded block of myths opened by itself');
   at = await measure(page);
@@ -2127,7 +2136,8 @@ function checkLensLinks(where, snapshot, viewport) {
 
 function checkLensAction(where, snapshot, {onScreen = false} = {}) {
   const {action, interior, stage} = snapshot;
-  check(where, action.count === 1 && action.controls === 1 && action.tag === 'A' && action.href === './directions.html' && action.inside && action.visible,
+  // 2026-11-15: у сцені, крім кнопки вибору, стоять шість кадрів-посилань напрямів (рішення власника «давай всі 4»): 1 + 6 керувань.
+  check(where, action.count === 1 && action.controls === 7 && action.tag === 'A' && action.href === './directions.html' && action.inside && action.visible,
     'the single native directory fallback must be rendered inside the accessible stage, without hidden/inert ancestors');
   check(where, interior.opacity === 1 && interior.text.includes('6 напрямів') && interior.text.includes('Знайди свою тему') && interior.textFits && action.width >= 44 && action.height >= 44 && action.left >= stage.left && action.right <= stage.right && action.top >= stage.top && action.bottom <= stage.bottom,
     'readable HTML and an opaque 44px action must fit physically inside the lens');
@@ -2198,9 +2208,23 @@ async function lensTileColours(page) {
 // scripts/browser-qa/lens-pixels.mjs (its own unit test proves the measuring code).
 const LENS_SINGLE_IMAGE_CSS = '.home-lens-half--right{display:none!important}.home-lens-half--left{clip-path:none!important}.home-lens-half--left .home-lens-art{mask-image:none!important;-webkit-mask-image:none!important}';
 const LENS_NO_ARTWORK_CSS = '.home-lens-core{display:none!important}';
+// 2026-11-16: знімок вважаємо готовим, коли два знімки поспіль однакові. Картинка кадру напряму в ядрі лінзи ледача: вона вже
+// «завантажена й розкодована» (complete, decode()), але браузер може намалювати її на кадр-два пізніше. Тоді перший знімок був без неї,
+// другий (еталонний) з нею, і перевірка просвіту падала приблизно в двох запусках із трьох (14/255 у середній колонці на 360 px).
+async function settledShot(page, clip) {
+  let previous = await page.screenshot({clip});
+  for (let attempt = 0; attempt < 8; attempt++) {
+    await page.waitForTimeout(120);
+    const next = await page.screenshot({clip});
+    if (next.equals(previous)) return next;
+    previous = next;
+  }
+  return previous;
+}
 async function lensPixelPair(page, clip, referenceCss) {
   // Lazy artwork and web fonts that finish between the two screenshots would read as a difference.
-  await page.locator('[data-home-lens] .home-lens-art, [data-home-lens] .home-lens-nebula').evaluateAll(nodes => Promise.all(nodes.map(async node => {
+  // 2026-11-15: шість кадрів напрямів у ядрі теж ледачі картинки; якщо кадр довантажиться між двома знімками, це прочитається як різниця в просвіті.
+  await page.locator('[data-home-lens] .home-lens-art, [data-home-lens] .home-lens-nebula, [data-home-lens] .home-lens-cell img').evaluateAll(nodes => Promise.all(nodes.map(async node => {
     node.loading = 'eager';
     if (!node.complete) await new Promise((resolve, reject) => {
       node.addEventListener('load', resolve, {once: true});
@@ -2209,14 +2233,18 @@ async function lensPixelPair(page, clip, referenceCss) {
     await node.decode();
   })));
   await page.evaluate(() => document.fonts.ready);
-  await page.waitForTimeout(120);
+  // 2026-11-15: у просвіті тепер стоять кадри напрямів, які реагують на наведення (назва в рядку підпису, легке збільшення). Після прокрутки
+  // браузер оновлює наведення нерухомого курсора із запізненням, тож між двома знімками кадр під курсором міг змінитись (14/255 у середній
+  // колонці на 360 px). Курсор відводимо в кут і чекаємо завершення переходу; прокрутка сторінки колесом від цього не залежить.
+  await page.mouse.move(1, 1);
+  await page.waitForTimeout(260);
   // A page that is still scrolling between the two screenshots would read as a difference: retry once.
   for (let attempt = 0; ; attempt++) {
     const scrolled = await page.evaluate(() => scrollY);
-    const actual = decodePng(await page.screenshot({clip}));
+    const actual = decodePng(await settledShot(page, clip));
     const style = await page.addStyleTag({content: referenceCss});
     await page.waitForTimeout(160);
-    const reference = decodePng(await page.screenshot({clip}));
+    const reference = decodePng(await settledShot(page, clip));
     await style.evaluate(node => node.remove());
     if (await page.evaluate(() => scrollY) === scrolled || attempt > 0) return {actual, reference};
     await page.waitForTimeout(300);
@@ -2564,7 +2592,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     // section anchor; the hub's bare page URL is not an indexed material.
     const sleepStagesHref = areas.find(area => area.id === 'sleep').units.find(unit => unit.id === 'stages').href;
     const sleepStagesURL = new URL(sleepStagesHref, origin + '/index.html');
-    for (const [query, href] of [['креатин', './index.html#creatine'], ['як пити креатин', './index.html#creatine'], ['сон', sleepStagesHref]]) {
+    for (const [query, href] of [['креатин', './creatine.html'], ['як пити креатин', './creatine.html'], ['сон', sleepStagesHref]]) {
       await page.locator('#spectrum-query').fill(query);
       await page.locator('#spectrum-query').press('Enter');
       await search.waitFor({state: 'visible'});
@@ -2639,7 +2667,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
     for (const [question, pathname, hash, target] of [
       ['muscle', '/muscle-lab.html', '#explorer', '#explorer'],
       ['fat', '/fat-burning.html', '', '#fb-step-title'],
-      ['creatine', '/index.html', '#creatine', 'body > #creatine']
+      ['creatine', '/creatine.html', '', 'body > #creatine'] // 2026-11-17: розбір креатину це окрема сторінка
     ]) {
       await page.goto(origin + '/index.html#top', {waitUntil: 'load'});
       await page.locator(`[data-spectrum-question="${question}"]`).click();
@@ -2648,7 +2676,7 @@ async function homeSpectrumFlow(browser, origin, viewport) {
       check(where, new URL(page.url()).pathname === pathname && new URL(page.url()).hash === hash, `${question} must reach its real existing material and section`);
       if (question === 'creatine') {
         await page.waitForFunction(() => document.body.dataset.routeView === 'article');
-        check(where, !(await page.locator('#top').isVisible()), 'the question must activate the preserved creatine article router');
+        check(where, !(await page.locator('#top').isVisible()), 'the question must open the creatine review page, without the home behind it');
         // The same home header stays mounted on a dossier. Its configured
         // hero query is hidden here, so Escape must focus the visible button.
         const headerSearch = page.locator('.eua-site-header .eua-header-search');
@@ -2720,10 +2748,11 @@ async function homeNoScriptFlow(browser, origin, viewport) {
     await page.locator('.home-path-outline>summary').first().click();
     check(where,await page.locator('.home-path-outline').first().locator('ol a:visible').count()>=3,'the complete route outline must open natively without JavaScript');
     await page.locator('[data-spectrum-question="creatine"]').click();
-    await page.waitForURL(url => url.pathname === '/index.html' && url.hash === '#creatine');
+    // 2026-11-17: розбір креатину це окрема сторінка; без JavaScript звичайне посилання відкриває її, і розбір видно з розмітки.
+    await page.waitForURL(url => url.pathname === '/creatine.html');
     await page.locator('body > #creatine').waitFor({state: 'visible'});
-    check(where, await page.locator('body > #creatine').evaluate(node => node.matches(':target') && getComputedStyle(node).display === 'block') && await page.locator('body > #creatine h1').isVisible(), 'the native #creatine target must reveal the existing dossier without JavaScript');
-    check(where, await page.locator('body > .page').evaluate(node => getComputedStyle(node).display === 'none') && !(await page.locator('.spectrum-home').isVisible()), 'native article targeting must hide the static home without JavaScript');
+    check(where, await page.locator('body > #creatine').evaluate(node => getComputedStyle(node).display === 'block' && node.getBoundingClientRect().height > 1000) && await page.locator('body > #creatine h1').isVisible(), 'the creatine review page must show the review without JavaScript');
+    check(where, await page.locator('.spectrum-home').count() === 0, 'the review page carries no home behind it');
     // Start from a fresh home document so the native :target test cannot
     // accidentally substitute for the independent GET form fallback.
     await page.goto(origin + '/index.html', {waitUntil: 'load'});
@@ -2779,7 +2808,7 @@ async function provenanceStampFlow(browser, origin, viewport) {
     return {text: node.textContent.replace(/\s+/g, ' ').trim(), right: Math.round(box.right), width: Math.round(box.width), height: Math.round(box.height), rule: style.borderLeftWidth, ruleStyle: style.borderLeftStyle, contrast: (hi + 0.05) / (lo + 0.05), fontSize: parseFloat(style.fontSize)};
   };
   for (const id of ['supplement-caffeine', 'supplement-protein']) {
-    const {context, page, seen} = await open(browser, origin, viewport, '/index.html#' + id);
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + id + '.html'); // 2026-11-17: сторінка розбору
     try {
       const line = page.locator(`#${id} .pc-status`);
       await line.waitFor({state: 'attached'});
@@ -3510,7 +3539,11 @@ async function homeFreshCardsFlow(browser, origin, viewport) {
       check(where, new Set(info.cards.map(card => card.x)).size === 1 && info.cards[0].y < info.cards[1].y && info.cards[1].y < info.cards[2].y, 'on the phone the cards are stacked');
       if (viewport.width === 390) {
         check(where, info.block.height <= 950 + 150, `the block grew by ${info.block.height - 950}px on the phone, the budget is 150px`);
-        check(where,closedHeight<=viewport.height*3.5,`the folded home is no taller than 3.5 phone screens (${closedHeight}px)`);
+        // 2026-11-17 («2 і 3»): під героєм стоїть картка «Одне твердження наживо», на телефоні ~700 px; разом із нею головна ~4,1 екрана.
+        // Стара межа 3,5 екрана лишається для решти сторінки, а картка має власну межу; чи залишати картку такої висоти, вирішує власник.
+        const claimHeight=await page.evaluate(()=>Math.ceil(document.querySelector('.home-claim')?.getBoundingClientRect().height||0)+40);
+        check(where,claimHeight>40&&claimHeight<=760,`the claim card under the hero stays within its own phone budget (${claimHeight}px with margins, limit 760px)`);
+        check(where,closedHeight-claimHeight<=viewport.height*3.5,`the folded home without the claim card is no taller than 3.5 phone screens (${closedHeight-claimHeight}px; with the card ${closedHeight}px)`);
       }
     }
     await artifact(page, viewport, 'home-fresh-cards', page.locator('.home-fresh'));
@@ -3574,7 +3607,7 @@ async function compareFlow(browser, origin, viewport) {
   await page.click('#cp-swap');
   const names = await cards.locator('h2').allInnerTexts();
   check(where, names.length === 2 && names[0] !== names[1], 'swap keeps two different supplements');
-  check(where, (await page.locator('.cp-open').first().getAttribute('href')).startsWith('./index.html#'), 'each card opens its dossier');
+  check(where, /^\.\/(creatine|supplement-[a-z-]+)\.html$/.test(await page.locator('.cp-open').first().getAttribute('href')), 'each card opens its dossier page');
   const box = await cards.nth(1).boundingBox();
   check(where, box && box.x >= 0 && box.x + box.width <= viewport.width + 1, 'cards stay inside the viewport');
   if (viewport.width > 900) { const b0 = await cards.nth(0).boundingBox(); check(where, box && b0 && Math.abs(box.y - b0.y) < 4, 'on a wide screen the cards are side by side'); }
@@ -3626,7 +3659,7 @@ async function supplementsFlow(browser, origin, viewport) {
   check(where, (await page.locator('.sp-row').count()) === 11, 'expected eleven supplements');
   // Every entry has a photo, a folded limit and a link to its existing dossier.
   const links = await page.locator('.sp-go').evaluateAll(nodes => nodes.map(n => n.getAttribute('href')));
-  check(where, links.length === 11 && links.every(h => h.startsWith('./index.html#')), 'every row must link to its dossier');
+  check(where, links.length === 11 && links.every(h => /^\.\/(creatine|supplement-[a-z-]+)\.html$/.test(h)), 'every row must link to its dossier page');
   check(where, (await page.locator('.sp-limit[open]').count()) === 0, 'limits must start folded');
   await page.locator('.sp-limit summary').first().click();
   check(where, (await page.locator('.sp-limit[open] p').first().isVisible()), 'opening the limit must show its text');
@@ -3795,6 +3828,139 @@ async function muscleGuideFlow(browser, origin, viewport) {
   await context.close();
 }
 
+async function muscleSignalFlow(browser, origin, viewport) {
+  // 2026-11-14, апгрейд сторінки «Від м’яза до молекул»: схема сигналу світиться разом зі списком, плитки «за 30 секунд» ведуть у розділи, цілі дотику ≥ 44 px.
+  const where = `muscle signal drawing @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
+  await page.waitForSelector('#quick');
+  // 1) Плитка молекули веде в розділ і відкриває його.
+  await page.locator('.mg-mol', {hasText: 'mTORC1'}).click();
+  await page.waitForTimeout(300);
+  check(where, await page.locator('#why-grow').evaluate(node => node.open), 'the mTORC1 tile must open its chapter');
+  check(where, await page.locator('.mg-mol small').first().evaluate(node => getComputedStyle(node).fontSize === '12px'), 'tile destination hint is at least 12 px');
+  // 2) Схема: спокій, світло, зсув ниток.
+  await page.locator('#signal > summary').click();
+  const read = () => page.evaluate(() => {
+    const color = (sel, prop) => getComputedStyle(document.querySelector(sel))[prop];
+    const left = document.querySelector('.mg-signal .sg-l').getBoundingClientRect().left;
+    return {axon: color('.mg-signal path.sg-p0', 'stroke'), ach: color('.mg-signal .sg-ach .sg-p1', 'fill'), ca: color('.mg-signal .sg-p5', 'fill'), left};
+  });
+  const idle = await read();
+  await page.locator('[data-chain-play]').click();
+  await page.waitForTimeout(8600);
+  const done = await read();
+  check(where, idle.axon !== done.axon && idle.ach !== done.ach && idle.ca !== done.ca, `lit parts must differ from idle: ${JSON.stringify({idle, done})}`);
+  check(where, done.left - idle.left > 8, `at the last step the filaments slide inward (${done.left - idle.left} px)`);
+  const box = await page.locator('.mg-signal').boundingBox();
+  check(where, box.width >= 240 && box.x >= 0 && box.x + box.width <= viewport.width + 1, `the drawing fits the screen (${Math.round(box.width)} px)`);
+  check(where, (await page.locator('.mg-signal text').count()) === 0, 'no text inside the drawing (labels are HTML)');
+  // 3) Зменшений рух: одразу весь ланцюг, без анімацій.
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.reload();
+  await page.waitForSelector('#signal');
+  await page.locator('#signal > summary').click();
+  await page.locator('[data-chain-play]').click();
+  await page.waitForTimeout(300);
+  check(where, Number(await page.locator('[data-chain]').getAttribute('data-chain-step')) === 7, 'reduced motion shows the whole chain at once');
+  check(where, await page.locator('.mg-signal .sg-p0').first().evaluate(node => getComputedStyle(node).animationName === 'none'), 'reduced motion switches the drawing animations off');
+  // 3б) Рядок кнопок під шапкою: лише «Скопіювати посилання» і «Поділитися враженням» (рішення власника 2026-11-14).
+  const rowLabels = await page.evaluate(() => [...document.querySelectorAll('.eua-platform-nav a, .eua-platform-nav button')].filter(e => e.getBoundingClientRect().width > 0 && getComputedStyle(e).visibility !== 'hidden').map(e => e.textContent.trim()).filter(t => ['Атлас', 'Вправи', 'Знайти матеріал'].includes(t)));
+  check(where, rowLabels.length === 0, `duplicates of the header menu are gone from the button row: ${rowLabels.join(', ')}`);
+  // 4) Цілі дотику: кружки кроків, рядок службових кнопок, джерела.
+  await page.evaluate(() => document.querySelectorAll('main details').forEach(d => { d.open = true; }));
+  const targets = await page.evaluate(() => [...document.querySelectorAll('.step-dot, .eua-platform-nav .eua-tools > *, .mg-source-list a, .mg-ev-label a, .muscle-shared .eua-source-links a')].filter(e => e.getBoundingClientRect().width > 0).map(e => {
+    const r = e.getBoundingClientRect();
+    return {cls: e.className || e.tagName, w: Math.round(r.width), h: Math.round(r.height)};
+  }).filter(t => t.h < 44 || t.w < 44));
+  check(where, targets.length === 0, `touch targets under 44 px: ${JSON.stringify(targets.slice(0, 6))}`);
+  const textSmall = await page.evaluate(() => [...document.querySelectorAll('main *')].filter(e => e.children.length === 0 && e.textContent.trim() && e.getBoundingClientRect().width > 0 && parseFloat(getComputedStyle(e).fontSize) < 12).length);
+  check(where, textSmall === 0, `visible text under 12 px on the page: ${textSmall}`);
+  check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'the page does not scroll sideways');
+  await artifact(page, viewport, 'muscle-signal', page.locator('#signal .mg-chain'));
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party request: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
+async function navRowFlow(browser, origin, viewport) {
+  // 2026-11-14 (рішення власника «так»): рядок під шапкою не дублює «Атлас», «Вправи» й «Знайти матеріал»; усе це лишається в шапці.
+  const where = `button row without header duplicates @${viewport.name}`;
+  for (const file of ['muscle-lab.html', 'cell-lab.html', 'nutrition.html', 'movement.html', 'sleep.html', 'atlas.html', 'exercises.html', 'supplements.html', 'research.html']) {
+    const {context, page, seen} = await open(browser, origin, viewport, '/' + file);
+    await page.waitForSelector('.eua-site-header');
+    await page.waitForTimeout(400);
+    const row = await page.evaluate(() => [...document.querySelectorAll('.eua-platform-nav a, .eua-platform-nav button')].map(e => e.textContent.trim()).filter(t => ['Атлас', 'Вправи', 'Знайти матеріал'].includes(t)));
+    check(where, row.length === 0, `${file}: the row repeats the header: ${row.join(', ')}`);
+    check(where, await page.locator('.eua-header-search').count() === 1, `${file}: the header keeps the search button`);
+    check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `${file}: console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+    await context.close();
+  }
+}
+
+async function muscleTrainingFlow(browser, origin, viewport) {
+  // 2026-11-15, «1-4 виконуємо»: схеми для силових розділів. Міряємо стан у браузері, а не лише розмітку.
+  const where = `muscle training drawings @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/muscle-lab.html');
+  await page.waitForSelector('#guide');
+  const fill = sel => page.locator(sel).first().evaluate(node => getComputedStyle(node).fill);
+  // 1) Залучення одиниць: повзунок, світло від малих до великих.
+  await page.locator('#strength > summary').click();
+  const range = page.locator('[data-recruit-range]');
+  check(where, await range.isVisible(), 'the effort slider is shown once the script runs');
+  const rbox = await range.boundingBox();
+  check(where, rbox.height >= 44, `slider is at least 44 px tall (${Math.round(rbox.height)})`);
+  await range.fill('0');
+  await page.waitForTimeout(450); // колір змінюється плавно (0,3 с): читаємо після переходу
+  const dark7 = await fill('.rc-u7 .rc-cell'), dark0 = await fill('.rc-u0 .rc-cell');
+  await range.fill('10');
+  await page.waitForTimeout(450); // колір змінюється плавно (0,3 с): читаємо після переходу
+  const low0 = await fill('.rc-u0 .rc-cell'), low7 = await fill('.rc-u7 .rc-cell');
+  await range.fill('100');
+  await page.waitForTimeout(450); // колір змінюється плавно (0,3 с): читаємо після переходу
+  const high7 = await fill('.rc-u7 .rc-cell');
+  check(where, low0 !== dark0 && low7 === dark7, 'little effort lights only the small unit');
+  check(where, high7 !== dark7, 'full effort lights the large unit too');
+  const gap = await page.locator('[data-recruit]').evaluate(node => parseFloat(node.style.getPropertyValue('--gap')));
+  check(where, gap < 2, `at full effort the pulse train is densest (gap ${gap})`);
+  check(where, (await page.locator('[data-recruit-text]').innerText()).includes('великі'), 'the text names the large units at full effort');
+  // 2) Сила й розмір: лінії домальовані, коли блок розгорнуто.
+  await page.locator('#strength .mg-fold > summary').first().click();
+  await page.waitForTimeout(2100);
+  const dashes = await page.evaluate(() => [...document.querySelectorAll('.cv-force,.cv-size')].map(p => getComputedStyle(p).strokeDashoffset));
+  check(where, dashes.length === 2 && dashes.every(d => parseFloat(d) === 0), `both lines are fully drawn: ${dashes.join(' ')}`);
+  // 3) Три способи: підйом і опускання закінчують у різних положеннях, стрілки є.
+  await page.locator('#why-grow > summary').click();
+  await page.locator('#why-grow .mg-fold > summary', {hasText: 'Три способи'}).click();
+  await page.waitForTimeout(1800);
+  const zs = await page.evaluate(() => ['lift', 'lower', 'hold'].map(k => {
+    const l = document.querySelector(`.lt-${k} .lt-l .lt-z`).getBoundingClientRect(), r = document.querySelector(`.lt-${k} .lt-r .lt-z`).getBoundingClientRect();
+    return r.left - l.left;
+  }));
+  check(where, zs[0] < zs[2] && zs[2] < zs[1], `lifting ends shorter than holding, lowering longer: ${zs.map(z => Math.round(z)).join(' / ')}`);
+  check(where, (await page.locator('.mg-loadtypes .lt-dir').count()) === 3, 'each panel has its direction cue');
+  // 4) Шлях росту: усі кроки загорілись.
+  await page.waitForTimeout(3600);
+  const ops = await page.evaluate(() => [...document.querySelectorAll('.gr-p')].map(n => Number(getComputedStyle(n).opacity)));
+  check(where, ops.length >= 6 && ops.every(o => o === 1), 'every growth step has lit up once the chapter has been open for a while');
+  // Без руху: усе одразу в кінцевому стані.
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.reload();
+  await page.waitForSelector('#why-grow');
+  await page.locator('#why-grow > summary').click();
+  await page.waitForTimeout(150);
+  const opsR = await page.evaluate(() => [...document.querySelectorAll('.gr-p')].map(n => Number(getComputedStyle(n).opacity)));
+  check(where, opsR.every(o => o === 1), 'reduced motion shows the final state at once');
+  // Не виходить за ширину, текст у підписах ≥ 12 px.
+  await page.evaluate(() => document.querySelectorAll('#guide details').forEach(d => { d.open = true; }));
+  check(where, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'the page does not scroll sideways');
+  const small = await page.evaluate(() => [...document.querySelectorAll('.mg-recruit *, .mg-curves *, .mg-loadtypes *, .mg-growth-fig *')].filter(e => e.children.length === 0 && e.textContent.trim() && parseFloat(getComputedStyle(e).fontSize) < 12).length);
+  check(where, small === 0, `text in the new figures under 12 px: ${small}`);
+  await artifact(page, viewport, 'muscle-training', page.locator('#why-grow'));
+  check(where, seen.pageErrors.length === 0 && seen.console.length === 0, `console errors: ${[...seen.pageErrors, ...seen.console].join(' | ')}`);
+  check(where, seen.external.length === 0, `third-party request: ${seen.external.join(', ')}`);
+  await context.close();
+}
+
 async function atlasFlow(browser, origin, viewport) {
   const where = `atlas shoulder map @${viewport.name}`;
   const {context, page, seen} = await open(browser, origin, viewport, '/atlas.html');
@@ -3954,7 +4120,7 @@ async function atlasUpdateFlow(browser, origin, viewport) {
       // 2026-11-14: related links live in the new substantive overview.
       await page.locator('#atlas-tab-overview').click();
       const links = await page.locator('#atlas-content .af-related a').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
-      const required=zone==='brain'?['./sleep.html','./mechanisms.html#caffeine','./index.html#supplement-caffeine']:['./nutrition-digestion.html','./nutrition-inside.html'];
+      const required=zone==='brain'?['./sleep.html','./mechanisms.html#caffeine','./supplement-caffeine.html']:['./nutrition-digestion.html','./nutrition-inside.html'];
       check(where, required.every(href=>links.includes(href)), zone+': prior useful links retained');
     }
     check(where, (await atlasSmallText(page)).length === 0, `${zone}: no text under 12 px (${(await atlasSmallText(page)).slice(0, 3).join(' | ')})`);
@@ -4706,7 +4872,8 @@ async function homeLowerFlow(browser, origin, viewport) {
   // The selected lens is intentionally borderless: its loaded graphic supplies
   // the visual chapter. Native route/library entrances retain bounded surfaces.
   await page.locator('[data-lens-stage]').scrollIntoViewIfNeeded();
-  await page.waitForFunction(()=>[...document.querySelectorAll('[data-lens-stage] img')].length===3&&[...document.querySelectorAll('[data-lens-stage] img')].every(img=>img.complete&&img.naturalWidth>0));
+  // 2026-11-15: у ядрі додались шість кадрів напрямів (ледачі картинки); сам графічний розділ це, як і раніше, три картинки оздоби.
+  await page.waitForFunction(()=>[...document.querySelectorAll('[data-lens-stage] .home-lens-decoration img')].length===3&&[...document.querySelectorAll('[data-lens-stage] .home-lens-decoration img')].every(img=>img.complete&&img.naturalWidth>0));
   check(where,await page.locator('[data-lens-stage]').evaluate(node=>{const box=node.getBoundingClientRect();return box.width>0&&box.height>=200&&getComputedStyle(node).visibility==='visible';}),'the direction chapter must contain its loaded, visible lens graphic');
   check(where,chapters.length===3&&chapters.slice(1).every(chapter=>chapter.padding>=24&&chapter.border>=1&&(chapter.image!=='none'||(chapter.background!==background&&chapter.background!=='rgba(0, 0, 0, 0)'))),'route and library entrances need readable, visibly bounded surfaces');
   check(where,chapters.length===3&&chapters[0].top<chapters[1].top&&chapters[1].top<chapters[2].top,'the page must progress from choosing a direction to routes and the library');
@@ -4759,7 +4926,7 @@ async function homeLowerFlow(browser, origin, viewport) {
   check(where,await page.locator('#supplement-carousel, .supplement-rail, #supplement-search').count()===0,'the retired supplement carousel is back on the home page');
   check(where,(await page.locator('.supplement-entry .se-cta').getAttribute('href'))==='./supplements.html','the entry must lead to the catalogue');
   const entryLinks=await page.locator('.supplement-entry .se-list a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
-  check(where,entryLinks.length===11&&entryLinks.every(h=>h.startsWith('#')),'eleven entry chips must link to the existing dossiers');
+  check(where,entryLinks.length===11&&entryLinks.every(h=>/^\.\/(creatine|supplement-[a-z-]+)\.html$/.test(h)),'eleven entry chips must link to the dossier pages'); // 2026-11-17: сторінки розборів
   check(where,(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth))<=1,'horizontal overflow in the supplement entry');
   // The three explainer blocks now live inside the folded «Про сайт» group (owner decision 2026-10-19).
   check(where,!(await page.locator('#home-overview').isVisible()),'the group must start folded');
@@ -4866,6 +5033,349 @@ async function baselineScreenshots(browser, origin, viewport) {
   await page.goto(origin + '/atlas.html', {waitUntil: 'load'});
   await artifact(page, viewport, 'atlas-redesign', page.locator('.atlas-workspace'));
   await context.close();
+}
+
+async function homeRowSignsFlow(browser, origin, viewport) {
+  // Рішення власника «давай 1 пункт» (2026-11-15): замість «+» рядки «Навчальні маршрути», «Оновлення» й «Бібліотека доказів» показують малюнок
+  // свого вмісту (src/platform/home-row-signs.mjs). У справжньому браузері перевіряємо те, чого не видно з розмітки: знак видимий, не дрібний,
+  // не виходить за ширину й за рядок, не налазить на назву й підказку; кількість вузлів і рисок дорівнює тому, що лежить у відкритому рядку;
+  // стан показує кутик (без «+»), він повертається при відкритті; рядок відкривається Enter, Пробілом і дотиком до самого знака.
+  const where = `home row signs @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('#home-learning-paths').waitFor({state: 'attached'});
+    await page.locator('.home-library-fold > summary').scrollIntoViewIfNeeded();
+    const measure = () => page.evaluate(() => ['#home-learning-paths', '.home-fresh-fold', '.home-library-fold'].map(selector => {
+      const fold = document.querySelector(selector), summary = fold.querySelector(':scope > summary'), sign = summary.querySelector(':scope > .home-row-sign'), svg = sign && sign.querySelector('svg');
+      const box = node => { const r = node.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height}; };
+      const texts = [...summary.querySelectorAll('strong, small, .home-fresh-fold-title, .home-fresh-fold-hint')].map(node => { const range = document.createRange(); range.selectNodeContents(node); return box(range); });
+      const after = getComputedStyle(summary, '::after'), signStyle = sign && getComputedStyle(sign), mark = svg && svg.querySelector('.hs-node, .hs-mark, .eua-mi-dot');
+      return {selector, open: fold.open, summary: box(summary), sign: sign && box(sign), svg: svg && box(svg), texts,
+        hidden: sign && sign.getAttribute('aria-hidden'), svgText: svg ? svg.querySelectorAll('text, title').length : -1,
+        afterContent: after.content, afterTransform: after.transform, afterBorder: parseFloat(after.borderRightWidth), afterWidth: parseFloat(after.width),
+        opacity: signStyle && Number(signStyle.opacity), paint: mark && (getComputedStyle(mark).fill !== 'none' ? getComputedStyle(mark).fill : getComputedStyle(mark).stroke),
+        rails: [...summary.querySelectorAll('.hs-rail')].map(rail => rail.querySelectorAll('circle').length),
+        spines: [...summary.querySelectorAll('.hs-spine')].map(spine => spine.querySelectorAll('rect').length),
+        miniRows: summary.querySelectorAll('.eua-mi-row').length,
+        routeSteps: [...fold.querySelectorAll('.path-card')].map(card => card.querySelectorAll('.home-path-outline ol > li').length),
+        supplements: fold.querySelectorAll('.se-list > li').length,
+        cardMiniRows: fold.querySelectorAll('.home-fresh-card--study .eua-mi-row').length,
+        viewport: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth};
+    }));
+    const closed = await measure();
+    const overlap = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    for (const row of closed) {
+      const name = row.selector;
+      check(where, !row.open, `${name} starts closed`);
+      check(where, row.sign && row.svg && row.svg.width >= 40 && row.svg.height >= 30, `${name}: the sign is visible and not tiny (${row.svg && Math.round(row.svg.width)}×${row.svg && Math.round(row.svg.height)})`);
+      check(where, row.hidden === 'true' && row.svgText === 0, `${name}: the sign is decorative and has no text inside the drawing`);
+      check(where, row.svg.left >= row.summary.left - 0.5 && row.svg.right <= row.summary.right + 0.5 && row.svg.top >= row.summary.top - 0.5 && row.svg.bottom <= row.summary.bottom + 0.5, `${name}: the sign stays inside its row`);
+      check(where, row.texts.every(text => !overlap(text, row.svg)), `${name}: the sign does not cover the title or the hint`);
+      check(where, row.scroll <= row.viewport, `${name}: nothing overflows the page width`);
+      check(where, row.summary.height >= 44 && row.summary.height <= (viewport.width <= 600 ? 130 : 96), `${name}: the row stays a compact touch target (${Math.round(row.summary.height)} px)`);
+      check(where, (row.afterContent === '""' || row.afterContent === 'none' || row.afterContent === "''") && row.afterBorder >= 1 && row.afterWidth >= 8, `${name}: the state mark is a drawn corner, not a «+» glyph (${row.afterContent})`);
+      check(where, /^rgb/.test(row.paint || '') && row.opacity >= 0.8, `${name}: the sign is painted (${row.paint}, opacity ${row.opacity})`);
+    }
+    const [routes, fresh, library] = closed;
+    check(where, routes.rails.length > 0 && JSON.stringify(routes.rails) === JSON.stringify(routes.routeSteps), `routes sign matches the routes inside (${routes.rails} vs ${routes.routeSteps})`);
+    check(where, library.spines.length === library.supplements && library.supplements > 0 && library.spines.every(count => count >= 1), `library sign has one spine per supplement (${library.spines.length} vs ${library.supplements})`);
+    check(where, fresh.miniRows > 0 && fresh.miniRows === fresh.cardMiniRows, `updates sign shows the same mini chart as the first card (${fresh.miniRows} vs ${fresh.cardMiniRows})`);
+    await artifact(page, viewport, 'home-row-signs-closed', page.locator('#home-learning-paths > summary'));
+    await artifact(page, viewport, 'home-row-signs-library', page.locator('.home-library-fold > summary'));
+    await artifact(page, viewport, 'home-row-signs-updates', page.locator('.home-fresh-fold > summary'));
+    // Клавіатура: Enter відкриває, Пробіл закриває; кутик повертається.
+    for (const selector of ['#home-learning-paths', '.home-fresh-fold', '.home-library-fold']) {
+      const fold = page.locator(selector), summary = fold.locator(':scope > summary');
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      check(where, await fold.evaluate(node => node.open), `${selector}: Enter opens the row`);
+      await page.waitForTimeout(350);
+      const turned = (await measure()).find(row => row.selector === selector);
+      check(where, turned.afterTransform !== closed.find(row => row.selector === selector).afterTransform, `${selector}: the corner turns when the row opens`);
+      check(where, turned.opacity === 1, `${selector}: the sign is fully lit while the row is open`);
+      await summary.focus();
+      await page.keyboard.press('Space');
+      check(where, !(await fold.evaluate(node => node.open)), `${selector}: Space closes the row`);
+      // Дотик чи клік по самому малюнку теж відкриває рядок: знак є частиною того самого керування.
+      await fold.locator(':scope > summary > .home-row-sign').click();
+      check(where, await fold.evaluate(node => node.open), `${selector}: a click on the sign itself opens the row`);
+      await summary.focus();
+      await page.keyboard.press('Enter');
+      check(where, !(await fold.evaluate(node => node.open)), `${selector}: the row closes again`);
+    }
+    checkBrowserHealth(where, seen);
+  } finally {
+    await context.close();
+  }
+}
+
+async function homeLensFitFlow(browser, origin, viewport) {
+  // Рішення власника «давай всі 4» (2026-11-15), лінза «Обери напрям». У справжньому браузері перевіряємо чотири речі:
+  // 1) відкриті половини цілком у сцені (раніше краї зрізались на 34–150 px майже на кожній ширині);
+  // 2) у ядрі шість круглих кадрів напрямів: не менші за 44 px, у просвіті між половинами, ведуть туди ж, куди картки вікна вибору;
+  // 3) підказка «Прокрути — відкрий ядро» видима лише поки ядро закрите;
+  // 4) на півдорозі видима частина тексту ядра не виходить за просвіт між половинами (текст не лежить на картині).
+  const where = `home lens fit @${viewport.name}`;
+  const {context, page, seen} = await open(browser, origin, viewport, '/index.html');
+  try {
+    await page.locator('[data-home-lens][data-lens-ready]').waitFor({state: 'attached'});
+    const stageTop = await page.evaluate(() => document.querySelector('[data-lens-stage]').getBoundingClientRect().top + scrollY);
+    const state = () => page.evaluate(() => {
+      const q = s => document.querySelector(s), box = node => { const r = node.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height}; };
+      const section = q('[data-home-lens]'), stage = box(q('[data-lens-stage]')), L = box(q('.home-lens-half--left')), R = box(q('.home-lens-half--right')), interior = q('.home-lens-interior'), I = box(interior);
+      // Видима ширина тексту ядра: проходимо по горизонталі крок за кроком і дивимось, де елемент справді під пальцем (clip-path прибирає і вигляд, і дотик).
+      const shown = [];
+      for (const node of interior.querySelectorAll('.home-lens-count, .home-lens-peek, .home-lens-invitation')) { const r = node.getBoundingClientRect(), y = r.top + r.height / 2; for (let x = Math.ceil(r.left) + 1; x < r.right - 1; x += 2) { const hit = document.elementFromPoint(x, y); if (hit && (hit === node || node.contains(hit))) shown.push(x); } }
+      const clip = getComputedStyle(q('.home-lens-count')).clipPath;
+      return {progress: Number(section.style.getPropertyValue('--lens-progress')), open: section.hasAttribute('data-lens-open'), complete: section.hasAttribute('data-lens-complete'),
+        stage, halves: {left: L.left, right: R.right}, gap: {left: L.left + L.width / 2, right: R.left + R.width / 2}, interior: I, shown: shown.length ? {left: Math.min(...shown), right: Math.max(...shown)} : null, clip,
+        opacity: Number(getComputedStyle(interior).opacity), hint: getComputedStyle(q('.home-lens-hint')).visibility,
+        cells: [...document.querySelectorAll('.home-lens-cell')].map(cell => ({...box(cell), href: cell.getAttribute('href'), name: cell.querySelector('.home-lens-cell-name').textContent, picture: cell.querySelector('img')?.naturalWidth > 0 || !cell.querySelector('img')?.complete})),
+        count: box(q('.home-lens-count')), jump: box(q('.home-lens-jump')),
+        cards: [...document.querySelectorAll('#cards a.topic-card')].map(card => ({href: card.getAttribute('href'), name: card.querySelector('strong').textContent})),
+        viewport: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth};
+    });
+    const scrollTo = async top => { await page.evaluate(y => window.scrollTo(0, y), Math.max(0, top)); await page.waitForTimeout(350); };
+    // Закрита: сцена щойно з’явилась знизу екрана.
+    await scrollTo(stageTop - viewport.height + 40);
+    const closed = await state();
+    check(where, closed.progress === 0 && !closed.open, `the lens is closed while it enters the screen (progress ${closed.progress})`);
+    check(where, closed.hint === 'visible', 'the hint is shown while the core is closed');
+    // На півдорозі: шукаємо прокруткою стан, коли текст уже видно, а половини ще не розійшлись повністю.
+    let mid = null;
+    for (let offset = viewport.height - 40; offset > 0 && !mid; offset -= 16) {
+      await page.evaluate(y => window.scrollTo(0, y), Math.max(0, stageTop - offset));
+      await page.waitForTimeout(60);
+      const now = await state();
+      if (now.opacity > 0.2 && now.progress < 0.6) mid = now;
+      if (now.progress >= 0.6) break;
+    }
+    check(where, Boolean(mid), 'a half-open state with visible text can be reached by scrolling');
+    if (mid) {
+      const visible = mid.shown || {left: (mid.gap.left + mid.gap.right) / 2, right: (mid.gap.left + mid.gap.right) / 2};
+      check(where, /^inset\(/.test(mid.clip), `the core text is clipped while the lens opens (${mid.clip})`);
+      check(where, visible.left >= mid.gap.left - 4 && visible.right <= mid.gap.right + 4, `half-open: the visible text stays in the opening (${Math.round(visible.left)}…${Math.round(visible.right)} inside ${Math.round(mid.gap.left)}…${Math.round(mid.gap.right)})`);
+      check(where, mid.open && mid.hint === 'hidden', 'the hint leaves once the core is usable');
+    }
+    // Відкрита.
+    await scrollTo(stageTop - 10);
+    const opened = await state();
+    check(where, opened.progress === 1 && opened.complete, `the lens is fully open near the top of the screen (progress ${opened.progress})`);
+    check(where, opened.halves.left >= opened.stage.left - 0.5 && opened.halves.right <= opened.stage.right + 0.5, `open halves stay inside the stage (${Math.round(opened.halves.left)}…${Math.round(opened.halves.right)} in ${Math.round(opened.stage.left)}…${Math.round(opened.stage.right)})`);
+    check(where, opened.scroll <= opened.viewport, 'nothing overflows the page width');
+    check(where, opened.hint === 'hidden' && opened.opacity === 1, 'open: text fully visible, hint gone');
+    check(where, opened.cells.length === 6 && opened.cells.length === opened.cards.length, `six direction frames (${opened.cells.length})`);
+    check(where, JSON.stringify(opened.cells.map(cell => [cell.href, cell.name])) === JSON.stringify(opened.cards.map(card => [card.href, card.name])), 'frames lead where the chooser cards lead, in the same order and with the same names');
+    for (const cell of opened.cells) {
+      check(where, cell.width >= 43.5 && cell.height >= 43.5, `«${cell.name}»: the frame is a 44 px touch target (${Math.round(cell.width)}×${Math.round(cell.height)})`);
+      check(where, cell.left >= opened.gap.left - 1 && cell.right <= opened.gap.right + 1, `«${cell.name}»: the frame sits in the opening, not on the picture`);
+      check(where, cell.top >= opened.stage.top && cell.bottom <= opened.stage.bottom, `«${cell.name}»: the frame is inside the stage`);
+      check(where, cell.picture, `«${cell.name}»: the picture loaded`);
+    }
+    const overlap = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    check(where, opened.cells.every((cell, index) => opened.cells.every((other, at) => at === index || !overlap(cell, other))), 'frames do not overlap each other');
+    check(where, opened.cells.every(cell => !overlap(cell, opened.jump) && !overlap(cell, opened.count)), 'frames do not cover the count or the button');
+    check(where, opened.jump.top >= opened.stage.top && opened.jump.bottom <= opened.stage.bottom && opened.jump.height >= 44, 'the chooser button stays whole inside the stage');
+    await artifact(page, viewport, 'home-lens-fit-open', page.locator('[data-lens-stage]'), {scroll: false});
+    // Клавіатура: фокус на кадрі показує його назву в рядку підпису й тримає ядро відкритим навіть із закритого стану.
+    await scrollTo(stageTop - viewport.height + 40);
+    const second = page.locator('.home-lens-cell').nth(1);
+    await second.focus();
+    await page.waitForTimeout(350);
+    const focused = await page.evaluate(() => {
+      const cell = document.querySelectorAll('.home-lens-cell')[1], name = cell.querySelector('.home-lens-cell-name'), section = document.querySelector('[data-home-lens]');
+      return {progress: Number(section.style.getPropertyValue('--lens-progress')), name: Number(getComputedStyle(name).opacity), invitation: getComputedStyle(document.querySelector('.home-lens-invitation')).visibility, size: parseFloat(getComputedStyle(name).fontSize), active: document.activeElement === cell};
+    });
+    check(where, focused.active && focused.progress === 1, `keyboard focus on a frame opens the core (progress ${focused.progress})`);
+    check(where, focused.name === 1 && focused.invitation === 'hidden' && focused.size >= 12, 'the focused frame shows its name in the caption line');
+    const href = await second.getAttribute('href');
+    await Promise.all([page.waitForURL(url => url.pathname.endsWith(href.replace(/^\.\//, '/').split('#')[0])), page.keyboard.press('Enter')]);
+    check(where, true, 'Enter on a frame opens its direction');
+    checkBrowserHealth(where, seen);
+  } finally {
+    await context.close();
+  }
+}
+
+async function articlePagesFlow(browser, origin, viewport) {
+  // Розбори добавок окремими сторінками (docs/HOME_SPLIT_PLAN.md). На етапі 1 кожну сторінку порівняно зі старою адресою index.html#…
+  // піксель у піксель; з етапу 2 стара адреса вже не показує розбір, а переводить на сторінку. Тут перевіряємо в справжньому браузері:
+  // сторінка відкривається з розбором, шапкою сайту й без помилок; стара адреса (розбір цілком, якір усередині, картка твердження)
+  // переводить на нову з тим самим якорем; без JavaScript розбір видно; переходи між розборами й назад на головну працюють.
+  const where = `review pages @${viewport.name}`;
+  for (const article of ARTICLES) {
+    const {context, page, seen} = await open(browser, origin, viewport, `/${article.file}`);
+    try {
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(700);
+      const state = await page.evaluate(id => {
+        const section = document.getElementById(id), header = document.querySelector('.eua-site-header'), box = section.getBoundingClientRect();
+        return {text: section.innerText.replace(/\s+/g, ' ').trim().length, width: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth,
+          top: Math.round(box.top + scrollY), sectionHeight: Math.round(box.height), header: header ? Math.round(header.getBoundingClientRect().height) : 0,
+          routeActive: section.classList.contains('route-active'), routeView: document.body.dataset.routeView, home: document.querySelectorAll('.spectrum-home, [data-home-lens]').length,
+          h1: section.querySelector('h1') ? Math.round(section.querySelector('h1').getBoundingClientRect().height) : 0, robots: document.querySelectorAll('meta[name="robots"]').length,
+          visibleHome: [...document.querySelectorAll('.page > *')].filter(node => node.offsetParent).map(node => node.className).join('|')};
+      }, article.id);
+      check(where, state.text > 1500 && state.sectionHeight > 1000 && state.h1 > 0, `${article.file}: the review is on the page with its heading (${state.text} characters, ${state.sectionHeight} px)`);
+      check(where, state.header >= 60 && state.top === state.header && state.visibleHome === 'eua-site-header home-header eua-header-home-spectrum', `${article.file}: the site header stands above the review (${state.header} px, review at ${state.top}, «${state.visibleHome}»)`);
+      check(where, state.routeView === 'article' && state.routeActive && state.home === 0, `${article.file}: article mode, no piece of the home`);
+      check(where, state.width <= state.viewport, `${article.file}: nothing overflows the page width`);
+      check(where, state.robots === 0, `${article.file}: open to search engines`);
+      check(where, (await page.title()) === `${article.name} — Evidence UA`, `${article.file}: the tab is named after the supplement`);
+      checkBrowserHealth(`${where} ${article.file}`, seen);
+      if (article.id === 'creatine') await artifact(page, viewport, 'review-page-creatine', page.locator('#creatine'), {scroll: false});
+    } finally { await context.close(); }
+    // Стара адреса розбору переводить на його сторінку.
+    const old = await open(browser, origin, viewport, `/index.html#${article.id}`);
+    try {
+      await old.page.waitForURL(url => url.pathname === `/${article.file}` && url.hash === '');
+      await old.page.locator(`body > #${article.id} h1`).waitFor({state: 'visible'});
+      check(where, true, `index.html#${article.id} moves to ${article.file}`);
+      checkBrowserHealth(`${where} old ${article.id}`, old.seen);
+    } finally { await old.context.close(); }
+  }
+  // Старі адреси з якорем усередині розбору: розділи й пошук публікацій. (Картки тверджень скрипт перемальовує, їхні id у готовій сторінці інші.)
+  for (const [anchor, file] of [['creatine-dosing', 'creatine.html'], ['pubmed-live', 'creatine.html'], ['evidence-card', 'creatine.html'], ['creatine-kidney', 'creatine.html']]) {
+    const {context, page} = await open(browser, origin, viewport, `/index.html#${anchor}`);
+    try {
+      await page.waitForURL(url => url.pathname === `/${file}` && url.hash === `#${anchor}`);
+      await page.waitForTimeout(700);
+      const top = await page.evaluate(id => { const node = document.getElementById(id); return node ? node.getBoundingClientRect().top : null; }, anchor);
+      check(where, top !== null && top >= -2 && top < viewport.height * 0.7, `index.html#${anchor} moves to ${file}#${anchor} and the target is on screen (top ${top === null ? 'missing' : Math.round(top)})`);
+    } finally { await context.close(); }
+  }
+  // Перехід зі старої адреси не лишає її в історії: «Назад» з розбору веде туди, звідки людина прийшла.
+  {
+    const {context, page} = await open(browser, origin, viewport, '/supplements.html');
+    try {
+      await page.goto(origin + '/index.html#supplement-omega', {waitUntil: 'load'});
+      await page.waitForURL(url => url.pathname === '/supplement-omega.html');
+      await page.goBack();
+      await page.waitForURL(url => url.pathname === '/supplements.html');
+      check(where, true, 'Back from a redirected review returns to the previous page, not into a redirect loop');
+    } finally { await context.close(); }
+  }
+  // Якорі самої головної лишаються на головній.
+  {
+    const {context, page, seen} = await open(browser, origin, viewport, '/index.html#supplement-library');
+    try {
+      await page.waitForTimeout(600);
+      check(where, new URL(page.url()).pathname === '/index.html' && await page.evaluate(() => document.body.dataset.routeView === 'home'), 'index.html#supplement-library stays on the home');
+      checkBrowserHealth(`${where} home anchor`, seen);
+    } finally { await context.close(); }
+  }
+  // Без JavaScript: розбір і його назва на екрані.
+  {
+    const {context, page} = await open(browser, origin, viewport, '/supplement-omega.html', {contextOptions: {javaScriptEnabled: false}});
+    try {
+      check(where, await page.locator('#supplement-omega h1').isVisible(), 'without JavaScript the review and its heading are visible');
+      check(where, await page.evaluate(() => document.getElementById('supplement-omega').getBoundingClientRect().height > 1000), 'without JavaScript the review has its full height');
+    } finally { await context.close(); }
+  }
+  // Посилання між розборами й назад на головну ведуть на сторінки.
+  {
+    const {context, page, seen} = await open(browser, origin, viewport, '/supplement-omega.html');
+    try {
+      const other = page.locator('#supplement-omega .d-nav a[href="./supplement-magnesium.html"]');
+      check(where, await other.count() === 1, 'the «other supplements» row links to the page of another review');
+      await other.scrollIntoViewIfNeeded();
+      await Promise.all([page.waitForURL(url => url.pathname.endsWith('/supplement-magnesium.html')), other.click()]);
+      await page.locator('#supplement-magnesium h1').waitFor({state: 'visible'});
+      check(where, await page.evaluate(() => document.body.dataset.article === 'supplement-magnesium' && scrollY < 5), 'the other review opens as its own page, at the top');
+      const homeLinks = await page.locator('#supplement-magnesium a[href="./index.html"]').count();
+      check(where, homeLinks >= 1, 'the review links back to the home page');
+      checkBrowserHealth(`${where} navigation`, seen);
+    } finally { await context.close(); }
+  }
+  // Бібліотека на головній веде на сторінку розбору.
+  {
+    const {context, page} = await open(browser, origin, viewport, '/index.html#supplement-library');
+    try {
+      await toggleHomeFold(page, '.home-library-fold', true);
+      const chip = page.locator('.se-list a[href="./supplement-vitd.html"]');
+      await chip.scrollIntoViewIfNeeded();
+      await Promise.all([page.waitForURL(url => url.pathname === '/supplement-vitd.html'), chip.click()]);
+      await page.locator('#supplement-vitd h1').waitFor({state: 'visible'});
+      check(where, true, 'a library chip on the home opens the review page');
+    } finally { await context.close(); }
+  }
+}
+
+async function homeNoJumpFlow(browser, origin, viewport) {
+  // Рішення власника «2 і 3» (2026-11-17): перший екран головної не стрибає. Раніше спільна шапка ставала на місце статичної (322 px на телефоні)
+  // після завантаження, і заголовок «Почни з питання.» з'їжджав угору (зсув 0,45–0,6). Міряємо справжній зсув (layout-shift) на сповільненому
+  // з'єднанні й без нього, а також що заголовок малюється своїм шрифтом і що без JavaScript статична шапка лишається повною.
+  const where = `home no jump @${viewport.name}`;
+  for (const slow of [false, true]) {
+    const context = await browser.newContext({viewport: {width: viewport.width, height: viewport.height}, serviceWorkers: 'block'});
+    const page = await context.newPage();
+    const seen = await observePage(page, origin);
+    try {
+      await page.addInitScript(() => { window.__euaShift = 0; window.__euaShifts = []; new PerformanceObserver(list => { for (const entry of list.getEntries()) if (!entry.hadRecentInput) { window.__euaShift += entry.value; window.__euaShifts.push(Math.round(entry.startTime) + ':' + entry.value.toFixed(3)); } }).observe({type: 'layout-shift', buffered: true}); });
+      if (slow) {
+        const cdp = await context.newCDPSession(page);
+        await cdp.send('Network.enable');
+        await cdp.send('Network.emulateNetworkConditions', {offline: false, latency: 150, downloadThroughput: 1.6 * 1024 * 1024 / 8, uploadThroughput: 750 * 1024 / 8});
+        await cdp.send('Emulation.setCPUThrottlingRate', {rate: 4});
+      }
+      await page.goto(origin + '/index.html', {waitUntil: 'load'});
+      await page.locator('.eua-site-header').waitFor({state: 'attached'});
+      await page.waitForTimeout(slow ? 2500 : 1200);
+      const result = await page.evaluate(() => ({shift: window.__euaShift, shifts: window.__euaShifts, header: Math.round(document.querySelector('.eua-site-header').getBoundingClientRect().height),
+        font: document.fonts.check('400 48px "Spectrum Serif"', 'Почни'), preloaded: performance.getEntriesByType('resource').some(entry => entry.name.includes('source-serif-4-cyrillic') && entry.initiatorType === 'link')}));
+      check(where, result.shift < 0.05, `${slow ? 'slow' : 'normal'} load: the first screen does not jump (layout shift ${result.shift.toFixed(3)}; ${result.shifts.join(', ')})`);
+      check(where, result.header === (viewport.width > 1024 ? 78 : 80), `the shared header has its usual height (${result.header} px)`);
+      check(where, result.font, 'the heading font is ready');
+      check(where, result.preloaded, 'the heading font is fetched by the preload, not later by the stylesheet');
+      checkBrowserHealth(`${where} ${slow ? 'slow' : 'normal'}`, seen);
+    } finally { await context.close(); }
+  }
+  // Без JavaScript статична шапка повна: меню видно й ним можна скористатися.
+  const {context, page} = await open(browser, origin, viewport, '/index.html', {contextOptions: {javaScriptEnabled: false}});
+  try {
+    const visible = await page.locator('.page>header.home-header nav a:visible').count();
+    check(where, visible >= 3, `without JavaScript the static header keeps its menu (${visible} visible links)`);
+  } finally { await context.close(); }
+}
+
+async function homeClaimFlow(browser, origin, viewport) {
+  // «Одне твердження наживо» під героєм (рішення власника «2 і 3», 2026-11-17; src/platform/home-claim.mjs).
+  // У справжньому браузері: картка не виходить за ширину, текст не менший за 12 px, точка 0,5 і засічка «середній» стоять на одній вертикалі
+  // (точки й засічки рахуються від тієї самої лінії), посилання не нижчі за 44 px, у зеленому вигляді й без JavaScript картка та сама.
+  const where = `home claim @${viewport.name}`;
+  for (const variant of ['cosmic', 'green', 'nojs']) {
+    const options = variant === 'nojs' ? {contextOptions: {javaScriptEnabled: false}} : variant === 'green' ? {initScript: () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'dark', text: 'md', palette: 'green'}))} : {};
+    const {context, page, seen} = await open(browser, origin, viewport, '/index.html', options);
+    try {
+      const card = page.locator('.home-claim');
+      await card.scrollIntoViewIfNeeded();
+      const r = await page.evaluate(() => {
+        const card = document.querySelector('.home-claim'), box = card.getBoundingClientRect();
+        const texts = [...card.querySelectorAll('*')].filter(el => [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && el.getClientRects().length);
+        const track = document.querySelector('.home-claim-track').getBoundingClientRect();
+        const marks = [...document.querySelectorAll('.home-claim-mark')].map(el => { const b = el.getBoundingClientRect(); return (b.left + b.right) / 2; });
+        const dots = [...document.querySelectorAll('.home-claim-dot')].map(el => { const b = el.getBoundingClientRect(); return {x: (b.left + b.right) / 2, at: parseFloat(el.style.getPropertyValue('--at'))}; });
+        const links = [...card.querySelectorAll('.home-claim-links a')].map(a => Math.round(a.getBoundingClientRect().height));
+        const prev = card.previousElementSibling?.getBoundingClientRect();
+        return {width: box.width, left: box.left, right: box.right, vw: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth,
+          smallest: Math.min(...texts.map(el => parseFloat(getComputedStyle(el).fontSize))), track: {left: track.left, width: track.width}, marks, dots, links,
+          visible: getComputedStyle(card).display !== 'none' && box.height > 200, color: getComputedStyle(card.querySelector('h2')).color, bg: getComputedStyle(document.body).backgroundColor};
+      });
+      const tag = `${variant}:`;
+      check(where, r.visible, `${tag} the card is shown`);
+      check(where, r.left >= 0 && r.right <= r.vw + 0.5 && r.scroll <= r.vw, `${tag} nothing runs past the screen (card ${Math.round(r.left)}–${Math.round(r.right)}, page ${r.scroll}/${r.vw})`);
+      check(where, r.smallest >= 12, `${tag} no text under 12 px (${r.smallest})`);
+      check(where, r.links.length === 2 && r.links.every(h => h >= 44), `${tag} both links are at least 44 px tall (${r.links.join(', ')})`);
+      const expectedMid = r.track.left + r.track.width * 0.5;
+      check(where, Math.abs(r.marks[1] - expectedMid) <= 1.5, `${tag} the «середній» mark sits at 0.5 of the line (${r.marks[1].toFixed(1)} vs ${expectedMid.toFixed(1)})`);
+      for (const dot of r.dots) check(where, Math.abs(dot.x - (r.track.left + r.track.width * dot.at / 100)) <= 1.5, `${tag} the point g=${dot.at / 100} sits at its value on the line`);
+      const fold = page.locator('.home-claim-more');
+      check(where, !(await page.locator('.home-claim-limit').isVisible()), `${tag} the limit and source start folded`);
+      await fold.locator('summary').click();
+      check(where, await page.locator('.home-claim-limit').isVisible() && await page.locator('.home-claim-source').isVisible(), `${tag} one tap opens the limit and the source`);
+      checkBrowserHealth(`${where} ${variant}`, seen);
+    } finally { await context.close(); }
+  }
 }
 
 async function homeRowsFlow(browser, origin, viewport) {
@@ -5225,6 +5735,13 @@ async function homeFlows(browser, origin) {
   for (const viewport of viewports) await isolatedFlow(homeNoScriptFlow, browser, origin, viewport);
   // T6 (2026-11-02): рядки з підказками; вузький телефон 360 включено, бо там підказки переносяться найбільше.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowsFlow, browser, origin, viewport);
+  // 2026-11-17: перший екран не стрибає (шапка, шрифт заголовка); 1024 і 1025 включено, бо там міняється висота шапки.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}, {name: 'tablet-wide', width: 1024, height: 768}, {name: 'laptop-narrow', width: 1025, height: 768}]) await isolatedFlow(homeNoJumpFlow, browser, origin, viewport);
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeClaimFlow, browser, origin, viewport);
+  // 2026-11-15: лінза вміщається в сцену на всіх ширинах; 320, 768 і 1024 включено, бо там половини зрізались найбільше.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}, {name: 'mobile-tiny', width: 320, height: 640}, {name: 'tablet', width: 768, height: 1024}, {name: 'laptop', width: 1024, height: 768}]) await isolatedFlow(homeLensFitFlow, browser, origin, viewport);
+  // 2026-11-15: знаки рядків замість «+»; 360 включено, бо там назва маршрутів переноситься й знак стоїть найтісніше.
+  for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeRowSignsFlow, browser, origin, viewport);
   // T5 (2026-11-02): підписи кнопок-посилань; 360 включено, бо довгі підписи там переносяться.
   for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 844}]) await isolatedFlow(homeLinkTextFlow, browser, origin, viewport);
   // T7 (2026-11-02): поле пошуку в героєві; 360 і 320 px (підказка у два рядки, найвужчі телефони) і 600 px (підказка в один рядок, найвужчий «широкий» вигляд).
@@ -5272,6 +5789,16 @@ try {
     for (const viewport of viewports) await atlasFoundationsFlow(browser, origin, viewport, {open, artifact, baseline:process.env.QA_FOUNDATIONS_BASELINE === '1'});
   } else if (process.env.QA_SCREENSHOT_ONLY === '1') {
     for (const viewport of viewports) await baselineScreenshots(browser, origin, viewport);
+  } else if (process.env.QA_ARTICLES_ONLY === '1') {
+    // Швидка перевірка лише сторінок розборів добавок; повний прогін і CI виконують усе.
+    for (const viewport of viewports) await isolatedFlow(articlePagesFlow, browser, origin, viewport);
+  } else if (process.env.QA_MUSCLE_ONLY === '1') {
+    // Швидка перевірка лише сторінки «Від м’яза до молекул» (2026-11-14); повний прогін і CI виконують усе, як і раніше.
+    for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
+    for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleTrainingFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(navRowFlow, browser, origin, viewport);
   } else if (sectionsOnly) {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
   } else if (process.env.QA_HOME_WAVE_ONLY === '1') {
@@ -5287,9 +5814,14 @@ try {
   } else {
     for (const viewport of shoulderViewports) await isolatedFlow((browser,origin,viewport) => shoulderRouteFlow(browser,origin,viewport,{open,artifact}), browser, origin, viewport);
     for (const viewport of viewports) for (const file of files) await generic(browser, origin, viewport, file);
+    // Сторінки розборів добавок: самі сторінки й перенаправлення зі старих адрес index.html#….
+    for (const viewport of viewports) await isolatedFlow(articlePagesFlow, browser, origin, viewport);
     for (const viewport of viewports) await exerciseFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
     for (const viewport of viewports) await muscleGuideFlow(browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleSignalFlow, browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(muscleTrainingFlow, browser, origin, viewport);
+    for (const viewport of viewports) await isolatedFlow(navRowFlow, browser, origin, viewport);
     for (const viewport of viewports) await nutritionFlow(browser, origin, viewport);
     for (const viewport of viewports) await supplementsFlow(browser, origin, viewport);
     for (const viewport of viewports) await continueFlow(browser, origin, viewport);

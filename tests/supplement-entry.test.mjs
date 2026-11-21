@@ -7,11 +7,12 @@ const html=fs.readFileSync('dist/index.html','utf8'),css=fs.readFileSync('dist/h
 for(const gone of ['id="supplement-carousel"','class="supplement-rail"','id="supplement-search"','id="supplement-prev"','id="supplement-next"','const aliases = ['])assert(!html.includes(gone),`Retired carousel piece is back: ${gone}`);
 assert(html.includes('id="supplement-library"')&&html.includes('Що відомо про добавки'),'The library heading and its anchor stay');
 assert(html.includes('<a class="se-cta" href="./supplements.html">'),'Entry leads to the catalogue');
-const chips=[...html.matchAll(/<ul class="se-list"[^>]*>([\s\S]*?)<\/ul>/g)][0][1].match(/<a href="#[^"]+"/g);
+const chips=[...html.matchAll(/<ul class="se-list"[^>]*>([\s\S]*?)<\/ul>/g)][0][1].match(/<a href="\.\/[^"]+\.html"/g);
 // Berberine chip added 2026-10-21 (owner decision): eleven chips, each to an existing dossier.
 assert.equal(chips.length,11);
 assert(html.includes('Одинадцять добавок:')&&css.includes('.se-thumb-berberine'),'Lead text and berberine thumbnail updated');
-for(const c of chips){const id=c.match(/href="#([^"]+)"/)[1];assert(html.includes(`id="${id}"`),`Dossier ${id} still exists on the home page`);}
+// 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 2): розбори добавок мають власні сторінки; пункт списку веде на сторінку розбору, і ця сторінка має існувати й містити свій розбір.
+for(const c of chips){const id=c.match(/href="\.\/([^"]+)\.html"/)[1];assert(fs.existsSync(`dist/${id}.html`)&&fs.readFileSync(`dist/${id}.html`,'utf8').includes(`id="${id}"`),`Dossier page ${id}.html exists`);}
 assert(html.includes('home-supplement-entry.css?v=')&&nav.includes("document.querySelector('.supplement-entry')"),'Styles and the guide placement use the entry');
 // Chips grew from 44px to 60px (48px thumbnails) so the artwork reads; touch target stays well above 44px.
 for(const key of ['max-width:760px','min-height:60px','.se-cta'])assert(css.includes(key),`CSS missing ${key}`);

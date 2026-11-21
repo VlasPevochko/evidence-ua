@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {normalize,resolveTheme,applyAppearance,earlyScript,APPEARANCE_KEY,THEMES,SIZES,PALETTES} from '../src/platform/appearance.mjs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // «Вигляд»: світла тема й розмір тексту (рішення власника 2026-10-19). Вибір лишається тільки в браузері.
 assert.equal(APPEARANCE_KEY,'eua-appearance-v1');
@@ -47,7 +48,8 @@ for(const f of pages){const h=fs.readFileSync('dist/'+f,'utf8');
 // щоб токени були визначені до решти правил. Головна її не підключає й лишається як була.
 for(const f of pages){const h=fs.readFileSync('dist/'+f,'utf8');
   const count=h.split('palette-cosmic.css').length-1;
-  if(f==='index.html'){assert.equal(count,0,'the home page keeps its own look and never loads the palette file');continue;}
+  // 2026-11-16 (docs/HOME_SPLIT_PLAN.md): сторінки розборів добавок вирізано з головної, вони мають її стилі й теж не підключають файл палітри.
+  if(f==='index.html'||ARTICLE_FILES.includes(f)){assert.equal(count,0,`${f}: the home and the review pages cut from it keep their own look and never load the palette file`);continue;}
   assert.equal(count,1,`${f} must load palette-cosmic.css exactly once`);
   assert(h.indexOf('palette-cosmic.css')<h.indexOf('appearance.css'),`${f}: the palette file comes before appearance.css`);}
 const css=fs.readFileSync('dist/appearance.css','utf8');

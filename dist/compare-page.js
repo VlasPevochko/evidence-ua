@@ -36,7 +36,7 @@ export function mountCompare(root=document){
     const dl=make(root,'dl');
     for(const [k,v] of rows(item)){const d=make(root,'div');d.append(make(root,'dt','',k),make(root,'dd','',v));dl.append(d);}
     c.append(dl);
-    const link=make(root,'a','cp-open','Відкрити розбір: '+item.name+' →');link.href='./index.html#'+item.id;c.append(link);
+    const link=make(root,'a','cp-open','Відкрити розбір: '+item.name+' →');link.href='./'+item.id+'.html';c.append(link);
     return c;
   }
   function paint(){

@@ -3,12 +3,16 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {restoreCombined} from './combined-source.mjs';
 
 // These are the outputs of the two existing builders, including HTML fragments.
 // Everything else in dist is authored source and must retain its exact bytes.
 const generated = new Set([
   // Fat Burning Lab is an authored page; build-platform only injects shared appearance assets.
   'sitemap.xml', 'robots.txt', 'palette-cosmic.css', 'home-article-cosmic.css',
+  // Сторінки розборів добавок: вирізаються зі спільного dist/index.html (scripts/build-article-pages.mjs), вручну не правити.
+  'creatine.html', 'supplement-protein.html', 'supplement-caffeine.html', 'supplement-omega.html', 'supplement-vitd.html', 'supplement-magnesium.html',
+  'supplement-collagen.html', 'supplement-beta-alanine.html', 'supplement-citrulline.html', 'supplement-electrolytes.html', 'supplement-berberine.html',
   // Космічні копії малюнків-SVG (scripts/build-svg-art.mjs): сторінка показує оригінал або копію за палітрою.
   'diet-art-cosmic.svg', 'home-sleep-cosmic.svg', 'home-movement-cosmic.svg', 'home-anatomy-cosmic.svg', 'card-nutrition-cosmic.svg', 'card-evidence-cosmic.svg', 'card-organism-cosmic.svg',
   'compare-status.js', 'site-header.js', 'site-header.css', 'platform-search.js', 'index.html', 'fat-burning.html', 'cell-lab.html', 'directions.html', 'movement.html',
@@ -19,7 +23,7 @@ const generated = new Set([
   'platform-catalog.js', 'home-catalog.js', 'home-feedback.js', 'platform-materials.js',
   // Пошук по розділах сторінок (scripts/build-sections.mjs) і спільний модуль переходу до розділу (src/platform/anchor-reveal.mjs).
   'platform-sections.js', 'anchor-reveal.js',
-  'platform-tools.js', 'platform-shell.js', 'platform-next-steps.js', 'platform-terms.js', 'appearance.js', 'platform-learning.js', 'directions.js', 'home-lens.js', 'home-picker.js',
+  'platform-tools.js', 'platform-shell.js', 'platform-next-steps.js', 'platform-terms.js', 'appearance.js', 'platform-learning.js', 'home-row-signs.js', 'directions.js', 'home-lens.js', 'home-picker.js',
   'nutrition-inside.html', 'nutrition-navigation.js', 'nutrition-data.js', 'nutrition-player.js', 'cell-lab-data.js', 'cell-lab.js',
   'cell-illustration.js', 'cell-sources.js', 'cell-detail-view.js',
   'muscle-lab-data.js', 'muscle-lab.js', 'muscle-lab-scenes.js', 'muscle-learning-copy.js',
@@ -57,7 +61,10 @@ export function buildSite(root, commit) {
   const dist = path.join(root, 'dist');
   const before = inventory(dist);
   if (!before['index.html']) throw Error('The complete authored dist snapshot, including index.html, is required');
-  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-seo.mjs', 'scripts/build-sections.mjs']) {
+  // Етап 3 (docs/HOME_SPLIT_PLAN.md): скрипти збірки пишуть у dist/index.html як у спільний документ «головна + розбори»;
+  // повертаємо його з src/site/index.combined.html, а scripts/build-article-pages.mjs наприкінці лишить у dist/index.html тільки головну.
+  restoreCombined(root);
+  for (const script of ['scripts/build-evidence.mjs', 'scripts/build-palette.mjs', 'scripts/build-svg-art.mjs', 'scripts/build-knowledge.mjs', 'scripts/build-comparison-status.mjs', 'scripts/build-article-pages.mjs', 'scripts/build-seo.mjs', 'scripts/build-sections.mjs']) {
     execFileSync(process.execPath, [script], {cwd:root, stdio:'inherit'});
   }
   const after = inventory(dist);

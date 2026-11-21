@@ -98,9 +98,9 @@ assert(!sections.some(r=>r[0].startsWith('changes.html')||r[0].startsWith('gloss
 
 // 5) Приклади з життя, у тому числі питання власника про дозування.
 const find=(href,title)=>sections.find(r=>r[0]===href&&(!title||r[1]===title));
-assert.deepEqual(find('index.html#creatine-dosing','Як приймати')?.slice(1,4),['Як приймати','Креатин','section'],'creatine dosing section');
-assert(find('index.html#creatine-dosing','Як приймати')[4].includes('дозування'),'«дозування» leads to «Як приймати»');
-assert.deepEqual(find('index.html?section='+encodeURIComponent('Вагітність')+'#supplement-caffeine')?.slice(1,4),['Вагітність','Кофеїн','claim'],'a claim card without its own id is reached by its name inside the dossier');
+assert.deepEqual(find('creatine.html#creatine-dosing','Як приймати')?.slice(1,4),['Як приймати','Креатин','section'],'creatine dosing section');
+assert(find('creatine.html#creatine-dosing','Як приймати')[4].includes('дозування'),'«дозування» leads to «Як приймати»');
+assert.deepEqual(find('supplement-caffeine.html?section='+encodeURIComponent('Вагітність')+'#supplement-caffeine')?.slice(1,4),['Вагітність','Кофеїн','claim'],'a claim card without its own id is reached by its name inside the dossier');
 assert(find('nutrition.html#diet-intermittent-fasting','Інтервальне голодування'),'diets are sections of the diet page');
 assert(sections.some(r=>r[0].startsWith('protein-meta.html?section=')&&r[1]==='Що таке метааналіз?'),'a page without any anchors is reached by section names');
 assert(sections.filter(r=>r[0].includes('&n=')).every(r=>sections.some(o=>o!==r&&o[1]===r[1]&&o[0]===r[0].replace(/&n=\d+/,''))),'a repeated name inside one block carries its number (the first one has none)');
@@ -109,9 +109,9 @@ assert(sections.filter(r=>r[0].includes('&n=')).every(r=>sections.some(o=>o!==r&
 const data={materials,findMaterials,scoreFields,searchKeywords,enoughMatches,sections,terms:TERMS};
 const secs=q=>searchSite(data,q).sections;
 const top=q=>secs(q).map(s=>s.href);
-assert.equal(top('дозування')[0],'index.html#creatine-dosing','«дозування» finds the creatine dosing section first');
-assert.deepEqual(top('як пити креатин'),['index.html#creatine-dosing'],'the owner\'s question finds the dosing section (the word «креатин» only names the material)');
-assert(top('нирки').includes('index.html#creatine-kidney'),'«нирки» finds the kidney section');
+assert.equal(top('дозування')[0],'creatine.html#creatine-dosing','«дозування» finds the creatine dosing section first');
+assert.deepEqual(top('як пити креатин'),['creatine.html#creatine-dosing'],'the owner\'s question finds the dosing section (the word «креатин» only names the material)');
+assert(top('нирки').includes('creatine.html#creatine-kidney'),'«нирки» finds the kidney section');
 assert(secs('вагітність').some(s=>s.parent==='Кофеїн'&&s.kind==='claim'),'«вагітність» finds the caffeine claim');
 assert(secs('вагітність').length>=3&&secs('вагітність').every(s=>/вагітн/i.test(s.title)),'and the other pregnancy sections');
 assert.deepEqual(secs('кава і креатин').map(s=>s.title),['«Кава нейтралізує креатин»'],'both words of the query must be met: the myth about coffee and creatine');
@@ -134,18 +134,18 @@ for(const s of ['білок','креатин','сон','кофеїн','жир','
 // 7) Вікно пошуку, завантаження й каскад версій.
 const src=read('src/platform/search.mjs'),dist=f=>read('dist/'+f);
 assert(src.includes('<h2>Розділи на сторінках</h2>')&&src.includes("s.kind==='claim'?'Твердження':'Розділ'"),'the dialog has its own group «Розділи на сторінках» and says whether it is a claim or a section');
-assert(src.includes("import('./platform-sections.js?v=3').catch(()=>({sections:[]}))"),'the index loads only when the search opens, and the search still works without it'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert(src.includes("import('./platform-sections.js?v=4').catch(()=>({sections:[]}))"),'the index loads only when the search opens, and the search still works without it'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
 assert.equal(dist('platform-search.js'),src,'the built search copy equals the source');
 assert(!/fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage/.test(src+read('scripts/sections-config.mjs')+text),'the sections search stores and sends nothing');
-assert(dist('site-header.js').includes("import('./platform-search.js?v=18')"),'the header loads search v=16'); // 2026-11-02 (пошук у шапці головної, T7): 13 -> 14 (група «Розбори», новий порожній результат) 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
-assert(dist('home-spectrum.js').includes("import('./platform-search.js?v=18')"),'the home search form loads search v=16');
+assert(dist('site-header.js').includes("import('./platform-search.js?v=19')"),'the header loads search v=16'); // 2026-11-02 (пошук у шапці головної, T7): 13 -> 14 (група «Розбори», новий порожній результат) 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert(dist('home-spectrum.js').includes("import('./platform-search.js?v=19')"),'the home search form loads search v=16');
 const versions=(file,mod)=>[...new Set([...dist(file).matchAll(new RegExp(`${mod}\\.js\\?v=(\\d+)`,'g'))].map(m=>m[1]))];
-assert.deepEqual(versions('index.html','home-spectrum'),['10'],'the home loads home-spectrum v=10'); // 2026-11-10: bump the entry after increasing the wave renderer to v=2 for slow idle drift.
-assert.deepEqual(versions('directions.html','directions'),['118'],'the catalogue loads directions v=117'); // 2026-11-02 (пошук у шапці головної, T7): 111 -> 112 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки. 2026-11-03 (картка «Клітини та органели» в каталозі показує головну картину сторінки «Клітина людини»): 113 -> 114, змінився лише query-рядок; індекс розділів той самий. 2026-11-03 (картки Харчування, Добавок, Руху й Сну в каталозі з картинками, «26 так»): 114 -> 115, змінився лише query-рядок; індекс розділів той самий.
-assert.deepEqual(versions('atlas.html','platform-shell'),['113'],'pages load the shell v=112'); // 2026-11-02 (пошук у шапці головної, T7): 108 -> 109 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
-for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(versions(f,'site-header'),['20'],`${f} loads the header v=19`); // 2026-11-02 (пошук у шапці головної, T7): 15 -> 16 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
-assert(dist('platform-shell.js').includes('./site-header.js?v=20'),'the shell loads the header v=18'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
-assert(dist('fat-burning.js').includes('./site-header.js?v=20'),'the fat-burning page loads the header v=18'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert.deepEqual(versions('index.html','home-spectrum'),['11'],'the home loads home-spectrum v=11'); /* 2026-11-17 (розбори добавок окремими сторінками, етап 2): каскад версій після зміни каталогу й шапки */ // 2026-11-10: bump the entry after increasing the wave renderer to v=2 for slow idle drift.
+assert.deepEqual(versions('directions.html','directions'),['119'],'the catalogue loads directions v=119'); // 2026-11-02 (пошук у шапці головної, T7): 111 -> 112 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки. 2026-11-03 (картка «Клітини та органели» в каталозі показує головну картину сторінки «Клітина людини»): 113 -> 114, змінився лише query-рядок; індекс розділів той самий. 2026-11-03 (картки Харчування, Добавок, Руху й Сну в каталозі з картинками, «26 так»): 114 -> 115, змінився лише query-рядок; індекс розділів той самий.
+assert.deepEqual(versions('atlas.html','platform-shell'),['114'],'pages load the shell v=114'); // 2026-11-02 (пошук у шапці головної, T7): 108 -> 109 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+for(const f of fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&dist(f).includes('site-header.js?v=')))assert.deepEqual(versions(f,'site-header'),['21'],`${f} loads the header v=21`); // 2026-11-02 (пошук у шапці головної, T7): 15 -> 16 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert(dist('platform-shell.js').includes('./site-header.js?v=21'),'the shell loads the header v=18'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
+assert(dist('fat-burning.js').includes('./site-header.js?v=21'),'the fat-burning page loads the header v=18'); // 2026-11-03 («Довіра», сторінка «Про проєкт»): версію піднято в каскаді, змінились лише query-рядки.
 
 // 8) Журнал оновлень і документи.
 const changes=dist('changes-data.js');
@@ -153,4 +153,3 @@ assert(changes.includes("title:'Пошук знаходить розділи в�
 const doc=read('docs/SEARCH.md');
 assert(doc.includes('Розділи сторінок')&&doc.includes('scripts/build-sections.mjs')&&doc.includes('sections-config.mjs')&&doc.includes('anchor-reveal')&&doc.includes('tests/search-sections.test.mjs')&&doc.includes('sectionsFlow'),'docs/SEARCH.md explains section search, how to add words, the landing module and the checks');
 console.log('Section search: parser, generated index fresh and safe, every link resolves like the browser does, not-claimed items kept out, owner\'s dosing question, ranking and limits, dialog, cascade versions, journal and docs passed.');
-// 2026-11-14: Atlas anatomy search metadata requires a new shared-cache cascade; science fixtures stay unchanged.

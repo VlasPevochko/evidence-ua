@@ -65,7 +65,8 @@ function closePop(root,focus){
 }
 export function mountTerms(root=document){
   const view=root.defaultView;if(!view||view.self!==view.top||root.body.dataset.euaTermsMounted)return 0;
-  const file=String(view.location?.pathname||'').split('/').pop()||'index.html',scopes=TERM_SCOPES[file];if(!scopes)return 0;
+  // Сторінка розбору (body[data-article]) це той самий розбір, що раніше відкривався на головній: терміни в ньому підсвічуються за правилами index.html.
+  const file=String(view.location?.pathname||'').split('/').pop()||'index.html',scopes=TERM_SCOPES[root.body.dataset.article?'index.html':file];if(!scopes)return 0;
   root.body.dataset.euaTermsMounted='1';
   let n=0;
   for(const selector of scopes)for(const container of root.querySelectorAll(selector))n+=wrapTerms(container);

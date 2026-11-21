@@ -5,7 +5,7 @@ import {CARDS} from '../dist/evidence-trainer.js';
 // Тренажер «Перевір твердження» (рішення власника 2026-10-19): три картки на числах із наших досьє.
 // 2026-10-22 (owner «А: всі пункти»): five cards from the new supplement cards; the first seven are unchanged.
 assert.equal(CARDS.length,12);
-const html=fs.readFileSync('dist/index.html','utf8');
+const html=fs.readFileSync('src/site/index.combined.html','utf8'); /* 2026-11-17 (docs/HOME_SPLIT_PLAN.md, етап 3): на сайті dist/index.html це лише головна; розбори читаємо зі спільного документа src/site/index.combined.html (з нього вирізаються і головна, і сторінки розборів) */
 const plain=html.replace(/<[^>]+>/g,' ').replace(/&minus;|−/g,'-').replace(/\s+/g,' ');
 // Кожне число в картках уже є в досьє на головній сторінці, а нових наукових чисел тренажер не вводить.
 const norm=t=>t.replace(/−/g,'-').replace(/\s+/g,' ');

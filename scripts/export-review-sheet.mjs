@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
+import {combinedHTML} from './combined-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const load = file => import(pathToFileURL(path.join(root, file)).href);
@@ -108,7 +109,8 @@ function claimRows(bases) {
     });
     const dose = claim.intervention?.dose;
     rows.push([
-      'Твердження', base.title, url(`index.html#${base.route}`), claim.id, claim.statement,
+      'Твердження', base.title, url(`${base.route}.html`), claim.id, // 2026-11-17: розбори мають власні сторінки
+      claim.statement,
       lines([claim.population?.description && `Кого: ${claim.population.description}`, claim.intervention?.name && `Що давали: ${claim.intervention.name}${dose ? ` (${dose})` : ''}`, claim.comparator?.description && `З чим порівнювали: ${claim.comparator.description}`, claim.outcome?.name && `Результат: ${claim.outcome.name}`, `Вид твердження: ${claimType(claim.claimType)}`]),
       lines([claim.evidenceSummary && `Підсумок доказів: ${claim.evidenceSummary}`, claim.confidenceRationale?.summary && `Чому такий рівень: ${claim.confidenceRationale.summary}`, claim.confidenceRationale?.uncertaintyNotes?.length && `Застереження до рівня: ${claim.confidenceRationale.uncertaintyNotes.join(' ')}`, claim.limitations?.length && `Обмеження:\n${bullets(claim.limitations)}`]),
       claim.evidenceConfidence === null || claim.evidenceConfidence === undefined ? NO_CONFIDENCE : `${confidence(claim.evidenceConfidence)}${claim.provisional ? ' (попередня оцінка)' : ''}`,
@@ -123,7 +125,7 @@ function moduleRows(bases) {
   const rows = [], noLevel = 'на сайті не оцінюється: це не окреме твердження';
   for (const {title, route, module} of bases) {
     if (!module) continue;
-    const where = url(`index.html#${route}`);
+    const where = url(`${route}.html`);
     if (module.guidance) rows.push(['Добавка: практичний орієнтир', title, where, `${module.id}/guidance`, lines([module.guidance.title, module.guidance.dose && `Доза: ${module.guidance.dose}`, module.guidance.note]), '', '', noLevel, 'джерело названо в заголовку орієнтира']);
     if (module.notClaimed?.length) rows.push(['Добавка: чого ми не стверджуємо', title, where, `${module.id}/not-claimed`, bullets(module.notClaimed.map(item => `${item.topic}. ${item.reason}`)), '', '', noLevel, 'джерела названо в тексті (автор, рік, PMID)']);
     if (module.commonLimits?.length) rows.push(['Добавка: спільні обмеження', title, where, `${module.id}/limits`, bullets(module.commonLimits), '', '', noLevel, '']);
@@ -133,17 +135,17 @@ function moduleRows(bases) {
 
 // Блоки «Перш ніж приймати» (безпека) і ручні розділи креатину беруться з готової сторінки: їхній текст живе в скриптах збірки й старій сторінці, а не в даних тверджень.
 function pageRows(bases) {
-  const html = fs.readFileSync(path.join(root, 'dist/index.html'), 'utf8');
+  const html = combinedHTML(root); // етап 3: розбори лежать у спільному документі
   const owners = bases.map(base => ({base, at: html.search(new RegExp(`<section\\b[^>]*\\bid="${base.route}"`))})).filter(owner => owner.at >= 0);
   const rows = [];
   for (const match of html.matchAll(/<section class="bc-safety"[^>]*>[\s\S]*?<\/section>/g)) {
     const owner = owners.filter(item => item.at < match.index).sort((a, b) => b.at - a.at)[0];
     if (!owner) throw Error('export-review-sheet: блок безпеки без добавки');
     const text = htmlText(match[0]), [heading, ...body] = text.split('\n');
-    rows.push([`Добавка: блок «${heading}»`, owner.base.title, url(`index.html#${owner.base.route}`), `${owner.base.route}/safety`, body.join('\n'), '', '', 'на сайті не оцінюється: це застереження', 'джерел біля блока немає']);
+    rows.push([`Добавка: блок «${heading}»`, owner.base.title, url(`${owner.base.route}.html`), `${owner.base.route}/safety`, body.join('\n'), '', '', 'на сайті не оцінюється: це застереження', 'джерел біля блока немає']);
   }
   for (const [id, label] of [['creatine-dosing', 'Як приймати'], ['creatine-kidney', 'Нирки й креатинін'], ['creatine-myths', 'Міфи'], ['creatine-mechanism', 'Механізм']]) {
-    rows.push([`Креатин: розділ «${label}» (старіший текст сторінки)`, 'Креатин', url(`index.html#${id}`), `creatine/${id}`, htmlText(elementById(html, id)), '', 'Розділ написано до структурованих тверджень: джерела стоять усередині тексту розділу.', 'на сайті не оцінюється: це не окреме твердження', 'джерела названо всередині розділу']);
+    rows.push([`Креатин: розділ «${label}» (старіший текст сторінки)`, 'Креатин', url(`creatine.html#${id}`), `creatine/${id}`, htmlText(elementById(html, id)), '', 'Розділ написано до структурованих тверджень: джерела стоять усередині тексту розділу.', 'на сайті не оцінюється: це не окреме твердження', 'джерела названо всередині розділу']);
   }
   return rows;
 }
@@ -152,7 +154,7 @@ function dossierRows(dossiers) {
   const rows = [];
   for (const dossier of dossiers) {
     const sources = dossier.sources.map(source => `${source.url} (${dossierRole(source.role)}; ${dossierMetadata(source.metadataReview)}; ${dossierLink(source.claimLinkStatus)})`).join('\n');
-    const where = url(`index.html#${dossier.route}`), title = dossier.title[0] + dossier.title.slice(1).toLowerCase();
+    const where = url(`${dossier.route}.html`), title = dossier.title[0] + dossier.title.slice(1).toLowerCase();
     const pending = `На сайті названо ще не перевіреним:\n${bullets(dossier.pendingFields)}`;
     rows.push(
       ['Досьє: поточний висновок', title, where, `${dossier.id}/conclusion`, dossier.existingConclusion, '', lines([dossier.sourceContext && `Основа тексту: ${dossier.sourceContext}`, pending]), NO_CONFIDENCE, sources],

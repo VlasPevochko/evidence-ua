@@ -46,3 +46,7 @@
 ## Як відкотити
 
 Повернути в `dist/index.html` три `<summary>` без `<small class="home-row-hint">`, у `src/platform/learning-ui.mjs` старий `<summary>` («Кроки маршруту N»), видалити три правила в кінці `dist/home-spectrum.css`, перебудувати (`node scripts/build-site.mjs` двічі). Версії `?v=` залишити піднятими: це лише скидає кеш.
+
+## Доповнення 2026-11-15
+
+«+» і «−» у рядках замінено кутиком, а три рядки отримали знаки свого вмісту: див. `docs/HOME_ROW_SIGNS.md`. Підказки `.home-row-hint` і їхні перевірки не змінені.

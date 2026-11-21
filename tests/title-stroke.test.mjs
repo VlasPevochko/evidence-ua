@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {ARTICLE_FILES} from '../src/platform/article-pages.mjs';
 
 // Без мазка-підкреслення під назвою сторінки (рішення власника 2026-11-01: «можна прибрати», бо на головній такого мазка немає,
 // а з тонким шрифтом він виглядав важчим за текст). У космосі (за замовчуванням) мазка немає, у «Зеленому» він лишається. Справжній вигляд у браузері міряє headingsFlow.
@@ -25,7 +26,9 @@ for(const dir of ['dist','src'])for(const file of fs.readdirSync(dir,{recursive:
 assert.deepEqual(holders.filter(f=>f.startsWith('dist/')).sort(),['dist/page-pine.css','dist/supplements.html'],'only the page banner and the supplements page draw the brush stroke: a new one must be added to the cosmic rule');
 
 // 3) Версії, журнал, документи.
-const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html');
+// 2026-11-16 (docs/HOME_SPLIT_PLAN.md): 11 сторінок розборів добавок вирізано з головної; це та сама «головна в режимі розбору»
+// (власні стилі головної, без файла палітри), тому до внутрішніх сторінок вони не належать. Їх перевіряє tests/article-pages.test.mjs.
+const inner=fs.readdirSync('dist').filter(f=>f.endsWith('.html')&&f!=='index.html'&&!ARTICLE_FILES.includes(f));
 const versions=new Set(inner.map(f=>read('dist/'+f).match(/palette-cosmic\.css\?v=(\d+)/)?.[1]));
 assert(versions.size===1&&Number([...versions][0])>=7,`all inner pages load one palette-cosmic.css version, v=7 or newer (${[...versions].join(', ')})`);
 assert(!read('dist/index.html').includes('palette-cosmic.css'),'the home does not load the palette file (it never had the stroke)');

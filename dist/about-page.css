@@ -15,3 +15,23 @@ body[data-platform-area="about"]{margin:0;font-family:Inter,system-ui,-apple-sys
 .ab-links{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0}
 .ab-links a{display:inline-flex;align-items:center;min-height:44px}
 @media(max-width:560px){.ab-main p,.ab-main li{font-size:16px}}
+
+/* «Космос усередині тебе» у смузі з назвою (рішення власника 2026-11-25; docs/ABOUT_COSMOS.md). Розклад .pb-split спільний (page-pine.css, як на «Сні»).
+   Сцена темна власна, її краї розчиняються в смузі маскою, тож рамки-картки немає. Заставка (img) видна без JavaScript і зі зменшеним рухом. */
+body[data-platform-area="about"] .pb-split{grid-template-columns:minmax(0,1.1fr) minmax(260px,1fr)}
+.ab-cosmos{position:relative;justify-self:end;width:100%;max-width:580px;margin:0}
+.ab-cosmos-stage{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--c-050308,#050308);-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 64%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 64%,transparent 100%)}
+.ab-cosmos-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ab-cosmos-stage>svg{position:absolute;inset:0;width:100%!important;height:100%!important}
+.ab-cosmos[data-playing] .ab-cosmos-stage img{visibility:hidden}
+/* Одна кнопка «Зупинити / Продовжити»: 44 × 44, у кутку, що вже згас під маскою. Значок малює CSS: дві риски — пауза, трикутник — продовжити. */
+.ab-cosmos-toggle{position:absolute;right:0;bottom:0;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--pine-line,var(--c-26403a,#26403a));border-radius:var(--rd-12,12px);background:var(--c-0b1613cc,#0b1613cc);color:var(--pine-accent,var(--c-e3bd6b,#e3bd6b));cursor:pointer}
+.ab-cosmos-toggle:hover{border-color:currentColor}
+.ab-cosmos-toggle:focus-visible{outline:2px solid var(--pine-accent,var(--c-e3bd6b,#e3bd6b));outline-offset:2px}
+.ab-cosmos-icon{display:block;width:12px;height:14px;border-inline:4px solid currentColor;box-sizing:border-box}
+.ab-cosmos-toggle[data-state="paused"] .ab-cosmos-icon{width:0;height:0;border:0;border-block:8px solid transparent;border-left:13px solid currentColor;margin-left:3px}
+/* Світла тема сайту — це інверсія всієї сторінки; сцену повертаємо до природних кольорів, заставку (img) вже повертає appearance.css, тож тут її не інвертуємо вдруге. */
+html[data-theme="light"] .ab-cosmos-stage{filter:invert(1) hue-rotate(180deg)}
+html[data-theme="light"] .ab-cosmos-stage img{filter:none}
+@media(max-width:760px){body[data-platform-area="about"] .pb-split{grid-template-columns:minmax(0,1fr)}.ab-cosmos{justify-self:stretch;max-width:none}}
+@media print{.ab-cosmos{display:none!important}}

@@ -1,6 +1,6 @@
 // Browser QA for the static site. Run from the repository root:
 //   npm ci --prefix scripts/browser-qa --ignore-scripts && node scripts/browser-qa/run.mjs
-// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_LENS_ONLY=1 (the home lens only), QA_ATLAS_ONLY=1 (every Atlas flow), QA_SECTIONS_ONLY=1 (search by page sections)
+// Optional focused iteration: QA_HOME_ONLY=1 node scripts/browser-qa/run.mjs (home), QA_LENS_ONLY=1 (the home lens only), QA_ATLAS_ONLY=1 (every Atlas flow), QA_SECTIONS_ONLY=1 (search by page sections), QA_ABOUT_ONLY=1 (the About page and its cosmos animation)
 // The default run and CI still execute every page and regression flow.
 // Uses the Chrome already installed on the machine (BROWSER_EXECUTABLE overrides the path).
 // Everything is served from a throw-away local server and third-party requests are blocked, so
@@ -5597,6 +5597,78 @@ async function heroSearchFlow(browser, origin, viewport) {
 
 // «Довіра 1» (2026-11-03): сторінка «Про проєкт». Коротка (не більше ~4,4 екрана телефона), шість розділів із якорями, шапка веде на неї з будь-якої сторінки (на телефоні через меню),
 // пошук знаходить і сторінку, і розділи, посилання на якорі відкривають потрібний розділ угорі. Тексти сторінки прив’язані до коду тестом tests/about-page.test.mjs.
+// «Космос усередині тебе» на сторінці «Про проєкт» (рішення власника 2026-11-25; docs/ABOUT_COSMOS.md, tests/about-cosmos.test.mjs).
+// Рух справді йде й зупиняється кнопкою, кольори відповідають палітрі (лаванда / золото), зі «зменшеним рухом» і без JavaScript видно заставку,
+// а програвач навіть не вантажиться; світла тема повертає сцені природні кольори; сторонніх запитів немає; нічого не виходить за ширину.
+async function aboutCosmosFlow(browser, origin, viewport) {
+  const where = `about cosmos @${viewport.name}`;
+  const stageShot = page => page.locator('.ab-cosmos-stage').screenshot();
+  const strokes = page => page.locator('.ab-cosmos-stage svg').evaluate(svg => [...new Set([...svg.querySelectorAll('[stroke]')].map(node => node.getAttribute('stroke').replace(/\s/g, '')))]);
+  // Lottie відкидає дробову частину каналу (#c9a24b стає rgb(200,161,74)), тож порівнюємо з допуском 2 на канал.
+  const GOLD = [201, 162, 75], LAVENDER = [187, 129, 239];
+  const has = (list, rgb) => list.some(value => { const c = (value.match(/\d+/g) || []).map(Number); return c.length >= 3 && rgb.every((channel, index) => Math.abs(channel - c[index]) <= 2); });
+  // 1) Космос за замовчуванням: рух іде, лінії лавандові, кнопка паузи 44 × 44 у межах екрана.
+  let {context, page, seen} = await open(browser, origin, viewport, '/about.html', {contextOptions: {reducedMotion: 'no-preference'}});
+  await page.waitForSelector('.ab-cosmos[data-playing] .ab-cosmos-stage svg', {timeout: 10000});
+  const a = await stageShot(page); await page.waitForTimeout(700); const b = await stageShot(page);
+  check(where, !a.equals(b), 'the scene moves');
+  const lines = await strokes(page);
+  check(where, has(lines, LAVENDER) && !has(lines, GOLD), `cosmic: lavender lines, no gold (${lines.join(' ')})`);
+  const toggle = page.locator('.ab-cosmos-toggle');
+  const box = await toggle.boundingBox();
+  check(where, box && box.width >= 44 && box.height >= 44 && box.x >= 0 && box.x + box.width <= viewport.width, `the pause button is a 44px target on screen (${box && Math.round(box.width)}×${box && Math.round(box.height)})`);
+  check(where, (await toggle.getAttribute('aria-label')) === 'Зупинити анімацію' && (await toggle.getAttribute('aria-pressed')) === 'false', 'the button says what it will do');
+  await toggle.focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(200);
+  const p1 = await stageShot(page); await page.waitForTimeout(700); const p2 = await stageShot(page);
+  check(where, p1.equals(p2), 'Enter on the button stops the motion');
+  check(where, (await toggle.getAttribute('aria-label')) === 'Продовжити анімацію' && (await toggle.getAttribute('aria-pressed')) === 'true', 'paused state is announced');
+  await toggle.click(); await page.waitForTimeout(200);
+  const r1 = await stageShot(page); await page.waitForTimeout(700);
+  check(where, !r1.equals(await stageShot(page)), 'a second press resumes it');
+  const fit = await page.evaluate(() => {
+    const figure = document.querySelector('.ab-cosmos').getBoundingClientRect(), lead = document.querySelector('.pb-lead').getBoundingClientRect();
+    return {overflow: document.documentElement.scrollWidth - innerWidth, figureW: figure.width, figureH: figure.height, below: figure.top >= lead.bottom - 1, beside: figure.left >= lead.right - 1};
+  });
+  check(where, fit.overflow <= 1, `no horizontal overflow (${fit.overflow}px)`);
+  check(where, Math.abs(fit.figureW / fit.figureH - 16 / 9) < 0.02, `the scene keeps 16:9 (${Math.round(fit.figureW)}×${Math.round(fit.figureH)})`);
+  check(where, viewport.width < 761 ? fit.below : fit.beside, viewport.width < 761 ? 'on a phone the scene sits under the lead text' : 'on a desktop the scene sits beside the text');
+  await artifact(page, viewport, 'about-cosmos', page.locator('.pb'), {scroll: false});
+  // 2) «Оформлення → Зелений» на льоту: файл підміняється, лінії золоті, рух триває.
+  await page.evaluate(() => { document.documentElement.dataset.palette = 'green'; });
+  await page.waitForFunction(() => [...document.querySelectorAll('.ab-cosmos-stage svg [stroke]')].some(node => /^rgb\(\s*20[01],\s*16[12],\s*7[45]\)$/.test(node.getAttribute('stroke'))), null, {timeout: 8000}).catch(() => {});
+  const greenLines = await strokes(page);
+  check(where, has(greenLines, GOLD) && !has(greenLines, LAVENDER), `green: the owner's gold, no lavender (${greenLines.join(' ')})`);
+  check(where, (await page.locator('.ab-cosmos-stage svg').count()) === 1, 'one scene after the palette switch');
+  checkBrowserHealth(where, seen);
+  check(where, seen.requested.some(url => url.startsWith('/vendor/lottie-light-5.12.2.min.js')), 'the player comes from the site itself');
+  await context.close();
+  // 3) Світла тема: сцена повернута до природних кольорів (подвійна інверсія), заставка не інвертується вдруге.
+  ({context, page, seen} = await open(browser, origin, viewport, '/about.html', {contextOptions: {reducedMotion: 'no-preference'}, initScript: () => localStorage.setItem('eua-appearance-v1', JSON.stringify({theme: 'light', text: 'md', palette: 'cosmic'}))}));
+  const light = await page.evaluate(() => ({html: getComputedStyle(document.documentElement).filter, stage: getComputedStyle(document.querySelector('.ab-cosmos-stage')).filter, img: getComputedStyle(document.querySelector('.ab-cosmos-stage img[data-art="cosmic"]')).filter}));
+  check(where, /invert/.test(light.html) && /invert/.test(light.stage) && light.img === 'none', `light theme: the scene is inverted back (${light.stage}; still ${light.img})`);
+  // Тло сцени в кутку, видимому під маскою, лишається темним, як у темній темі.
+  const centre = await page.locator('.ab-cosmos-stage').screenshot();
+  check(where, centre.length > 0, 'the light-theme scene renders');
+  checkBrowserHealth(where, seen);
+  await context.close();
+  // 4) Зменшений рух: лише заставка, програвач не вантажиться.
+  ({context, page, seen} = await open(browser, origin, viewport, '/about.html', {contextOptions: {reducedMotion: 'reduce'}}));
+  await page.waitForTimeout(1500);
+  const still = await page.evaluate(() => { const img = document.querySelector('.ab-cosmos-stage img[data-art="cosmic"]'); return {svg: document.querySelectorAll('.ab-cosmos svg').length, button: document.querySelectorAll('.ab-cosmos-toggle').length, shown: img.complete && img.naturalWidth > 0 && getComputedStyle(img).display !== 'none' && getComputedStyle(img).visibility === 'visible'}; });
+  check(where, still.shown && !still.svg && !still.button, `reduced motion: the still, no motion, no button (${JSON.stringify(still)})`);
+  check(where, !seen.requested.some(url => /lottie|about-cosmos(-green)?\.json/.test(url)), 'reduced motion: the player and the animation are not downloaded');
+  checkBrowserHealth(where, seen);
+  await context.close();
+  // 5) Без JavaScript: та сама заставка (зелена прихована, бо файл палітри космічний за замовчуванням).
+  ({context, page, seen} = await open(browser, origin, viewport, '/about.html', {contextOptions: {javaScriptEnabled: false}}));
+  const plain = await page.evaluate(() => [...document.querySelectorAll('.ab-cosmos-stage img')].map(img => [img.dataset.art, getComputedStyle(img).display !== 'none' && img.complete && img.naturalWidth > 0]));
+  check(where, JSON.stringify(plain) === '[["green",false],["cosmic",true]]', `without JavaScript the cosmic still shows (${JSON.stringify(plain)})`);
+  // 6) Друк: сцени немає, текст сторінки на місці.
+  await page.emulateMedia({media: 'print'});
+  check(where, !(await page.locator('.ab-cosmos').isVisible()) && await page.locator('#ab-what').isVisible(), 'print: the decorative scene is left out, the text stays');
+  await context.close();
+}
+
 async function aboutFlow(browser, origin, viewport) {
   const where = `about @${viewport.name}`;
   const phone = viewport.width < 600;
@@ -5622,7 +5694,9 @@ async function aboutFlow(browser, origin, viewport) {
   check(where, facts.emptyLinks === 0, 'every link has a visible name');
   check(where, facts.closing && facts.closing.h >= 44, `the closing link is a 44px target (${facts.closing && Math.round(facts.closing.h)})`);
   // Ліміт на телефоні 4,4 → 4,8 екрана: на сторінку додано розділ «Про Атлас» (рішення власника 2026-11-10, «1-7 так», п. 6; до того 3,82 на 390 і 4,23 на 360 px).
-  if (phone) check(where, facts.height / viewport.height <= 4.8, `the page is short on a phone: ${(facts.height / viewport.height).toFixed(2)} screens (limit 4.8)`);
+  // Ліміт на телефоні 4,8 → 5,1 екрана: у смугу з назвою додано анімацію «Космос усередині тебе» (рішення власника 2026-11-25, «Там де про проєкт»; сцена 16:9 на всю ширину,
+  // до неї 4,29 на 390 і 4,78 на 360 px, після 4,56 і 5,05). Комп'ютер лишився в межі 3,2 (2,94 → ~3,1), бо там сцена стоїть поруч із текстом.
+  if (phone) check(where, facts.height / viewport.height <= 5.1, `the page is short on a phone: ${(facts.height / viewport.height).toFixed(2)} screens (limit 5.1)`);
   else check(where, facts.height / viewport.height <= 3.2, `the page is short on a desktop: ${(facts.height / viewport.height).toFixed(2)} screens (limit 3.2)`);
   await artifact(page, viewport, 'about-top', page.locator('.pb'), {scroll: false});
   // Якорі: кожен розділ відкривається на екрані (на коротких кінцях сторінки допускаємо, що розділ не дійшов до верху, бо далі прокручувати нічого).
@@ -5785,6 +5859,11 @@ try {
   } else if (process.env.QA_ARTICLES_ONLY === '1') {
     // Швидка перевірка лише сторінок розборів добавок; повний прогін і CI виконують усе.
     for (const viewport of viewports) await isolatedFlow(articlePagesFlow, browser, origin, viewport);
+  } else if (process.env.QA_ABOUT_ONLY === '1') {
+    // Швидка перевірка лише сторінки «Про проєкт» з анімацією «Космос усередині тебе» (2026-11-25); повний прогін і CI виконують усе.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(aboutFlow, browser, origin, viewport);
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(aboutCosmosFlow, browser, origin, viewport);
+    for (const viewport of viewports) await generic(browser, origin, viewport, 'about.html');
   } else if (process.env.QA_MUSCLE_ONLY === '1') {
     // Швидка перевірка лише сторінки «Від м’яза до молекул» (2026-11-14); повний прогін і CI виконують усе, як і раніше.
     for (const viewport of viewports) await muscleLabFlow(browser, origin, viewport);
@@ -5849,6 +5928,8 @@ try {
     for (const viewport of viewports) await isolatedFlow(sectionsFlow, browser, origin, viewport);
     // «Довіра» (2026-11-03): сторінка «Про проєкт» (360 включено: вузький телефон найдовший) і спільне застереження в інших виглядах.
     for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(aboutFlow, browser, origin, viewport);
+    // «Космос усередині тебе» (2026-11-25): рух, пауза, палітри, світла тема, зменшений рух, без JavaScript, друк.
+    for (const viewport of [...viewports, {name: 'mobile-narrow', width: 360, height: 780}]) await isolatedFlow(aboutCosmosFlow, browser, origin, viewport);
     for (const viewport of viewports) await isolatedFlow(noticeThemeFlow, browser, origin, viewport);
     for (const viewport of viewports) await changesFlow(browser, origin, viewport);
     for (const viewport of viewports) await researchFlow(browser, origin, viewport);

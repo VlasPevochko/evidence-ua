@@ -80,3 +80,7 @@
 - Застереження: прибрати блок «Спільне застереження внизу кожної сторінки» в кінці `scripts/build-platform.mjs`, видалити `src/platform/site-notice.mjs`, `dist/site-notice.css`, запис у `scripts/palette/targets.mjs` і тест `tests/site-notice.test.mjs`. Уже вставлені рядки збірка сама не прибирає, тож їх треба зняти з кожного `dist/*.html` (елемент `<div class="eua-site-notice">…</div>` і `<link … site-notice.css…>`; готова функція `withoutSiteNotice` є в `tests/nutrition-architecture.test.mjs`), після чого перебудувати сайт двічі (`node scripts/build-site.mjs`).
 - Сторінка: повернути діалог `#about` у `dist/index.html` та обробник у `src/platform/site-header.mjs`, видалити `dist/about.html`, `dist/about-page.css`, `dist/og/about.jpg`, запис `navigation-about`, слова в `scripts/sections-config.mjs` і тест `tests/about-page.test.mjs`.
 - Найпростіше: скасувати злиття PR цілком (`git revert` злиття); закріплені тести повернуться до попередніх версій разом із ним.
+
+## Анімація в смузі з назвою (2026-11-25)
+
+Рішення власника «Там де про проєкт»: у смузі з назвою стоїть його анімація «Космос усередині тебе» (лавандова в космосі, золота в «Зеленому»). Тому `tests/about-page.test.mjs` тепер дозволяє на сторінці дві заставки-`img` і модуль `about-cosmos.js`; форм, кнопок у розмітці, фреймів і відео й далі немає. Межа висоти на телефоні в `aboutFlow` 4,8 → 5,1 екрана. Сторонніх запитів анімація не робить: програвач і файли лежать на сайті. Подробиці: `docs/ABOUT_COSMOS.md`.

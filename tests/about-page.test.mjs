@@ -19,10 +19,14 @@ assert.deepEqual([...page.matchAll(/<h2 id="(ab-[a-z]+)">([^<]+)<\/h2>/g)].map(m
 ],'seven sections, each with an anchor (the Atlas section was added on 2026-11-10: owner decision «1-7 так», item 6)');
 // Ліміт слів 460 → 540: власник вирішив додати розділ «Про Атлас» (2026-11-10, «1-7 так», п. 6); реальну висоту міряє Browser QA (ліміт на телефоні піднято з 4,4 до 4,8 екрана).
 assert(text.split(' ').length<=540,`the page stays short (${text.split(' ').length} words; Browser QA measures the real height)`);
-assert(!/<form|<input|<button|<iframe|<img|<video|<audio/i.test(body),'the page is plain text and links');
-// Скрипти лише спільні: шапка, вигляд (ранній вбудований скрипт + модуль) і перехід до якоря; власного коду на сторінці немає.
+// 2026-11-25, рішення власника «Там де про проєкт»: у смузі з назвою стоїть анімація «Космос усередині тебе» (docs/ABOUT_COSMOS.md).
+// Тому на сторінці тепер дві заставки-img (пара data-art, без тексту) і власний модуль about-cosmos.js; решта лишається текстом і посиланнями.
+// Кнопку «Зупинити / Продовжити» створює скрипт, у розмітці кнопок, форм, фреймів і відео й далі немає; анімацію перевіряє tests/about-cosmos.test.mjs.
+assert(!/<form|<input|<button|<iframe|<video|<audio/i.test(body),'the page is plain text and links');
+assert.deepEqual([...body.matchAll(/<img\b[^>]*>/g)].map(match=>match[0].match(/src="\.\/([^"]+)"/)[1]).sort(),['about-cosmos-poster-green.webp','about-cosmos-poster.webp'],'the only images are the two stills of the cosmos animation');
+// Скрипти: спільні (шапка, вигляд — ранній вбудований скрипт + модуль, перехід до якоря) і модуль анімації.
 const scripts=[...page.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].map(match=>({attrs:match[1],body:match[2]}));
-assert.deepEqual(scripts.filter(script=>/\bsrc=/.test(script.attrs)).map(script=>script.attrs.match(/src="\.\/([a-z-]+\.js)\?v=\d+"/)?.[1]).sort(),['anchor-reveal.js','appearance.js','site-header.js'],'only the shared modules are loaded');
+assert.deepEqual(scripts.filter(script=>/\bsrc=/.test(script.attrs)).map(script=>script.attrs.match(/src="\.\/([a-z-]+\.js)\?v=\d+"/)?.[1]).sort(),['about-cosmos.js','anchor-reveal.js','appearance.js','site-header.js'],'only the shared modules and the cosmos animation are loaded');
 assert.deepEqual(scripts.filter(script=>!/\bsrc=/.test(script.attrs)).map(script=>script.body.includes('eua-appearance-v1')),[true],'the only inline script is the shared early appearance one');
 assert.equal(new Set(body.match(/<a [^>]*href="[^"]+"/g).map(tag=>tag.match(/href="([^"]+)"/)[1])).size,body.match(/<a [^>]*href="[^"]+"/g).length,'one control per action: no link target is repeated on the page');
 

@@ -20,7 +20,7 @@ body[data-platform-area="about"]{margin:0;font-family:Inter,system-ui,-apple-sys
    Сцена темна власна, її краї розчиняються в смузі маскою, тож рамки-картки немає. Заставка (img) видна без JavaScript і зі зменшеним рухом. */
 body[data-platform-area="about"] .pb-split{grid-template-columns:minmax(0,1.1fr) minmax(260px,1fr)}
 .ab-cosmos{position:relative;justify-self:end;width:100%;max-width:580px;margin:0}
-.ab-cosmos-stage{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--c-050308,#050308);-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 64%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 64%,transparent 100%)}
+.ab-cosmos-stage{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--c-090a0c,#090a0c);-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 64%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 64%,transparent 100%)}
 .ab-cosmos-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .ab-cosmos-stage>svg{position:absolute;inset:0;width:100%!important;height:100%!important}
 .ab-cosmos[data-playing] .ab-cosmos-stage img{visibility:hidden}
